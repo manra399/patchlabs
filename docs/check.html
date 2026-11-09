@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your leak check | PatchLabs</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1917'/%3E%3Cpath d='M9 17l5 5 9-11' stroke='%23fafaf9' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;margin:24px 0}
+.steps-line{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 0;padding:0;list-style:none}
+.steps-line li{font-size:13px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);color:var(--faint)}
+.steps-line li.on{border-color:var(--ink);color:var(--ink);font-weight:600}
+.steps-line li.ok{color:var(--ok);border-color:var(--ok)}
+code.k{font:15px ui-monospace,monospace;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:inline-block;word-break:break-all}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+a.btn{display:inline-block;border-radius:12px;padding:12px 18px;background:var(--ink);color:var(--bg);font-weight:600;text-decoration:none}
+a.btn.o,button.o{background:none;color:var(--ink);border:1px solid var(--line)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+.report{line-height:1.65}
+.report h1{font-size:28px;margin:0 0 8px}.report h2{font-size:22px;margin:28px 0 8px}
+.report table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}
+.report th,.report td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.report code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 4px;font-size:13px}
+pre.sql{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;font-size:13px;max-height:420px;white-space:pre-wrap;word-break:break-word}
+.muted{color:var(--muted)}
+ol.how{padding-left:20px}ol.how li{margin:6px 0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M9 17l5 5 9-11" stroke="var(--bg)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+  <a class="btn-o" href="/#check">New check</a>
+</div></header>
+
+<main class="wrap" style="max-width:860px;padding-bottom:80px">
+  <p class="eyebrow" style="margin-top:24px">Leak check</p>
+  <h1 id="title" style="font-size:clamp(28px,5vw,42px)">Loading…</h1>
+  <ul class="steps-line" id="steps"></ul>
+  <div id="body"></div>
+</main>
+
+<footer><div class="wrap">
+  <span>© 2026 PatchLabs · <a href="mailto:manraj@patchlabs.dev" class="contact">manraj@patchlabs.dev</a></span>
+  <a href="/privacy.html">Privacy</a>
+</div></footer>
+
+<script src="/app.js"></script>
+<script>
+var id = new URLSearchParams(location.search).get('id');
+var STEPS = [['awaiting_verification', 'Prove it’s yours'], ['queued', 'In the queue'], ['running', 'Checking'], ['finished', 'Report ready']];
+var timer = null;
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+var $ = function (s) { return document.getElementById(s); };
+
+function steps(status) {
+  var at = ['done', 'no_leaks', 'needs_review', 'failed'].indexOf(status) >= 0 ? 3 : STEPS.findIndex(function (s) { return s[0] === status; });
+  $('steps').innerHTML = STEPS.map(function (s, i) { return '<li class="' + (i < at ? 'ok' : i === at ? 'on' : '') + '">' + (i < at ? '✓ ' : '') + s[1] + '</li>'; }).join('');
+}
+
+function render(c) {
+  $('title').textContent = c.repo;
+  document.title = c.repo + ' | PatchLabs leak check';
+  steps(c.status);
+  var b = $('body');
+  if (c.status === 'awaiting_verification') {
+    b.innerHTML = '<div class="panel"><h2 style="font-size:24px">One step: prove the repo is yours</h2>' +
+      '<p class="muted">So nobody can check an app they don’t own, add a file named <b>' + esc(c.verify.file) + '</b> to your repo’s default branch containing this code:</p>' +
+      '<p><code class="k" id="code">' + esc(c.verify.code) + '</code></p>' +
+      '<div class="row"><a class="btn o" target="_blank" rel="noopener" href="' + esc(c.verify.add_url) + '">Add the file on GitHub</a>' +
+      '<button id="vb">I’ve added it</button></div><p class="err" id="verr" role="alert"></p>' +
+      '<p class="muted" style="font-size:14px;margin-top:16px">The GitHub link opens the new-file page with the name and code filled in: just press “Commit changes”. You can delete the file once the check starts. Keep this page’s address: it’s how you get back to your report.</p></div>';
+    $('vb').onclick = async function () {
+      var btn = this; btn.disabled = true; btn.textContent = 'Checking…'; $('verr').textContent = '';
+      try { await api('/checks/' + id + '/verify', { method: 'POST' }); load(); }
+      catch (x) { $('verr').textContent = x.message; btn.disabled = false; btn.textContent = 'I’ve added it'; }
+    };
+    return;
+  }
+  if (c.status === 'queued' || c.status === 'running') {
+    b.innerHTML = '<div class="panel"><p style="margin:0"><span class="spin"></span><b>' + (c.status === 'queued' ? 'Verified. Your check is in the queue.' : 'Our agents are checking your app now.') + '</b></p>' +
+      '<p class="muted">We rebuild your database from its migrations in our lab, look for personal data the wrong people can read, write a fix and prove it works. It usually takes 5 to 15 minutes. This page updates by itself, and we’ll email you when the report is ready.</p></div>';
+    poll(); return;
+  }
+  if (c.status === 'failed') {
+    b.innerHTML = '<div class="panel"><b>We couldn’t finish this check automatically.</b><p class="muted">' + esc(c.error) + '</p></div>'; return;
+  }
+  var head = { done: 'We found leaks, and a tested fix is ready.', needs_review: 'We found leaks. A person is reviewing the fix before you apply it.', no_leaks: 'Good news: we found no data leaks.' }[c.status];
+  var html = '<div class="panel"><h2 style="font-size:24px">' + esc(head) + '</h2>';
+  if (c.fix_sql && c.status === 'done') {
+    html += '<div class="row"><button id="dl">Download the fix (.sql)</button><button class="o" id="cp">Copy fix</button></div>' +
+      '<h3 style="font-family:Inter,sans-serif;font-size:16px;margin:24px 0 4px">How to apply it</h3><ol class="how muted">' +
+      '<li>Add the file to <code>supabase/migrations/</code> in your repo (keep the timestamped name so it runs last).</li>' +
+      '<li>Make any code changes listed in the report below.</li>' +
+      '<li>Merge and deploy as usual. In Lovable or Supabase, the migration applies on your next database push.</li></ol>';
+  }
+  html += '</div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || '')) + '</article>';
+  if (c.fix_sql) html += '<div class="panel"><h2 style="font-size:20px">The fix</h2><pre class="sql">' + esc(c.fix_sql) + '</pre></div>';
+  b.innerHTML = html;
+  var name = (c.finished_at || '').replace(/\D/g, '').slice(0, 14) + '_patchlabs_leak_fix.sql';
+  if ($('dl')) $('dl').onclick = function () {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c.fix_sql], { type: 'text/sql' })); a.download = name; a.click();
+  };
+  if ($('cp')) $('cp').onclick = function () { navigator.clipboard.writeText(c.fix_sql); this.textContent = 'Copied'; };
+}
+
+function poll() { clearTimeout(timer); timer = setTimeout(load, 8000); }
+
+async function load() {
+  if (!id) { $('title').textContent = 'No check selected'; $('body').innerHTML = '<p class="muted">Start one from the <a href="/#check">home page</a>.</p>'; return; }
+  try {
+    var c = id === 'sample' ? await fetch('/sample.json').then(function (r) { return r.json(); }) : await api('/checks/' + encodeURIComponent(id));
+    render(c);
+  } catch (x) {
+    $('title').textContent = 'We couldn’t load this check';
+    $('body').innerHTML = '<p class="err">' + esc(x.message) + '</p>';
+    if (x.message.indexOf('reach') >= 0) poll();
+  }
+}
+load();
+</script>
+</body>
+</html>
