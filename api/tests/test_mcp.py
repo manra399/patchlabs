@@ -28,7 +28,7 @@ def test_initialize_and_list(client):
     tools = rpc(client, "tools/list", mid="abc")
     assert tools["id"] == "abc"
     names = [t["name"] for t in tools["result"]["tools"]]
-    assert names == ["rls_check", "start_check", "get_check", "list_apps", "run_check"]
+    assert names == ["rls_check", "headers_check", "start_check", "get_check", "list_apps", "run_check"]
     for t in tools["result"]["tools"]:
         assert t["description"] and t["inputSchema"]["type"] == "object"
     assert rpc(client, "ping")["result"] == {}
@@ -62,6 +62,17 @@ def test_rls_check_tool(client):
     assert json.loads(res["content"][0]["text"])["repo"] == "acme/shop"
     bad = call(client, "rls_check", {"repo": "acme/missing"})
     assert bad["isError"] is True and "couldn't find" in bad["content"][0]["text"]
+
+
+def test_headers_check_tool(client, monkeypatch):
+    import posture
+    page = {"status": 200, "headers": {"content-security-policy": "default-src 'self'"}, "cookies": [], "body": "", "tls": None}
+    monkeypatch.setattr(posture, "fetch", lambda url, verify=True: page)
+    res = call(client, "headers_check", {"url": "shop.example.com"})
+    assert res["isError"] is False and res["structuredContent"]["url"] == "https://shop.example.com"
+    assert "PL-031" in [f["id"] for f in res["structuredContent"]["findings"]]
+    bad = call(client, "headers_check", {"url": "http://127.0.0.1"})
+    assert bad["isError"] is True and "IP addresses" in bad["content"][0]["text"]
 
 
 def test_start_and_get_check_tools(client):

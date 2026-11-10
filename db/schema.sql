@@ -339,3 +339,22 @@ BEGIN
             FOR EACH ROW EXECUTE FUNCTION audit_log_append_only();
     END IF;
 END $$;
+
+-- Live posture (LIVE.md): a domain the team verified, re-checked daily by loading its public home page.
+ALTER TABLE apps ADD COLUMN IF NOT EXISTS live_url text;              -- https://host, origin only
+ALTER TABLE apps ADD COLUMN IF NOT EXISTS live_code text;             -- patchlabs-live-<hex>, separate from the repo code
+ALTER TABLE apps ADD COLUMN IF NOT EXISTS live_verified_at timestamptz;
+ALTER TABLE apps ADD COLUMN IF NOT EXISTS live_next_at timestamptz;
+CREATE INDEX IF NOT EXISTS apps_live_due ON apps (live_next_at) WHERE live_verified_at IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS posture_checks (
+    id          uuid PRIMARY KEY,
+    app_id      uuid NOT NULL REFERENCES apps (id) ON DELETE CASCADE,
+    url         text NOT NULL,
+    grade       text NOT NULL CHECK (grade IN ('A', 'B', 'C', 'D', 'F')),
+    score       int NOT NULL,
+    result      jsonb NOT NULL,
+    trigger     text NOT NULL,
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS posture_checks_app ON posture_checks (app_id, created_at DESC);

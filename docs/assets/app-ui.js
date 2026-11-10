@@ -307,15 +307,16 @@
   PL.SEV = ['critical', 'high', 'medium', 'low', 'info'];
   PL.LINES = {
     lab: { name: 'Lab', sub: 'Your database rebuilt from its migrations, each exploit tried as an anonymous visitor, a signed-in stranger and the owner.' },
-    code: { name: 'Code', sub: 'Your repo and its full git history: keys, vulnerable dependencies and risky patterns.' }
+    code: { name: 'Code', sub: 'Your repo and its full git history: keys, vulnerable dependencies and risky patterns.' },
+    live: { name: 'Live posture', sub: 'Your public home page, loaded like any visitor on the domain you verified: HTTPS, the certificate, security headers and cookies.' }
   };
-  var CODE_IDS = /^PL-0(09|1[0179]|2\d)$/;
+  var CODE_IDS = /^PL-0(09|1[0179]|2[0-6])$/, LIVE_IDS = /^PL-0(2[7-9]|3[0-6])$/;
   PL.total = function (c) { return c ? PL.SEV.reduce(function (n, s) { return n + (+c[s] || 0); }, 0) : 0; };
   var normFinding = function (f) {
     var id = String(f.id || 'PL-000').toUpperCase(), line = String(f.line || '').toLowerCase();
     var sev = String(f.severity || '').toLowerCase();
     return {
-      id: id, line: PL.LINES[line] ? line : CODE_IDS.test(id) ? 'code' : 'lab', severity: PL.SEV.indexOf(sev) >= 0 ? sev : 'info',
+      id: id, line: PL.LINES[line] ? line : LIVE_IDS.test(id) ? 'live' : CODE_IDS.test(id) ? 'code' : 'lab', severity: PL.SEV.indexOf(sev) >= 0 ? sev : 'info',
       title: f.title || id, object: f.object || '', file: f.file || '', line_no: f.line_no || null, evidence: f.evidence || '',
       proven: !!f.proven, proof: f.proof || '', fix: f.fix || '', fixed_in_lab: !!f.fixed_in_lab, advisory: f.advisory || '', demo: !!f.demo,
       cwe: Array.isArray(f.cwe) ? f.cwe : null, owasp: f.owasp || null, owasp_name: f.owasp_name || null,

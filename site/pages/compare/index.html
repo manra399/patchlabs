@@ -104,7 +104,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
           <tr><th scope="row">Writes the fix</th><td class="us"><span class="yes">SQL migration, plus code notes</span></td><td><span class="part">Some findings</span></td><td><span class="yes">Fix PRs or one-click fixes</span></td><td><span class="part">A prompt, file or snippet</span></td><td><span class="part">Recommendations</span></td></tr>
           <tr><th scope="row">Proves the fix as anon, stranger and owner</th><td class="us"><span class="yes">Every fix, before you see it</span></td><td><span class="no">Not described</span></td><td><span class="part">Varies; re-scan or smoke test</span></td><td><span class="no">Re-scan after you ship</span></td><td><span class="part">Retest, often extra</span></td></tr>
           <tr><th scope="row">Needs your live app</th><td class="us"><span class="yes">No. Repo only</span></td><td><span class="part">Runs inside the platform</span></td><td><span class="part">Repos; live app for pentests</span></td><td><span class="no">Probes your live URL</span></td><td><span class="no">Live or staging</span></td></tr>
-          <tr><th scope="row">Covers more than database access</th><td class="us"><span class="part">Keys in code and git history</span></td><td><span class="yes">Dependencies, code, config</span></td><td><span class="yes">Code, cloud, runtime</span></td><td><span class="yes">Headers, files, bundles</span></td><td><span class="yes">Whole system</span></td></tr>
+          <tr><th scope="row">Covers more than database access</th><td class="us"><span class="part">Keys, dependencies, risky code patterns, live headers</span></td><td><span class="yes">Dependencies, code, config</span></td><td><span class="yes">Code, cloud, runtime</span></td><td><span class="yes">Headers, files, bundles</span></td><td><span class="yes">Whole system</span></td></tr>
           <tr><th scope="row">Typical time</th><td class="us"><b>Median 3.5 min</b><span class="cell-note">Lab study, n=20</span></td><td>Seconds to minutes</td><td>Seconds to minutes</td><td>Seconds to minutes</td><td>Days to weeks</td></tr>
           <tr><th scope="row">Typical cost</th><td class="us"><b>Free for 1 app</b><span class="cell-note">Then from £19/month</span></td><td>Included</td><td>Free tier, then per plan</td><td>Free tiers; paid $9 to $99/month</td><td>Usually thousands</td></tr>
           <tr><th scope="row">Best at</th><td class="us">Proof that the fix works</td><td>Zero-setup checks</td><td>Breadth across the stack</td><td>Your real deployment</td><td>Depth across everything</td></tr>
@@ -124,8 +124,8 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     </div>
     <div class="card">
       <ul class="ticks mb-0">
-        <li class="dash">Pentests, live-URL scanning or dynamic testing of your running app</li>
-        <li class="dash">Dependency or CVE scanning, static analysis of your whole codebase</li>
+        <li class="dash">Pentests, vulnerability scanning of your live URL, or dynamic testing of your running app (opt-in <a href="/product/live-posture">Live posture</a> only grades your home page’s HTTPS and headers)</li>
+        <li class="dash">Static analysis of your whole codebase (we check dependencies against known advisories and the risky patterns AI builders write, not every rule a general scanner has)</li>
         <li class="dash">Compliance certification or audit reports</li>
         <li class="dash">Databases other than Supabase/Postgres, for now</li>
         <li class="dash">Private repos and automatic pull requests: coming with our GitHub App</li>

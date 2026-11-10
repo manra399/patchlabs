@@ -1,6 +1,6 @@
 <!--
 title: Free security tools for AI-built apps | PatchLabs
-description: Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a leak cost calculator, and a full sample proof report.
+description: Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.
 layout: marketing
 nav: tools
 head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
@@ -12,14 +12,14 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Tools</li></ol></nav>
     <p class="lab">Free tools</p>
     <h1>Free tools to see who can read your data.</h1>
-    <p class="lede">Start with a quick look at your access rules, work out what a leak would cost, or open a complete report from a real lab run. No account needed for any of them.</p>
+    <p class="lede">Start with a quick look at your access rules or your site’s security headers, work out what a leak would cost, or open a complete report from a real lab run. No account needed for any of them.</p>
   </div>
 </section>
 
 <section class="sec tight" aria-labelledby="tools-h" style="padding-top:0">
   <div class="wrap">
     <h2 id="tools-h" class="sr-only">Tools</h2>
-    <div class="grid g3">
+    <div class="grid g2">
       <a class="card link tool-card" href="/tools/rls-check">
 <div class="tc-art" aria-hidden="true"><span class="d">$ rls-check manra399/patchlabs-demo-app</span>
 <span class="d">1 file · 2 tables</span>
@@ -32,6 +32,20 @@ medium   PL-004 profiles
           <h3>Free RLS check</h3>
           <p>Paste a public repo. We read <code>supabase/migrations</code> and flag eight risky patterns, each with the file, the line and what it means.</p>
           <div class="tc-foot"><span>static analysis</span><span class="link-arrow">Run it</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/tools/headers-check">
+<div class="tc-art" aria-hidden="true"><span class="d">$ headers-check https://your-app.com</span>
+<span class="d">1 page load · TLSv1.3 · 56 days left</span>
+<b>grade C</b>  65/100
+medium PL-030 no Content-Security-Policy
+low    PL-032 no nosniff
+<span class="g">passed</span> HTTPS, HSTS, framing, referrer</div>
+        <div class="tc-body">
+          <span class="n-big">NO SIGN-UP · SECONDS</span>
+          <h3>Free headers check</h3>
+          <p>Type your site’s address. We load your public home page once, like any visitor, and grade HTTPS, the certificate, security headers, cookie flags and mixed content, with the fix for your host.</p>
+          <div class="tc-foot"><span>one public page load</span><span class="link-arrow">Check it</span></div>
         </div>
       </a>
       <a class="card link tool-card" href="/tools/leak-cost">
@@ -79,6 +93,7 @@ medium   PL-004 profiles
         <h3>Free RLS check</h3>
         <p>Seconds. Reads your SQL as text.</p>
         <ul class="ticks"><li>Risky rules, with file and line</li><li class="x">Can’t tell intended from leaking</li><li class="x">No fix</li></ul>
+        <p class="small mt-2 mb-0">Or grade your site’s HTTPS and headers with the <a href="/tools/headers-check">headers check</a>.</p>
       </div>
       <div>
         <p class="lab"><span class="n">02</span>Weigh</p>

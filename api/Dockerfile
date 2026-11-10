@@ -2,7 +2,7 @@ FROM python:3.13-slim
 WORKDIR /app
 COPY api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY api/app.py api/core.py api/accounts.py api/monitor.py api/receipts.py api/rls.py api/mcp_server.py api/support.py api/audit.py api/alerts.py api/taxonomy.py ./
+COPY api/app.py api/core.py api/accounts.py api/monitor.py api/receipts.py api/rls.py api/mcp_server.py api/support.py api/audit.py api/alerts.py api/taxonomy.py api/posture.py ./
 COPY db/schema.sql ./
 RUN useradd -r app && chown -R app /app
 USER app

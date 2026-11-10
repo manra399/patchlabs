@@ -22,7 +22,7 @@ PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Rep
 8. An independent verifier rebuilds a fresh lab with the fix applied and re-tests: anonymous visitor denied, stranger denied, owner still reads their own rows. If that fails on every model, a person reviews it.
 9. The lab database is dropped. You get a report page with the fix as a downloadable migration and a one-click "commit this file on GitHub" link, plus a signed receipt.
 
-PatchLabs never connects to the customer's live app or database, never asks for a database password, and never pushes to the customer's repo. The owner's engineer approves every change.
+A check never connects to the customer's live app or database. PatchLabs never asks for a database password and never pushes to the customer's repo. PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify. The owner's engineer approves every change.
 
 What is not available yet (say so honestly): private repos and automatic pull requests need a GitHub App, which is coming. Card payments are not live; paid plans are by request.
 
@@ -40,15 +40,17 @@ What is not available yet (say so honestly): private repos and automatic pull re
 - PatchLabs Code (https://patchlabs.dev/product/code): reads the repo without running its code or installing packages: keys in the current code and full git history, Supabase Edge Functions and supabase/config.toml, payment webhooks (Stripe, Lemon Squeezy, Paddle), CORS headers, browser-only admin checks, roles read from user_metadata, raw HTML rendering, Firebase rules files, and npm dependency versions from lockfiles checked against the OSV database (only package names and versions are sent to OSV; reported as skipped when offline). Findings carry a file and line and are not lab-proven.
 - PatchLabs Fix (https://patchlabs.dev/product/fix): writes the migration, proves it in a fresh lab as the three identities, asks the owner's business questions, and waits for the engineer to approve. One-click commit on GitHub, MCP and CI. Automatic pull requests: coming with the GitHub App.
 - PatchLabs Watch (https://patchlabs.dev/product/watch): scheduled re-checks, diffs, alerts, badge, signed receipts, public proof page, teams.
+- Live posture (https://patchlabs.dev/product/live-posture), part of Watch and opt-in per app: for a domain the team verifies (a file at /patchlabs-verify.txt or a patchlabs-verify meta tag), PatchLabs loads the public home page the way any visitor's browser does: one plain http:// request to see if it redirects, one https:// page load following at most 5 redirects, and that load's TLS handshake. It grades HTTPS, the certificate, security headers, cookie flags and mixed content (A to F; score 100 minus 30 per high, 15 per medium, 5 per low finding; an invalid or expired certificate is always F), re-checks daily, alerts by email and webhook when the grade drops or a finding appears, and offers a live badge. No other paths, no forms, no API calls, no database, no attack payloads. It does not test the app for data leaks or vulnerabilities.
 
 ## Finding format
 
-Every finding: {"id": "PL-001", "line": "lab|code", "severity": "critical|high|medium|low|info", "title", "object", "file", "line_no", "evidence" (short, redacted), "proven" (true only when the lab reproduced it), "proof", "fix" (one line), "fixed_in_lab", "advisory" (PL-023 only)}. A finished check's API summary carries "findings" (up to 200) and "counts" by severity. Docs: https://patchlabs.dev/docs/findings
+Every finding: {"id": "PL-001", "line": "lab|code|live", "severity": "critical|high|medium|low|info", "title", "object", "file", "line_no", "evidence" (short, redacted), "proven" (true only when the lab reproduced it), "proof", "fix" (one line), "fixed_in_lab", "advisory" (PL-023 only)}. A finished check's API summary carries "findings" (up to 200) and "counts" by severity. Docs: https://patchlabs.dev/docs/findings
 
 ## Finding IDs
 
 Live, Lab: PL-001 anonymous visitor can read personal data; PL-002 any signed-in user can read every row; PL-003 rLS enabled but no policies (owner locked out); PL-004 uPDATE policy missing WITH CHECK; PL-005 always-true policy; PL-006 sECURITY DEFINER function exposed; PL-007 public storage bucket; PL-008 row level security not enabled.
 Live, Code: PL-009 aI, payment or database key in the code; PL-010 service role key in client code; PL-011 key still in git history; PL-017 edge function open without sign-in while using the service key; PL-018 sign-ups need no email confirmation; PL-019 access decided by user_metadata, which users can edit; PL-020 admin check only in the browser; PL-021 payment webhook doesn't verify its signature; PL-022 edge function trusts a user id sent in the request; PL-023 dependency with a known vulnerability; PL-024 user content rendered as raw HTML; PL-025 firebase rules allow anyone; PL-026 any website can call a signed-in function.
+Live, Live posture (opt-in, verified domain): PL-027 site doesn't force HTTPS; PL-028 TLS certificate is invalid, expired or expires within 21 days; PL-029 no HSTS header, or max-age under 180 days; PL-030 no Content-Security-Policy; PL-031 any site can frame the page; PL-032 no X-Content-Type-Options: nosniff; PL-033 cookie set without Secure, or a session cookie without HttpOnly; PL-034 page loads scripts or styles over plain HTTP; PL-035 server headers reveal software versions; PL-036 no Referrer-Policy.
 Coming (documented, not tested yet, never in reports): PL-012 strangers can change or delete other people's rows; PL-013 users can make themselves admin; PL-014 view skips row level security; PL-015 stored files readable or writable by anyone; PL-016 realtime sends private rows to subscribers.
 Each ID has a page at https://patchlabs.dev/findings/pl-0NN with vulnerable example code, a self-check, the fix and why it is rated as it is. Index with filters: https://patchlabs.dev/findings
 
@@ -84,6 +86,7 @@ API keys, webhooks, badges and client labels are on every plan. Upgrades: reques
 - Public badge: https://api.patchlabs.dev/badge/<app id>.svg shows "no known leaks", "fix in progress", "not checked yet" or "private", with the last check date.
 - Public proof page: https://patchlabs.dev/proof?app=<app id> (only when the owner makes it public).
 - Free RLS check (static analysis, no sign-up): https://patchlabs.dev/tools/rls-check
+- Free security headers check (no sign-up, one public page load, result not stored, 10 an hour per network): https://patchlabs.dev/tools/headers-check
 - REST API: https://api.patchlabs.dev. Errors are {"detail": "human sentence"}. Signed-in calls: Authorization: Bearer <session>. CI calls: X-API-Key: pl_live_... Docs: https://patchlabs.dev/docs/api
 - Remote MCP server: POST https://api.patchlabs.dev/mcp, JSON-RPC 2.0 over Streamable HTTP, stateless. Tools: rls_check {repo}, start_check {repo, email}, get_check {check_id}, list_apps and run_check {app_id} (these two need X-API-Key). Docs: https://patchlabs.dev/docs/mcp
 - Health: GET https://api.patchlabs.dev/health returns {ok, db, worker_last_seen, queued}. Live status page: https://patchlabs.dev/status
@@ -95,8 +98,8 @@ Every finished check has a receipt signed with Ed25519: GET https://api.patchlab
 ## Security and privacy
 
 - Reads: the public repo (code, migrations, git history), the verification file, the requester's email.
-- Never: database passwords, service-role keys, production data, access to the live app, write access to the repo.
-- Live probes: none.
+- Never: database passwords, service-role keys, production data, signed-in or API access to the live app, write access to the repo.
+- Live probes: none from Lab or Code checks. Live posture (opt-in) loads only the public home page of a verified domain, like any visitor.
 - Retention: lab database deleted after each check; working copy of the repo up to 30 days; reports, fixes and receipts until the user deletes them; account data until the account is deleted. Sign-in links 20 minutes; sessions 30 days; tokens and API keys stored only as hashes; IP addresses stored only as a salted hash.
 - Where it runs: website on GitHub Pages; API and database in Microsoft Azure; checks on a worker machine operated by PatchLabs in London.
 - Subprocessors: Anthropic (AI models), Microsoft Azure (hosting, database), GitHub (site hosting, repo reads), Spacemail by Spaceship (email).
@@ -106,7 +109,7 @@ Every finished check has a receipt signed with Ed25519: GET https://api.patchlab
 
 ## Limits
 
-PatchLabs Lab tests database read access (Supabase/Postgres); PatchLabs Code checks keys, known risky code patterns and npm dependency versions. Code findings are pattern matches for a person to judge, not proofs. It is not a penetration test and does not test business logic. The lab is only as complete as the migrations in the repo: changes made only in the Supabase dashboard are invisible. A passing proof covers the tables tested, not the whole app. Public repos only for now. Checks run one at a time on one worker.
+PatchLabs Lab tests database read access (Supabase/Postgres); PatchLabs Code checks keys, known risky code patterns and npm dependency versions. Code findings are pattern matches for a person to judge, not proofs. Live posture reads the HTTPS setup, certificate, headers and cookie flags of one public page; it is not a vulnerability scan. It is not a penetration test and does not test business logic. The lab is only as complete as the migrations in the repo: changes made only in the Supabase dashboard are invisible. A passing proof covers the tables tested, not the whole app. Public repos only for now. Checks run one at a time on one worker.
 
 ## Contact
 
@@ -114,10 +117,10 @@ Founder: Manraj Singh Dhillon, technical founder, London, UK. Email: manraj@patc
 
 ## Every page
 
-Product: / , /how-it-works, /product/lab, /product/code, /product/fix, /product/watch, /demo, /integrations, /solutions/founders, /solutions/agencies, /solutions/engineers, /for/lovable, /for/supabase, /for/bolt, /for/replit, /for/cursor, /leaking-now, /sample-report, /pricing
-Research: /research/1-in-4, /research/methodology, /findings, /findings/pl-001 to /findings/pl-026
+Product: / , /how-it-works, /product/lab, /product/code, /product/fix, /product/watch, /product/live-posture, /demo, /integrations, /solutions/founders, /solutions/agencies, /solutions/engineers, /for/lovable, /for/supabase, /for/bolt, /for/replit, /for/cursor, /leaking-now, /sample-report, /pricing
+Research: /research/1-in-4, /research/methodology, /findings, /findings/pl-001 to /findings/pl-036
 Learn: /learn, /learn/secure-lovable-supabase-app, /learn/rls-policies-explained, /learn/supabase-views-security-invoker, /learn/supabase-storage-policies, /learn/supabase-realtime-security, /learn/user-metadata-vs-app-metadata, /learn/secure-supabase-edge-functions, /learn/stripe-webhook-supabase-edge-function, /learn/rotate-leaked-key-git-history, /learn/first-hour-after-a-leak, /learn/vibe-coded-app-security-checklist, /learn/firebase-security-rules-basics, /learn/npm-dependency-vulnerabilities
-Tools: /tools, /tools/rls-check, /tools/leak-cost
+Tools: /tools, /tools/rls-check, /tools/headers-check, /tools/leak-cost
 Compare: /compare, /compare/supabase-security-advisor, /compare/lovable-security-scan, /compare/aikido, /compare/manual-pentest
 Developers: /docs, /docs/findings, /docs/reading-a-report, /docs/api, /docs/mcp, /docs/receipts, /docs/glossary
 Company and trust: /about, /changelog, /security, /status, /proof, /.well-known/security.txt

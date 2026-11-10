@@ -59,7 +59,7 @@ nav: key_scan
   `.sec.band` (sunken background, top and bottom rules). Two plain sections in a row collapse the gap between them.
   `.band.ink` is an inverted (ink) band: use at most once per page.
 - Containers: `.wrap` (1200px), `.wrap.narrow` (760px, long reading), `.wrap.wide` (1360px).
-- `nav:` values the header understands: `leak_lab`, `key_scan`, `monitoring`, `badge`, `agencies`, `tools`, `sample`,
+- `nav:` values the header understands: `leak_lab`, `key_scan`, `monitoring`, `badge`, `live_posture`, `agencies`, `tools`, `sample`,
   `findings`, `for_lovable`, `for_supabase`, `for_bolt`, `for_replit`, `for_cursor` (Product menu), `how`, `research`,
   `pricing`, `docs`, `leaking`. In the app header: `apps`, `settings`. Any other value (`legal`, `status`, …) marks nothing.
 - `head:` is one line, added inside `<head>`; use it for `<meta name="robots" content="noindex">`, JSON-LD, or a
@@ -264,7 +264,7 @@ Use unique `id`s per page.
 <p class="err" role="alert" data-err></p>
 <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span></div>
 ```
-`.repo-form.stacked` puts the repo field on its own row (use in narrow columns). Optional leading icons: an inline
+`.repo-form.one` is the single-field variant (one input and the button, e.g. the headers-check address form with `name="url"`, which gets the mono font). `.repo-form.stacked` puts the repo field on its own row (use in narrow columns). Optional leading icons: an inline
 16px `<svg aria-hidden="true">` as the first child of `.in` (see index.html).
 
 ### 4.6 Pills / status badges
@@ -429,6 +429,7 @@ toast('Saved', 'ok');  toast('That key was revoked', 'err');  toast('Copied');
 <ul class="ticks"><li>Included, with <strong>bold</strong>, <code>code</code> or <a href="#">links</a></li><li class="x">Not included</li><li class="dash">Not yet</li></ul>
 <ul class="jump" aria-label="On this page"><li><a href="#probe">Probe <span>01</span></a></li>…</ul>   <!-- pill row of on-page anchors -->
 <div class="wordmarks"><a href="/for/lovable">Lovable <span>→</span></a>…</div>   <!-- text wordmarks only, never logos -->
+<a class="mega-item wide">…<b>Live posture <span class="mega-tag">part of Watch</span></b>…</a>   <!-- header mega menu: full-width item + small tag -->
 ```
 
 ### 4.20 Final CTA panel

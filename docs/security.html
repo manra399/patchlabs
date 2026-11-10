@@ -2,14 +2,16 @@
 <html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Security and trust: what PatchLabs reads, keeps and never touches | PatchLabs</title>
-<meta name="description" content="PatchLabs works from your GitHub repo only, proves fixes in a disposable lab and never connects to your live app or database. Retention, subprocessors, receipts and limits.">
+<meta name="description" content="PatchLabs checks work from your GitHub repo, prove fixes in a disposable lab and never touch your database. Live posture, retention, subprocessors, receipts and limits.">
 <link rel="canonical" href="https://patchlabs.dev/security">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
 <meta property="og:title" content="Security and trust: what PatchLabs reads, keeps and never touches | PatchLabs">
-<meta property="og:description" content="PatchLabs works from your GitHub repo only, proves fixes in a disposable lab and never connects to your live app or database. Retention, subprocessors, receipts and limits.">
+<meta property="og:description" content="PatchLabs checks work from your GitHub repo, prove fixes in a disposable lab and never touch your database. Live posture, retention, subprocessors, receipts and limits.">
 <meta property="og:url" content="https://patchlabs.dev/security">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -17,7 +19,7 @@
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Security and trust: what PatchLabs reads, keeps and never touches | PatchLabs">
-<meta name="twitter:description" content="PatchLabs works from your GitHub repo only, proves fixes in a disposable lab and never connects to your live app or database. Retention, subprocessors, receipts and limits.">
+<meta name="twitter:description" content="PatchLabs checks work from your GitHub repo, prove fixes in a disposable lab and never touch your database. Live posture, retention, subprocessors, receipts and limits.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -50,6 +52,7 @@
               <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
               <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
               <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
             </div>
           </div>
           <div class="mega-side">
@@ -99,7 +102,7 @@
               <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
               <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
               <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
-              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
               <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
               <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
             </div>
@@ -132,15 +135,15 @@
     <div>
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Security</li></ol></nav>
       <p class="lab">Trust</p>
-      <h1 id="sec-h1">We prove the fix on a copy. Your live app is never touched.</h1>
-      <p class="lede">PatchLabs reads your GitHub repo, rebuilds your database from its migrations in a throwaway lab, and tests the fix there. We never ask for your database password and we never send a single request to your app. This page says exactly what we read, what we keep, who else is involved and where our limits are.</p>
+      <h1 id="sec-h1">We prove the fix on a copy. Your database is never touched.</h1>
+      <p class="lede">PatchLabs reads your GitHub repo, rebuilds your database from its migrations in a throwaway lab, and tests the fix there. We never ask for your database password, and a check never sends a single request to your app. The one exception is opt-in: Live posture loads your public home page, like any visitor, and only on a domain you verify. This page says exactly what we read, what we keep, who else is involved and where our limits are.</p>
       <div class="row mt-3">
         <a class="btn primary large" href="/legal/disclosure-policy">Report a security issue</a>
         <a class="btn secondary large" href="/proof#verify">Verify a receipt</a>
       </div>
       <ul class="sec-toc" aria-label="On this page">
         <li><a href="#access">Access</a></li>
-        <li><a href="#live">Live probes</a></li>
+        <li><a href="#live">Production</a></li>
         <li><a href="#lab">Lab lifecycle</a></li>
         <li><a href="#agent">Fix agent</a></li>
         <li><a href="#retention">Retention</a></li>
@@ -166,6 +169,8 @@
 <span class="ln"> </span>
 <span class="ln"><span class="c"># what a check never touches</span></span>
 <span class="ln"><span class="step">[LIVE]</span>    your live app         <span class="deny">NONE</span></span>
+<span class="ln"><span class="dim">          Live posture is separate: opt-in,</span></span>
+<span class="ln"><span class="dim">          public home page, verified domain</span></span>
 <span class="ln"><span class="step">[DB]</span>      your Supabase project <span class="deny">NONE</span></span>
 <span class="ln"><span class="step">[SECRETS]</span> database password     <span class="deny">NEVER</span></span>
 <span class="ln"><span class="step">[PUSH]</span>    your repo             <span class="deny">NONE</span></span>
@@ -185,7 +190,7 @@
 <section class="sec tight" aria-label="Security at a glance">
   <div class="wrap">
     <div class="trust-facts">
-      <div><b>0</b><span>requests sent to your live app or database by a check</span></div>
+      <div><b>0</b><span>requests sent to your live app or database by a Lab or Code check</span></div>
       <div><b>0</b><span>passwords: sign-in is by emailed link, and we never ask for your database password</span></div>
       <div><b>Ed25519</b><span>signature on every finished check’s receipt, verifiable by anyone</span></div>
       <div><b>0</b><span>cookies or third-party analytics on patchlabs.dev</span></div>
@@ -215,7 +220,7 @@
         <ul class="ticks mt-2">
           <li class="x"><span>Your database password or service-role key<small>The lab is built from your migrations, so it has its own roles and keys.</small></span></li>
           <li class="x"><span>Your production data<small>The lab holds fake rows we generate. Your customers’ records never leave your database.</small></span></li>
-          <li class="x"><span>Access to your live app or Supabase project<small>No URL scans, no API calls, no logins to your dashboard.</small></span></li>
+          <li class="x"><span>Access to your live app or Supabase project<small>No API calls, no logins to your dashboard, no database connection. Live posture, if you turn it on, loads only your public home page on a domain you verified.</small></span></li>
           <li class="x"><span>Write access to your repo<small>You commit the fix yourself, after your engineer reads it.</small></span></li>
         </ul>
       </div>
@@ -229,11 +234,12 @@
   <div class="wrap split top">
     <div>
       <p class="lab green">Production</p>
-      <h2 id="live-h">Live probes: none.</h2>
-      <p class="lede">We never connect to your live app or database. Not to test, not to confirm a leak, not to check a fix.</p>
+      <h2 id="live-h">Your database: never touched.</h2>
+      <p class="lede">A check never connects to your live app or database. Not to test, not to confirm a leak, not to check a fix.</p>
       <p class="mt-3">When a report says “an anonymous visitor can read <code>profiles</code>”, that was observed in our lab, against a database rebuilt from your own migrations, as the lab’s <code>anon</code> role: the role your public key maps to. Your real key and your real users are never part of it.</p>
       <p>That is also why a fix can be proven before you ship it: the same lab is rebuilt with the fix applied, and the three identities are tested again.</p>
       <div class="callout limit"><p>Because we never look at production, anything changed directly in the Supabase dashboard and not captured in <code>supabase/migrations</code> is invisible to us. The report says what the lab could and couldn’t rebuild.</p></div>
+      <div class="callout note"><p><strong>Live posture is opt-in and separate.</strong> PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify (a file or meta tag on that domain). Each check is one plain <code>http://</code> request to see whether it redirects, one <code>https://</code> page load following at most 5 redirects, and that load’s TLS handshake. It grades HTTPS, the certificate, security headers, cookie flags and mixed content. No other paths, no forms, no API calls, no attack payloads. <a href="/product/live-posture">How Live posture works</a>.</p></div>
     </div>
     <div class="code" data-reveal>
       <div class="code-bar"><span class="name">who the lab tests as</span></div>
@@ -307,6 +313,7 @@
         <thead><tr><th scope="col">Data</th><th scope="col">Kept for</th><th scope="col">Notes</th></tr></thead>
         <tbody>
           <tr><th scope="row">Lab database (rebuilt schema and fake rows)</th><td class="when">Deleted after each check</td><td>Dropped as soon as the probe and the proof finish.</td></tr>
+          <tr><th scope="row">Live posture results</th><td class="when">Until you remove the domain or delete the app</td><td>The grade, findings and the response headers and cookie names of your public home page. Removing the domain deletes its history. The free headers check stores nothing.</td></tr>
           <tr><th scope="row">Working copy of your repo and run files on the worker</th><td class="when">Up to 30 days</td><td>A clone of public code plus logs, kept briefly so we can investigate a failed check, then deleted.</td></tr>
           <tr><th scope="row">Reports, fixes and receipts</th><td class="when">Until you delete them</td><td>So your report link keeps working. Delete them from your account, or email us for a check made without an account.</td></tr>
           <tr><th scope="row">Email address, name and account data</th><td class="when">Until you delete your account</td><td><code>DELETE /me</code> (or the button in Settings) removes your user, sessions, solely owned workspaces, apps, checks and keys, plus earlier checks made with your email.</td></tr>
@@ -437,6 +444,10 @@ print(<span class="s">"genuine:"</span>, r[<span class="s">"receipt"</span>][<sp
         <p>Our free tool reads a public repo’s migration files and reports patterns, without a lab, without a fix and without verification. It sees exactly what anyone browsing the repo on GitHub sees. It is rate limited.</p>
       </div>
       <div class="card sunk">
+        <h3>Live posture and the free headers check</h3>
+        <p>Daily Live posture checks run only on a domain the app’s team has verified, with a code in <code>/patchlabs-verify.txt</code> or a <code>patchlabs-verify</code> meta tag on the home page. The free <a href="/tools/headers-check">headers check</a> loads one public page you name, once, exactly as a browser would, and keeps no result. It is rate limited and refuses private addresses.</p>
+      </div>
+      <div class="card sunk">
         <h3>Opting out</h3>
         <p>If you own a public repo and don’t want it in PatchLabs research samples or free-tool results, email <a href="mailto:manraj@patchlabs.dev?subject=Opt%20out">manraj@patchlabs.dev</a> with the subject “Opt out” and the repo URL. We’ll confirm within two working days and delete anything we hold about it. Our published research is aggregate only and never names an app.</p>
       </div>
@@ -481,7 +492,8 @@ Policy: https://patchlabs.dev/legal/disclosure-policy</code></pre>
     <ul class="limit-list">
       <li><b>Database access rules only</b>We test who can read personal data in Supabase/Postgres tables, and scan for exposed keys. We don’t test the rest of your app.</li>
       <li><b>As complete as your migrations</b>The lab is rebuilt from <code>supabase/migrations</code>. Changes made only in the Supabase dashboard are invisible to us.</li>
-      <li><b>Not a penetration test</b>We don’t attack your app, test business logic or check dependencies for known vulnerabilities.</li>
+      <li><b>Live posture is not a vulnerability test</b>It reads the headers, certificate and cookies of your public home page. It doesn’t test your app for data leaks, log in, or try other URLs.</li>
+      <li><b>Not a penetration test</b>We don’t attack your app or test business logic. Dependencies are checked against known advisories (PL-023) from your lockfiles, not by probing the running app.</li>
       <li><b>Proof covers the tables we test</b>A passing proof means the three identities behave correctly for the tables checked, not that your whole app is secure.</li>
       <li><b>Public repos only, for now</b>Private repos and automatic pull requests need our GitHub App, which is coming.</li>
       <li><b>One worker machine</b>Checks run one at a time, so a busy queue means a longer wait. The <a href="/status">status page</a> shows the queue live.</li>
@@ -527,6 +539,7 @@ Policy: https://patchlabs.dev/legal/disclosure-policy</code></pre>
         <li><a href="/product/code">Code</a></li>
         <li><a href="/product/fix">Fix</a></li>
         <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
         <li><a href="/demo">Try the demo</a></li>
         <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
@@ -560,6 +573,7 @@ Policy: https://patchlabs.dev/legal/disclosure-policy</code></pre>
         <li><a href="/docs/webhooks">Webhooks</a></li>
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

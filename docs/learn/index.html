@@ -2,6 +2,8 @@
 <html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Learn: security guides for AI-built apps (Supabase, Lovable, Firebase) | PatchLabs</title>
 <meta name="description" content="In-depth, tested guides to securing apps built with AI tools: Supabase RLS, Edge Functions, storage, webhooks, leaked keys, Firebase rules and a pre-launch checklist.">
@@ -31,7 +33,7 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
-<link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Learn: securing AI-built apps","url":"https://patchlabs.dev/learn","mainEntity":{"@type":"ItemList","itemListElement":[{"@type":"ListItem","position":1,"url":"https://patchlabs.dev/learn/secure-lovable-supabase-app","name":"How to secure a Lovable app’s Supabase database"},{"@type":"ListItem","position":2,"url":"https://patchlabs.dev/learn/rls-policies-explained","name":"Supabase RLS policies explained, with owner and stranger tests"},{"@type":"ListItem","position":3,"url":"https://patchlabs.dev/learn/supabase-views-security-invoker","name":"Supabase views and security_invoker: stop views bypassing RLS"},{"@type":"ListItem","position":4,"url":"https://patchlabs.dev/learn/supabase-storage-policies","name":"Supabase storage bucket policies: public, private and per-user folders"},{"@type":"ListItem","position":5,"url":"https://patchlabs.dev/learn/supabase-realtime-security","name":"Supabase Realtime security: keep private rows out of subscriptions"},{"@type":"ListItem","position":6,"url":"https://patchlabs.dev/learn/user-metadata-vs-app-metadata","name":"user_metadata vs app_metadata: where to store roles in Supabase"},{"@type":"ListItem","position":7,"url":"https://patchlabs.dev/learn/secure-supabase-edge-functions","name":"How to secure Supabase Edge Functions"},{"@type":"ListItem","position":8,"url":"https://patchlabs.dev/learn/stripe-webhook-supabase-edge-function","name":"Verify Stripe webhook signatures in a Supabase Edge Function"},{"@type":"ListItem","position":9,"url":"https://patchlabs.dev/learn/rotate-leaked-key-git-history","name":"How to rotate a leaked API key and clean your git history"},{"@type":"ListItem","position":10,"url":"https://patchlabs.dev/learn/first-hour-after-a-leak","name":"What to do in the first hour after a leak"},{"@type":"ListItem","position":11,"url":"https://patchlabs.dev/learn/vibe-coded-app-security-checklist","name":"Pre-launch security checklist for vibe-coded apps"},{"@type":"ListItem","position":12,"url":"https://patchlabs.dev/learn/firebase-security-rules-basics","name":"Firebase security rules basics: lock down Firestore and Storage"},{"@type":"ListItem","position":13,"url":"https://patchlabs.dev/learn/npm-dependency-vulnerabilities","name":"How to find and fix vulnerable npm dependencies"}]}}</script>
+<link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Learn: securing AI-built apps","url":"https://patchlabs.dev/learn","mainEntity":{"@type":"ItemList","itemListElement":[{"@type":"ListItem","position":1,"url":"https://patchlabs.dev/learn/secure-lovable-supabase-app","name":"How to secure a Lovable app’s Supabase database"},{"@type":"ListItem","position":2,"url":"https://patchlabs.dev/learn/rls-policies-explained","name":"Supabase RLS policies explained, with owner and stranger tests"},{"@type":"ListItem","position":3,"url":"https://patchlabs.dev/learn/supabase-views-security-invoker","name":"Supabase views and security_invoker: stop views bypassing RLS"},{"@type":"ListItem","position":4,"url":"https://patchlabs.dev/learn/supabase-storage-policies","name":"Supabase storage bucket policies: public, private and per-user folders"},{"@type":"ListItem","position":5,"url":"https://patchlabs.dev/learn/supabase-realtime-security","name":"Supabase Realtime security: keep private rows out of subscriptions"},{"@type":"ListItem","position":6,"url":"https://patchlabs.dev/learn/user-metadata-vs-app-metadata","name":"user_metadata vs app_metadata: where to store roles in Supabase"},{"@type":"ListItem","position":7,"url":"https://patchlabs.dev/learn/secure-supabase-edge-functions","name":"How to secure Supabase Edge Functions"},{"@type":"ListItem","position":8,"url":"https://patchlabs.dev/learn/stripe-webhook-supabase-edge-function","name":"Verify Stripe webhook signatures in a Supabase Edge Function"},{"@type":"ListItem","position":9,"url":"https://patchlabs.dev/learn/rotate-leaked-key-git-history","name":"How to rotate a leaked API key and clean your git history"},{"@type":"ListItem","position":10,"url":"https://patchlabs.dev/learn/first-hour-after-a-leak","name":"What to do in the first hour after a leak"},{"@type":"ListItem","position":11,"url":"https://patchlabs.dev/learn/vibe-coded-app-security-checklist","name":"Pre-launch security checklist for vibe-coded apps"},{"@type":"ListItem","position":12,"url":"https://patchlabs.dev/learn/firebase-security-rules-basics","name":"Firebase security rules basics: lock down Firestore and Storage"},{"@type":"ListItem","position":13,"url":"https://patchlabs.dev/learn/security-headers-ai-built-apps","name":"Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)"},{"@type":"ListItem","position":14,"url":"https://patchlabs.dev/learn/npm-dependency-vulnerabilities","name":"How to find and fix vulnerable npm dependencies"}]}}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -50,6 +52,7 @@
               <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
               <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
               <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
             </div>
           </div>
           <div class="mega-side">
@@ -99,7 +102,7 @@
               <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
               <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
               <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
-              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
               <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
               <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
             </div>
@@ -130,7 +133,7 @@
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Learn</li></ol></nav>
       <p class="lab">Learn</p>
       <h1>Secure the app you built with AI.</h1>
-      <p class="lede">13 in-depth guides for founders and the engineers who approve their changes. Each one answers a real question, shows code you can run against your own project, and links to the checks behind it. No sign-up.</p>
+      <p class="lede">14 in-depth guides for founders and the engineers who approve their changes. Each one answers a real question, shows code you can run against your own project, and links to the checks behind it. No sign-up.</p>
       <ul class="jump mt-3" aria-label="Topics"><li><a href="#supabase">Supabase database</a></li><li><a href="#server">Auth and server code</a></li><li><a href="#keys">Keys and incidents</a></li><li><a href="#launch">Launch and other stacks</a></li></ul>
     </div>
   </section>
@@ -150,8 +153,8 @@
         <div class="grid g3"><a class="card link l-card" href="/learn/rotate-leaked-key-git-history"><span class="n-big">4 MIN READ</span><h3>How to rotate a leaked API key and clean your git history</h3><p class="small">Why deleting the key isn’t enough, the order that works, and git filter-repo step by step.</p></a><a class="card link l-card" href="/learn/first-hour-after-a-leak"><span class="n-big">4 MIN READ</span><h3>What to do in the first hour after a leak</h3><p class="small">A calm, ordered runbook: contain, keep the evidence, check for access, decide who to tell.</p></a></div>
       </div>
       <div class="l-topic" id="launch">
-        <div class="l-topic-head"><p class="lab">Launch and other stacks</p><p class="muted small">A pre-launch checklist, Firebase rules and npm dependencies.</p></div>
-        <div class="grid g3"><a class="card link l-card" href="/learn/vibe-coded-app-security-checklist"><span class="n-big">4 MIN READ</span><h3>Pre-launch security checklist for vibe-coded apps</h3><p class="small">Everything to check before real users arrive, in order, each item linked to a self-check and a fix.</p></a><a class="card link l-card" href="/learn/firebase-security-rules-basics"><span class="n-big">4 MIN READ</span><h3>Firebase security rules basics: lock down Firestore and Storage</h3><p class="small">Why test-mode rules leak, owner-only rules to copy, and emulator tests as visitor, stranger and owner.</p></a><a class="card link l-card" href="/learn/npm-dependency-vulnerabilities"><span class="n-big">4 MIN READ</span><h3>How to find and fix vulnerable npm dependencies</h3><p class="small">npm audit and OSV, deciding which advisories matter, and fixing them with upgrades and overrides.</p></a></div>
+        <div class="l-topic-head"><p class="lab">Launch and other stacks</p><p class="muted small">A pre-launch checklist, security headers, Firebase rules and npm dependencies.</p></div>
+        <div class="grid g3"><a class="card link l-card" href="/learn/vibe-coded-app-security-checklist"><span class="n-big">4 MIN READ</span><h3>Pre-launch security checklist for vibe-coded apps</h3><p class="small">Everything to check before real users arrive, in order, each item linked to a self-check and a fix.</p></a><a class="card link l-card" href="/learn/firebase-security-rules-basics"><span class="n-big">4 MIN READ</span><h3>Firebase security rules basics: lock down Firestore and Storage</h3><p class="small">Why test-mode rules leak, owner-only rules to copy, and emulator tests as visitor, stranger and owner.</p></a><a class="card link l-card" href="/learn/security-headers-ai-built-apps"><span class="n-big">6 MIN READ</span><h3>Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</h3><p class="small">Six response headers, a copy-paste starter set for Vercel, Netlify, Cloudflare and Lovable, and how to test it.</p></a><a class="card link l-card" href="/learn/npm-dependency-vulnerabilities"><span class="n-big">4 MIN READ</span><h3>How to find and fix vulnerable npm dependencies</h3><p class="small">npm audit and OSV, deciding which advisories matter, and fixing them with upgrades and overrides.</p></a></div>
       </div>
     </div>
   </section>
@@ -220,6 +223,7 @@
         <li><a href="/product/code">Code</a></li>
         <li><a href="/product/fix">Fix</a></li>
         <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
         <li><a href="/demo">Try the demo</a></li>
         <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
@@ -253,6 +257,7 @@
         <li><a href="/docs/webhooks">Webhooks</a></li>
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

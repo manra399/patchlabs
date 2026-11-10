@@ -197,6 +197,8 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 .mega-item b { display: block; color: var(--ink); font-weight: 620; font-size: 15px; margin-bottom: 2px; }
 .mega-item .t > span { display: block; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
 .mega-item.urgent b { color: var(--red); }
+.mega-item.wide { grid-column: 1 / -1; }   /* a full-width item under a 2-column grid (Live posture, under Watch) */
+.mega-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border: 1px solid var(--line-2); border-radius: 999px; font: 500 10.5px/1.6 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); vertical-align: 2px; }
 .mega-side { background: var(--bg-2); border-left: 1px solid var(--line); padding: 18px 16px; }
 .mega-side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .mega-side a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: 14.5px; font-weight: 500; }
@@ -342,7 +344,7 @@ main:has(.cta-panel) ~ .site-footer .foot-cta { display: none; }  /* page alread
 .repo-form .in { position: relative; display: flex; align-items: center; }
 .repo-form .in svg { position: absolute; left: 12px; width: 17px; height: 17px; color: var(--muted); pointer-events: none; }
 .repo-form input { width: 100%; min-height: 48px; border: 0; background: transparent; color: var(--ink); padding: 0 12px 0 38px; font: 400 15.5px var(--sans); border-radius: 9px; }
-.repo-form input[name="repo"] { font-family: var(--mono); font-size: 14.5px; }
+.repo-form input[name="repo"], .repo-form input[name="url"] { font-family: var(--mono); font-size: 14.5px; }
 .repo-form .in:not(:has(svg)) input { padding-left: 14px; }  /* no leading icon: no icon gap */
 .repo-form input:focus { outline: none; background: var(--bg-2); }
 .repo-form .in + .in { border-left: 1px solid var(--line); }
@@ -354,6 +356,10 @@ main:has(.cta-panel) ~ .site-footer .foot-cta { display: none; }  /* page alread
   .repo-form { grid-template-columns: minmax(0, 1fr); }
   .repo-form .in + .in { border-left: 0; border-top: 1px solid var(--line); }
 }
+
+/* Single-field variant (one input + button): the free tools, the headers-check forms on /findings, /learn and /product */
+.repo-form.one { grid-template-columns: minmax(0, 1fr) auto; max-width: 640px; }
+@media (max-width: 760px) { .repo-form.one { grid-template-columns: minmax(0, 1fr); } }
 
 /* Stacked variant: repo on its own row, then email + button */
 .repo-form.stacked { grid-template-columns: minmax(0, 1fr) auto; }

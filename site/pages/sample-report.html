@@ -61,7 +61,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
         <div class="sum-card green"><span class="k">Lab proof</span><b class="num">3<small>of 3</small></b><p>anon denied, stranger denied, owner OK</p></div>
         <div class="sum-card"><span class="k">Exposed keys</span><b class="num">0</b><p>in the code and its full git history</p></div>
         <div class="sum-card"><span class="k">Risk of a visible change</span><b>Low</b><p>the app only reads each user’s own profile</p></div>
-        <div class="sum-card"><span class="k">Fix written in</span><b class="num">36<small>s</small></b><p>smallest model, first attempt, $0.11 model cost</p></div>
+        <div class="sum-card"><span class="k">Fix written in</span><b class="num">36<small>s</small></b><p>smallest model, first attempt</p></div>
       </div>
 
       <h3 class="h4 mt-4 mb-2">Timeline (UTC, 9 Nov 2026)</h3>
@@ -89,7 +89,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
           <tr><th scope="row">Write access (insert, update, delete)</th><td><span class="pill neutral">not tested</span></td><td class="why">This check tests who can read. The <a href="/tools/rls-check">free RLS check</a> flags risky write rules in the SQL.</td></tr>
           <tr><th scope="row">Storage buckets</th><td><span class="pill neutral">not covered</span></td><td class="why">Not part of this check. (This demo creates no buckets.)</td></tr>
           <tr><th scope="row">Edge functions</th><td><span class="pill neutral">not covered</span></td><td class="why">Function code isn’t run or analysed.</td></tr>
-          <tr><th scope="row">Your live app and database</th><td><span class="pill plain">never</span></td><td class="why">By design. We work from the GitHub repo only and never connect to the live app or its database.</td></tr>
+          <tr><th scope="row">Your live app and database</th><td><span class="pill plain">never</span></td><td class="why">By design. A check works from the GitHub repo only and never connects to the live app or its database. Live posture, a separate opt-in, reads only the public home page of a verified domain.</td></tr>
         </tbody>
       </table></div>
       <div class="callout limit mt-3"><p><strong>What “proven” means here.</strong> The proof covers the read access we tested, on the database these migrations build. Changes made only in the Supabase dashboard aren’t in the repo, so the lab can’t see them. It is not a guarantee that the whole app is secure.</p></div>
@@ -444,7 +444,7 @@ print("receipt is genuine:", r["receipt"]["status"], r["receipt"]["tables_leakin
         <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
       </form>
       <p class="err" role="alert" data-err></p>
-      <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span><span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
+      <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span><span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
     </div>
   </div>
 </section>

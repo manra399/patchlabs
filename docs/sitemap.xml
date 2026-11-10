@@ -53,6 +53,16 @@
   <url><loc>https://patchlabs.dev/findings/pl-024</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/findings/pl-025</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/findings/pl-026</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-027</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-028</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-029</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-030</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-031</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-032</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-033</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-034</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-035</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/findings/pl-036</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/for/bolt</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/for/cursor</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/for/lovable</loc><lastmod>2026-11-10</lastmod></url>
@@ -69,6 +79,7 @@
   <url><loc>https://patchlabs.dev/learn/rotate-leaked-key-git-history</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/secure-lovable-supabase-app</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/secure-supabase-edge-functions</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/security-headers-ai-built-apps</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/stripe-webhook-supabase-edge-function</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/supabase-realtime-security</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/supabase-storage-policies</loc><lastmod>2026-11-10</lastmod></url>
@@ -85,6 +96,7 @@
   <url><loc>https://patchlabs.dev/product/code</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/product/fix</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/product/lab</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/product/live-posture</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/product/watch</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/proof</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/research/1-in-4</loc><lastmod>2026-11-10</lastmod></url>
@@ -96,6 +108,7 @@
   <url><loc>https://patchlabs.dev/solutions/founders</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/status</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://patchlabs.dev/tools/headers-check</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/leak-cost</loc><lastmod>2026-11-10</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/rls-check</loc><lastmod>2026-11-10</lastmod></url>
 </urlset>

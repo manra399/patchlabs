@@ -2,22 +2,24 @@
 <html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Finding index: every issue PatchLabs Lab and Code test for | PatchLabs</title>
-<meta name="description" content="Stable IDs for the database, key and code problems PatchLabs finds in AI-built apps, each with example code, a self-check, the fix and how it is proven. Live and coming checks marked.">
+<title>Finding index: every issue PatchLabs Lab, Code and Live posture check | PatchLabs</title>
+<meta name="description" content="Stable IDs for the database, code, HTTPS and header problems PatchLabs finds in AI-built apps, each with an example, a self-check, the fix and how it is found.">
 <link rel="canonical" href="https://patchlabs.dev/findings/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
-<meta property="og:title" content="Finding index: every issue PatchLabs Lab and Code test for | PatchLabs">
-<meta property="og:description" content="Stable IDs for the database, key and code problems PatchLabs finds in AI-built apps, each with example code, a self-check, the fix and how it is proven. Live and coming checks marked.">
+<meta property="og:title" content="Finding index: every issue PatchLabs Lab, Code and Live posture check | PatchLabs">
+<meta property="og:description" content="Stable IDs for the database, code, HTTPS and header problems PatchLabs finds in AI-built apps, each with an example, a self-check, the fix and how it is found.">
 <meta property="og:url" content="https://patchlabs.dev/findings/">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Finding index: every issue PatchLabs Lab and Code test for | PatchLabs">
-<meta name="twitter:description" content="Stable IDs for the database, key and code problems PatchLabs finds in AI-built apps, each with example code, a self-check, the fix and how it is proven. Live and coming checks marked.">
+<meta name="twitter:title" content="Finding index: every issue PatchLabs Lab, Code and Live posture check | PatchLabs">
+<meta name="twitter:description" content="Stable IDs for the database, code, HTTPS and header problems PatchLabs finds in AI-built apps, each with an example, a self-check, the fix and how it is found.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -50,6 +52,7 @@
               <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
               <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
               <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
             </div>
           </div>
           <div class="mega-side">
@@ -99,7 +102,7 @@
               <a class="mega-item small" href="/findings" aria-current="page"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
               <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
               <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
-              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
               <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
               <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
             </div>
@@ -130,7 +133,7 @@
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
       <p class="lab">Finding index</p>
       <h1>Every problem we test for, with the fix and the proof.</h1>
-      <p class="lede">21 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, and 13 that PatchLabs Code finds by reading your repo. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
+      <p class="lede">31 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, 13 that PatchLabs Code finds by reading your repo, and 10 that Live posture reads from your public home page on a domain you verify. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
       <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/learn">Read the guides</a></div>
     </div>
   </section>
@@ -143,6 +146,7 @@
           <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
           <button type="button" class="f-chipbtn" data-filter="lab" aria-pressed="false">Lab</button>
           <button type="button" class="f-chipbtn" data-filter="code" aria-pressed="false">Code</button>
+          <button type="button" class="f-chipbtn" data-filter="live" aria-pressed="false">Live</button>
         </div>
         <div class="f-fgroup" data-filter-group="sev"><span class="f-flabel">Severity</span>
           <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
@@ -150,6 +154,7 @@
           <button type="button" class="f-chipbtn" data-filter="high" aria-pressed="false">High</button>
           <button type="button" class="f-chipbtn" data-filter="medium" aria-pressed="false">Medium</button>
           <button type="button" class="f-chipbtn" data-filter="low" aria-pressed="false">Low</button>
+          <button type="button" class="f-chipbtn" data-filter="info" aria-pressed="false">Info</button>
           <button type="button" class="f-chipbtn" data-filter="advisory" aria-pressed="false">Advisory</button>
         </div>
         <div class="f-fgroup" data-filter-group="status"><span class="f-flabel">Status</span>
@@ -157,7 +162,7 @@
           <button type="button" class="f-chipbtn" data-filter="live" aria-pressed="false">Live</button>
           <button type="button" class="f-chipbtn" data-filter="coming" aria-pressed="false">Coming</button>
         </div>
-        <p class="f-count" aria-live="polite"><span id="f-shown">26</span> of 26 shown</p>
+        <p class="f-count" aria-live="polite"><span id="f-shown">36</span> of 36 shown</p>
       </div>
       <div class="f-group">
         <p class="lab red">Live · PatchLabs Lab · who can read what in your database</p>
@@ -188,6 +193,21 @@
       <a class="f-row" href="/findings/pl-024" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-024</span><div><h3>User content rendered as raw HTML</h3><p>Text one user wrote goes into the page as HTML, so it can run scripts in other users' browsers.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · frontend</span><span class="go" aria-hidden="true">→</span></a>
       <a class="f-row" href="/findings/pl-025" data-line="code" data-sev="critical" data-status="live"><span class="fid">PL-025</span><div><h3>Firebase rules allow anyone</h3><p>Your Firestore, Realtime Database or Storage rules say yes to everyone, or do until a test-mode date.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Code · Firebase rules</span><span class="go" aria-hidden="true">→</span></a>
       <a class="f-row" href="/findings/pl-026" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-026</span><div><h3>Any website can call a signed-in function</h3><p>The endpoint tells browsers that any website may send your users' cookies to it and read the answer.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · CORS headers</span><span class="go" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="f-group">
+        <p class="lab">Live · PatchLabs Live posture · HTTPS and headers on your verified domain</p>
+        <div class="f-index">
+      <a class="f-row" href="/findings/pl-027" data-line="live" data-sev="medium" data-status="live"><span class="fid">PL-027</span><div><h3>Site doesn’t force HTTPS</h3><p>The plain http:// address of your site serves the page instead of redirecting to https://.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Live · HTTPS redirect</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-028" data-line="live" data-sev="high" data-status="live"><span class="fid">PL-028</span><div><h3>TLS certificate is invalid, expired or expires within 21 days</h3><p>Browsers will block your site, or soon will, because its HTTPS certificate doesn’t check out.</p></div><span class="sevcell"><span class="pill sev-high">high or medium</span></span><span class="where">Live · certificate</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-029" data-line="live" data-sev="low" data-status="live"><span class="fid">PL-029</span><div><h3>No HSTS header, or max-age under 180 days</h3><p>Browsers aren’t told to use HTTPS only, so a visitor’s first request can still go out over plain HTTP.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-030" data-line="live" data-sev="medium" data-status="live"><span class="fid">PL-030</span><div><h3>No Content-Security-Policy</h3><p>Your page sends no Content-Security-Policy, so any script that gets onto it can run and send data anywhere.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-031" data-line="live" data-sev="low" data-status="live"><span class="fid">PL-031</span><div><h3>Any site can frame the page</h3><p>Neither frame-ancestors nor X-Frame-Options is set, so another site can load your app invisibly inside its own.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-032" data-line="live" data-sev="low" data-status="live"><span class="fid">PL-032</span><div><h3>No X-Content-Type-Options: nosniff</h3><p>Browsers may guess a file’s type from its contents, so an uploaded “image” can be run as a script or page.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-033" data-line="live" data-sev="medium" data-status="live"><span class="fid">PL-033</span><div><h3>Cookie set without Secure, or a session cookie without HttpOnly</h3><p>Your home page sets a cookie that can travel over plain HTTP, or a session cookie that any script on the page can read.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Live · cookies</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-034" data-line="live" data-sev="medium" data-status="live"><span class="fid">PL-034</span><div><h3>Page loads scripts or styles over plain HTTP</h3><p>Your HTTPS page pulls a script or stylesheet from an http:// address, which anyone on the network can replace.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Live · page HTML</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-035" data-line="live" data-sev="info" data-status="live"><span class="fid">PL-035</span><div><h3>Server headers reveal software versions</h3><p>A Server or X-Powered-By header names the software and its version, which tells attackers which known bugs to try.</p></div><span class="sevcell"><span class="pill sev-low">info</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-036" data-line="live" data-sev="info" data-status="live"><span class="fid">PL-036</span><div><h3>No Referrer-Policy</h3><p>Your page sends no Referrer-Policy, so the browser’s default decides how much of your URLs other sites see.</p></div><span class="sevcell"><span class="pill sev-low">info</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
         </div>
       </div>
       <div class="f-group f-group-coming">
@@ -221,6 +241,7 @@
             <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, a privileged function or webhook is open, or a user can act on another user's data.</td></tr>
             <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter, such as a public bucket, unsanitised HTML or a loose CORS rule.</td></tr>
             <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed by itself, but the app is likely broken or other findings get easier to exploit.</td></tr>
+            <tr><th scope="row"><span class="pill sev-low">info</span></th><td>Nothing exposed and nothing to exploit: a one-line hardening step. Costs no points in the Live posture grade.</td></tr>
           </tbody>
         </table>
       </div>
@@ -231,10 +252,10 @@
     <div class="wrap">
       <div class="sec-head">
         <p class="lab">How a finding reaches you</p>
-        <h2 id="how-h">Data you watched leak, or code you can point at.</h2>
-        <p>Every finding in a report uses these IDs and the same shape: severity, the object, the file and line, short evidence, and how it was proven.</p>
+        <h2 id="how-h">Data you watched leak, code you can point at, or a header you can read.</h2>
+        <p>Every finding in a report uses these IDs and the same shape: severity, the object, the file and line or the address, short evidence, and how it was found.</p>
       </div>
-      <div class="grid g3">
+      <div class="grid g4">
         <div class="card green-edge">
           <span class="n-big">LAB · PROVEN</span>
           <h3>PatchLabs Lab</h3>
@@ -248,9 +269,15 @@
           <div class="card-foot"><a class="link-arrow" href="/product/code">PatchLabs Code</a></div>
         </div>
         <div class="card">
+          <span class="n-big">LIVE · YOUR HOME PAGE</span>
+          <h3>Live posture</h3>
+          <p>On a domain you verify, loads your public home page like any visitor and reads the response: HTTPS, the certificate, security headers, cookie flags and mixed content. Never your database.</p>
+          <div class="card-foot"><a class="link-arrow" href="/product/live-posture">Live posture</a></div>
+        </div>
+        <div class="card">
           <span class="n-big">FREE · NO SIGN-UP</span>
           <h3>Static RLS check</h3>
-          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. Fast, and honest about its limit: it can't tell whether a public read is intended.</p>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. The free <a href="/tools/headers-check">headers check</a> does the same for PL-027 to PL-036 on any address.</p>
           <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
         </div>
       </div>
@@ -309,7 +336,7 @@
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+        <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span></div>
       </div>
     </div>
   </section>
@@ -367,6 +394,7 @@
         <li><a href="/product/code">Code</a></li>
         <li><a href="/product/fix">Fix</a></li>
         <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
         <li><a href="/demo">Try the demo</a></li>
         <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
@@ -400,6 +428,7 @@
         <li><a href="/docs/webhooks">Webhooks</a></li>
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

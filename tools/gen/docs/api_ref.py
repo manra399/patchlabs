@@ -215,7 +215,7 @@ ep("POST", "/workspaces/{wid}/apps", "Session · owner/admin", "Add an app. It s
 ep("POST", "/apps/{aid}/verify", "Session · owner/admin", "Check the verification file. On success the app is verified for good and its first check is queued.", None,
    f"curl -s -X POST {B}/apps/$APP_ID/verify {SESSION}", '200 OK\n{"verified": true, "check_id": "…"}',
    [("409", "file or code not found yet"), ("503", "GitHub unreachable")])
-ep("GET", "/apps/{aid}", "Session · any role", "The app, its latest 50 checks, the diff between its last two finished checks, and its findings: <code>open</code> (in the latest finished check, worst first) and recently <code>fixed</code>, each with CWE/OWASP tags, <code>first_seen</code>, <code>days_open</code> and, once fixed, <code>fixed_at</code>. A finding is matched across checks by its <code>id</code> and <code>object</code>. Model costs are never included.", None,
+ep("GET", "/apps/{aid}", "Session · any role", "The app, its latest 50 checks, its <code>live</code> posture (see <a href=\"#live\">Live posture</a>), the diff between its last two finished checks, and its findings: <code>open</code> (in the latest finished check, worst first) and recently <code>fixed</code>, each with CWE/OWASP tags, <code>first_seen</code>, <code>days_open</code> and, once fixed, <code>fixed_at</code>. A finding is matched across checks by its <code>id</code> and <code>object</code>. Model costs are never included.", None,
    f"curl -s {B}/apps/$APP_ID {SESSION}",
    """200 OK
 {"id": "…", "repo": "you/your-app", …,
@@ -237,6 +237,49 @@ ep("POST", "/apps/{aid}/checks", "Session · member+", "Run a check now (trigger
    f"curl -s -X POST {B}/apps/$APP_ID/checks {SESSION}",
    '201 Created\n{"check_id": "…", "status": "queued", "url": "https://patchlabs.dev/check?id=…"}',
    [("409", "not verified, or a check is already queued or running"), ("429", "monthly run limit reached")])
+
+group("live", "Live posture", "Passive checks of the app’s live domain, once the team proves it controls it: one plain <code>http://</code> request (to see the redirect), one <code>https://</code> load of the home page (at most 5 redirects) and that load’s TLS handshake. Nothing else: no other paths, no forms, no API calls, never the database. <code>GET /apps/{aid}</code> carries <code>live</code> (below); <code>GET /workspaces/{wid}/apps</code> carries the same with <code>last</code> cut to <code>{grade, score, checked_at, counts}</code>. Product page: <a href=\"/product/live-posture\">Live posture</a>; finding IDs PL-027 to PL-036.")
+ep("PUT", "/apps/{aid}/live", "Session · owner/admin", "Set or change the app’s domain. A new domain gets a new live code (<code>patchlabs-live-</code> plus 16 hex characters, separate from the repo code), starts unverified and drops the old domain’s history. Setting the same domain again changes nothing.",
+   [("url", "string", "An <code>https://</code> address with a host name (not an IP address or a private name). Any path is dropped.")],
+   f"""curl -s -X PUT {B}/apps/$APP_ID/live {SESSION} {JSONH} -d '{{"url": "https://app.example.com"}}'""",
+   """200 OK
+{"url": "https://app.example.com", "verified": false, "verified_at": null, "next_check_at": null,
+ "verify": {"file": "patchlabs-verify.txt", "file_url": "https://app.example.com/patchlabs-verify.txt",
+            "code": "patchlabs-live-3f9c2a17d04be6a1",
+            "meta": "<meta name=\"patchlabs-verify\" content=\"patchlabs-live-3f9c2a17d04be6a1\">"},
+ "last": null}
+# url is null when no domain is set (then verify and last are null); verify is present only while unverified""",
+   [("403", "not an owner or admin"), ("422", "a bad address, with a sentence saying why")])
+ep("DELETE", "/apps/{aid}/live", "Session · owner/admin", "Remove the domain and its whole posture history. The site itself isn’t touched.", None,
+   f"curl -s -X DELETE {B}/apps/$APP_ID/live {SESSION}", '200 OK\n{"ok": true}')
+ep("POST", "/apps/{aid}/live/verify", "Session · owner/admin", "Look for the code: a file at <code>https://&lt;domain&gt;/patchlabs-verify.txt</code> whose whole content is the code, or <code>&lt;meta name=\"patchlabs-verify\" content=\"…\"&gt;</code> in the home page’s HTML. Redirects must stay on the same host (or its <code>www</code> twin). On success the first check runs at once; if that page load fails, the domain is still verified and <code>posture</code> is null with a <code>detail</code> sentence.", None,
+   f"curl -s -X POST {B}/apps/$APP_ID/live/verify {SESSION}",
+   '200 OK\n{"verified": true, "posture": {…posture result, trigger "verify"…}}',
+   [("409", "no domain set, or the file and meta tag weren’t found (with a sentence)")])
+ep("POST", "/apps/{aid}/live/checks", "Session · member+", "Re-check now (trigger <code>manual</code>). Scheduled re-checks run daily while the app’s schedule isn’t <code>off</code>. An email and the workspace webhook (<code>event: \"posture.changed\"</code>) go out when the grade drops or a finding appears.", None,
+   f"curl -s -X POST {B}/apps/$APP_ID/live/checks {SESSION}",
+   """201 Created
+{"id": "…", "url": "https://app.example.com", "final_url": "https://app.example.com/",
+ "grade": "C", "score": 65, "checked_at": "…", "trigger": "manual",
+ "counts": {"critical": 0, "high": 0, "medium": 2, "low": 1, "info": 0},
+ "findings": [{"id": "PL-030", "line": "live", "severity": "medium", "title": "No Content-Security-Policy",
+               "object": "https://app.example.com", "evidence": "The page sends no Content-Security-Policy header or meta tag.",
+               "fix": "Send a Content-Security-Policy that lists where scripts may load from (start with default-src 'self').",
+               "cwe": ["CWE-693"], "owasp": "A05:2021", "owasp_name": "Security Misconfiguration"}],
+ "passed": [{"id": "PL-027", "title": "HTTPS is forced"}, …],
+ "facts": {"status": 200, "redirects": ["https://app.example.com/"], "https_redirect": true, "https_preloaded_tld": false,
+           "tls": {"version": "TLSv1.3", "issuer": "Let's Encrypt", "expires": "2027-01-05", "days_left": 56},
+           "headers": {"strict-transport-security": "max-age=63072000", "content-security-policy": null, …},
+           "cookies": [{"name": "sb-session", "secure": true, "httponly": true, "samesite": "Lax"}],
+           "server": "cloudflare"}}""",
+   [("409", "domain not verified"), ("429", "checked in the last 10 minutes"), ("502", "the page couldn’t be loaded")],
+   extra="GRADE")
+ep("GET", "/apps/{aid}/live/checks", "Session · any role", "The domain’s posture history, newest first, at most 30.", None,
+   f"curl -s {B}/apps/$APP_ID/live/checks {SESSION}",
+   """200 OK
+{"checks": [{"id": "…", "grade": "C", "score": 65, "counts": {"critical": 0, "high": 0, "medium": 2, "low": 1, "info": 0},
+             "trigger": "scheduled", "checked_at": "…"}]}
+# trigger: verify | scheduled | manual""")
 
 group("support", "Support tickets", "Tickets belong to a workspace: its team sees them and our replies, nobody else does; viewers read but can’t write. A client sees and writes only tickets about apps shared with them, must give <code>app_id</code> (one of their apps) when raising one, and sees teammates’ emails masked. The app’s <a href=\"/app/support\">support page</a> uses these calls. We reply within a day.")
 ep("GET", "/workspaces/{wid}/support/tickets", "Session · any role", "The workspace’s tickets, most recently updated first, with a count per status.",
@@ -288,9 +331,11 @@ ep("GET", "/v1/checks/{cid}", "API key", "Status and summary of a check on one o
 group("public", "Public", "No authentication, safe to call from anywhere.")
 ep("GET", "/badge/{aid}.svg", "No auth", "The app’s badge as SVG. Shows the status only when the app’s badge is public, otherwise “private”. When the last finished check is older than twice the app’s schedule (14 days weekly, 60 monthly, 45 without a schedule) it shows a grey “last checked N days ago” instead of a status. Cached for an hour. Guide: <a href=\"/docs/badge\">badge</a>.", None,
    f"curl -s {B}/badge/$APP_ID.svg -o badge.svg")
-ep("GET", "/public/apps/{aid}", "No auth", "Repo, status, last-checked date and freshness, only when the badge is public. A stale result is reported as <code>stale</code>, never as its old status.", None,
+ep("GET", "/badge/{aid}/live.svg", "No auth", "The app’s Live posture badge: “live posture · B · 10 Nov 2026”, the grade and the day of the last check. It reads “private” unless the app’s badge is public and its domain is verified. Cached for an hour.", None,
+   f"curl -s {B}/badge/$APP_ID/live.svg -o live.svg")
+ep("GET", "/public/apps/{aid}", "No auth", "Repo, status, last-checked date and freshness, only when the badge is public. A stale result is reported as <code>stale</code>, never as its old status. <code>live</code> is the latest posture grade when the domain is verified, otherwise null.", None,
    f"curl -s {B}/public/apps/$APP_ID",
-   '200 OK\n{"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "…",\n "stale": false, "days_since_check": 3, "stale_after_days": 60}\n# status: no_known_leaks | fix_in_progress | not_checked_yet | stale',
+   '200 OK\n{"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "…",\n "stale": false, "days_since_check": 3, "stale_after_days": 60,\n "live": {"grade": "B", "checked_at": "…"}}\n# status: no_known_leaks | fix_in_progress | not_checked_yet | stale',
    [("404", "badge not public")])
 ep("GET", "/taxonomy/findings", "No auth", "The CWE and OWASP Top 10 (2021) tags for every finding ID, with their names.", None,
    f"curl -s {B}/taxonomy/findings",
@@ -301,7 +346,7 @@ ep("GET", "/stats", "No auth", "Live totals across PatchLabs.", None, f"curl -s 
 ep("GET", "/health", "No auth", "Whether the API and database are up, when the lab worker last checked in, and how many checks are queued.", None,
    f"curl -s {B}/health", '200 OK\n{"ok": true, "db": "ok", "worker_last_seen": "…", "queued": <int>}', extra="TRY:GET:/health")
 
-group("tools", "Free RLS check", "Static analysis of a repo’s migrations, no sign-up. The web version is at <a href=\"/tools/rls-check\">/tools/rls-check</a>.")
+group("tools", "Free tools", "No sign-up. The RLS check reads a repo’s migrations (web version: <a href=\"/tools/rls-check\">/tools/rls-check</a>); the headers check loads one public page (web version: <a href=\"/tools/headers-check\">/tools/headers-check</a>).")
 ep("POST", "/tools/rls-check", "No auth", "Reads <code>supabase/migrations/*.sql</code> on the default branch, pinned to its head commit, in filename order (at most 60 files and 2 MB; <code>truncated</code> says when it stopped early). Only tables in the <code>public</code> schema are analysed. Results are cached for 10 minutes per repo and commit.",
    [("repo", "string", "Public GitHub repo.")],
    f"""curl -s -X POST {B}/tools/rls-check {JSONH} -d '{{"repo": "manra399/patchlabs-demo-app"}}'""",
@@ -315,6 +360,16 @@ ep("POST", "/tools/rls-check", "No auth", "Reads <code>supabase/migrations/*.sql
  "limits": "static analysis only; the full check proves it in the lab"}""",
    [("422", "not a GitHub repo"), ("429", "20 requests an hour from this network (failed lookups count)"), ("503", "GitHub unreachable")],
    extra="TRY:POST:/tools/rls-check:{\"repo\": \"manra399/patchlabs-demo-app\"}|FINDINGS")
+ep("POST", "/tools/headers-check", "No auth", "The Live posture check for any public address: one plain <code>http://</code> request, one <code>https://</code> load of the home page (at most 5 redirects) and its TLS handshake. Returns the posture result (as above, without <code>id</code> or <code>trigger</code>). Nothing is stored except the host name and a hashed network address for the hourly limit.",
+   [("url", "string", "An <code>https://</code> or <code>http://</code> address with a public host name. Any path is dropped: the home page is what’s checked.")],
+   f"""curl -s -X POST {B}/tools/headers-check {JSONH} -d '{{"url": "https://patchlabs.dev"}}'""",
+   """200 OK
+{"url": "https://patchlabs.dev", "final_url": "https://patchlabs.dev/", "grade": "B", "score": 75, "checked_at": "…",
+ "counts": {"critical": 0, "high": 0, "medium": 1, "low": 2, "info": 1},
+ "findings": [{"id": "PL-030", "severity": "medium", "title": "No Content-Security-Policy", …}, …],
+ "passed": [{"id": "PL-027", "title": "HTTPS is forced"}, …], "facts": {…}}""",
+   [("422", "a bad or private address, with a sentence"), ("429", "10 requests an hour from this network"), ("502", "the page couldn’t be loaded, with a sentence")],
+   extra="TRY:POST:/tools/headers-check:{\"url\": \"https://patchlabs.dev\"}")
 
 group("mcp", "MCP", "")
 ep("POST", "/mcp", "No auth · API key for app tools", "A remote MCP server: JSON-RPC 2.0 over Streamable HTTP, stateless, plain JSON responses. Tools <code>rls_check</code>, <code>start_check</code>, <code>get_check</code>, and with <code>X-API-Key</code>, <code>list_apps</code> and <code>run_check</code>. <code>GET /mcp</code> answers 405. Full guide: <a href=\"/docs/mcp\">MCP server</a>.", None,
@@ -367,6 +422,8 @@ def render_ep(e):
         for piece in extra.split("|"):
             if piece.startswith("TRY:"):
                 h.append(try_panel(piece))
+            elif piece == "GRADE":
+                h.append('<p class="small muted mb-1">Grade: score = 100 − 30 per failed high check − 15 per medium − 5 per low (info is free; a check that fails on several cookies costs its points once), floor 0. A ≥ 90, B ≥ 75, C ≥ 60, D ≥ 40, else F. An invalid or expired certificate is always F. On HSTS-preloaded top-level domains (such as <code>.app</code> and <code>.dev</code>) PL-027 and PL-029 pass by default.</p>')
             elif piece == "FINDINGS":
                 h.append('<p class="small muted mb-1" id="finding-ids">Finding IDs, most severe first</p><div class="table-wrap"><table class="table compact"><thead><tr><th scope="col">ID</th><th scope="col">Title</th><th scope="col">What it matches</th></tr></thead><tbody>')
                 h += [f'<tr><th scope="row"><code>{i}</code></th><td>{t}</td><td>{d}</td></tr>' for i, t, d in FINDINGS]

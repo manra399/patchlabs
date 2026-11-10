@@ -32,7 +32,7 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
         <h2>The short version</h2>
         <ul class="ticks">
           <li>No cookies and no third-party analytics on this website.</li>
-          <li>We read your public GitHub repo and test it on a copy. We never connect to your live app or read your customers’ data.</li>
+          <li>We read your public GitHub repo and test it on a copy. We never connect to your database or read your customers’ data. If you turn on Live posture, we load only your public home page, like any visitor, on a domain you verify.</li>
           <li>We keep your email, your reports and your account until you delete them. You can export or delete everything yourself.</li>
           <li>We don’t sell your data and we don’t send marketing emails.</li>
         </ul>
@@ -76,7 +76,8 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
         </ul>
 
         <h2 id="code"><span class="n">03</span>Your code</h2>
-        <p>We read the repository you submit, the same way anyone can read a public repo on GitHub. A working copy is cloned to our worker machine, where we rebuild your database from its migrations in a disposable lab seeded with <strong>fake rows</strong>. We never connect to your live app or database, and we never ask for your database password.</p>
+        <p>We read the repository you submit, the same way anyone can read a public repo on GitHub. A working copy is cloned to our worker machine, where we rebuild your database from its migrations in a disposable lab seeded with <strong>fake rows</strong>. Checks never connect to your live app or database, and we never ask for your database password.</p>
+        <p><strong>Live posture (optional).</strong> For a domain you verify, we load its public home page once a day, the way any visitor’s browser does, and keep the grade, findings, response headers, certificate details and the names and flags of any cookies it sets (not their values), until you remove the domain. The free headers check loads one public page you enter and stores no result; only a hashed network address is kept for rate limiting.</p>
         <p>The relevant parts of your code, migrations and lab results are sent to Anthropic’s Claude models to write the fix and the report. The lab database is deleted as soon as the check finishes; the working copy and run files are deleted within 30 days.</p>
         <p>If your repo itself contains personal data (for example, real emails in a seed file), we process it only as part of the check, and it is covered by the same retention rules.</p>
 

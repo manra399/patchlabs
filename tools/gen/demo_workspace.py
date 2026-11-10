@@ -1,7 +1,9 @@
 """python3 tools/gen/demo_workspace.py  →  writes site/static/demo/workspace.json: the fake demo workspace behind /demo.
 Every GET the app makes maps to one key in "routes". Dates are relative to "anchor"; the page shifts them to now.
 The first app's latest check starts from the real demo-app run (site/static/sample.json) and adds representative
-findings for every finding ID the product ships (PL-001..011, 017..026; PL-012..016 are not shipping yet), all marked demo."""
+findings for every finding ID the product ships (PL-001..011, 017..026; PL-012..016 are not shipping yet), all marked demo.
+Live posture: demo-app-1 has a verified fake domain (demo-app.patchlabs-demo.example) with a daily history, demo-app-2 a domain
+waiting for verification, demo-app-3 none."""
 import ast, copy, datetime as dt, json, os, sys
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -240,6 +242,60 @@ add_app("demo-app-3", "example-org/landing-site", None, "off", True, ago(days=90
     ("demo-chk-3-1", "done", "verify", ago(days=85), pick(["PL-007", "PL-018"]), True, []),
 ], {"new_leaks": [], "fixed": [], "still_leaking": [], "suppressed": []}, None)
 
+# ---- Live posture (LIVE.md): demo-app-1 verified on a fake domain, demo-app-2 waiting for verification, demo-app-3 none.
+# The .example domain can't exist on the internet (the API refuses it), so nothing here points at a real site.
+LIVE_URL = "https://demo-app.patchlabs-demo.example"
+
+
+def lf(fid, sev, title, evidence, fix, obj=LIVE_URL):
+    return {"id": fid, "line": "live", "severity": sev, "title": title, "object": obj, "evidence": evidence, "fix": fix, **TAGS.get(fid, {})}
+
+
+CSP = lf("PL-030", "medium", "No Content-Security-Policy", "The page sends no Content-Security-Policy header or meta tag.",
+         "Send a Content-Security-Policy that lists where scripts may load from (start with default-src 'self').")
+SNIFF = lf("PL-032", "low", "No X-Content-Type-Options: nosniff", "X-Content-Type-Options is missing or isn't nosniff.", "Send X-Content-Type-Options: nosniff")
+COOKIE = lf("PL-033", "medium", "Cookie set without Secure, or a session cookie without HttpOnly", "Cookie sb-demo-auth-token is set without HttpOnly.",
+            "Set cookies with Secure and SameSite=Lax; add HttpOnly to session cookies.", obj="cookie sb-demo-auth-token")
+PASS_TITLES = {"PL-027": "HTTPS is forced", "PL-028": "TLS certificate is valid", "PL-029": "HSTS is on", "PL-030": "Content-Security-Policy is set",
+               "PL-031": "Framing is restricted", "PL-032": "X-Content-Type-Options is nosniff", "PL-033": "Cookies carry Secure (and HttpOnly on sessions)",
+               "PL-034": "No scripts or styles over plain HTTP", "PL-035": "No software versions in headers", "PL-036": "Referrer-Policy is set"}
+PEN = {"high": 30, "medium": 15, "low": 5}
+
+
+def posture(fs, trigger, at, cookies):
+    score = max(0, 100 - sum(PEN.get(x["severity"], 0) for x in {x["id"]: x for x in fs}.values()))
+    grade = next(g for g, floor in (("A", 90), ("B", 75), ("C", 60), ("D", 40), ("F", 0)) if score >= floor)
+    failed = {x["id"] for x in fs}
+    return {"id": f"demo-posture-{at}", "url": LIVE_URL, "final_url": LIVE_URL + "/", "grade": grade, "score": score, "checked_at": at, "trigger": trigger,
+            "counts": counts(fs), "findings": fs, "passed": [{"id": k, "title": v} for k, v in PASS_TITLES.items() if k not in failed],
+            "facts": {"status": 200, "redirects": [LIVE_URL + "/"], "https_redirect": True, "https_preloaded_tld": False,
+                      "tls": {"version": "TLSv1.3", "issuer": "Let's Encrypt", "expires": "2027-01-05", "days_left": 56},
+                      "headers": {"strict-transport-security": "max-age=63072000; includeSubDomains", "content-security-policy": None,
+                                  "content-security-policy-report-only": None, "x-frame-options": "DENY", "x-content-type-options": None,
+                                  "referrer-policy": "strict-origin-when-cross-origin", "permissions-policy": None, "server": "Vercel", "x-powered-by": None},
+                      "cookies": cookies, "server": "Vercel"}}
+
+
+# newest first: the latest daily re-check caught a new session cookie without HttpOnly (B → C)
+LIVE_HIST = [posture([CSP, COOKIE, SNIFF], "scheduled", ago(hours=3), [{"name": "sb-demo-auth-token", "secure": True, "httponly": False, "samesite": "Lax"}])]
+LIVE_HIST += [posture([CSP, SNIFF], "scheduled", ago(days=d, hours=3), []) for d in range(1, 9)]
+LIVE_HIST += [posture([CSP, SNIFF], "verify", ago(days=9, hours=2), [])]
+short = lambda x: {k: x[k] for k in ("grade", "score", "checked_at", "counts")}
+LIVE_1 = {"url": LIVE_URL, "verified": True, "verified_at": ago(days=9, hours=2), "next_check_at": ahead(hours=21), "verify": None, "last": LIVE_HIST[0]}
+CODE_2 = "patchlabs-live-0d3e9a51c7b2f846"
+LIVE_2 = {"url": "https://booking-portal.patchlabs-demo.example", "verified": False, "verified_at": None, "next_check_at": None,
+          "verify": {"file": "patchlabs-verify.txt", "file_url": "https://booking-portal.patchlabs-demo.example/patchlabs-verify.txt", "code": CODE_2,
+                     "meta": f'<meta name="patchlabs-verify" content="{CODE_2}">'}, "last": None}
+LIVE_3 = {"url": None, "verified": False, "verified_at": None, "next_check_at": None, "verify": None, "last": None}
+for _a in apps:
+    _full = {"demo-app-1": LIVE_1, "demo-app-2": LIVE_2}.get(_a["id"], LIVE_3)
+    routes[f"/apps/{_a['id']}"]["live"] = _full
+    _a["live"] = dict(_full, last=short(_full["last"]) if _full["last"] else None)
+routes["/apps/demo-app-1/live/checks"] = {"checks": [{"id": x["id"], "grade": x["grade"], "score": x["score"], "counts": x["counts"],
+                                                      "trigger": x["trigger"], "checked_at": x["checked_at"]} for x in LIVE_HIST]}
+routes["/apps/demo-app-2/live/checks"] = {"checks": []}
+routes["/apps/demo-app-3/live/checks"] = {"checks": []}
+
 routes["/me"] = {"user": {"id": "demo-user", "email": "you@example.test", "name": "Demo user", "created_at": ago(days=75)},
                  "workspaces": [{"id": WS, "name": "Demo workspace", "role": "owner", "plan": "agency"}]}
 ME = "demo-user"
@@ -269,13 +325,15 @@ ACTIONS = ["auth.sign_in", "auth.sign_out", "member.invited", "member.invite_can
            "member.apps_changed", "member.removed", "member.left", "workspace.renamed", "plan.changed", "upgrade.requested", "app.added",
            "app.updated", "app.verified", "app.removed", "check.started", "decision.made", "check.answered", "suppression.added",
            "suppression.removed", "api_key.created", "api_key.revoked", "webhook.created", "webhook.changed", "webhook.deleted",
-           "webhook.secret_rotated", "webhook.tested", "data.exported", "audit.exported", "ticket.raised"]
+           "webhook.secret_rotated", "webhook.tested", "data.exported", "audit.exported", "ticket.raised",
+           "app.live_set", "app.live_verified", "app.live_removed", "posture.checked"]
 U = {m["user_id"]: m for m in MEMBERS}
 def who(uid): return {"kind": "user", "id": uid, "label": U[uid]["name"], "email": U[uid]["email"]}
 def mem(uid): return {"type": "member", "id": uid, "label": U[uid]["name"], "email": U[uid]["email"]}
 def app_t(aid, repo): return {"type": "app", "id": aid, "label": repo, "email": None}
 EVENTS = [  # newest first
     (ago(hours=1), "auth.sign_in", who(ME), None, {}),
+    (ago(hours=2, minutes=57), "posture.checked", {"kind": "system", "id": None, "label": "PatchLabs", "email": None}, app_t("demo-app-1", sample["repo"]), {"url": LIVE_URL, "grade": "C", "trigger": "scheduled"}),
     (ago(hours=3), "check.started", {"kind": "system", "id": None, "label": "PatchLabs", "email": None}, app_t("demo-app-1", sample["repo"]), {"trigger": "scheduled", "app_id": "demo-app-1"}),
     (ago(hours=20), "decision.made", who("demo-m-approver"), {"type": "check", "id": "demo-chk-1-4", "label": sample["repo"], "email": None}, {"action": "approve", "tables": ["profiles", "invoices"]}),
     (ago(days=1), "member.invited", who(ME), {"type": "invite", "id": "demo-inv-1", "label": None, "email": "new.teammate@example.test"}, {"role": "viewer"}),
@@ -285,6 +343,8 @@ EVENTS = [  # newest first
     (ago(days=5), "suppression.added", who(ME), app_t("demo-app-1", sample["repo"]), {"table": "audit_log"}),
     (ago(days=5, hours=1), "suppression.removed", who(ME), app_t("demo-app-1", sample["repo"]), {"table": "audit_log"}),
     (ago(days=8), "check.answered", who("demo-m-approver"), {"type": "check", "id": "demo-chk-1-4", "label": sample["repo"], "email": None}, {}),
+    (ago(days=9, hours=2), "app.live_verified", who(ME), app_t("demo-app-1", sample["repo"]), {"url": LIVE_URL}),
+    (ago(days=9, hours=2, minutes=5), "app.live_set", who(ME), app_t("demo-app-1", sample["repo"]), {"url": LIVE_URL}),
     (ago(days=12), "member.apps_changed", who(ME), mem("demo-m-client"), {"added": ["demo-app-2"], "removed": []}),
     (ago(days=12, hours=1), "member.joined", who("demo-m-client"), mem("demo-m-client"), {"role": "client"}),
     (ago(days=14), "ticket.raised", who("demo-m-approver"), {"type": "ticket", "id": "demo-t-1", "label": "Fix for public.bookings", "email": None}, {"number": 7, "category": "fix", "priority": "normal"}),

@@ -163,3 +163,13 @@
 @media (max-width: 600px) { #main .kv { grid-template-columns: minmax(0, 1fr); gap: 2px 0; } #main .kv dd { margin-bottom: 10px; } }
 #main .split > *, #main .grid > *, #main .hero-grid > * { min-width: 0; }
 @media (max-width: 560px) { #main .tree { font-size: 11.5px; padding: 14px; } }
+
+/* /product/live-posture: the app-panel mock in the hero */
+.lp-mock-head { display: flex; align-items: center; gap: 14px; }
+.lp-mock-grade { display: flex; align-items: baseline; gap: 6px; padding: 8px 14px; border: 1px solid var(--amber-line); background: var(--amber-bg); border-radius: 12px; }
+.lp-mock-grade b { font: 700 34px/1 var(--sans); color: var(--amber); letter-spacing: -.03em; }
+.lp-mock-grade span { font: 600 14px var(--sans); color: var(--ink); } .lp-mock-grade small { color: var(--muted); font-weight: 500; }
+.lp-mock-list { list-style: none; margin: 0; padding: 0; }
+.lp-mock-list li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink); }
+.lp-mock-list li:last-child { border-bottom: 0; }
+.lp-mock-list code { font: 600 11.5px var(--mono); color: var(--muted); white-space: nowrap; }

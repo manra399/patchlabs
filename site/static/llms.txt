@@ -1,10 +1,10 @@
 # PatchLabs
 
-> PatchLabs is a security platform for apps built with AI (Lovable, Supabase, Bolt, Replit, Cursor-exported code), in four product lines. Lab rebuilds the app's database from the repo's own `supabase/migrations` in a disposable lab and tests what an anonymous visitor, a signed-in stranger and the owner can read. Code reads the repo without running it: keys in code and full git history, Edge Functions, payment webhooks, CORS, browser-only admin checks, roles in user_metadata, raw HTML, Firebase rules and vulnerable npm dependencies (OSV). Fix writes a SQL migration and proves it in the lab before anyone ships it. Watch re-checks on a schedule and signs every result. It never connects to the customer's live app or database. The owner's engineer approves every change. Free for one app.
+> PatchLabs is a security platform for apps built with AI (Lovable, Supabase, Bolt, Replit, Cursor-exported code), in four product lines. Lab rebuilds the app's database from the repo's own `supabase/migrations` in a disposable lab and tests what an anonymous visitor, a signed-in stranger and the owner can read. Code reads the repo without running it: keys in code and full git history, Edge Functions, payment webhooks, CORS, browser-only admin checks, roles in user_metadata, raw HTML, Firebase rules and vulnerable npm dependencies (OSV). Fix writes a SQL migration and proves it in the lab before anyone ships it. Watch re-checks on a schedule and signs every result; its opt-in Live posture grades HTTPS, the TLS certificate, security headers, cookie flags and mixed content of the app's public home page, daily, on a domain the team verifies. Lab and Code checks never connect to the customer's live app or database. PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify. The owner's engineer approves every change. Free for one app.
 
 Key facts:
 - Input: a public GitHub repo (private repos need a GitHub App, which is coming). Ownership is proven by committing `patchlabs-verify.txt` with a one-time code.
-- Findings: one format for every result (id, line lab|code, severity, object, file, line_no, evidence, proven, proof, fix, fixed_in_lab). Stable IDs PL-001 to PL-026; PL-012 to PL-016 are documented but not tested yet (coming).
+- Findings: one format for every result (id, line lab|code|live, severity, object, file, line_no, evidence, proven, proof, fix, fixed_in_lab). Stable IDs PL-001 to PL-036; PL-027 to PL-036 are Live posture checks; PL-012 to PL-016 are documented but not tested yet (coming).
 - Output: a report, a downloadable migration plus a one-click "commit this file on GitHub" link (automatic pull requests are coming), and an Ed25519-signed receipt.
 - Lab study (PatchLabs, Nov 2026): 318 public Lovable/Supabase repos rebuilt; 106 of 318 (33%) let the wrong people read personal data; about 1 in 4 (25-28%) after removing businesses' own public contact details. Autonomous fixes: 18 of 20 passed the strict lab proof with no human (n=20, 9 Nov 2026); median 3.5 minutes per app.
 - Plans: Free £0 (1 app), Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 per extra app), Enterprise custom. Card payments are not live; paid plans are by request.
@@ -24,6 +24,7 @@ Key facts:
 - [PatchLabs Code](https://patchlabs.dev/product/code): keys, risky AI-written code and vulnerable dependencies in the repo
 - [PatchLabs Fix](https://patchlabs.dev/product/fix): lab-proven migrations your engineer approves
 - [PatchLabs Watch](https://patchlabs.dev/product/watch): scheduled re-checks, alerts, badge and signed receipts
+- [Live posture](https://patchlabs.dev/product/live-posture): daily HTTPS, certificate, security header and cookie grade (A to F) for a verified domain, part of Watch
 - [Demo](https://patchlabs.dev/demo): the real app on a fake workspace, no sign-in
 - [Integrations](https://patchlabs.dev/integrations)
 - [For founders](https://patchlabs.dev/solutions/founders)
@@ -66,6 +67,16 @@ Key facts:
 - [PL-024 User content rendered as raw HTML](https://patchlabs.dev/findings/pl-024) (Code)
 - [PL-025 Firebase rules allow anyone](https://patchlabs.dev/findings/pl-025) (Code)
 - [PL-026 Any website can call a signed-in function](https://patchlabs.dev/findings/pl-026) (Code)
+- [PL-027 Site doesn't force HTTPS](https://patchlabs.dev/findings/pl-027) (Live posture)
+- [PL-028 TLS certificate is invalid, expired or expires within 21 days](https://patchlabs.dev/findings/pl-028) (Live posture)
+- [PL-029 No HSTS header, or max-age under 180 days](https://patchlabs.dev/findings/pl-029) (Live posture)
+- [PL-030 No Content-Security-Policy](https://patchlabs.dev/findings/pl-030) (Live posture)
+- [PL-031 Any site can frame the page](https://patchlabs.dev/findings/pl-031) (Live posture)
+- [PL-032 No X-Content-Type-Options: nosniff](https://patchlabs.dev/findings/pl-032) (Live posture)
+- [PL-033 Cookie set without Secure, or a session cookie without HttpOnly](https://patchlabs.dev/findings/pl-033) (Live posture)
+- [PL-034 Page loads scripts or styles over plain HTTP](https://patchlabs.dev/findings/pl-034) (Live posture)
+- [PL-035 Server headers reveal software versions](https://patchlabs.dev/findings/pl-035) (Live posture)
+- [PL-036 No Referrer-Policy](https://patchlabs.dev/findings/pl-036) (Live posture)
 
 ## Learn
 - [All guides](https://patchlabs.dev/learn)
@@ -86,6 +97,7 @@ Key facts:
 ## Free tools
 - [All tools](https://patchlabs.dev/tools)
 - [Free RLS check](https://patchlabs.dev/tools/rls-check): static analysis of a public repo's migrations, no sign-up
+- [Free security headers check](https://patchlabs.dev/tools/headers-check): one public page load, graded A to F for HTTPS, certificate, headers, cookies and mixed content; no sign-up, result not stored
 - [Leak cost calculator](https://patchlabs.dev/tools/leak-cost)
 
 ## Compare

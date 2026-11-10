@@ -2,6 +2,8 @@
 <html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy policy | PatchLabs</title>
 <meta name="description" content="What PatchLabs collects, why, who processes it, how long we keep it and your rights under UK GDPR. No cookies, no third-party analytics.">
@@ -50,6 +52,7 @@
               <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
               <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
               <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
             </div>
           </div>
           <div class="mega-side">
@@ -99,7 +102,7 @@
               <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
               <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
               <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
-              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
               <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
               <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
             </div>
@@ -151,7 +154,7 @@
         <h2>The short version</h2>
         <ul class="ticks">
           <li>No cookies and no third-party analytics on this website.</li>
-          <li>We read your public GitHub repo and test it on a copy. We never connect to your live app or read your customers’ data.</li>
+          <li>We read your public GitHub repo and test it on a copy. We never connect to your database or read your customers’ data. If you turn on Live posture, we load only your public home page, like any visitor, on a domain you verify.</li>
           <li>We keep your email, your reports and your account until you delete them. You can export or delete everything yourself.</li>
           <li>We don’t sell your data and we don’t send marketing emails.</li>
         </ul>
@@ -195,7 +198,8 @@
         </ul>
 
         <h2 id="code"><span class="n">03</span>Your code</h2>
-        <p>We read the repository you submit, the same way anyone can read a public repo on GitHub. A working copy is cloned to our worker machine, where we rebuild your database from its migrations in a disposable lab seeded with <strong>fake rows</strong>. We never connect to your live app or database, and we never ask for your database password.</p>
+        <p>We read the repository you submit, the same way anyone can read a public repo on GitHub. A working copy is cloned to our worker machine, where we rebuild your database from its migrations in a disposable lab seeded with <strong>fake rows</strong>. Checks never connect to your live app or database, and we never ask for your database password.</p>
+        <p><strong>Live posture (optional).</strong> For a domain you verify, we load its public home page once a day, the way any visitor’s browser does, and keep the grade, findings, response headers, certificate details and the names and flags of any cookies it sets (not their values), until you remove the domain. The free headers check loads one public page you enter and stores no result; only a hashed network address is kept for rate limiting.</p>
         <p>The relevant parts of your code, migrations and lab results are sent to Anthropic’s Claude models to write the fix and the report. The lab database is deleted as soon as the check finishes; the working copy and run files are deleted within 30 days.</p>
         <p>If your repo itself contains personal data (for example, real emails in a seed file), we process it only as part of the check, and it is covered by the same retention rules.</p>
 
@@ -310,6 +314,7 @@
         <li><a href="/product/code">Code</a></li>
         <li><a href="/product/fix">Fix</a></li>
         <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
         <li><a href="/demo">Try the demo</a></li>
         <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
@@ -343,6 +348,7 @@
         <li><a href="/docs/webhooks">Webhooks</a></li>
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

@@ -11,6 +11,7 @@ Meta keys (one per line, `key: value`):
   short        one line for the hub card
   tldr         TL;DR bullets separated by " || " (HTML allowed)
   findings     comma-separated finding IDs, e.g. PL-001, PL-002 (also read by tools/gen/findings.py)
+  cta          optional: "headers" swaps the bottom repo-check CTA for the free headers check (/tools/headers-check)
 Body: <h2 id="…"> sections (they become the table of contents), <h3> allowed. Use the site's .code / .callout / .table
 components. Code blocks: [[CODE name]] … [[/CODE]] is escaped and wrapped for you.
 """
@@ -27,7 +28,7 @@ TOPICS = [
     ("supabase", "Supabase database", "Row level security, views, storage and Realtime: who can read what."),
     ("server", "Auth and server code", "Roles, Edge Functions and payment webhooks."),
     ("keys", "Keys and incidents", "Leaked keys, git history and the first hour after a leak."),
-    ("launch", "Launch and other stacks", "A pre-launch checklist, Firebase rules and npm dependencies."),
+    ("launch", "Launch and other stacks", "A pre-launch checklist, security headers, Firebase rules and npm dependencies."),
 ]
 TOPIC_NAME = {k: n for k, n, _ in TOPICS}
 
@@ -125,6 +126,18 @@ def form(fid, meta_extra):
         <div class="form-meta">{meta_extra}</div>"""
 
 
+def headers_form(fid):
+    """The free headers check as a plain GET form: /tools/headers-check?url=… runs the check on load."""
+    return f"""<form class="repo-form one" action="/tools/headers-check" method="get">
+          <div class="in">
+            <label class="sr-only" for="url-{fid}">Your site’s address</label>
+            <input id="url-{fid}" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com">
+          </div>
+          <button class="btn primary" type="submit">Check my headers free</button>
+        </form>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Loads your public home page only</span></div>"""
+
+
 def page(g, guides, ft):
     heads = re.findall(r'<h2 id="([^"]+)"[^>]*>(.*?)</h2>', g["body"], flags=re.S)
     toc_items = "".join(f'<li><a href="#{i}">{strip(t)}</a></li>' for i, t in heads)
@@ -161,12 +174,28 @@ def page(g, guides, ft):
       <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
       <div class="grid g3 not-prose l-rel">{cards}</div>"""
     toc_all = toc_items + ('<li><a href="#related-findings">Related findings</a></li>' if cards else "")
+    if g.get("cta") == "headers":
+        extra_css = '<link rel="stylesheet" href="/assets/pages/B-findings.css">'
+        cta = f"""<div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your site’s headers, free.</h2>
+        <p>Type your site’s address. The free headers check loads your public home page once, like any visitor, and grades HTTPS, the certificate, security headers, cookie flags and mixed content, with the fix for each finding.</p>
+        {headers_form("l-" + g["slug"][:18])}
+      </div>"""
+    else:
+        extra_css = ""
+        cta = f"""<div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        {form("l-" + g["slug"][:18], '<span>Free for your first app</span><span>Never touches your database</span>')}
+      </div>"""
     return f"""<!--
 title: {g["title"]} | PatchLabs
 description: {g["description"]}
 layout: marketing
 nav: learn
-head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{ld_s}</script>
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css">{extra_css}<script type="application/ld+json">{ld_s}</script>
 -->
 <main id="main">
   <div class="wrap wide docs learn">
@@ -181,12 +210,7 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="styleshe
       <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol>{toc_all}</ol></nav>
       {g["body"].strip()}
       {related}
-      <div class="f-cta l-cta">
-        <p class="lab">Free check</p>
-        <h2>Check your app for this, free.</h2>
-        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
-        {form("l-" + g["slug"][:18], '<span>Free for your first app</span><span>Never connects to your live app or database</span>')}
-      </div>
+      {cta}
       <p class="small muted mt-4">Written by {AUTHOR}. Last checked {UPDATED}. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20{g["slug"]}">Tell us</a>.</p>
       {pager}
     </article>

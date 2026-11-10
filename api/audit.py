@@ -23,7 +23,7 @@ ACTIONS = (
     "member.invited", "member.invite_cancelled", "member.joined", "member.role_changed", "member.apps_changed", "member.removed",
     "member.left",
     "workspace.renamed", "plan.changed", "upgrade.requested",
-    "app.added", "app.updated", "app.verified", "app.removed",
+    "app.added", "app.updated", "app.verified", "app.removed", "app.live_set", "app.live_verified", "app.live_removed", "posture.checked",
     "check.started", "decision.made", "check.answered", "suppression.added", "suppression.removed",
     "api_key.created", "api_key.revoked",
     "webhook.created", "webhook.changed", "webhook.deleted", "webhook.secret_rotated", "webhook.tested",

@@ -1,0 +1,199 @@
+<!--
+title: Live posture: daily HTTPS, certificate and security header grade | PatchLabs
+description: Live posture loads your public home page daily, like any visitor, and grades HTTPS, the certificate, security headers and cookies on a domain you verify. Part of Watch.
+layout: marketing
+nav: live_posture
+head: <link rel="stylesheet" href="/assets/pages/platform.css"><link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/product/watch">Watch</a></li><li aria-current="page">Live posture</li></ol></nav>
+      <div class="p2-kicker"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span><span>Part of PatchLabs Watch</span><b>Live posture</b></span></div>
+      <h1>Your live site’s HTTPS and headers, graded every day.</h1>
+      <p class="lede">Verify your app’s domain once. Every day, PatchLabs loads your public home page the way any visitor’s browser does and grades HTTPS, the certificate, the security headers, cookie flags and mixed content, then tells your team when the grade drops.</p>
+      <div class="row"><a class="btn primary large" href="/tools/headers-check">Check my headers free</a><a class="btn secondary large" href="/app/login">Sign up free</a></div>
+      <p class="meta-line">PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify.</p>
+    </div>
+    <figure class="figure">
+      <div class="ui" role="img" aria-label="The Live posture panel in the PatchLabs app for a demo domain: grade C, score 65, two medium findings and one low, with the last checks listed.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/demo · live posture</span><span class="ui-tag">Demo workspace · fake data</span></div>
+  <div class="ui-body">
+    <div class="lp-mock-head"><div class="lp-mock-grade"><b>C</b><span>65<small>/100</small></span></div><div><p class="ui-title" style="font-size:15px">demo-app.patchlabs-demo.example</p><p class="ui-sub">Verified · checked 3 hours ago · next check in 21 hours</p></div></div>
+    <div class="ui-card" style="margin:14px 0">
+      <div class="ui-group">Findings <span class="ct">3</span></div>
+      <ul class="lp-mock-list">
+        <li><span class="pill sev-medium">medium</span><code>PL-030</code><span>No Content-Security-Policy</span></li>
+        <li><span class="pill sev-medium">medium</span><code>PL-033</code><span>Session cookie without HttpOnly</span></li>
+        <li><span class="pill sev-low">low</span><code>PL-032</code><span>No X-Content-Type-Options: nosniff</span></li>
+      </ul>
+    </div>
+    <div class="ui-card">
+      <div class="ui-group">Last checks <span class="ct">daily</span></div>
+      <ul class="ui-tl">
+        <li><span class="d"></span><span><b>Scheduled</b> · grade C · 65</span><span class="w">today</span></li>
+        <li><span class="d"></span><span><b>Scheduled</b> · grade B · 80</span><span class="w">yesterday</span></li>
+        <li><span class="d green"></span><span><b>Verified</b> · grade B · 80</span><span class="w">9 days ago</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+      <figcaption>The Live posture panel on a demo app. Domain and results are fake.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="reads-h">
+  <div class="wrap">
+    <div class="sec-head"><p class="lab">What we read</p><h2 id="reads-h">One ordinary page load. Nothing else.</h2><p>A passive check, like Mozilla Observatory or securityheaders.com: it reads what your site already sends to everyone who visits.</p></div>
+    <div class="grid g2 top">
+      <div class="card green-edge">
+        <span class="n-big">EACH CHECK SENDS</span>
+        <h3>Three things, once</h3>
+        <ul class="ticks">
+          <li>One plain <code>http://</code> request to your home page, to see whether it redirects to HTTPS</li>
+          <li>One <code>https://</code> load of your home page, following at most 5 redirects</li>
+          <li>The TLS handshake of that load, to read the certificate</li>
+        </ul>
+        <p class="small muted mb-0">From the response it reads the status, the security headers, the <code>Set-Cookie</code> flags (cookie names, never values) and the script and stylesheet addresses in the page’s HTML.</p>
+      </div>
+      <div class="card">
+        <span class="n-big">WHAT WE NEVER DO</span>
+        <h3>No probing, no payloads</h3>
+        <ul class="ticks">
+          <li class="x">Touch your database, or test your app for data leaks or vulnerabilities</li>
+          <li class="x">Request other paths, guess URLs or follow links</li>
+          <li class="x">Submit forms, call your API or sign in</li>
+          <li class="x">Check a domain your team hasn’t verified</li>
+        </ul>
+        <p class="small muted mb-0">The free <a href="/tools/headers-check">headers check</a> makes the same single page load for any public address, and stores nothing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="verify-h">
+  <div class="wrap">
+    <div class="sec-head"><p class="lab">Verify</p><h2 id="verify-h">Prove the domain is yours, one of two ways.</h2><p>Each app gets its own live code, separate from the repo code you committed to start monitoring. Publish it either way, press Verify, and the first check runs at once.</p></div>
+    <div class="grid g2 top">
+      <div>
+        <h3 class="h4">A file at your site’s root</h3>
+        <p class="muted">A file named <code>patchlabs-verify.txt</code> whose whole content is the code. In a Vite or Lovable project, put it in <code>public/</code>.</p>
+        <div class="code mb-0"><div class="code-bar"><span class="name">https://your-app.com/patchlabs-verify.txt</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>patchlabs-live-3f9c2a17d04be6a1</code></pre></div>
+      </div>
+      <div>
+        <h3 class="h4">Or a meta tag on your home page</h3>
+        <p class="muted">Inside <code>&lt;head&gt;</code> of the page your domain serves at <code>/</code>. Handy when you can’t add files.</p>
+        <div class="code mb-0"><div class="code-bar"><span class="name">index.html</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>&lt;meta name="patchlabs-verify" content="patchlabs-live-3f9c2a17d04be6a1"&gt;</code></pre></div>
+      </div>
+    </div>
+    <p class="small muted mt-2">Example code: your app shows its own. Redirects must stay on the same host (or its <code>www</code> twin), so another site can’t vouch for yours. You can remove the file or tag after verifying.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="grade-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">The grade</p>
+      <h2 id="grade-h">A to F, from ten checks with stable IDs.</h2>
+      <p class="lede">Start at 100. A failed high check costs 30, a medium 15, a low 5; information findings are free. Each check costs its points once, however many cookies it caught. A is 90 or more, B 75, C 60, D 40, anything lower F.</p>
+      <p class="muted">An invalid or expired certificate is always F, because visitors get a full-page browser warning. Sites on HSTS-preloaded top-level domains such as <code>.app</code> and <code>.dev</code> pass the HTTPS redirect and HSTS checks without doing anything, since browsers never load them over plain HTTP.</p>
+    </div>
+    <div class="table-wrap"><table class="table compact">
+      <thead><tr><th scope="col">ID</th><th scope="col">Check</th><th scope="col">Severity</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-027">PL-027</a></th><td>Site doesn’t force HTTPS</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-028">PL-028</a></th><td>Certificate invalid, expired or expiring within 21 days</td><td><span class="pill sev-high">high</span> <span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-029">PL-029</a></th><td>No HSTS, or max-age under 180 days</td><td><span class="pill sev-low">low</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-030">PL-030</a></th><td>No Content-Security-Policy</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-031">PL-031</a></th><td>Any site can frame the page</td><td><span class="pill sev-low">low</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-032">PL-032</a></th><td>No X-Content-Type-Options: nosniff</td><td><span class="pill sev-low">low</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-033">PL-033</a></th><td>Cookie without Secure, or session cookie without HttpOnly</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-034">PL-034</a></th><td>Scripts or styles over plain HTTP</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-035">PL-035</a></th><td>Server headers reveal software versions</td><td><span class="pill sev-low">info</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-036">PL-036</a></th><td>No Referrer-Policy</td><td><span class="pill sev-low">info</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="how-h">
+  <div class="wrap">
+<div class="sec-head"><p class="lab">How it works</p><h2 id="how-h">Verify, check daily, alert, share.</h2></div><ol class="flow" style="--n:4" data-reveal><li><h3>Verify</h3><p>Set your app’s domain in the app and publish the file or meta tag. The first check runs as soon as it’s found.</p><div class="art">patchlabs-verify.txt
+verified · grade B</div></li><li><h3>Check daily</h3><p>A fresh check every day while the app’s re-checks are on, and “Re-check now” whenever you ship a change.</p><div class="art">next check in 24 h
+re-check now</div></li><li><h3>Alert</h3><p>An email to your team and a <code>posture.changed</code> event to your workspace webhook, only when the grade drops or a finding appears.</p><div class="art">B → C · 1 new finding
+PL-030 no CSP</div></li><li><h3>Share</h3><p>An opt-in badge with the grade and the date of the last check, for your README or footer.</p><div class="art">live posture · A
+10 Nov 2026</div></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="badge-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Badge</p>
+        <h2 id="badge-h">Show the grade, dated.</h2>
+        <p class="lede">The live badge shows your latest grade and the day it was checked. It reads “private” until the app’s badge is public and the domain is verified.</p>
+        <p class="small muted">A badge is not a certification. It reports our last check of the headers and settings your home page sends.</p>
+      </div>
+      <div class="stack-ui">
+        <div class="badges">
+          <figure><img src="/assets/pages/badge-live-a.svg" alt="live posture: A · 10 Nov 2026" width="202" height="20"><figcaption>grade A</figcaption></figure>
+          <figure><img src="/assets/pages/badge-live-c.svg" alt="live posture: C · 10 Nov 2026" width="202" height="20"><figcaption>grade C</figcaption></figure>
+          <figure><img src="/assets/pages/badge-live-private.svg" alt="live posture: private" width="149" height="20"><figcaption>private</figcaption></figure>
+        </div>
+        <div class="code mb-0">
+          <div class="code-bar"><span class="name">README.md</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>[![PatchLabs live posture](https://api.patchlabs.dev/badge/&lt;app-id&gt;/live.svg)](https://patchlabs.dev/proof?app=&lt;app-id&gt;)</code></pre>
+        </div>
+        <p class="small"><a class="link-arrow" href="/docs/api#get-badge-aid-live-svg">Badge endpoint</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="why-h">
+  <div class="wrap">
+    <div class="sec-head split"><div><p class="lab">Why it matters</p><h2 id="why-h">AI builders get the app working, not the headers.</h2><p>Generated projects ship with whatever the host sends by default, and that rarely includes a Content-Security-Policy, framing rules or <code>nosniff</code>. The fixes are a few lines in <code>vercel.json</code>, <code>_headers</code> or a Cloudflare rule, and every finding page has them.</p></div><a class="link-arrow" href="/learn/security-headers-ai-built-apps">Security headers guide</a></div>
+    <div class="callout limit"><p><strong>What Live posture can’t see.</strong> It reads one public page, so it says nothing about who can read your database, what your code does or whether your keys are exposed. Those are the leaks that matter most in AI-built apps, and the <a href="/product/lab">Lab</a> and <a href="/product/code">Code</a> checks cover them from your repo. Live posture isn’t a vulnerability scan, a penetration test or uptime monitoring.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Questions about Live posture.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>Does Live posture touch my database or my users’ data?</summary><div class="acc-body"><p>No. PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify. It never signs in, so it sees what a logged-out visitor sees.</p></div></details>
+<details class="acc"><summary>How often does it check?</summary><div class="acc-body"><p>Once a day while the app’s re-checks are on, plus whenever someone presses “Re-check now” (at most once every 10 minutes). Turning the app’s schedule off pauses the daily check too.</p></div></details>
+<details class="acc"><summary>Who gets alerted?</summary><div class="acc-body"><p>Everyone who gets the app’s alert emails, and the workspace webhook as a <code>posture.changed</code> event (with a short message for Slack, Discord and Teams). Only when the grade drops or a new finding appears, never for an unchanged result.</p></div></details>
+<details class="acc"><summary>Can I change or remove the domain?</summary><div class="acc-body"><p>Yes. An owner or admin can change it (it needs verifying again) or remove it, which deletes its check history. Your site isn’t touched either way.</p></div></details>
+<details class="acc"><summary>Do I need a paid plan?</summary><div class="acc-body"><p>Live posture is part of Watch, which every plan includes. Start with the free <a href="/tools/headers-check">headers check</a>, no account needed.</p></div></details></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free headers check</p>
+      <h2 id="final-h">See your grade now, no sign-up.</h2>
+      <p class="lede">Type your site’s address. You get the grade, every finding with the fix for your host, and what we saw. Sign up to have it checked every day.</p>
+      <form class="repo-form one" action="/tools/headers-check" method="get">
+        <div class="in">
+          <label class="sr-only" for="lp-url">Your site’s address</label>
+          <input id="lp-url" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com">
+        </div>
+        <button class="btn primary" type="submit">Check my headers free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <div class="form-meta">
+        <span>Loads your public home page only</span>
+        <span><a href="/app/login">Sign up free</a></span>
+        <span><a href="/demo/app?id=demo-app-1#live">See it in the demo</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>

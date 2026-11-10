@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PL-035 Server headers reveal software versions | PatchLabs findings</title>
+<meta name="description" content="PL-035: Server or X-Powered-By headers reveal software versions. Why it matters, how to check, and how to remove them in Next.js, Express, nginx and Cloudflare.">
+<link rel="canonical" href="https://patchlabs.dev/findings/pl-035">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="PL-035 Server headers reveal software versions | PatchLabs findings">
+<meta property="og:description" content="PL-035: Server or X-Powered-By headers reveal software versions. Why it matters, how to check, and how to remove them in Next.js, Express, nginx and Cloudflare.">
+<meta property="og:url" content="https://patchlabs.dev/findings/pl-035">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PL-035 Server headers reveal software versions | PatchLabs findings">
+<meta name="twitter:description" content="PL-035: Server or X-Powered-By headers reveal software versions. Why it matters, how to check, and how to remove them in Next.js, Express, nginx and Cloudflare.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-035: Server headers reveal software versions","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings" aria-current="page"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li><li><a href="/tools/headers-check">Free headers check</a></li></ul>
+      <h2>Lab · database</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Code · repo</h2>
+      <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Live · public page</h2>
+      <ul>
+        <li><a href="/findings/pl-027"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-027</span>Site doesn’t force HTTPS</a></li>
+        <li><a href="/findings/pl-028"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-028</span>TLS certificate is invalid, expired or expires within 21 days</a></li>
+        <li><a href="/findings/pl-029"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-029</span>No HSTS header, or max-age under 180 days</a></li>
+        <li><a href="/findings/pl-030"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-030</span>No Content-Security-Policy</a></li>
+        <li><a href="/findings/pl-031"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-031</span>Any site can frame the page</a></li>
+        <li><a href="/findings/pl-032"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-032</span>No X-Content-Type-Options: nosniff</a></li>
+        <li><a href="/findings/pl-033"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-033</span>Cookie set without Secure, or a session cookie without HttpOnly</a></li>
+        <li><a href="/findings/pl-034"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-034</span>Page loads scripts or styles over plain HTTP</a></li>
+        <li><a href="/findings/pl-035" aria-current="page"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-035</span>Server headers reveal software versions</a></li>
+        <li><a href="/findings/pl-036"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-036</span>No Referrer-Policy</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-035</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-035</span><span class="pill sev-low">info</span><span class="pill plain">Live posture</span></div>
+        <h1>Server headers reveal software versions</h1>
+        <p class="lede">A Server or X-Powered-By header names the software and its version, which tells attackers which known bugs to try.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Info</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Nobody directly; it saves an attacker a step</dd></div>
+          <div><dt>Found by</dt><dd><a href="/product/live-posture">PatchLabs Live posture</a>: your home page’s response headers</dd></div>
+          <div><dt>Lab proof</dt><dd>Not lab-proven: read from your home page’s response</dd></div>
+        </dl>
+      </header>
+      
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>Some servers announce themselves in every response: <code>Server: nginx/1.18.0</code>, <code>X-Powered-By: PHP/8.1.2</code>. PL-035 means a header like that carries a version number. On its own it exposes nothing, but it turns “is this server out of date?” into a lookup: anyone can match the version against published advisories without sending a single probe.</p>
+<p>A bare product name such as <code>Server: Vercel</code> or <code>Server: cloudflare</code> is not reported; the finding is about versions.</p>
+      
+
+      <h2 id="why"><span class="lab" aria-hidden="true">Cause</span>Why AI builders produce it</h2>
+      <p>These headers are on by default in many servers and frameworks, and nobody asks a generator to turn them off. They show up most on apps that moved from a managed host to a self-hosted server or container.</p>
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Observe</span>What we see</h2>
+      <p>A synthetic example for <code>app.example.com</code>, shortened. Not taken from any real site.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">curl -sI https://app.example.com (response, synthetic)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>$ curl -sI https://app.example.com
+HTTP/2 200
+server: nginx/1.18.0 (Ubuntu)
+x-powered-by: PHP/8.1.2</code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-035.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>curl -sI https://your-app.com | grep -iE '^(server|x-powered-by|x-aspnet-version|x-generator):'</code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
+      <p>Turn the header off where it is added. If you see a version, also check that it is current: hiding an old version helps a little, upgrading it helps a lot.</p><div class="tabs f-hosts">
+<div role="tablist" aria-label="Where your site is hosted"><button role="tab" id="t-035-next" aria-controls="p-035-next" aria-selected="true">Next.js</button><button role="tab" id="t-035-express" aria-controls="p-035-express" aria-selected="false">Express</button><button role="tab" id="t-035-nginx" aria-controls="p-035-nginx" aria-selected="false">nginx</button><button role="tab" id="t-035-cloudflare" aria-controls="p-035-cloudflare" aria-selected="false">Cloudflare</button></div>
+<div class="tab-panel" id="p-035-next" role="tabpanel" aria-labelledby="t-035-next"><h3 class="tab-title">Next.js</h3>
+<div class="code">
+  <div class="code-bar"><span class="name">next.config.js</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">// next.config.js</span>
+module.exports = {
+  poweredByHeader: false,   // drops X-Powered-By: Next.js
+}</code></pre>
+</div>
+</div>
+<div class="tab-panel" id="p-035-express" role="tabpanel" aria-labelledby="t-035-express"><h3 class="tab-title">Express</h3>
+<div class="code">
+  <div class="code-bar"><span class="name">server.js</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>const app = express()
+app.disable('x-powered-by')</code></pre>
+</div>
+</div>
+<div class="tab-panel" id="p-035-nginx" role="tabpanel" aria-labelledby="t-035-nginx"><h3 class="tab-title">nginx</h3>
+<div class="code">
+  <div class="code-bar"><span class="name">nginx.conf</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c"># nginx.conf, inside http { }</span>
+server_tokens off;   # Server: nginx, without the version</code></pre>
+</div>
+</div>
+<div class="tab-panel" id="p-035-cloudflare" role="tabpanel" aria-labelledby="t-035-cloudflare"><h3 class="tab-title">Cloudflare</h3>
+<p>For a proxied site, a <strong>Response Header Transform Rule</strong> (Rules → Transform Rules) can <em>Remove</em> <code>X-Powered-By</code> before responses reach visitors. That hides it; the fix at the source above is still better.</p>
+</div>
+</div>
+      <p class="small muted">Live posture findings come with the header or setting to change. PatchLabs never changes your hosting or your repo.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">live posture · report excerpt</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[LOAD]</span>    https://app.example.com/ → 200</span>
+<span class="ln">          server       nginx/1.18.0</span>
+<span class="ln">          x-powered-by PHP/8.1.2</span>
+<span class="ln">          info: versions visible</span>
+</pre>
+  <div class="window-foot"><span class="pill plain">synthetic example</span><span>Live posture · read from the home page’s response</span></div>
+</div>
+      <p>Live posture reads the <code>Server</code> and <code>X-Powered-By</code> style headers from the final response of its one page load and reports them when they contain a version number. It doesn’t look the versions up or probe for the bugs they might have.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>Harmless on a managed platform that names itself without a version. On your own server there is no reason to publish the version.</p>
+
+      <h2 id="severity"><span class="lab" aria-hidden="true">Rate</span>Why it’s rated info</h2>
+      <p>Information: nothing is exposed and nothing can be exploited through the header itself. It costs no points in the Live posture grade, and is listed because the fix takes one line.</p>
+
+      
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-023"><span class="n-big">PL-023</span><h3>Dependency with a known vulnerability</h3><p class="small">A package version in your lockfile matches a published advisory in the OSV database.</p></a><a class="card link" href="/findings/pl-032"><span class="n-big">PL-032</span><h3>No X-Content-Type-Options: nosniff</h3><p class="small">Browsers may guess a file’s type from its contents, so an uploaded “image” can be run as a script or page.</p></a><a class="card link" href="/findings/pl-036"><span class="n-big">PL-036</span><h3>No Referrer-Policy</h3><p class="small">Your page sends no Referrer-Policy, so the browser’s default decides how much of your URLs other sites see.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/security-headers-ai-built-apps">Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></li></ul>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your site have PL-035?</h2>
+        <p>Type your site’s address. The free headers check loads your public home page once, like any visitor, and grades HTTPS, the certificate, security headers, cookie flags and mixed content. No sign-up, and the result isn’t stored.</p>
+        <form class="repo-form one" action="/tools/headers-check" method="get">
+          <div class="in">
+            <label class="sr-only" for="url-f035">Your site’s address</label>
+            <input id="url-f035" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com">
+          </div>
+          <button class="btn primary" type="submit">Check my headers free</button>
+        </form>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Loads your public home page only</span><span><a href="/product/live-posture">How Live posture works</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-035">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-034"><span>Previous · PL-034</span>Page loads scripts or styles over plain HTTP</a><a class="next" href="/findings/pl-036"><span>Next · PL-036</span>No Referrer-Policy</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">What we see</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">How we find it</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

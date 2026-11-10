@@ -42,7 +42,7 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
           <tbody>
             <tr><th scope="row">Subject matter</th><td>Providing PatchLabs: lab checks, fixes, reports, receipts, monitoring and alerts.</td></tr>
             <tr><th scope="row">Duration</th><td>For as long as the Customer uses PatchLabs, then until deletion under section 9.</td></tr>
-            <tr><th scope="row">Nature and purpose</th><td>Cloning repositories, rebuilding databases in a disposable lab with synthetic data, analysing code with AI models, storing and delivering reports.</td></tr>
+            <tr><th scope="row">Nature and purpose</th><td>Cloning repositories, rebuilding databases in a disposable lab with synthetic data, analysing code with AI models, storing and delivering reports; where the Customer enables Live posture, loading the public home page of a domain the Customer has verified and grading its HTTPS, certificate, headers and cookie flags.</td></tr>
             <tr><th scope="row">Types of personal data</th><td>Any personal data present in the submitted code, migrations, seed files or git history (for example names or emails in seed data or commit metadata); names and emails of workspace members recorded on decisions and answers.</td></tr>
             <tr><th scope="row">Data subjects</th><td>The Customer’s staff, contractors and contributors; any individuals whose data appears in the submitted repositories.</td></tr>
             <tr><th scope="row">Not processed</th><td>Data in the Customer’s live database. PatchLabs never connects to it.</td></tr>
@@ -79,7 +79,7 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
 
         <h2 id="annex-a"><span class="n">A</span>Annex A: security measures</h2>
         <ul>
-          <li><strong>No production access.</strong> Checks work only from the repository; we never connect to customers’ live apps or databases.</li>
+          <li><strong>No production access.</strong> Checks work only from the repository; we never connect to customers’ databases. Live posture, when the Customer enables it, loads only the public home page of a verified domain, as any visitor would, with no credentials.</li>
           <li><strong>Disposable lab.</strong> A new Postgres database per check, seeded with synthetic data and dropped when the check ends.</li>
           <li><strong>Constrained AI agent.</strong> No web access; writes limited to the fix folder and the working copy; may run only the lab verifier; repo-supplied agent configuration removed before it runs; spend cap per check.</li>
           <li><strong>Independent verification.</strong> Every fix is re-tested by a separate verifier on a freshly rebuilt lab before it is offered as proven.</li>

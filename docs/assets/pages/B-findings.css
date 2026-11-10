@@ -24,3 +24,7 @@
 .f-coming-note { margin: -6px 0 14px; max-width: 60ch; }
 .f-empty { padding: 32px 0; }
 @media (max-width: 700px) { .f-filters { gap: 12px; padding: 14px; } .f-count { margin-left: 0; width: 100%; } }
+
+/* Live posture pages: per-host fix tabs (the single-field form is .repo-form.one in style.css) */
+.f-hosts { margin: 20px 0 8px; }
+.f-hosts .tab-panel > :first-child:not(.tab-title), .f-hosts .tab-panel > .tab-title + * { margin-top: 0; }

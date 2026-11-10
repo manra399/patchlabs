@@ -2,6 +2,8 @@
 <html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PatchLabs: find the leak, prove the fix. Security for apps built with AI</title>
 <meta name="description" content="The security platform for AI-built apps. PatchLabs rebuilds your database, reads your code, reproduces each leak, then writes the fix and proves it in a lab. Free for one app.">
@@ -50,6 +52,7 @@
               <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
               <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
               <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
             </div>
           </div>
           <div class="mega-side">
@@ -99,7 +102,7 @@
               <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
               <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
               <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
-              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
               <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
               <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
             </div>
@@ -151,7 +154,7 @@
       <div class="form-meta">
         <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Free for your first app</span>
         <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Reads your public repo only</span>
-        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Never connects to your live app or database</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Never touches your database</span>
       </div>
       <div class="hero2-links">
         <a class="link-arrow" href="/demo">Try the demo, no sign-in</a>
@@ -370,13 +373,14 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
       <div class="tab-panel line-panel" id="p-watch" role="tabpanel" aria-labelledby="t-watch" hidden>
         <div>
           <h3 class="tab-title">Watch</h3>
-          <p class="line-meta">PatchLabs Watch · live</p>
+          <p class="line-meta">PatchLabs Watch · live · Live posture: 10 checks</p>
           <h3>Every migration you merge can reopen a leak. Watch re-checks.</h3>
           <p>Scheduled re-checks compare each run with the last and alert your team only when something new appears, by email or a Slack-compatible webhook. Share the result with a dated badge, a public proof page and a receipt anyone can verify.</p>
           <ul class="ticks">
             <li>Weekly or monthly re-checks, never counted against your runs</li>
             <li>New, fixed, still leaking and marked-as-intended, per check</li>
             <li>Ed25519-signed receipt for every finished check</li>
+            <li><a href="/product/live-posture">Live posture</a>: a daily HTTPS and security-header grade for the domain you verify</li>
           </ul>
           <a class="link-arrow" href="/product/watch">Explore PatchLabs Watch</a>
         </div>
@@ -458,7 +462,7 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
       </div>
     </div>
     <div class="dark-facts">
-      <div><span class="k">Read</span><b>Your public repo only</b><p>Code, migrations and git history. Never your live app, database or customers’ data.</p></div>
+      <div><span class="k">Read</span><b>Your public repo only</b><p>Code, migrations and git history. Never your database or your customers’ data.</p></div>
       <div><span class="k">Lab</span><b>Disposable, thrown away</b><p>A local Postgres with fake rows, deleted after every run.</p></div>
       <div><span class="k">Prove</span><b>Three identities, every fix</b><p>If any check fails, it isn’t called proven. It goes to a person.</p></div>
       <div><span class="k">Approve</span><b>A person decides</b><p>The fix reaches production only when your engineer applies it.</p></div>
@@ -479,10 +483,10 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
     <div class="sec-head split">
       <div>
         <p class="lab">Capabilities</p>
-        <h2 id="caps-h">21 checks live today. Each has an ID, a page and a fix.</h2>
+        <h2 id="caps-h">31 checks live today. Each has an ID, a page and a fix.</h2>
         <p>Finding IDs are stable, shared by the engine, the API, your report and these pages. Five more Lab checks are announced and labelled as coming until they ship.</p>
       </div>
-      <div class="cap-totals"><span>8 Lab</span><span>13 Code</span><span class="soon">5 coming</span></div>
+      <div class="cap-totals"><span>8 Lab</span><span>13 Code</span><span>10 Live posture</span><span class="soon">5 coming</span></div>
     </div>
     <div class="cap-group" data-reveal>
       <div class="cap-group-h"><h3><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span>Lab</h3><p>Reproduced in your rebuilt database as anon, stranger and owner.</p></div>
@@ -491,6 +495,10 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
     <div class="cap-group" data-reveal>
       <div class="cap-group-h"><h3><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span>Code</h3><p>Read from the repo and its full history. Nothing is run or installed.</p></div>
       <div class="caps"><a class="cap" href="/findings/pl-009"><span class="top"><span class="fid">PL-009</span><span class="pill sev-high">high</span></span><b>AI, payment or database key in the code</b></a><a class="cap" href="/findings/pl-010"><span class="top"><span class="fid">PL-010</span><span class="pill sev-critical">critical</span></span><b>Service role key in client code</b></a><a class="cap" href="/findings/pl-011"><span class="top"><span class="fid">PL-011</span><span class="pill sev-high">high</span></span><b>Key still in git history</b></a><a class="cap" href="/findings/pl-017"><span class="top"><span class="fid">PL-017</span><span class="pill sev-high">high</span></span><b>Edge function open without sign-in while using the service key</b></a><a class="cap" href="/findings/pl-018"><span class="top"><span class="fid">PL-018</span><span class="pill sev-low">low</span></span><b>Sign-ups need no email confirmation</b></a><a class="cap" href="/findings/pl-019"><span class="top"><span class="fid">PL-019</span><span class="pill sev-critical">critical</span></span><b>Access decided by user_metadata, which users can edit</b></a><a class="cap" href="/findings/pl-020"><span class="top"><span class="fid">PL-020</span><span class="pill sev-high">high</span></span><b>Admin check only in the browser</b></a><a class="cap" href="/findings/pl-021"><span class="top"><span class="fid">PL-021</span><span class="pill sev-high">high</span></span><b>Payment webhook doesn’t verify its signature</b></a><a class="cap" href="/findings/pl-022"><span class="top"><span class="fid">PL-022</span><span class="pill sev-high">high</span></span><b>Edge function trusts a user id sent in the request</b></a><a class="cap" href="/findings/pl-023"><span class="top"><span class="fid">PL-023</span><span class="pill sev-low">from advisory</span></span><b>Dependency with a known vulnerability (OSV)</b></a><a class="cap" href="/findings/pl-024"><span class="top"><span class="fid">PL-024</span><span class="pill sev-medium">medium</span></span><b>User content rendered as raw HTML</b></a><a class="cap" href="/findings/pl-025"><span class="top"><span class="fid">PL-025</span><span class="pill sev-critical">critical</span></span><b>Firebase rules allow anyone</b></a><a class="cap" href="/findings/pl-026"><span class="top"><span class="fid">PL-026</span><span class="pill sev-medium">medium</span></span><b>Any website can call a signed-in function</b></a></div>
+    </div>
+    <div class="cap-group" data-reveal>
+      <div class="cap-group-h"><h3><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><a href="/product/live-posture">Live posture</a></h3><p>Your public home page, loaded once a day like any visitor, on a domain you verify. <a href="/tools/headers-check">Try it free</a>.</p></div>
+      <div class="caps"><a class="cap" href="/findings/pl-027"><span class="top"><span class="fid">PL-027</span><span class="pill sev-medium">medium</span></span><b>Site doesn’t force HTTPS</b></a><a class="cap" href="/findings/pl-028"><span class="top"><span class="fid">PL-028</span><span class="pill sev-high">high</span></span><b>Certificate invalid, expired or expiring</b></a><a class="cap" href="/findings/pl-029"><span class="top"><span class="fid">PL-029</span><span class="pill sev-low">low</span></span><b>No HSTS, or a short max-age</b></a><a class="cap" href="/findings/pl-030"><span class="top"><span class="fid">PL-030</span><span class="pill sev-medium">medium</span></span><b>No Content-Security-Policy</b></a><a class="cap" href="/findings/pl-031"><span class="top"><span class="fid">PL-031</span><span class="pill sev-low">low</span></span><b>Any site can frame the page</b></a><a class="cap" href="/findings/pl-032"><span class="top"><span class="fid">PL-032</span><span class="pill sev-low">low</span></span><b>No X-Content-Type-Options: nosniff</b></a><a class="cap" href="/findings/pl-033"><span class="top"><span class="fid">PL-033</span><span class="pill sev-medium">medium</span></span><b>Cookie without Secure or HttpOnly</b></a><a class="cap" href="/findings/pl-034"><span class="top"><span class="fid">PL-034</span><span class="pill sev-medium">medium</span></span><b>Scripts or styles over plain HTTP</b></a><a class="cap" href="/findings/pl-035"><span class="top"><span class="fid">PL-035</span><span class="pill sev-low">info</span></span><b>Server headers reveal versions</b></a><a class="cap" href="/findings/pl-036"><span class="top"><span class="fid">PL-036</span><span class="pill sev-low">info</span></span><b>No Referrer-Policy</b></a></div>
     </div>
     <div class="cap-group">
       <div class="cap-group-h"><h3>Coming to Lab</h3><p>Announced, not live. They appear in reports only once they ship and are tested.</p></div>
@@ -647,7 +655,7 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
     <div>
       <details class="acc"><summary>Isn’t Lovable’s or Supabase’s built-in check enough?</summary><div class="acc-body"><p>Use them: they are good at flagging common misconfigurations. They tell you a rule looks risky. They don’t rebuild your database and test, as each kind of user, whether a fix actually works. That proof is what we add. <a href="/compare">Detailed comparisons</a>.</p></div></details>
 <details class="acc"><summary>Do I need all four product lines?</summary><div class="acc-body"><p>You get them all. Every check runs Lab and Code together, every finding goes through Fix, and Watch keeps re-checking. They are one product with four parts, on every plan including Free.</p></div></details>
-<details class="acc"><summary>Do you touch my live database?</summary><div class="acc-body"><p>No. We work only from your GitHub repo and rebuild the database in a disposable lab with fake rows. We never connect to your live app or database, and the fix reaches production only when your engineer applies it.</p></div></details>
+<details class="acc"><summary>Do you touch my live database?</summary><div class="acc-body"><p>No. We work only from your GitHub repo and rebuild the database in a disposable lab with fake rows. Checks never connect to your live app or database, and the fix reaches production only when your engineer applies it. The one exception is opt-in: <a href="/product/live-posture">Live posture</a> loads your public home page once a day, like any visitor, and only on a domain you verify.</p></div></details>
 <details class="acc"><summary>What if the fix can’t be proven?</summary><div class="acc-body"><p>Then we don’t call it proven. The report says a person is reviewing it, and explains why. In our lab study 2 of 20 fixes went to a person. When a fix depends on a business choice, such as whether sellers’ emails should be public, the report asks you in plain English with a recommended answer.</p></div></details>
 <details class="acc"><summary>Who approves the change?</summary><div class="acc-body"><p>You or your engineer. The fix is a migration file you download, or commit to your repo on GitHub in one click. Nothing changes until someone applies it. Automatic pull requests need our GitHub App, which is coming.</p></div></details>
 <details class="acc"><summary>Is this a pentest or a compliance certificate?</summary><div class="acc-body"><p>Neither. A pentest is a person attacking your whole system within an agreed scope, and we don’t certify compliance. We test specific, documented things in depth, each with a finding ID, and say plainly what a report couldn’t check. For a high-stakes launch, get a pentest too.</p></div></details>
@@ -712,6 +720,7 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
         <li><a href="/product/code">Code</a></li>
         <li><a href="/product/fix">Fix</a></li>
         <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
         <li><a href="/demo">Try the demo</a></li>
         <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
@@ -745,6 +754,7 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
         <li><a href="/docs/webhooks">Webhooks</a></li>
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

@@ -9,7 +9,7 @@ import app as appmod
 import core
 
 TABLES = ("checks, check_events, kv, users, login_tokens, sessions, workspaces, workspace_members, invites, apps, api_keys, "
-          "upgrade_requests, decisions, finding_suppressions, check_answers, tool_runs, rls_cache, audit_log, member_app_access")
+          "upgrade_requests, decisions, finding_suppressions, check_answers, tool_runs, rls_cache, audit_log, member_app_access, posture_checks")
 
 
 def pytest_configure(config):

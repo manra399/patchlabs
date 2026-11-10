@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
-import alerts, audit, taxonomy
+import alerts, audit, posture, taxonomy
 from core import (FINISHED, NEXT_AT, SITE_URL, VERIFY_FILE, api_key, as_uuid, clean_text, client_apps, current_user, db, event, leaking,
                   limits, may_see_app, membership, notify, parse_repo, recent, record, repo_has_code, repo_lookup, require, scrub, usage,
                   verify_info)
@@ -66,7 +66,7 @@ def workspace_of(c, a):
     return c.execute("SELECT * FROM workspaces WHERE id = %s", (a["workspace_id"],)).fetchone()
 
 
-def app_view(c, a):
+def app_view(c, a, full=True):
     last = c.execute("SELECT id, status, finished_at, summary FROM checks WHERE app_id = %s AND finished_at IS NOT NULL "
                      "ORDER BY finished_at DESC LIMIT 1", (a["id"],)).fetchone()
     open_ = c.execute("SELECT id FROM checks WHERE app_id = %s AND status IN ('queued', 'running') LIMIT 1", (a["id"],)).fetchone()
@@ -82,6 +82,7 @@ def app_view(c, a):
     out["freshness"] = freshness(a["schedule"], fin)
     if not out["verified"]:
         out["verify"] = verify_info(a["repo"], a["branch"], a["verify_code"])
+    out["live"] = posture.live_view(c, a, full)
     return out
 
 
@@ -155,6 +156,14 @@ HEADLINES = {"no_leaks": "no data leaks found", "done": "leaks found and a teste
              "needs_review": "leaks found; a person is reviewing the fix", "failed": "the check could not finish; we have been alerted"}
 
 
+def recipients(c, wid, aid):
+    """Everyone who hears about an app: the team, plus clients the app is shared with."""
+    return [m["email"] for m in c.execute(
+        "SELECT u.email FROM workspace_members m JOIN users u ON u.id = m.user_id WHERE m.workspace_id = %s "
+        "AND (m.role <> 'client' OR EXISTS (SELECT 1 FROM member_app_access x WHERE x.workspace_id = m.workspace_id "
+        "AND x.user_id = m.user_id AND x.app_id = %s)) ORDER BY m.created_at", (wid, aid)).fetchall()]
+
+
 def notify_app_check(c, cid):
     k = c.execute("SELECT k.id, k.status, k.summary, a.id AS app_id, a.repo, a.client_label, a.workspace_id, w.webhook_url, "
                   "w.webhook_secret, w.webhook_format, w.id AS wid "
@@ -177,10 +186,8 @@ def notify_app_check(c, cid):
         if d["suppressed"]:
             lines.append("Marked as intended by your team (no alert): " + ", ".join(d["suppressed"]))
         lines += [f"See the report and the fix:\n{url}", f"Manage this app:\n{SITE_URL}/app/app?id={k['app_id']}", "PatchLabs"]
-        for m in c.execute("SELECT u.email FROM workspace_members m JOIN users u ON u.id = m.user_id WHERE m.workspace_id = %s "
-                           "AND (m.role <> 'client' OR EXISTS (SELECT 1 FROM member_app_access x WHERE x.workspace_id = m.workspace_id "
-                           "AND x.user_id = m.user_id AND x.app_id = %s)) ORDER BY m.created_at", (k["workspace_id"], k["app_id"])).fetchall():
-            notify(c, cid, m["email"], subject, "\n\n".join(lines))
+        for email in recipients(c, k["workspace_id"], k["app_id"]):
+            notify(c, cid, email, subject, "\n\n".join(lines))
     if k["webhook_url"]:
         payload = {"event": "check.finished", "text": f"PatchLabs: {name}: {headline}. {url}",
                    "check": {"id": str(cid), "app_id": str(k["app_id"]), "repo": k["repo"], "status": k["status"],
@@ -219,7 +226,7 @@ def list_apps(wid: str, user=Depends(current_user), c=Depends(db)):
     if w["role"] == "client":
         mine = set(client_apps(c, w["id"], user["id"]))
         rows = [a for a in rows if a["id"] in mine]
-    return {"apps": [app_view(c, a) for a in rows]}
+    return {"apps": [app_view(c, a, full=False) for a in rows]}
 
 
 @router.post("/workspaces/{wid}/apps", status_code=201)
@@ -373,7 +380,7 @@ def public_status(aid: str, c=Depends(db)):
     if not a:
         raise HTTPException(404, "This app's status isn't public.")
     state, at, fresh = public_state(c, a)
-    return {"repo": a["repo"], "status": state, "last_checked": at, **fresh}
+    return {"repo": a["repo"], "status": state, "last_checked": at, **fresh, "live": posture.public_live(c, str(a["id"]))}
 
 
 @router.get("/stats")

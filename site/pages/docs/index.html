@@ -49,7 +49,7 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/asset
 </div>
 
 <h2 id="what-a-check-does">What a check does</h2>
-<p>PatchLabs works from your GitHub repo only. It rebuilds your database from the files in <code>supabase/migrations</code> inside a disposable local Postgres that copies Supabase’s roles, auth functions and default grants. It seeds fake rows, then asks three questions as three different people:</p>
+<p>A check works from your GitHub repo only. It rebuilds your database from the files in <code>supabase/migrations</code> inside a disposable local Postgres that copies Supabase’s roles, auth functions and default grants. It seeds fake rows, then asks three questions as three different people:</p>
 <ul>
   <li><strong>An anonymous visitor</strong>, using your public anon key (it ships inside your frontend, so anyone has it).</li>
   <li><strong>A signed-in stranger</strong>: a brand-new account that owns nothing.</li>
@@ -71,7 +71,7 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/asset
 </pre>
   <div class="window-foot"><span class="pill proven">proven</span><span>Real run on our own demo app, 9 Nov 2026</span></div>
 </div>
-<p>It never connects to your live app or your live database. Your engineer approves every change before it ships.</p>
+<p>A check never connects to your live app or your live database. Your engineer approves every change before it ships. (Optional <a href="/product/live-posture">Live posture</a> only loads your public home page, like any visitor, on a domain you verify.)</p>
 
 <h2 id="before-you-start">Before you start</h2>
 <ul>

@@ -2,14 +2,16 @@
 <html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Free security tools for AI-built apps | PatchLabs</title>
-<meta name="description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a leak cost calculator, and a full sample proof report.">
+<meta name="description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.">
 <link rel="canonical" href="https://patchlabs.dev/tools/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
 <meta property="og:title" content="Free security tools for AI-built apps | PatchLabs">
-<meta property="og:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a leak cost calculator, and a full sample proof report.">
+<meta property="og:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.">
 <meta property="og:url" content="https://patchlabs.dev/tools/">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -17,7 +19,7 @@
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Free security tools for AI-built apps | PatchLabs">
-<meta name="twitter:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a leak cost calculator, and a full sample proof report.">
+<meta name="twitter:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -50,6 +52,7 @@
               <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
               <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
               <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
             </div>
           </div>
           <div class="mega-side">
@@ -99,7 +102,7 @@
               <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
               <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
               <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
-              <a class="mega-item small" href="/tools" aria-current="page"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/tools" aria-current="page"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
               <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
               <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
             </div>
@@ -131,14 +134,14 @@
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Tools</li></ol></nav>
     <p class="lab">Free tools</p>
     <h1>Free tools to see who can read your data.</h1>
-    <p class="lede">Start with a quick look at your access rules, work out what a leak would cost, or open a complete report from a real lab run. No account needed for any of them.</p>
+    <p class="lede">Start with a quick look at your access rules or your site’s security headers, work out what a leak would cost, or open a complete report from a real lab run. No account needed for any of them.</p>
   </div>
 </section>
 
 <section class="sec tight" aria-labelledby="tools-h" style="padding-top:0">
   <div class="wrap">
     <h2 id="tools-h" class="sr-only">Tools</h2>
-    <div class="grid g3">
+    <div class="grid g2">
       <a class="card link tool-card" href="/tools/rls-check">
 <div class="tc-art" aria-hidden="true"><span class="d">$ rls-check manra399/patchlabs-demo-app</span>
 <span class="d">1 file · 2 tables</span>
@@ -151,6 +154,20 @@ medium   PL-004 profiles
           <h3>Free RLS check</h3>
           <p>Paste a public repo. We read <code>supabase/migrations</code> and flag eight risky patterns, each with the file, the line and what it means.</p>
           <div class="tc-foot"><span>static analysis</span><span class="link-arrow">Run it</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/tools/headers-check">
+<div class="tc-art" aria-hidden="true"><span class="d">$ headers-check https://your-app.com</span>
+<span class="d">1 page load · TLSv1.3 · 56 days left</span>
+<b>grade C</b>  65/100
+medium PL-030 no Content-Security-Policy
+low    PL-032 no nosniff
+<span class="g">passed</span> HTTPS, HSTS, framing, referrer</div>
+        <div class="tc-body">
+          <span class="n-big">NO SIGN-UP · SECONDS</span>
+          <h3>Free headers check</h3>
+          <p>Type your site’s address. We load your public home page once, like any visitor, and grade HTTPS, the certificate, security headers, cookie flags and mixed content, with the fix for your host.</p>
+          <div class="tc-foot"><span>one public page load</span><span class="link-arrow">Check it</span></div>
         </div>
       </a>
       <a class="card link tool-card" href="/tools/leak-cost">
@@ -198,6 +215,7 @@ medium   PL-004 profiles
         <h3>Free RLS check</h3>
         <p>Seconds. Reads your SQL as text.</p>
         <ul class="ticks"><li>Risky rules, with file and line</li><li class="x">Can’t tell intended from leaking</li><li class="x">No fix</li></ul>
+        <p class="small mt-2 mb-0">Or grade your site’s HTTPS and headers with the <a href="/tools/headers-check">headers check</a>.</p>
       </div>
       <div>
         <p class="lab"><span class="n">02</span>Weigh</p>
@@ -255,6 +273,7 @@ medium   PL-004 profiles
         <li><a href="/product/code">Code</a></li>
         <li><a href="/product/fix">Fix</a></li>
         <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
         <li><a href="/demo">Try the demo</a></li>
         <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
@@ -288,6 +307,7 @@ medium   PL-004 profiles
         <li><a href="/docs/webhooks">Webhooks</a></li>
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

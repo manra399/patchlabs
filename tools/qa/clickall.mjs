@@ -1,6 +1,6 @@
 // Clicks every control on every page of the built site in headless Chrome and reports what's broken.
 //   node tools/qa/clickall.mjs <base-url> [out.json] [--pages=/a,/b] [--width=1440]
-// Per page: console errors, failed requests, links whose target 404s, and "dead" controls: a button, tab,
+// Per page: console errors, anything the Content-Security-Policy blocks, failed requests, links whose target 404s, and "dead" controls: a button, tab,
 // summary or [role=button] whose click changes nothing (no DOM change, no navigation, no new tab, no dialog).
 // Submit buttons inside forms are skipped (forms are tested by the flow tests). Pages come from <base>/sitemap.xml.
 import { spawn } from 'node:child_process';
@@ -32,6 +32,8 @@ const send = (method, params = {}) => new Promise(res => { const i = ++id; pendi
 const ev = async (expression) => (await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })).result?.value;
 await new Promise(r => ws.addEventListener('open', r));
 await send('Page.enable'); await send('Runtime.enable'); await send('Network.enable');
+// anything the page's Content-Security-Policy blocks is reported like a console error
+await send('Page.addScriptToEvaluateOnNewDocument', { source: `document.addEventListener('securitypolicyviolation', e => console.error('CSP blocked ' + (e.blockedURI || 'inline') + ' (' + e.violatedDirective + ')'))` });
 await send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width < 700 });
 
 const sitemap = await (await fetch(base.replace(/\/$/, '') + '/sitemap.xml')).text();

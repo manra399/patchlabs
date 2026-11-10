@@ -11,7 +11,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/compare">Compare</a></li><li aria-current="page">URL scanners</li></ol></nav>
     <p class="lab">PatchLabs vs URL scanners</p>
     <h1>URL scanners look at your live app from outside. PatchLabs tests a copy from the inside.</h1>
-    <p class="lede">Tools such as securityscanner.dev, VAS, VibeEval, SupaExplorer and UNPWNED probe your deployed site, often with the public key that ships inside your app. They’re fast and they see your real deployment. PatchLabs never touches your live app: it rebuilds the database from your migrations, tests every table as three people and proves the fix.</p>
+    <p class="lede">Tools such as securityscanner.dev, VAS, VibeEval, SupaExplorer and UNPWNED probe your deployed site, often with the public key that ships inside your app. They’re fast and they see your real deployment. PatchLabs never touches your database or tests your live app: it rebuilds the database from your migrations, tests every table as three people and proves the fix.</p>
     <div class="meta-line"><span>Last checked 10 Nov 2026</span><span>Five tools, sources at the end</span><span>Independent of all of them</span></div>
   </div>
 </section>
@@ -123,7 +123,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     </div>
     <div>
       <details class="acc"><summary>A scanner found nothing. Am I fine?</summary><div class="acc-body"><p>It means nothing it tested was readable from outside. One scanner in this list says it well in its own words: no findings is not proof of security. A table the scanner never discovered, or one only signed-in users can read, can still leak. That’s what our inside-out test covers.</p></div></details>
-      <details class="acc"><summary>Why don’t you scan the live URL too?</summary><div class="acc-body"><p>We chose never to touch customers’ live apps. Everything happens on a disposable copy built from your repo, with fake rows, so no real person’s data is ever read during a check.</p></div></details>
+      <details class="acc"><summary>Why don’t you scan the live URL too?</summary><div class="acc-body"><p>We chose never to test customers’ live apps or touch their databases. Every check happens on a disposable copy built from your repo, with fake rows, so no real person’s data is ever read. The one thing we do look at live is opt-in and passive: <a href="/product/live-posture">Live posture</a> loads your public home page, like any visitor, on a domain you verify, and grades its HTTPS, certificate and security headers, the way Mozilla Observatory does. It never queries your database or tries other URLs.</p></div></details>
       <details class="acc"><summary>Is a re-scan the same as a proof?</summary><div class="acc-body"><p>A re-scan tells you, after you’ve shipped, whether the outside view changed. Our proof runs before you ship: we apply the fix in the lab and check that an anonymous visitor and a signed-in stranger are denied while the owner still reads their own rows.</p></div></details>
     </div>
   </div>

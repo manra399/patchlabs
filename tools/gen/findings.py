@@ -38,7 +38,8 @@ def sql(text, name, lang_note=None):
             f'<pre class="wrap-lines"><code>{body}</code></pre>\n</div>')
 
 
-TOK = {"LEAK": '<span class="leak">LEAK</span>', "DENIED": '<span class="deny">DENIED</span>', "OK": '<span class="ok">OK</span>'}
+TOK = {"LEAK": '<span class="leak">LEAK</span>', "DENIED": '<span class="deny">DENIED</span>', "OK": '<span class="ok">OK</span>',
+       "FLAG": '<span class="step">FLAG</span>'}  # FLAG: a Live posture finding (amber): a missing header is not a data leak
 
 
 def tr(title, lines, foot):
@@ -60,7 +61,18 @@ def tr(title, lines, foot):
             f'  <div class="window-foot">{foot}</div>\n</div>')
 
 
+def hosts(pid, tabs):
+    """Fix snippets per hosting platform, as the tabs component. tabs: [(key, label, html)]. Ids are unique per page
+    (pid is the finding number). Without JS every panel shows with its own heading."""
+    btns = "".join(f'<button role="tab" id="t-{pid}-{k}" aria-controls="p-{pid}-{k}" aria-selected="{"true" if i == 0 else "false"}">{esc(lbl)}</button>'
+                   for i, (k, lbl, _) in enumerate(tabs))
+    panels = "\n".join(f'<div class="tab-panel" id="p-{pid}-{k}" role="tabpanel" aria-labelledby="t-{pid}-{k}"><h3 class="tab-title">{esc(lbl)}</h3>\n{h}\n</div>'
+                       for k, lbl, h in tabs)
+    return f'<div class="tabs f-hosts">\n<div role="tablist" aria-label="Where your site is hosted">{btns}</div>\n{panels}\n</div>'
+
+
 SEV = {"critical": ("sev-critical", "crit"), "high": ("sev-high", "high"), "medium": ("sev-medium", "med"), "low": ("sev-low", "low"),
+       "info": ("sev-low", "low"),
        "high to low": ("sev-high", "high"), "high or medium": ("sev-high", "high"), "from advisory": ("plain", "low")}
 
 F = []
@@ -1713,6 +1725,466 @@ export async function GET(req: NextRequest) {
     related=["PL-017", "PL-024", "PL-022"],
 ))
 
+# ------------------------------------------------------------------ Live posture (PL-027..PL-036)
+# line "live": read from the public home page of a domain the team verified (LIVE.md). One plain http:// request, one
+# https:// page load (at most 5 redirects) and its TLS handshake. Never the database, never other paths.
+LIVE_FOOT = '<span class="pill plain">synthetic example</span><span>Live posture · read from the home page’s response</span>'
+LOVABLE_HOST = """<p>Lovable’s documentation (checked 10 Nov 2026) doesn’t describe a way to set your own response headers on Lovable hosting. It does let you connect a custom domain through Cloudflare: choose “Uses Cloudflare or similar proxy” when you add the domain. Cloudflare can then add the header for you, as in the Cloudflare tab. If that changes, the header and value above are the same wherever you set them.</p>"""
+
+
+def cf_rule(header, value):
+    return (f"""<p>For a site proxied through Cloudflare (orange cloud), add a <strong>Response Header Transform Rule</strong> (Rules → Transform Rules in the dashboard): match all incoming requests to your hostname, then <em>Set static</em> header <code>{esc(header)}</code> to:</p>""" +
+            sql(value, f"{header} · value") +
+            """<p>On Cloudflare Pages or Workers static assets, a <code>_headers</code> file in your build output works the same way as on Netlify.</p>""")
+
+
+def netlify(header, value):
+    return (sql(f"""# public/_headers  (Vite copies public/ into the publish folder)
+/*
+  {header}: {value}""", "public/_headers") +
+            """<p>The file must end up in your publish directory (<code>dist</code> for Vite). Bolt projects deployed to Netlify use this file too. The same rule can live in <code>netlify.toml</code> under <code>[[headers]]</code> if you prefer one config file.</p>""")
+
+
+def vercel(header, value, extra=""):
+    return sql(f"""{{
+  "headers": [
+    {{
+      "source": "/(.*)",
+      "headers": [
+        {{ "key": "{header}", "value": "{value}" }}
+      ]
+    }}
+  ]
+}}""", "vercel.json") + (extra or """<p>Put <code>vercel.json</code> at the root of the project and redeploy. If the file already has a <code>headers</code> array, add the object to it rather than starting a second one.</p>""")
+
+
+F.append(dict(
+    id="PL-027", slug="pl-027", group="live", line="live", status="live",
+    title="Site doesn’t force HTTPS",
+    short="The plain http:// address of your site serves the page instead of redirecting to https://.",
+    desc="PL-027: your site answers on plain http:// without redirecting to HTTPS. Why it matters for AI-built apps, how to check with curl, and the fix on Vercel, Netlify, Cloudflare and Lovable.",
+    sev="medium", who="Anyone on the same network as a visitor, such as public Wi-Fi", found="PatchLabs Live posture: one plain http:// request to your home page",
+    proof="Not lab-proven: read from your site’s response",
+    what="""<p>Forcing HTTPS means that when someone types or follows <code>http://your-app.com</code>, your server answers with a redirect (a <code>301</code> or <code>308</code>) to <code>https://your-app.com</code> and nothing else. PL-027 means the plain <code>http://</code> request got the page itself, or a redirect that lands on another <code>http://</code> address.</p>
+<p>Over plain HTTP, everything between the visitor and your server can read and change the page: the café Wi-Fi, a compromised router, anything on the path. Someone there can swap your sign-in form for their own, or inject a script that reads the session your app stores in the browser. The visitor sees your normal domain and no warning.</p>""",
+    why="""<p>The big hosts redirect for you on their own domains, so the app works in every preview. The gap appears at launch: a custom domain added in a hurry, DNS pointed at a proxy set to “Flexible” TLS, or an old server left answering on port 80. Nobody types <code>http://</code> by hand while testing, so nobody notices.</p>""",
+    vuln=sql("""$ curl -sI http://app.example.com
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+# no redirect: the whole page was sent over plain HTTP""", "curl -sI http://app.example.com (response, shortened)"),
+    check="""<p>Ask for the plain address and look at the first line and the <code>Location</code> header. You want a 301 or 308 to an <code>https://</code> address.</p>""" +
+    sql("""curl -sI http://your-app.com | head -n 5
+# good: HTTP/1.1 308 Permanent Redirect
+#       Location: https://your-app.com/
+
+# follow every hop and print where it ends up
+curl -sIL -o /dev/null -w '%{url_effective}\\n' http://your-app.com""", "check-pl-027.sh"),
+    fix="""<p>The fix is a redirect from every <code>http://</code> URL to the same path on <code>https://</code>, done by your host or proxy, not by JavaScript in the page (a script only runs after the page has already crossed the network in the clear).</p>""" +
+    hosts("027", [
+        ("vercel", "Vercel", """<p>Vercel redirects HTTP to HTTPS on its own, including for custom domains, once the domain is added to the project and its certificate is issued. If the check fails on Vercel, the request probably isn’t reaching Vercel: look for an old A record or a proxy in front. In the project, open <em>Settings → Domains</em> and make sure every hostname you use (with and without <code>www</code>) is listed and shows a valid configuration.</p>"""),
+        ("netlify", "Netlify", """<p>Netlify redirects HTTP to HTTPS automatically once a certificate is provisioned for the domain. If plain HTTP still serves the page, open <em>Domain management → HTTPS</em> and check the certificate covers every hostname you use; a domain waiting for DNS verification has no certificate and no redirect yet.</p>"""),
+        ("cloudflare", "Cloudflare", """<p>In the dashboard, <em>SSL/TLS → Edge Certificates</em>, turn on <strong>Always Use HTTPS</strong>. On <em>SSL/TLS → Overview</em>, use <strong>Full (strict)</strong>, not <strong>Flexible</strong>: Flexible sends the request on to your host over plain HTTP, and some hosts then redirect back, which loops.</p>"""),
+        ("lovable", "Lovable", """<p>Lovable issues the certificate for a connected custom domain itself, according to its documentation. If the plain <code>http://</code> address still serves the page and the domain goes through Cloudflare, turn on <strong>Always Use HTTPS</strong> there (see the Cloudflare tab). Otherwise, ask Lovable support, since its docs don’t describe a redirect setting.</p>"""),
+    ]) + """<p>Once the redirect works, add HSTS (<a href="/findings/pl-029">PL-029</a>) so browsers stop trying plain HTTP at all.</p>""",
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:HTTP}    http://app.example.com/",
+        "~          200 OK, no redirect           {FLAG}",
+        "{STEP:HTTPS}   https://app.example.com/ → 200",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture sends one plain <code>http://</code> request to your home page and reads only the status line and the <code>Location</code> header. A redirect that reaches <code>https://</code> on the same site passes. Domains on a top-level domain that browsers already force to HTTPS (the HSTS preload list, such as <code>.app</code> and <code>.dev</code>) pass without the redirect, because no browser will load them over plain HTTP. It never follows other links or tries other paths. On the free <a href="/tools/headers-check">headers check</a> the same request is made for any address you type; in the app it runs only on a domain you verified.</p>""",
+    intended="""<p>Almost never for a site with sign-in. A local network device or a test box with no certificate is the usual exception, and neither belongs on a public domain.</p>""",
+    sevwhy="""<p>Medium: it needs someone on the visitor’s network path, but on shared Wi-Fi that is a low bar, and it undoes every other protection on the page. In the Live posture grade it costs 15 points.</p>""",
+    study=None, lint=None,
+    related=["PL-029", "PL-028", "PL-034"],
+))
+
+F.append(dict(
+    id="PL-028", slug="pl-028", group="live", line="live", status="live",
+    title="TLS certificate is invalid, expired or expires within 21 days",
+    short="Browsers will block your site, or soon will, because its HTTPS certificate doesn’t check out.",
+    desc="PL-028: your site’s TLS certificate is invalid, expired or close to expiry. How to check with openssl, why renewals fail on custom domains, and fixes for Vercel, Netlify, Cloudflare and Lovable.",
+    sev="high or medium", who="Every visitor sees a browser warning; anyone on their network gains", found="PatchLabs Live posture: the TLS handshake of the home page load",
+    proof="Not lab-proven: read from the TLS handshake",
+    what="""<p>Your HTTPS certificate proves to the browser that it is talking to your domain. PL-028 is reported in two strengths. <strong>High</strong>: the certificate is invalid (it doesn’t cover the hostname, isn’t signed by a trusted authority, or the chain is incomplete) or has already expired. <strong>Medium</strong>: it is valid today but expires within 21 days.</p>
+<p>An invalid or expired certificate puts a full-page warning in front of every visitor. Most leave; the ones who click through have been taught to ignore the one warning that tells them someone is intercepting the connection. That is why an invalid or expired certificate always sets the Live posture grade to F, whatever else passes.</p>""",
+    why="""<p>Managed hosts issue and renew certificates on their own, so certificates rarely expire on a default domain. They expire after a change nobody connected to TLS: DNS moved to a new provider, a <code>CAA</code> record added that doesn’t allow the host’s certificate authority, a domain pointed at two hosts at once, or a certificate uploaded by hand for a launch and forgotten.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+curl: (60) SSL certificate problem: certificate has expired
+
+$ openssl s_client -connect app.example.com:443 -servername app.example.com </dev/null 2>/dev/null \\
+    | openssl x509 -noout -enddate
+notAfter=Oct 30 11:02:41 2026 GMT""", "what an expired certificate looks like"),
+    check=sql("""# who issued it, which names it covers, and when it expires
+openssl s_client -connect your-app.com:443 -servername your-app.com </dev/null 2>/dev/null \\
+  | openssl x509 -noout -issuer -enddate -ext subjectAltName
+
+# curl refuses an invalid certificate and says why
+curl -sS -o /dev/null https://your-app.com && echo "certificate OK"
+
+# a CAA record can stop renewals: it must allow your host's authority
+dig +short CAA your-app.com""", "check-pl-028.sh") +
+    """<p>Check every hostname you use, including <code>www</code>: each needs its own name on the certificate.</p>""",
+    fix="""<p>A managed certificate should renew about a month before it expires without anyone touching it. If yours didn’t, something stopped the host from proving you own the domain. Find that, and the renewal follows.</p>""" +
+    hosts("028", [
+        ("vercel", "Vercel", """<p>Vercel issues Let’s Encrypt certificates for domains in your project and renews them automatically, as long as the domain’s DNS points at Vercel. Open <em>Settings → Domains</em>: a domain with a configuration warning can’t renew. If you have a <code>CAA</code> record, it must allow <code>letsencrypt.org</code>.</p>""" +
+         sql("""your-app.com.  CAA  0 issue "letsencrypt.org\"""", "DNS · CAA record (only if you use CAA)")),
+        ("netlify", "Netlify", """<p>Netlify also uses Let’s Encrypt and renews automatically while DNS points at Netlify. Under <em>Domain management → HTTPS</em>, use <strong>Renew certificate</strong> after fixing DNS. If you uploaded your own certificate, Netlify can’t renew it for you: replace it before the date, or switch back to the managed one.</p>"""),
+        ("cloudflare", "Cloudflare", """<p>When the site is proxied, visitors see Cloudflare’s edge certificate, which renews on its own (<em>SSL/TLS → Edge Certificates</em>). Behind it, with <strong>Full (strict)</strong>, your host still needs a valid certificate of its own: if that one expires, visitors get a Cloudflare error page instead of your site. A Cloudflare Origin CA certificate on the host is a long-lived option for that hop.</p>"""),
+        ("lovable", "Lovable", """<p>Lovable generates and installs the certificate for a connected custom domain and its documentation says you don’t need to upload or reissue one. If the check fails, the usual cause is DNS: records changed or removed after connecting, or a proxy in front. If the domain goes through Cloudflare, the edge certificate is Cloudflare’s; check it there.</p>"""),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:TLS}     app.example.com:443",
+        "~          issuer  Let's Encrypt",
+        "~          expires 2026-11-24 · 14 days  {FLAG}",
+        "~          medium: renew before it lapses",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the certificate from the TLS handshake of the one <code>https://</code> page load it makes: the issuer, the names it covers, the protocol version and the expiry date, which the report shows as days left. It doesn’t try other ciphers or protocol versions. Daily re-checks on a verified domain mean a renewal that silently fails shows up 21 days before visitors notice.</p>""",
+    intended="""<p>Never on a public site. A staging host with a self-signed certificate is common, but keep it off the domains people use, and don’t verify it for Live posture.</p>""",
+    sevwhy="""<p>High when the certificate is invalid or expired: the site is effectively down for most visitors, and the grade is always F. Medium when it expires within 21 days: nothing is broken yet, but a failed renewal is already likely.</p>""",
+    study=None, lint=None,
+    related=["PL-027", "PL-029", "PL-034"],
+))
+
+F.append(dict(
+    id="PL-029", slug="pl-029", group="live", line="live", status="live",
+    title="No HSTS header, or max-age under 180 days",
+    short="Browsers aren’t told to use HTTPS only, so a visitor’s first request can still go out over plain HTTP.",
+    desc="PL-029: no Strict-Transport-Security (HSTS) header, or a max-age under 180 days. What HSTS does, how to check it, and how to add it on Vercel, Netlify, Cloudflare and Lovable.",
+    sev="low", who="Someone on the visitor’s network, before the redirect happens", found="PatchLabs Live posture: your home page’s response headers",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>HSTS (HTTP Strict Transport Security) is one response header: <code>Strict-Transport-Security: max-age=63072000</code>. Once a browser has seen it over HTTPS, it refuses to use plain HTTP for your domain for that many seconds, and won’t let the visitor click past a certificate warning. PL-029 means the header is missing, or its <code>max-age</code> is below 180 days (15,552,000 seconds), too short to cover people who visit now and then.</p>
+<p>Without it, a redirect from <code>http://</code> (<a href="/findings/pl-027">PL-027</a>) still leaves one unprotected request every time someone types your domain or follows an old <code>http://</code> link. That single request is where an attacker on the network can stop the upgrade and keep the visitor on HTTP.</p>""",
+    why="""<p>HSTS lives in hosting config, which app generators rarely write. Some platforms add it to their own subdomains but not to custom domains, so the header disappears exactly when the app gets its real name.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+content-type: text/html; charset=utf-8
+# no strict-transport-security line""", "curl -sI https://app.example.com (response, shortened)"),
+    check=sql("""curl -sI https://your-app.com | grep -i strict-transport-security
+# good: strict-transport-security: max-age=63072000; includeSubDomains
+# 180 days = 15552000 seconds; anything lower is reported""", "check-pl-029.sh"),
+    fix="""<p>Send this on every HTTPS response. Two years is the usual value. Add <code>includeSubDomains</code> only when every subdomain serves HTTPS, and <code>preload</code> only if you intend to submit the domain to the browsers’ preload list, which is hard to undo.</p>""" +
+    sql("Strict-Transport-Security: max-age=63072000; includeSubDomains", "the header") +
+    hosts("029", [
+        ("vercel", "Vercel", vercel("Strict-Transport-Security", "max-age=63072000; includeSubDomains")),
+        ("netlify", "Netlify", netlify("Strict-Transport-Security", "max-age=63072000; includeSubDomains")),
+        ("cloudflare", "Cloudflare", """<p>Cloudflare has a switch for this: <em>SSL/TLS → Edge Certificates → HTTP Strict Transport Security (HSTS)</em>. Set max-age to 12 months or more, and tick “Include subdomains” only if they all serve HTTPS. On Cloudflare Pages without a proxied zone, use a <code>_headers</code> file as on Netlify.</p>"""),
+        ("lovable", "Lovable", LOVABLE_HOST + """<p>HSTS has to be a real response header: it can’t be set with a <code>&lt;meta&gt;</code> tag.</p>"""),
+    ]) + """<p>Make sure HTTPS works on every hostname first (<a href="/findings/pl-028">PL-028</a>): once browsers have cached HSTS, a broken certificate becomes a hard error with no way past it.</p>""",
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          strict-transport-security",
+        "~          not sent                       {FLAG}",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the <code>Strict-Transport-Security</code> header from the final response of its one <code>https://</code> page load, after at most 5 redirects, and compares <code>max-age</code> with 180 days. Sites on a top-level domain that is itself on the browsers’ HSTS preload list, such as <code>.app</code> or <code>.dev</code>, pass without the header, since browsers already use HTTPS only for them. It doesn’t look up whether your own domain was submitted to the preload list.</p>""",
+    intended="""<p>Briefly, while you roll it out: start with a small <code>max-age</code> such as 300, confirm nothing breaks, then raise it. A short value is reported until you do, which is the point.</p>""",
+    sevwhy="""<p>Low: it matters only on the first or plain-HTTP request, and only to someone positioned on the network. It is a cheap, one-line fix, so it still counts: 5 points in the Live posture grade.</p>""",
+    study=None, lint=None,
+    related=["PL-027", "PL-028", "PL-030"],
+))
+
+CSP_STARTER = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+               "img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; "
+               "connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; "
+               "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'")
+F.append(dict(
+    id="PL-030", slug="pl-030", group="live", line="live", status="live",
+    title="No Content-Security-Policy",
+    short="Your page sends no Content-Security-Policy, so any script that gets onto it can run and send data anywhere.",
+    desc="PL-030: no Content-Security-Policy header. A starter CSP for a Vite, React and Supabase app, how to test it in report-only mode, and how to set it on Vercel, Netlify, Cloudflare and Lovable.",
+    sev="medium", who="Anyone who gets a script onto your page", found="PatchLabs Live posture: your home page’s response headers",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>A Content-Security-Policy (CSP) is a response header that lists where your page may load scripts, styles, images and connections from. The browser blocks everything else. PL-030 means your home page sends no CSP at all.</p>
+<p>A CSP doesn’t fix a bug; it limits the damage of one. If user content reaches the page as HTML (<a href="/findings/pl-024">PL-024</a>), or a third-party script is compromised, a good policy stops the injected script from running or from sending what it reads to another server. That matters more than usual in a Supabase app, because supabase-js keeps the signed-in session in <code>localStorage</code> by default, where any script on the page can read it.</p>""",
+    why="""<p>A CSP has to name every place your app talks to, and that list is specific to each app: your Supabase project, your analytics, your fonts. Generators can’t know it, and a wrong guess breaks the app, so the safe default for a tool is to leave it out.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+content-type: text/html; charset=utf-8
+# no content-security-policy line: any script may run and connect anywhere""", "curl -sI https://app.example.com (response, shortened)"),
+    check=sql("""curl -sI https://your-app.com | grep -iE 'content-security-policy'
+# also check index.html for <meta http-equiv="Content-Security-Policy" ...>""", "check-pl-030.sh") +
+    """<p>In the browser, open DevTools → Console after you add a policy: every blocked load is listed with the directive that blocked it, which is how you tune it.</p>""",
+    fix="""<p>Start in report-only mode. <code>Content-Security-Policy-Report-Only</code> takes the same value, blocks nothing and prints violations in the console. Use the app for a few days, add the sources it genuinely needs, then switch the header name to <code>Content-Security-Policy</code>. A starter policy for a Vite or React app on Supabase, with your project ref in place of <code>YOUR-PROJECT</code>:</p>""" +
+    sql("default-src 'self';\n  script-src 'self';\n  style-src 'self' 'unsafe-inline';\n  img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co;\n  font-src 'self' data:;\n  connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co;\n  frame-ancestors 'none';\n  base-uri 'self';\n  form-action 'self';\n  object-src 'none'", "starter policy (one line in the real header)") +
+    """<p>The <code>wss://</code> entry is for Realtime; storage downloads come from the same <code>supabase.co</code> host. Add what your app uses on top, for example <code>https://fonts.googleapis.com</code> to <code>style-src</code> and <code>https://fonts.gstatic.com</code> to <code>font-src</code> for Google Fonts, or your analytics host to <code>script-src</code> and <code>connect-src</code>. Avoid <code>'unsafe-inline'</code> in <code>script-src</code>: it lets injected scripts run, which is what the policy is for.</p>""" +
+    hosts("030", [
+        ("vercel", "Vercel", vercel("Content-Security-Policy-Report-Only", CSP_STARTER,
+                                    """<p>Next.js apps can set the same header from <code>headers()</code> in <code>next.config.js</code>, or per request in middleware when you need a nonce for inline scripts.</p>""")),
+        ("netlify", "Netlify", netlify("Content-Security-Policy-Report-Only", CSP_STARTER)),
+        ("cloudflare", "Cloudflare", cf_rule("Content-Security-Policy-Report-Only", CSP_STARTER)),
+        ("lovable", "Lovable", LOVABLE_HOST + """<p>A CSP can also go in <code>index.html</code> as a meta tag, which works on any host. Meta-tag policies can’t use <code>frame-ancestors</code> or report-only mode, so test the policy in a local build first.</p>""" +
+         sql(f"""<!-- index.html, inside <head>, before any script -->
+<meta http-equiv="Content-Security-Policy"
+      content="{CSP_STARTER.replace("frame-ancestors 'none'; ", "")}">""", "index.html")),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          content-security-policy",
+        "~          not sent                       {FLAG}",
+        "~          report-only seen: no",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the final response of its one page load and looks for a <code>Content-Security-Policy</code> header, or a <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> tag in the HTML. A report-only header on its own doesn’t pass, because it blocks nothing. It doesn’t grade how strict the policy is: a policy with <code>'unsafe-inline'</code> scripts passes this check, so review yours against the starter above.</p>""",
+    intended="""<p>A static page with no sign-in, no user content and no third-party scripts gains little from a CSP. Any app with accounts gains a lot.</p>""",
+    sevwhy="""<p>Medium: nothing leaks from a missing CSP alone, but it is the difference between a cross-site scripting bug that reads every session and one that can’t send anything anywhere. 15 points in the Live posture grade.</p>""",
+    study=None, lint=None,
+    related=["PL-024", "PL-031", "PL-034"],
+))
+
+F.append(dict(
+    id="PL-031", slug="pl-031", group="live", line="live", status="live",
+    title="Any site can frame the page",
+    short="Neither frame-ancestors nor X-Frame-Options is set, so another site can load your app invisibly inside its own.",
+    desc="PL-031: no frame-ancestors or X-Frame-Options, so any site can frame your page (clickjacking). How to check, and the header for Vercel, Netlify, Cloudflare and Lovable.",
+    sev="low", who="Any website that frames your page", found="PatchLabs Live posture: your home page’s response headers",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>By default, any website can show your page inside an <code>&lt;iframe&gt;</code>. Clickjacking uses that: the attacker’s page loads yours, makes it transparent, and lines up a button the visitor thinks is theirs (“Claim your prize”) over a button in your app (“Delete account”, “Make public”, “Approve”). The visitor is signed in to your app, so the click counts.</p>
+<p>PL-031 means your page sends neither <code>Content-Security-Policy: frame-ancestors …</code> nor <code>X-Frame-Options</code>, the two headers that tell browsers who may frame it.</p>""",
+    why="""<p>Framing protection is a header, so it sits outside the code a generator writes. It also gets left out on purpose sometimes, because the builder’s own preview shows the app in a frame, and a header that blocks framing would break the preview.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+content-type: text/html; charset=utf-8
+# no x-frame-options, and no content-security-policy with frame-ancestors""", "curl -sI https://app.example.com (response, shortened)"),
+    check=sql("""curl -sI https://your-app.com | grep -iE 'x-frame-options|content-security-policy'
+# passes with either:
+#   x-frame-options: DENY            (or SAMEORIGIN)
+#   content-security-policy: ... frame-ancestors 'none' ...""", "check-pl-031.sh") +
+    sql("""<!-- try it: save as frame-test.html, open it in your browser -->
+<iframe src="https://your-app.com" width="800" height="600"></iframe>
+<!-- if your app appears, any site can do this -->""", "frame-test.html"),
+    fix="""<p>Send both: <code>frame-ancestors</code> is the modern control and wins where it is supported, and <code>X-Frame-Options</code> covers older browsers. Use <code>'none'</code> / <code>DENY</code> unless your own site frames the app, then <code>'self'</code> / <code>SAMEORIGIN</code>. If you already have a CSP (<a href="/findings/pl-030">PL-030</a>), add the directive to it rather than sending a second policy.</p>""" +
+    sql("""X-Frame-Options: DENY
+Content-Security-Policy: frame-ancestors 'none'""", "the headers") +
+    hosts("031", [
+        ("vercel", "Vercel", vercel("X-Frame-Options", "DENY", """<p>Then add <code>frame-ancestors 'none'</code> to your <code>Content-Security-Policy</code> value in the same file. Put <code>vercel.json</code> at the project root and redeploy.</p>""")),
+        ("netlify", "Netlify", netlify("X-Frame-Options", "DENY")),
+        ("cloudflare", "Cloudflare", cf_rule("X-Frame-Options", "DENY")),
+        ("lovable", "Lovable", LOVABLE_HOST + """<p>Neither header works as a <code>&lt;meta&gt;</code> tag: browsers ignore <code>X-Frame-Options</code> in HTML, and <code>frame-ancestors</code> is not allowed in a meta-tag CSP. This one needs a real header, so Cloudflare in front is the route.</p>"""),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          x-frame-options    not sent",
+        "~          frame-ancestors    not set     {FLAG}",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads both headers from the final response of its one page load. Either one passes: <code>X-Frame-Options</code> of <code>DENY</code> or <code>SAMEORIGIN</code>, or a <code>frame-ancestors</code> directive in an enforced <code>Content-Security-Policy</code>. It never frames your page itself.</p>""",
+    intended="""<p>Embeddable widgets, such as a booking form other sites put in an iframe, need framing. Allow the sites that embed you by name (<code>frame-ancestors https://partner.example</code>) rather than everyone, and keep account and admin pages unframeable.</p>""",
+    sevwhy="""<p>Low: it needs a signed-in visitor to be lured to the attacker’s page and to click where expected. For apps with one-click destructive actions it deserves more attention than the grade gives it (5 points).</p>""",
+    study=None, lint=None,
+    related=["PL-030", "PL-032", "PL-036"],
+))
+
+F.append(dict(
+    id="PL-032", slug="pl-032", group="live", line="live", status="live",
+    title="No X-Content-Type-Options: nosniff",
+    short="Browsers may guess a file’s type from its contents, so an uploaded “image” can be run as a script or page.",
+    desc="PL-032: no X-Content-Type-Options: nosniff header. What MIME sniffing is, why it matters for apps with uploads, and the one-line fix on Vercel, Netlify, Cloudflare and Lovable.",
+    sev="low", who="Anyone who can get a file served from your domain", found="PatchLabs Live posture: your home page’s response headers",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>Every response says what it is with <code>Content-Type</code>. Without <code>X-Content-Type-Options: nosniff</code>, browsers may second-guess that label by looking at the bytes (“MIME sniffing”). PL-032 means your page doesn’t send <code>nosniff</code>.</p>
+<p>The risk is files you didn’t write. If users can upload files that your domain serves back, a file labelled as plain text or an image but containing HTML or JavaScript can be treated as a page or a script. With <code>nosniff</code>, the browser trusts the label and refuses to run a script whose type isn’t a script type.</p>""",
+    why="""<p>It is a header with nothing to configure, so it gets skipped along with the rest of the hosting setup. Modern hosts send correct content types for your own files, which hides the gap until user uploads arrive.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+content-type: text/html; charset=utf-8
+# no x-content-type-options line""", "curl -sI https://app.example.com (response, shortened)"),
+    check=sql("""curl -sI https://your-app.com | grep -i x-content-type-options
+# good: x-content-type-options: nosniff
+
+# check your JavaScript bundle too: its type must be a script type
+curl -sI https://your-app.com/assets/index.js | grep -i content-type""", "check-pl-032.sh"),
+    fix=sql("X-Content-Type-Options: nosniff", "the header") +
+    """<p>It has one valid value and almost never breaks anything. The one thing to confirm afterwards: scripts and styles must be served with the right type (<code>text/javascript</code>, <code>text/css</code>), which every major host already does for built assets.</p>""" +
+    hosts("032", [
+        ("vercel", "Vercel", vercel("X-Content-Type-Options", "nosniff")),
+        ("netlify", "Netlify", netlify("X-Content-Type-Options", "nosniff")),
+        ("cloudflare", "Cloudflare", cf_rule("X-Content-Type-Options", "nosniff")),
+        ("lovable", "Lovable", LOVABLE_HOST + """<p><code>nosniff</code> only works as a response header, not as a meta tag.</p>"""),
+    ]) + """<p>Uploaded files are better still served from a different domain. Supabase Storage already does that: files come from your <code>supabase.co</code> project host, not your app’s domain. Keep personal uploads in a private bucket (<a href="/findings/pl-007">PL-007</a>).</p>""",
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          x-content-type-options",
+        "~          not sent                       {FLAG}",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the header from the final response of its one page load and passes it only when the value is <code>nosniff</code>. It sees the home page, not your other files, so set the header for every path (the snippets above do).</p>""",
+    intended="""<p>There is no common reason to leave it out. Set it everywhere.</p>""",
+    sevwhy="""<p>Low: it only becomes exploitable when someone can get a file served from your domain. It is the cheapest fix on this list. 5 points in the Live posture grade.</p>""",
+    study=None, lint=None,
+    related=["PL-030", "PL-031", "PL-024"],
+))
+
+F.append(dict(
+    id="PL-033", slug="pl-033", group="live", line="live", status="live",
+    title="Cookie set without Secure, or a session cookie without HttpOnly",
+    short="Your home page sets a cookie that can travel over plain HTTP, or a session cookie that any script on the page can read.",
+    desc="PL-033: a cookie set without Secure, or a session cookie without HttpOnly. What each flag protects, how @supabase/ssr and server frameworks set them, and how to check with curl or DevTools.",
+    sev="medium", who="Scripts on your page, or someone on the visitor’s network", found="PatchLabs Live posture: Set-Cookie headers on your home page",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>Two flags decide who can get hold of a cookie. <strong>Secure</strong>: only sent over HTTPS, never over plain HTTP. <strong>HttpOnly</strong>: invisible to JavaScript, so an injected script can’t read it. PL-033 means a cookie set by your home page has no <code>Secure</code>, or a cookie whose name marks it as a session (such as <code>session</code>, <code>sid</code>, <code>auth</code> or <code>token</code>) has no <code>HttpOnly</code>. The report names the cookie and the missing flag.</p>
+<p>For a session cookie, each missing flag is a separate way to lose the session: over the network, or to a script. <code>SameSite</code> isn’t part of this finding: browsers treat a cookie without it as <code>Lax</code>, which already keeps it out of most requests other websites trigger. Setting <code>SameSite=Lax</code> explicitly is still good practice.</p>""",
+    why="""<p>Plain supabase-js keeps the session in <code>localStorage</code>, so many AI-built apps set no cookies at all and pass this check. Cookies appear when the app moves to server rendering or <code>@supabase/ssr</code>, or adds a server framework, and each library has its own defaults. Code written for <code>localhost</code> often leaves out <code>Secure</code> because it breaks plain-HTTP development.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+set-cookie: session=eyJ…; Path=/
+# no Secure, no HttpOnly""", "curl -sI https://app.example.com (response, shortened)"),
+    check=sql("""curl -sI https://your-app.com | grep -i '^set-cookie'
+# every cookie should carry Secure; session cookies also HttpOnly""", "check-pl-033.sh") +
+    """<p>Cookies set after sign-in don’t show up on a signed-out request. In the browser, sign in, open DevTools → Application → Cookies and read the Secure and HttpOnly columns for every cookie on your domain.</p>""",
+    fix="""<p>Set <code>Secure</code> on every cookie, and <code>HttpOnly</code> on anything that identifies a user. Add <code>SameSite=Lax</code> while you’re there, so you don’t depend on the browser’s default; <code>Strict</code> also drops the cookie when someone follows a link to your site from elsewhere, which signs them out on arrival. Fix it where the cookie is created:</p>""" +
+    hosts("033", [
+        ("supabase", "@supabase/ssr", """<p><code>@supabase/ssr</code> stores the session in cookies so the server can read it. Its browser client reads those cookies too, so they can’t be <code>HttpOnly</code>; set <code>secure</code> explicitly (and <code>sameSite</code> while you’re there), and rely on a Content-Security-Policy (<a href="/findings/pl-030">PL-030</a>) to keep scripts off the page.</p>""" +
+         sql("""import { createServerClient } from '@supabase/ssr'
+
+const supabase = createServerClient(url, anonKey, {
+  cookies: { getAll, setAll },            // your framework's cookie functions
+  cookieOptions: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  },
+})""", "lib/supabase/server.ts")),
+        ("next", "Next.js", sql("""import { cookies } from 'next/headers'
+
+const store = await cookies()
+store.set('session', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  path: '/',
+})""", "app/api/sign-in/route.ts")),
+        ("express", "Express", sql("""// a cookie you set yourself
+res.cookie('session', token, { httpOnly: true, secure: true, sameSite: 'lax' })
+
+// express-session: behind a proxy (Vercel, Render, Cloudflare), trust it so secure cookies are sent
+app.set('trust proxy', 1)
+app.use(session({ secret, cookie: { httpOnly: true, secure: true, sameSite: 'lax' } }))""", "server.js")),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          cookie session",
+        "~          secure no · httponly no        {FLAG}",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the <code>Set-Cookie</code> headers on the responses of its one signed-out page load. It records each cookie’s name and flags, never its value, and never signs in. Every cookie needs <code>Secure</code>; <code>HttpOnly</code> is expected when the name looks like a session (it contains sess, auth, token, sid, jwt, login or remember). Several failing cookies count as one failed check in the grade. Cookies your app only sets after sign-in aren’t covered: check those in DevTools as above.</p>""",
+    intended="""<p>A cookie that JavaScript must read, such as a theme or language preference, or the <code>@supabase/ssr</code> session cookie, can’t be <code>HttpOnly</code>. That is a deliberate trade, and the report says which flag is missing so you can judge it. <code>Secure</code> has no such trade-off on a live site.</p>""",
+    sevwhy="""<p>Medium: a missing flag only matters alongside a second problem, such as a plain-HTTP connection or an injected script. On a session cookie, that second problem is easy to find. 15 points in the Live posture grade, counted once however many cookies fail.</p>""",
+    study=None, lint=None,
+    related=["PL-026", "PL-030", "PL-027"],
+))
+
+F.append(dict(
+    id="PL-034", slug="pl-034", group="live", line="live", status="live",
+    title="Page loads scripts or styles over plain HTTP",
+    short="Your HTTPS page pulls a script or stylesheet from an http:// address, which anyone on the network can replace.",
+    desc="PL-034: an HTTPS page loads scripts or styles over plain HTTP (mixed content). How to find the http:// URLs, and the fix in code or with upgrade-insecure-requests.",
+    sev="medium", who="Anyone on the visitor’s network", found="PatchLabs Live posture: the HTML of your home page",
+    proof="Not lab-proven: read from your home page’s HTML",
+    what="""<p>Mixed content is an HTTPS page that loads part of itself over plain <code>http://</code>. PL-034 covers the parts that can take over the page: <code>&lt;script src="http://…"&gt;</code> and stylesheets (<code>&lt;link rel="stylesheet" href="http://…"&gt;</code>). Whoever controls the network can replace that file, and a replaced script runs with full access to your page, including the signed-in session.</p>
+<p>Modern browsers block these loads outright, so in practice the usual symptom is a broken feature: a widget, a font or an analytics tag that silently never loads, with a “Mixed Content” error in the console.</p>""",
+    why="""<p>An old embed snippet copied from a provider’s documentation, a CDN URL written with <code>http://</code>, or a template from years ago. A generator pastes what it was given, and local development over <code>http://localhost</code> raises no error.</p>""",
+    vuln=sql("""<!-- index.html (vulnerable) -->
+<link rel="stylesheet" href="http://cdn.example.net/widget/1.4/widget.css">
+<script src="http://cdn.example.net/widget/1.4/widget.js"></script>""", "index.html (vulnerable, synthetic)"),
+    check=sql("""# script and stylesheet URLs that start with http://
+curl -s https://your-app.com | grep -oiE '<(script|link)[^>]+(src|href)="http://[^"]+"'""", "check-pl-034.sh") +
+    """<p>Scripts your bundle adds at runtime don’t appear in the HTML. Open the site in the browser with DevTools → Console: every blocked load is listed as “Mixed Content” with its URL.</p>""",
+    fix="""<p>Change each URL to <code>https://</code>; nearly every provider serves the same file over HTTPS. Better still, install the library from npm so it ships inside your own bundle. Then add <code>upgrade-insecure-requests</code> as a safety net: it tells the browser to fetch any leftover <code>http://</code> subresource over HTTPS instead.</p>""" +
+    hosts("034", [
+        ("code", "In your code", sql("""<!-- index.html (fixed) -->
+<link rel="stylesheet" href="https://cdn.example.net/widget/1.4/widget.css">
+<script src="https://cdn.example.net/widget/1.4/widget.js"></script>""", "index.html (fixed, synthetic)")),
+        ("vercel", "Vercel", vercel("Content-Security-Policy", "upgrade-insecure-requests", """<p>If you already send a Content-Security-Policy (<a href="/findings/pl-030">PL-030</a>), add <code>upgrade-insecure-requests</code> to it instead of adding a second header.</p>""")),
+        ("netlify", "Netlify / Cloudflare Pages", netlify("Content-Security-Policy", "upgrade-insecure-requests")),
+        ("lovable", "Lovable", """<p>This one works as a meta tag in <code>index.html</code>, so it needs nothing from the host:</p>""" +
+         sql("""<!-- index.html, inside <head> -->
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">""", "index.html")),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          <script src=\"http://cdn…\">    {FLAG}",
+        "~          1 script, 1 stylesheet",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the HTML of your home page from its one page load and lists <code>&lt;script&gt;</code> and stylesheet URLs that start with <code>http://</code>. It doesn’t download those files, run the page’s JavaScript or look at other pages, so scripts your app adds later are not seen: the console check above covers them.</p>""",
+    intended="""<p>Never for scripts or styles on an HTTPS page. Plain-HTTP images are a smaller problem and are not part of this finding, but fix them while you are there.</p>""",
+    sevwhy="""<p>Medium: a replaced script is a full takeover of the page, but it needs someone on the network path, and current browsers block most of these loads anyway. 15 points in the Live posture grade.</p>""",
+    study=None, lint=None,
+    related=["PL-027", "PL-030", "PL-029"],
+))
+
+F.append(dict(
+    id="PL-035", slug="pl-035", group="live", line="live", status="live",
+    title="Server headers reveal software versions",
+    short="A Server or X-Powered-By header names the software and its version, which tells attackers which known bugs to try.",
+    desc="PL-035: Server or X-Powered-By headers reveal software versions. Why it matters, how to check, and how to remove them in Next.js, Express, nginx and Cloudflare.",
+    sev="info", who="Nobody directly; it saves an attacker a step", found="PatchLabs Live posture: your home page’s response headers",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>Some servers announce themselves in every response: <code>Server: nginx/1.18.0</code>, <code>X-Powered-By: PHP/8.1.2</code>. PL-035 means a header like that carries a version number. On its own it exposes nothing, but it turns “is this server out of date?” into a lookup: anyone can match the version against published advisories without sending a single probe.</p>
+<p>A bare product name such as <code>Server: Vercel</code> or <code>Server: cloudflare</code> is not reported; the finding is about versions.</p>""",
+    why="""<p>These headers are on by default in many servers and frameworks, and nobody asks a generator to turn them off. They show up most on apps that moved from a managed host to a self-hosted server or container.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+server: nginx/1.18.0 (Ubuntu)
+x-powered-by: PHP/8.1.2""", "curl -sI https://app.example.com (response, synthetic)"),
+    check=sql("""curl -sI https://your-app.com | grep -iE '^(server|x-powered-by|x-aspnet-version|x-generator):'""", "check-pl-035.sh"),
+    fix="""<p>Turn the header off where it is added. If you see a version, also check that it is current: hiding an old version helps a little, upgrading it helps a lot.</p>""" +
+    hosts("035", [
+        ("next", "Next.js", sql("""// next.config.js
+module.exports = {
+  poweredByHeader: false,   // drops X-Powered-By: Next.js
+}""", "next.config.js")),
+        ("express", "Express", sql("""const app = express()
+app.disable('x-powered-by')""", "server.js")),
+        ("nginx", "nginx", sql("""# nginx.conf, inside http { }
+server_tokens off;   # Server: nginx, without the version""", "nginx.conf")),
+        ("cloudflare", "Cloudflare", """<p>For a proxied site, a <strong>Response Header Transform Rule</strong> (Rules → Transform Rules) can <em>Remove</em> <code>X-Powered-By</code> before responses reach visitors. That hides it; the fix at the source above is still better.</p>"""),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          server       nginx/1.18.0",
+        "~          x-powered-by PHP/8.1.2",
+        "~          info: versions visible",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the <code>Server</code> and <code>X-Powered-By</code> style headers from the final response of its one page load and reports them when they contain a version number. It doesn’t look the versions up or probe for the bugs they might have.</p>""",
+    intended="""<p>Harmless on a managed platform that names itself without a version. On your own server there is no reason to publish the version.</p>""",
+    sevwhy="""<p>Information: nothing is exposed and nothing can be exploited through the header itself. It costs no points in the Live posture grade, and is listed because the fix takes one line.</p>""",
+    study=None, lint=None,
+    related=["PL-023", "PL-032", "PL-036"],
+))
+
+F.append(dict(
+    id="PL-036", slug="pl-036", group="live", line="live", status="live",
+    title="No Referrer-Policy",
+    short="Your page sends no Referrer-Policy, so the browser’s default decides how much of your URLs other sites see.",
+    desc="PL-036: no Referrer-Policy header. What the Referer header leaks from app URLs, why strict-origin-when-cross-origin is the right value, and how to set it on any host or with a meta tag.",
+    sev="info", who="The sites your pages link to or load files from", found="PatchLabs Live posture: your home page’s response headers",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>When a visitor follows a link or your page loads a file from another site, the browser can send a <code>Referer</code> header saying which page they came from. <code>Referrer-Policy</code> controls how much of that URL is shared. PL-036 means your page doesn’t set one.</p>
+<p>Current browsers default to <code>strict-origin-when-cross-origin</code>, which sends only your domain to other sites, so the risk is small. Setting it yourself makes that behaviour explicit, covers older browsers, and matters most for apps that put tokens or personal details in URLs, such as reset links, invite codes or search pages.</p>""",
+    why="""<p>The browser default is reasonable, so nothing visibly breaks without it, and it lives with the other hosting headers that generated projects leave out.</p>""",
+    vuln=sql("""$ curl -sI https://app.example.com
+HTTP/2 200
+content-type: text/html; charset=utf-8
+# no referrer-policy line""", "curl -sI https://app.example.com (response, shortened)"),
+    check=sql("""curl -sI https://your-app.com | grep -i referrer-policy
+# also check index.html for <meta name="referrer" ...>""", "check-pl-036.sh"),
+    fix=sql("Referrer-Policy: strict-origin-when-cross-origin", "the header") +
+    """<p><code>strict-origin-when-cross-origin</code> keeps full URLs within your own site (useful for your analytics) and sends only the domain elsewhere, never over plain HTTP. Use <code>no-referrer</code> if pages carry secrets in their URLs and you need nothing at all to leave.</p>""" +
+    hosts("036", [
+        ("vercel", "Vercel", vercel("Referrer-Policy", "strict-origin-when-cross-origin")),
+        ("netlify", "Netlify", netlify("Referrer-Policy", "strict-origin-when-cross-origin")),
+        ("cloudflare", "Cloudflare", cf_rule("Referrer-Policy", "strict-origin-when-cross-origin")),
+        ("lovable", "Lovable", """<p>A meta tag in <code>index.html</code> works on any host, including Lovable hosting:</p>""" +
+         sql("""<!-- index.html, inside <head> -->
+<meta name="referrer" content="strict-origin-when-cross-origin">""", "index.html")),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          referrer-policy",
+        "~          not sent · info",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the <code>Referrer-Policy</code> header from the final response of its one page load, and the HTML for a <code>&lt;meta name="referrer"&gt;</code> tag. Either one passes.</p>""",
+    intended="""<p>Relying on the browser default is a reasonable choice for a site with no secrets in its URLs. Setting the header costs one line, so it is listed.</p>""",
+    sevwhy="""<p>Information: modern browsers already behave safely without it. It costs no points in the Live posture grade.</p>""",
+    study=None, lint=None,
+    related=["PL-035", "PL-031", "PL-030"],
+))
+
 # ------------------------------------------------------------------ shared
 for _f in F:
     _f.setdefault("line", "lab" if _f["group"] == "data" else "code")
@@ -1720,8 +2192,8 @@ for _f in F:
 F.sort(key=lambda f: f["id"])
 ORDER = [f["id"] for f in F]
 BY = {f["id"]: f for f in F}
-LINE_NAME = {"lab": "PatchLabs Lab", "code": "PatchLabs Code"}
-LINE_URL = {"lab": "/product/lab", "code": "/product/code"}
+LINE_NAME = {"lab": "PatchLabs Lab", "code": "PatchLabs Code", "live": "PatchLabs Live posture"}
+LINE_URL = {"lab": "/product/lab", "code": "/product/code", "live": "/product/live-posture"}
 
 
 def guides_for(fid):
@@ -1750,11 +2222,12 @@ def nav(cur):
                 f'{esc(f["title"])}</a></li>')
     lab = "\n        ".join(item(f) for f in F if f["line"] == "lab" and f["status"] == "live")
     code = "\n        ".join(item(f) for f in F if f["line"] == "code" and f["status"] == "live")
+    live = "\n        ".join(item(f) for f in F if f["line"] == "live" and f["status"] == "live")
     coming = "\n        ".join(item(f) for f in F if f["status"] == "coming")
     return f"""<nav class="docs-nav" aria-label="Findings">
       <details open><summary class="show-sm">All findings</summary>
       <h2>Overview</h2>
-      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li><li><a href="/tools/headers-check">Free headers check</a></li></ul>
       <h2>Lab · database</h2>
       <ul>
         {lab}
@@ -1762,6 +2235,10 @@ def nav(cur):
       <h2>Code · repo</h2>
       <ul>
         {code}
+      </ul>
+      <h2>Live · public page</h2>
+      <ul>
+        {live}
       </ul>
       <h2>Not tested yet · coming</h2>
       <ul>
@@ -1780,12 +2257,13 @@ def page(f):
     n = f["slug"].replace("pl-", "")
     coming = f["status"] == "coming"
     code = f["line"] == "code"
+    live = f["line"] == "live"
     guides = guides_for(f["id"])
     toc = [("what", "What it is")]
     if f.get("why"):
         toc.append(("why", "Why AI builders produce it"))
-    toc += [("example", "Example"), ("check", "Check it yourself"), ("fix", "The fix" if (coming or code or f.get("why")) else "The fix we write"),
-            ("proof", "How we test it" if coming else "The proof"), ("intended", "When it’s intended")]
+    toc += [("example", "What we see" if live else "Example"), ("check", "Check it yourself"), ("fix", "The fix" if (coming or code or f.get("why")) else "The fix we write"),
+            ("proof", "How we test it" if coming else "How we find it" if live else "The proof"), ("intended", "When it’s intended")]
     if f.get("sevwhy"):
         toc.append(("severity", "Severity"))
     if f["lint"]:
@@ -1812,7 +2290,7 @@ def page(f):
         pager += f'<a class="next" href="/findings/{next_f["slug"]}"><span>Next · {next_f["id"]}</span>{esc(next_f["title"])}</a>'
     jsonld = ('{"@context":"https://schema.org","@type":"TechArticle","headline":"' + f["id"] + ': ' + f["title"].replace('"', '\\"') +
               '","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}')
-    status_pill = '<span class="pill pending">coming · not tested yet</span>' if coming else f'<span class="pill plain">{LINE_NAME[f["line"]].split()[1]}</span>'
+    status_pill = '<span class="pill pending">coming · not tested yet</span>' if coming else f'<span class="pill plain">{" ".join(LINE_NAME[f["line"]].split()[1:])}</span>'
     status_box = ""
     if coming:
         status_box = ('<div class="callout limit"><p><strong>PatchLabs does not test for this yet (coming).</strong> This page explains the problem, '
@@ -1820,16 +2298,21 @@ def page(f):
                       'Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>')
     if coming:
         fix_note = '<p class="small muted">PatchLabs doesn’t write this fix yet. Review the SQL with your engineer and add it as a new migration.</p>'
+    elif live:
+        fix_note = '<p class="small muted">Live posture findings come with the header or setting to change. PatchLabs never changes your hosting or your repo.</p>'
     elif code:
         fix_note = '<p class="small muted">Code findings come with the file, the line and a one-line fix in the report, for your engineer to make. PatchLabs never pushes to your repo.</p>'
     else:
         fix_note = '<p class="small muted">Every fix arrives as a migration file (plus any code change it needs, noted in the report) for your engineer to approve. Download it, or commit it on GitHub in one click from the report page. Automatic pull requests need our GitHub App, which is coming.</p>'
     fix_h = "The fix" if (coming or code or f.get("why")) else "The fix PatchLabs writes"
-    proof_h = "How PatchLabs will test it" if coming else ("How PatchLabs finds it" if code else "The proof it runs")
+    proof_h = "How PatchLabs will test it" if coming else ("How PatchLabs finds it" if (code or live) else "The proof it runs")
     proof_block = (f["proof_tr"] or "") + "\n      " + f["proof_note"]
     if coming:
         cta_h = "Check what PatchLabs does test today"
         cta_p = "This check is coming. Today’s free check rebuilds your database from your migrations, tests it as a visitor, a stranger and the owner (PL-001 to PL-008), and reads your repo for keys and risky code."
+    elif live:
+        cta_h = f"Does your site have {f['id']}?"
+        cta_p = "Type your site’s address. The free headers check loads your public home page once, like any visitor, and grades HTTPS, the certificate, security headers, cookie flags and mixed content. No sign-up, and the result isn’t stored."
     elif code:
         cta_h = f"Does your app have {f['id']}?"
         cta_p = "Paste your public repo. PatchLabs Code reads it for this and every other code finding, and the Lab rebuilds your database to test who can read what."
@@ -1840,6 +2323,35 @@ def page(f):
     if not coming:
         found_dd = f'<a href="{LINE_URL[f["line"]]}">{LINE_NAME[f["line"]]}</a>' + esc(f["found"].split(LINE_NAME[f["line"]], 1)[1]) if f["found"].startswith(LINE_NAME[f["line"]]) else found_dd
     proof_dt = "Status" if coming else "Lab proof"
+    if live:
+        example_h = ('<h2 id="example"><span class="lab red" aria-hidden="true">Observe</span>What we see</h2>\n'
+                     '      <p>A synthetic example for <code>app.example.com</code>, shortened. Not taken from any real site.</p>')
+    else:
+        example_h = ('<h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>\n'
+                     '      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>')
+    if live:
+        cta_form = f"""<form class="repo-form one" action="/tools/headers-check" method="get">
+          <div class="in">
+            <label class="sr-only" for="url-f{n}">Your site’s address</label>
+            <input id="url-f{n}" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com">
+          </div>
+          <button class="btn primary" type="submit">Check my headers free</button>
+        </form>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Loads your public home page only</span><span><a href="/product/live-posture">How Live posture works</a></span></div>"""
+    else:
+        cta_form = f"""<form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f{n}">Public GitHub repo</label>
+            <input id="repo-f{n}" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f{n}">Your email</label>
+            <input id="email-f{n}" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>"""
     return f"""<!--
 title: {f["id"]} {f["title"]} | PatchLabs findings
 description: {f["desc"]}
@@ -1871,8 +2383,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
 
       {why}
 
-      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
-      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      {example_h}
       {f["vuln"]}
 
       <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
@@ -1900,19 +2411,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
         <p class="lab">Free check</p>
         <h2>{cta_h}</h2>
         <p>{cta_p}</p>
-        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
-          <div class="in">
-            <label class="sr-only" for="repo-f{n}">Public GitHub repo</label>
-            <input id="repo-f{n}" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
-          </div>
-          <div class="in">
-            <label class="sr-only" for="email-f{n}">Your email</label>
-            <input id="email-f{n}" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
-          </div>
-          <button class="btn primary" type="submit">Check my app free</button>
-        </form>
-        <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+        {cta_form}
       </div>
 
       <p class="small muted mt-4">Last reviewed {REVIEWED}. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20{f["id"]}">Tell us</a>.</p>
@@ -1935,12 +2434,15 @@ FOUND_SHORT = {"PL-001": "RLS check · lab", "PL-002": "RLS check · lab", "PL-0
                "PL-016": "Lab · coming", "PL-019": "Code · SQL + app code", "PL-009": "Key scan · code",
                "PL-017": "Code · functions", "PL-018": "Code · config", "PL-020": "Code · frontend", "PL-021": "Code · webhooks",
                "PL-022": "Code · functions", "PL-023": "Code · lockfile + OSV", "PL-024": "Code · frontend",
-               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers"}
+               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers",
+               "PL-027": "Live · HTTPS redirect", "PL-028": "Live · certificate", "PL-029": "Live · headers", "PL-030": "Live · headers",
+               "PL-031": "Live · headers", "PL-032": "Live · headers", "PL-033": "Live · cookies", "PL-034": "Live · page HTML",
+               "PL-035": "Live · headers", "PL-036": "Live · headers"}
 LINTS = {"PL-001": "none (0024 skips SELECT)", "PL-002": "none (0024 skips SELECT)", "PL-003": "0008", "PL-004": "–",
          "PL-005": "0024 (writes only)", "PL-006": "0011, 0028, 0029", "PL-007": "0025", "PL-008": "0013, 0007",
          "PL-010": "–", "PL-011": "–", "PL-012": "0024 (only literal true)", "PL-013": "–", "PL-014": "0010, 0002, 0016",
          "PL-015": "–", "PL-016": "–", "PL-019": "0015 (policies only)"}
-SEV_FILTER = {"critical": "critical", "high": "high", "high or medium": "high", "medium": "medium", "low": "low", "from advisory": "advisory"}
+SEV_FILTER = {"critical": "critical", "high": "high", "high or medium": "high", "medium": "medium", "low": "low", "info": "info", "from advisory": "advisory"}
 
 
 def index_page():
@@ -1953,17 +2455,19 @@ def index_page():
                 f'<span class="where">{FOUND_SHORT[f["id"]]}</span><span class="go" aria-hidden="true">→</span></a>')
     lab = "\n      ".join(row(f) for f in F if f["line"] == "lab" and f["status"] == "live")
     code = "\n      ".join(row(f) for f in F if f["line"] == "code" and f["status"] == "live")
+    live = "\n      ".join(row(f) for f in F if f["line"] == "live" and f["status"] == "live")
     coming = "\n      ".join(row(f) for f in F if f["status"] == "coming")
     n_live = sum(1 for f in F if f["status"] == "live")
     n_lab = sum(1 for f in F if f["status"] == "live" and f["line"] == "lab")
-    n_code = n_live - n_lab
+    n_code = sum(1 for f in F if f["status"] == "live" and f["line"] == "code")
+    n_posture = sum(1 for f in F if f["status"] == "live" and f["line"] == "live")
     n_coming = len(F) - n_live
     lint_rows = "\n            ".join(
         f'<tr><th scope="row"><a href="/findings/{f["slug"]}">{f["id"]}</a></th><td>{esc(f["title"])}{" <span class=\"pill pending\">coming</span>" if f["status"] == "coming" else ""}</td><td class="mono">{esc(LINTS[f["id"]])}</td></tr>'
         for f in F if f["id"] in LINTS)
     return f"""<!--
-title: Finding index: every issue PatchLabs Lab and Code test for | PatchLabs
-description: Stable IDs for the database, key and code problems PatchLabs finds in AI-built apps, each with example code, a self-check, the fix and how it is proven. Live and coming checks marked.
+title: Finding index: every issue PatchLabs Lab, Code and Live posture check | PatchLabs
+description: Stable IDs for the database, code, HTTPS and header problems PatchLabs finds in AI-built apps, each with an example, a self-check, the fix and how it is found.
 layout: marketing
 nav: findings
 head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css">
@@ -1974,7 +2478,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
       <p class="lab">Finding index</p>
       <h1>Every problem we test for, with the fix and the proof.</h1>
-      <p class="lede">{n_live} live checks with stable IDs: {n_lab} that PatchLabs Lab proves in a database rebuilt from your migrations, and {n_code} that PatchLabs Code finds by reading your repo. {n_coming} more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
+      <p class="lede">{n_live} live checks with stable IDs: {n_lab} that PatchLabs Lab proves in a database rebuilt from your migrations, {n_code} that PatchLabs Code finds by reading your repo, and {n_posture} that Live posture reads from your public home page on a domain you verify. {n_coming} more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
       <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/learn">Read the guides</a></div>
     </div>
   </section>
@@ -1987,6 +2491,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
           <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
           <button type="button" class="f-chipbtn" data-filter="lab" aria-pressed="false">Lab</button>
           <button type="button" class="f-chipbtn" data-filter="code" aria-pressed="false">Code</button>
+          <button type="button" class="f-chipbtn" data-filter="live" aria-pressed="false">Live</button>
         </div>
         <div class="f-fgroup" data-filter-group="sev"><span class="f-flabel">Severity</span>
           <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
@@ -1994,6 +2499,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
           <button type="button" class="f-chipbtn" data-filter="high" aria-pressed="false">High</button>
           <button type="button" class="f-chipbtn" data-filter="medium" aria-pressed="false">Medium</button>
           <button type="button" class="f-chipbtn" data-filter="low" aria-pressed="false">Low</button>
+          <button type="button" class="f-chipbtn" data-filter="info" aria-pressed="false">Info</button>
           <button type="button" class="f-chipbtn" data-filter="advisory" aria-pressed="false">Advisory</button>
         </div>
         <div class="f-fgroup" data-filter-group="status"><span class="f-flabel">Status</span>
@@ -2013,6 +2519,12 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
         <p class="lab">Live · PatchLabs Code · keys and risky code in your repo</p>
         <div class="f-index">
       {code}
+        </div>
+      </div>
+      <div class="f-group">
+        <p class="lab">Live · PatchLabs Live posture · HTTPS and headers on your verified domain</p>
+        <div class="f-index">
+      {live}
         </div>
       </div>
       <div class="f-group f-group-coming">
@@ -2042,6 +2554,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
             <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, a privileged function or webhook is open, or a user can act on another user's data.</td></tr>
             <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter, such as a public bucket, unsanitised HTML or a loose CORS rule.</td></tr>
             <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed by itself, but the app is likely broken or other findings get easier to exploit.</td></tr>
+            <tr><th scope="row"><span class="pill sev-low">info</span></th><td>Nothing exposed and nothing to exploit: a one-line hardening step. Costs no points in the Live posture grade.</td></tr>
           </tbody>
         </table>
       </div>
@@ -2052,10 +2565,10 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
     <div class="wrap">
       <div class="sec-head">
         <p class="lab">How a finding reaches you</p>
-        <h2 id="how-h">Data you watched leak, or code you can point at.</h2>
-        <p>Every finding in a report uses these IDs and the same shape: severity, the object, the file and line, short evidence, and how it was proven.</p>
+        <h2 id="how-h">Data you watched leak, code you can point at, or a header you can read.</h2>
+        <p>Every finding in a report uses these IDs and the same shape: severity, the object, the file and line or the address, short evidence, and how it was found.</p>
       </div>
-      <div class="grid g3">
+      <div class="grid g4">
         <div class="card green-edge">
           <span class="n-big">LAB · PROVEN</span>
           <h3>PatchLabs Lab</h3>
@@ -2069,9 +2582,15 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
           <div class="card-foot"><a class="link-arrow" href="/product/code">PatchLabs Code</a></div>
         </div>
         <div class="card">
+          <span class="n-big">LIVE · YOUR HOME PAGE</span>
+          <h3>Live posture</h3>
+          <p>On a domain you verify, loads your public home page like any visitor and reads the response: HTTPS, the certificate, security headers, cookie flags and mixed content. Never your database.</p>
+          <div class="card-foot"><a class="link-arrow" href="/product/live-posture">Live posture</a></div>
+        </div>
+        <div class="card">
           <span class="n-big">FREE · NO SIGN-UP</span>
           <h3>Static RLS check</h3>
-          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. Fast, and honest about its limit: it can't tell whether a public read is intended.</p>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. The free <a href="/tools/headers-check">headers check</a> does the same for PL-027 to PL-036 on any address.</p>
           <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
         </div>
       </div>
@@ -2115,7 +2634,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+        <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span></div>
       </div>
     </div>
   </section>

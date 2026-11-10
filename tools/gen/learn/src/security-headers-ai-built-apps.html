@@ -1,0 +1,128 @@
+title: Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)
+description: The security headers an AI-built app should send, a starter set you can copy for Vercel, Netlify, Cloudflare and Lovable, and how to test them without breaking the app.
+h1: Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)
+navtitle: Security headers
+topic: launch
+order: 2
+short: Six response headers, a copy-paste starter set for Vercel, Netlify, Cloudflare and Lovable, and how to test it.
+lede: Security headers are a handful of lines your host adds to every response, telling browsers to use HTTPS only, which scripts may run, who may frame the page and how much of your URLs to share. Apps built with Lovable, Bolt or Cursor usually ship with none of them, because headers live in hosting config rather than in the code a generator writes. The fix is one file per host, and this guide gives you that file.
+tldr: Send five headers on every response: <code>Strict-Transport-Security</code>, <code>Content-Security-Policy</code>, <code>X-Frame-Options</code>, <code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, plus HTTPS forced at the host. || Vercel: a <code>headers</code> block in <code>vercel.json</code>. Netlify and Cloudflare Pages: a <code>_headers</code> file in your publish folder. A proxied Cloudflare site: Transform Rules. || Lovable hosting: its docs don’t describe a headers setting (checked 10 Nov 2026); put the custom domain behind Cloudflare, or use meta tags for the two headers that allow it. || Roll out the Content-Security-Policy in report-only mode first; it is the one header that can break your app. || Check the result with <code>curl -sI</code> or the free <a href="/tools/headers-check">headers check</a>.
+findings: PL-027, PL-028, PL-029, PL-030, PL-031, PL-032, PL-033, PL-034, PL-035, PL-036
+cta: headers
+---
+<h2 id="what">What security headers do</h2>
+<p>Every time a browser loads your page, your host sends headers before the HTML. A few of them change how the browser treats your site: whether it may ever use plain HTTP, which scripts it will run, whether another site may show your app inside a frame. None of them changes your code, and none of them fixes a bug on its own. They make the common attacks on a web app harder or impossible, and they cost nothing once set.</p>
+<p>For a typical AI-built app, a React front end on Supabase, the stakes are concrete. supabase-js keeps the signed-in session in <code>localStorage</code> by default, so any script that gets onto your page can read it and act as the user. Headers are what stop that script from loading, or from sending what it reads anywhere.</p>
+
+<h2 id="why-missing">Why AI-built apps ship without them</h2>
+<p>Headers are set by the host, in a file like <code>vercel.json</code> or <code>_headers</code>, or in a dashboard. App builders generate the app’s code and leave hosting at its defaults. Previews look fine, because nothing visibly breaks without headers, and some builders show your app inside a frame in their editor, so a header that blocks framing would break their own preview. The result: the app works, and the hosting config was never written.</p>
+<p>The exception is HTTPS itself. Vercel, Netlify, Cloudflare and Lovable all issue certificates automatically; problems appear with custom domains, proxies and old DNS records.</p>
+
+<h2 id="starter">The starter set</h2>
+<p>These are the headers to send on every response, what each one does, and the finding page with the details and the self-check.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Header</th><th scope="col">Value to start with</th><th scope="col">What it stops</th><th scope="col">Finding</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">HTTPS redirect</th><td>301 or 308 from <code>http://</code> to <code>https://</code></td><td>Pages read or changed on the network</td><td><a href="/findings/pl-027">PL-027</a></td></tr>
+    <tr><th scope="row"><code>Strict-Transport-Security</code></th><td><code>max-age=63072000; includeSubDomains</code></td><td>The one plain-HTTP request before the redirect</td><td><a href="/findings/pl-029">PL-029</a></td></tr>
+    <tr><th scope="row"><code>Content-Security-Policy</code></th><td>See below; report-only first</td><td>Injected scripts running or sending data out</td><td><a href="/findings/pl-030">PL-030</a></td></tr>
+    <tr><th scope="row"><code>X-Frame-Options</code></th><td><code>DENY</code> (plus <code>frame-ancestors 'none'</code> in the CSP)</td><td>Clickjacking through an invisible frame</td><td><a href="/findings/pl-031">PL-031</a></td></tr>
+    <tr><th scope="row"><code>X-Content-Type-Options</code></th><td><code>nosniff</code></td><td>Uploaded files run as scripts or pages</td><td><a href="/findings/pl-032">PL-032</a></td></tr>
+    <tr><th scope="row"><code>Referrer-Policy</code></th><td><code>strict-origin-when-cross-origin</code></td><td>Full URLs, with any tokens in them, sent to other sites</td><td><a href="/findings/pl-036">PL-036</a></td></tr>
+  </tbody>
+</table></div>
+<p>Three more checks belong with them, though they aren’t headers you add: a valid certificate that isn’t about to expire (<a href="/findings/pl-028">PL-028</a>), cookies with <code>Secure</code>, and <code>HttpOnly</code> on session cookies (<a href="/findings/pl-033">PL-033</a>), and no scripts or styles loaded over <code>http://</code> (<a href="/findings/pl-034">PL-034</a>). And one to remove: <code>Server</code> or <code>X-Powered-By</code> headers that announce software versions (<a href="/findings/pl-035">PL-035</a>).</p>
+
+<h2 id="csp">A Content-Security-Policy for a Supabase app</h2>
+<p>The CSP is the only header here that can break your app, because it blocks everything it doesn’t list. Start with this policy for a Vite or React app on Supabase, with your project ref in place of <code>YOUR-PROJECT</code>, and send it as <code>Content-Security-Policy-Report-Only</code>: the browser then blocks nothing and prints each violation in the DevTools console.</p>
+[[CODE starter policy (one line in the real header)]]
+default-src 'self';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co;
+  font-src 'self' data:;
+  connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co;
+  frame-ancestors 'none';
+  base-uri 'self';
+  form-action 'self';
+  object-src 'none'
+[[/CODE]]
+<p>Use every part of the app for a few days, including sign-in, uploads and payments. For each console violation, decide whether the source is one you meant to use and add it to the right directive: Google Fonts needs <code>https://fonts.googleapis.com</code> in <code>style-src</code> and <code>https://fonts.gstatic.com</code> in <code>font-src</code>; an analytics tag needs its host in <code>script-src</code> and <code>connect-src</code>; a payment form often needs its host in <code>frame-src</code>. When the console is quiet, rename the header to <code>Content-Security-Policy</code>.</p>
+<div class="callout warn"><p><strong>Don’t add <code>'unsafe-inline'</code> to <code>script-src</code> to make an error go away.</strong> It lets injected inline scripts run, which is exactly what the policy exists to stop. Move the inline script into a file, or use a nonce if your framework supports one.</p></div>
+
+<h2 id="hosts">The full set, per host</h2>
+<p>Each block below sends the whole starter set, with the CSP in report-only mode. Add it, redeploy, then check it (next section). Bolt projects use whichever host they’re deployed to: a Bolt app deployed to Netlify uses the Netlify file.</p>
+<div class="tabs">
+<div role="tablist" aria-label="Where your site is hosted"><button role="tab" id="t-sh-vercel" aria-controls="p-sh-vercel" aria-selected="true">Vercel</button><button role="tab" id="t-sh-netlify" aria-controls="p-sh-netlify" aria-selected="false">Netlify</button><button role="tab" id="t-sh-cloudflare" aria-controls="p-sh-cloudflare" aria-selected="false">Cloudflare</button><button role="tab" id="t-sh-lovable" aria-controls="p-sh-lovable" aria-selected="false">Lovable</button></div>
+<div class="tab-panel" id="p-sh-vercel" role="tabpanel" aria-labelledby="t-sh-vercel"><h3 class="tab-title">Vercel</h3>
+<p><code>vercel.json</code> at the root of the project. Vercel already redirects HTTP to HTTPS on domains added to the project.</p>
+[[CODE vercel.json]]
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
+        { "key": "Content-Security-Policy-Report-Only", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}
+[[/CODE]]
+<p>A Next.js app can return the same list from <code>headers()</code> in <code>next.config.js</code>; set <code>poweredByHeader: false</code> there too.</p>
+</div>
+<div class="tab-panel" id="p-sh-netlify" role="tabpanel" aria-labelledby="t-sh-netlify"><h3 class="tab-title">Netlify</h3>
+<p>A file named <code>_headers</code> in the publish folder. With Vite, put it in <code>public/</code> and the build copies it into <code>dist/</code>. Netlify redirects HTTP to HTTPS once the domain’s certificate is issued.</p>
+[[CODE public/_headers]]
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+[[/CODE]]
+</div>
+<div class="tab-panel" id="p-sh-cloudflare" role="tabpanel" aria-labelledby="t-sh-cloudflare"><h3 class="tab-title">Cloudflare</h3>
+<p><strong>Cloudflare Pages or Workers static assets:</strong> the same <code>_headers</code> file as Netlify, in your build output.</p>
+<p><strong>Any site proxied through Cloudflare</strong> (orange cloud), wherever it is hosted:</p>
+<ol>
+  <li><em>SSL/TLS → Overview</em>: set the mode to <strong>Full (strict)</strong>.</li>
+  <li><em>SSL/TLS → Edge Certificates</em>: turn on <strong>Always Use HTTPS</strong>, and turn on <strong>HTTP Strict Transport Security (HSTS)</strong> with a max-age of 12 months or more.</li>
+  <li><em>Rules → Transform Rules</em>: create a <strong>Response Header Transform Rule</strong> for your hostname that <em>sets</em> the four remaining headers from the table above: <code>Content-Security-Policy-Report-Only</code>, <code>X-Frame-Options</code>, <code>X-Content-Type-Options</code> and <code>Referrer-Policy</code>.</li>
+</ol>
+</div>
+<div class="tab-panel" id="p-sh-lovable" role="tabpanel" aria-labelledby="t-sh-lovable"><h3 class="tab-title">Lovable</h3>
+<p>Lovable issues and renews the certificate for a connected custom domain. Its documentation (checked 10 Nov 2026) doesn’t describe a way to add your own response headers on Lovable hosting. Two routes work today:</p>
+<ol>
+  <li><strong>Cloudflare in front.</strong> When you connect the custom domain, choose “Uses Cloudflare or similar proxy”, then follow the Cloudflare tab. This is the only way to send HSTS, <code>X-Frame-Options</code> and <code>nosniff</code>, which browsers accept only as real headers.</li>
+  <li><strong>Meta tags in <code>index.html</code></strong>, for the two policies that allow it. A meta-tag CSP can’t use <code>frame-ancestors</code> or report-only mode, so test it in a local build first.</li>
+</ol>
+[[CODE index.html, inside <head>, before any script]]
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'">
+[[/CODE]]
+<p>If Lovable adds a headers setting, the values in the table above are the same wherever you set them.</p>
+</div>
+</div>
+
+<h2 id="check">Check the result</h2>
+<p>After you deploy, read the headers back from the live site. <code>curl -sI</code> prints only the response headers:</p>
+[[CODE check-headers.sh]]
+curl -sI https://your-app.com | grep -iE 'strict-transport|content-security|x-frame|x-content-type|referrer-policy|set-cookie|^server|x-powered-by'
+
+# and the plain address should redirect to https://
+curl -sI http://your-app.com | head -n 3
+[[/CODE]]
+<p>Or type your address into the free <a href="/tools/headers-check">headers check</a>. It loads your public home page once, like any visitor, and grades HTTPS, the certificate, these headers, cookie flags and mixed content from A to F, with the fix for each finding. No sign-up, and the result isn’t stored.</p>
+<p>Then open the app in a browser with DevTools → Console, and work through any CSP reports before you switch the policy from report-only to enforced.</p>
+
+<h2 id="limits">What headers don’t do</h2>
+<div class="callout limit"><p><strong>Headers protect the browser, not your database.</strong> A perfect A grade says nothing about who can read your Supabase tables: a missing row level security policy leaks data to anyone with your public key, whatever headers your site sends. That is a separate check, made by rebuilding the database from your migrations. See <a href="/learn/rls-policies-explained">RLS policies explained</a>.</p></div>
+<p>Headers also can’t fix a script you load on purpose that turns out to be malicious, or a cross-site scripting bug that a lax CSP allows. They narrow what an attacker can do; they don’t replace fixing the bug.</p>
+
+<h2 id="keep">Keep them in place</h2>
+<p>Headers disappear in ordinary changes: a new host, a rewritten <code>vercel.json</code>, a domain moved behind a proxy, a renewal that silently fails. <a href="/product/live-posture">PatchLabs Live posture</a> re-checks a domain you verify every day, loading only the public home page like any visitor, and alerts your team when the grade drops or a new finding appears. It never touches your database.</p>

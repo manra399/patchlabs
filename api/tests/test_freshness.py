@@ -28,7 +28,7 @@ def test_stale_thresholds(client, schedule, limit):
     assert f"last checked {limit} days ago" in svg and "#9f9f9f" in svg and "no known leaks" not in svg and "#2ea44f" not in svg
     p = client.get(f"/public/apps/{a['id']}").json()
     assert p == {"repo": "acme/shop", "status": "stale", "last_checked": p["last_checked"], "stale": True, "days_since_check": limit,
-                 "stale_after_days": limit}
+                 "stale_after_days": limit, "live": None}
     f = client.get(f"/apps/{a['id']}", headers=u.h).json()["freshness"]
     assert f == {"stale": True, "days_since_check": limit, "stale_after_days": limit}
 

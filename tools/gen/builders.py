@@ -55,7 +55,7 @@ PAGES = {
            ("Make sure the repo matches", "If you applied the SQL by hand, keep the migration file in the repo too, so the next change builds on it."),
            ("Re-check", "Run the check again. It confirms the leak is closed in what the repo now describes.")],
     faq=[("Isn’t Lovable’s own security scan enough?", "Use it: it’s built in and catches common problems. It tells you a rule looks risky. We rebuild the database, test as an anonymous visitor, a signed-in stranger and the owner, and prove the fix before you apply it. They work well together. <a href=\"/compare\">Comparisons</a>."),
-         ("Do you need access to my Lovable account or Supabase project?", "No. We only read the public GitHub repo. We never ask for your Supabase password or service-role key, and never connect to your live app."),
+         ("Do you need access to my Lovable account or Supabase project?", "No. We only read the public GitHub repo. We never ask for your Supabase password or service-role key, and checks never connect to your live app or database."),
          ("My repo is private. What can I do?", "Private repos need our GitHub App, which is coming. If you’d rather not make the repo public, <a href=\"mailto:manraj@patchlabs.dev?subject=Private%20repo\">email us</a> and we’ll tell you when it’s ready."),
          ("Will the fix break my app?", "Every fix must keep the owner reading their own rows, and the report includes a risk note about anything that could behave differently, such as a logged-out page that relied on the old rule. Read it before you apply."),
          ("Is PatchLabs part of Lovable?", "No. PatchLabs is independent and not affiliated with Lovable. We work with apps built on Lovable because their code lives in GitHub.")]),
@@ -137,7 +137,7 @@ supabase db push</code></pre>
            ("Keep the file in the repo", "So the next change Bolt makes builds on the fixed rules."),
            ("Re-check", "Run the check again to confirm the leak is closed.")],
     faq=[("My Bolt project doesn’t have a supabase/migrations folder.", "Then we can’t rebuild the database yet. The key scan still runs on your code and history. <a href=\"mailto:manraj@patchlabs.dev?subject=Bolt%20project\">Tell us</a> how your project is set up and we’ll see what we can do."),
-         ("Do you need access to my Bolt account?", "No. We only read the public GitHub repo and never connect to your live app or database."),
+         ("Do you need access to my Bolt account?", "No. Checks only read the public GitHub repo and never connect to your live app or database."),
          ("Will the fix break my app?", "A fix only passes if the owner can still read their own rows. The report also includes a risk note about anything that could behave differently."),
          ("Is PatchLabs part of Bolt?", "No. PatchLabs is independent and not affiliated with Bolt or StackBlitz.")]),
 

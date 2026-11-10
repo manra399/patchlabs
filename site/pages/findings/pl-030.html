@@ -1,0 +1,207 @@
+<!--
+title: PL-030 No Content-Security-Policy | PatchLabs findings
+description: PL-030: no Content-Security-Policy header. A starter CSP for a Vite, React and Supabase app, how to test it in report-only mode, and how to set it on Vercel, Netlify, Cloudflare and Lovable.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-030: No Content-Security-Policy","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li><li><a href="/tools/headers-check">Free headers check</a></li></ul>
+      <h2>Lab · database</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Code · repo</h2>
+      <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Live · public page</h2>
+      <ul>
+        <li><a href="/findings/pl-027"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-027</span>Site doesn’t force HTTPS</a></li>
+        <li><a href="/findings/pl-028"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-028</span>TLS certificate is invalid, expired or expires within 21 days</a></li>
+        <li><a href="/findings/pl-029"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-029</span>No HSTS header, or max-age under 180 days</a></li>
+        <li><a href="/findings/pl-030" aria-current="page"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-030</span>No Content-Security-Policy</a></li>
+        <li><a href="/findings/pl-031"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-031</span>Any site can frame the page</a></li>
+        <li><a href="/findings/pl-032"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-032</span>No X-Content-Type-Options: nosniff</a></li>
+        <li><a href="/findings/pl-033"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-033</span>Cookie set without Secure, or a session cookie without HttpOnly</a></li>
+        <li><a href="/findings/pl-034"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-034</span>Page loads scripts or styles over plain HTTP</a></li>
+        <li><a href="/findings/pl-035"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-035</span>Server headers reveal software versions</a></li>
+        <li><a href="/findings/pl-036"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-036</span>No Referrer-Policy</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-030</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-030</span><span class="pill sev-medium">medium</span><span class="pill plain">Live posture</span></div>
+        <h1>No Content-Security-Policy</h1>
+        <p class="lede">Your page sends no Content-Security-Policy, so any script that gets onto it can run and send data anywhere.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Medium</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Anyone who gets a script onto your page</dd></div>
+          <div><dt>Found by</dt><dd><a href="/product/live-posture">PatchLabs Live posture</a>: your home page’s response headers</dd></div>
+          <div><dt>Lab proof</dt><dd>Not lab-proven: read from your home page’s response</dd></div>
+        </dl>
+      </header>
+      
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>A Content-Security-Policy (CSP) is a response header that lists where your page may load scripts, styles, images and connections from. The browser blocks everything else. PL-030 means your home page sends no CSP at all.</p>
+<p>A CSP doesn’t fix a bug; it limits the damage of one. If user content reaches the page as HTML (<a href="/findings/pl-024">PL-024</a>), or a third-party script is compromised, a good policy stops the injected script from running or from sending what it reads to another server. That matters more than usual in a Supabase app, because supabase-js keeps the signed-in session in <code>localStorage</code> by default, where any script on the page can read it.</p>
+      
+
+      <h2 id="why"><span class="lab" aria-hidden="true">Cause</span>Why AI builders produce it</h2>
+      <p>A CSP has to name every place your app talks to, and that list is specific to each app: your Supabase project, your analytics, your fonts. Generators can’t know it, and a wrong guess breaks the app, so the safe default for a tool is to leave it out.</p>
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Observe</span>What we see</h2>
+      <p>A synthetic example for <code>app.example.com</code>, shortened. Not taken from any real site.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">curl -sI https://app.example.com (response, shortened)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>$ curl -sI https://app.example.com
+HTTP/2 200
+content-type: text/html; charset=utf-8
+<span class="c"># no content-security-policy line: any script may run and connect anywhere</span></code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-030.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>curl -sI https://your-app.com | grep -iE 'content-security-policy'
+<span class="c"># also check index.html for &lt;meta http-equiv="Content-Security-Policy" ...&gt;</span></code></pre>
+</div><p>In the browser, open DevTools → Console after you add a policy: every blocked load is listed with the directive that blocked it, which is how you tune it.</p>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
+      <p>Start in report-only mode. <code>Content-Security-Policy-Report-Only</code> takes the same value, blocks nothing and prints violations in the console. Use the app for a few days, add the sources it genuinely needs, then switch the header name to <code>Content-Security-Policy</code>. A starter policy for a Vite or React app on Supabase, with your project ref in place of <code>YOUR-PROJECT</code>:</p><div class="code">
+  <div class="code-bar"><span class="name">starter policy (one line in the real header)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>default-src 'self';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co;
+  font-src 'self' data:;
+  connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co;
+  frame-ancestors 'none';
+  base-uri 'self';
+  form-action 'self';
+  object-src 'none'</code></pre>
+</div><p>The <code>wss://</code> entry is for Realtime; storage downloads come from the same <code>supabase.co</code> host. Add what your app uses on top, for example <code>https://fonts.googleapis.com</code> to <code>style-src</code> and <code>https://fonts.gstatic.com</code> to <code>font-src</code> for Google Fonts, or your analytics host to <code>script-src</code> and <code>connect-src</code>. Avoid <code>'unsafe-inline'</code> in <code>script-src</code>: it lets injected scripts run, which is what the policy is for.</p><div class="tabs f-hosts">
+<div role="tablist" aria-label="Where your site is hosted"><button role="tab" id="t-030-vercel" aria-controls="p-030-vercel" aria-selected="true">Vercel</button><button role="tab" id="t-030-netlify" aria-controls="p-030-netlify" aria-selected="false">Netlify</button><button role="tab" id="t-030-cloudflare" aria-controls="p-030-cloudflare" aria-selected="false">Cloudflare</button><button role="tab" id="t-030-lovable" aria-controls="p-030-lovable" aria-selected="false">Lovable</button></div>
+<div class="tab-panel" id="p-030-vercel" role="tabpanel" aria-labelledby="t-030-vercel"><h3 class="tab-title">Vercel</h3>
+<div class="code">
+  <div class="code-bar"><span class="name">vercel.json</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Content-Security-Policy-Report-Only", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" }
+      ]
+    }
+  ]
+}</code></pre>
+</div><p>Next.js apps can set the same header from <code>headers()</code> in <code>next.config.js</code>, or per request in middleware when you need a nonce for inline scripts.</p>
+</div>
+<div class="tab-panel" id="p-030-netlify" role="tabpanel" aria-labelledby="t-030-netlify"><h3 class="tab-title">Netlify</h3>
+<div class="code">
+  <div class="code-bar"><span class="name">public/_headers</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c"># public/_headers  (Vite copies public/ into the publish folder)</span>
+/*
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'</code></pre>
+</div><p>The file must end up in your publish directory (<code>dist</code> for Vite). Bolt projects deployed to Netlify use this file too. The same rule can live in <code>netlify.toml</code> under <code>[[headers]]</code> if you prefer one config file.</p>
+</div>
+<div class="tab-panel" id="p-030-cloudflare" role="tabpanel" aria-labelledby="t-030-cloudflare"><h3 class="tab-title">Cloudflare</h3>
+<p>For a site proxied through Cloudflare (orange cloud), add a <strong>Response Header Transform Rule</strong> (Rules → Transform Rules in the dashboard): match all incoming requests to your hostname, then <em>Set static</em> header <code>Content-Security-Policy-Report-Only</code> to:</p><div class="code">
+  <div class="code-bar"><span class="name">Content-Security-Policy-Report-Only · value</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'</code></pre>
+</div><p>On Cloudflare Pages or Workers static assets, a <code>_headers</code> file in your build output works the same way as on Netlify.</p>
+</div>
+<div class="tab-panel" id="p-030-lovable" role="tabpanel" aria-labelledby="t-030-lovable"><h3 class="tab-title">Lovable</h3>
+<p>Lovable’s documentation (checked 10 Nov 2026) doesn’t describe a way to set your own response headers on Lovable hosting. It does let you connect a custom domain through Cloudflare: choose “Uses Cloudflare or similar proxy” when you add the domain. Cloudflare can then add the header for you, as in the Cloudflare tab. If that changes, the header and value above are the same wherever you set them.</p><p>A CSP can also go in <code>index.html</code> as a meta tag, which works on any host. Meta-tag policies can’t use <code>frame-ancestors</code> or report-only mode, so test the policy in a local build first.</p><div class="code">
+  <div class="code-bar"><span class="name">index.html</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>&lt;!-- index.html, inside &lt;head&gt;, before any script --&gt;
+&lt;meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://YOUR-PROJECT.supabase.co; font-src 'self' data:; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'"&gt;</code></pre>
+</div>
+</div>
+</div>
+      <p class="small muted">Live posture findings come with the header or setting to change. PatchLabs never changes your hosting or your repo.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">live posture · report excerpt</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[LOAD]</span>    https://app.example.com/ → 200</span>
+<span class="ln">          content-security-policy</span>
+<span class="ln">          not sent                       <span class="step">FLAG</span></span>
+<span class="ln">          report-only seen: no</span>
+</pre>
+  <div class="window-foot"><span class="pill plain">synthetic example</span><span>Live posture · read from the home page’s response</span></div>
+</div>
+      <p>Live posture reads the final response of its one page load and looks for a <code>Content-Security-Policy</code> header, or a <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> tag in the HTML. A report-only header on its own doesn’t pass, because it blocks nothing. It doesn’t grade how strict the policy is: a policy with <code>'unsafe-inline'</code> scripts passes this check, so review yours against the starter above.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>A static page with no sign-in, no user content and no third-party scripts gains little from a CSP. Any app with accounts gains a lot.</p>
+
+      <h2 id="severity"><span class="lab" aria-hidden="true">Rate</span>Why it’s rated medium</h2>
+      <p>Medium: nothing leaks from a missing CSP alone, but it is the difference between a cross-site scripting bug that reads every session and one that can’t send anything anywhere. 15 points in the Live posture grade.</p>
+
+      
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-024"><span class="n-big">PL-024</span><h3>User content rendered as raw HTML</h3><p class="small">Text one user wrote goes into the page as HTML, so it can run scripts in other users' browsers.</p></a><a class="card link" href="/findings/pl-031"><span class="n-big">PL-031</span><h3>Any site can frame the page</h3><p class="small">Neither frame-ancestors nor X-Frame-Options is set, so another site can load your app invisibly inside its own.</p></a><a class="card link" href="/findings/pl-034"><span class="n-big">PL-034</span><h3>Page loads scripts or styles over plain HTTP</h3><p class="small">Your HTTPS page pulls a script or stylesheet from an http:// address, which anyone on the network can replace.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/security-headers-ai-built-apps">Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></li></ul>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your site have PL-030?</h2>
+        <p>Type your site’s address. The free headers check loads your public home page once, like any visitor, and grades HTTPS, the certificate, security headers, cookie flags and mixed content. No sign-up, and the result isn’t stored.</p>
+        <form class="repo-form one" action="/tools/headers-check" method="get">
+          <div class="in">
+            <label class="sr-only" for="url-f030">Your site’s address</label>
+            <input id="url-f030" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com">
+          </div>
+          <button class="btn primary" type="submit">Check my headers free</button>
+        </form>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Loads your public home page only</span><span><a href="/product/live-posture">How Live posture works</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-030">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-029"><span>Previous · PL-029</span>No HSTS header, or max-age under 180 days</a><a class="next" href="/findings/pl-031"><span>Next · PL-031</span>Any site can frame the page</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">What we see</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">How we find it</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

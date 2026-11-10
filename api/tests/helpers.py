@@ -87,7 +87,7 @@ os.environ.update(
     EMAIL_OUTBOX=OUTBOX, AUTH_PER_IP_PER_HOUR="100000", FOUNDER_EMAIL="manraj@patchlabs.dev",
     CORS_ORIGINS="https://patchlabs.dev,https://www.patchlabs.dev",
     RECEIPT_PRIVATE_KEY="AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",  # bytes 0..31, test only
-    PATCHLABS_DEV="1")
+    PATCHLABS_DEV="1", POSTURE_EVERY="0")
 sys.path.insert(0, API_DIR)
 
 W = {"Authorization": "Bearer worker-test-token"}

@@ -34,7 +34,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
         <h2>Your biggest risk is a Supabase database leaking personal data.</h2>
         <ul class="ticks">
           <li>You want each fix proven on a rebuilt copy of your database, as anon, stranger and owner, before you see it</li>
-          <li>You’d rather nothing touched your live app, cloud account or real data</li>
+          <li>You’d rather nothing tested your live app or touched your cloud account or real data</li>
           <li>You want a reviewable migration and a plain-English answer to “should this table be public?”</li>
           <li>You want a free, focused check today, with published prices and our own cost per check</li>
         </ul>
@@ -85,7 +85,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
           <tr><th scope="row">Inside Lovable</th><td class="us"><span class="no">No connector</span><span class="cell-note">Works on the repo; the fix arrives as a migration</span></td><td><span class="yes">Lovable connector</span><span class="cell-note">Start a pentest from the Security tab; findings with reproduction steps and one-click “Fix all”</span></td></tr>
           <tr><th scope="row">Fixes</th><td class="us">SQL migration with one-click commit on GitHub; automatic pull requests coming with our GitHub App</td><td>AI AutoFix pull requests (10 a month on the free tier), and “Fix all” in Lovable</td></tr>
           <tr><th scope="row">How fixes are checked</th><td class="us"><span class="yes">Three-identity proof on a rebuilt database, before you see the fix</span></td><td><span class="part">Their homepage describes Detect, Fix, Deploy and Verify agents</span><span class="cell-note">Verify: a smoke test after a staging deploy</span></td></tr>
-          <tr><th scope="row">Touches your live app</th><td class="us"><span class="yes">Never</span></td><td>Pentests and DAST test the running app, by design</td></tr>
+          <tr><th scope="row">Touches your live app</th><td class="us"><span class="yes">Never tests it</span><span class="cell-note">Opt-in Live posture only loads your public home page, on a domain you verify</span></td><td>Pentests and DAST test the running app, by design</td></tr>
           <tr><th scope="row">Free tier</th><td class="us">1 app, monthly re-checks, 4 manual runs a month, every finding, every fix proven</td><td>Developer tier: 2 users, 10 repos, 10 AutoFixes a month, rescans every 3 days</td></tr>
           <tr><th scope="row">Pentest pricing</th><td class="us">We don’t offer pentests</td><td>$100 per test for Lovable founders (launch pricing). Says a typical pentest is about $4,000 per app, with no charge if there’s no high or critical finding</td></tr>
           <tr><th scope="row">Speed claim</th><td class="us"><b>Median 3.5 min</b> to a proven fix<span class="cell-note">Lab study, n=20, 9 Nov 2026</span></td><td>“Scan results in 32 seconds”</td></tr>
@@ -121,10 +121,9 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
       <h2 id="proof-h">The proof happens before the fix reaches you, not after it ships.</h2>
       <p class="lede">We rebuild the database from your migrations in a disposable Postgres with Supabase’s roles and grants, seed fake rows, and run the same read as each person. A fix that fails is never called proven; it goes to a person.</p>
       <ul class="ticks">
-        <li>No access to your live app, cloud or database</li>
+        <li>No access to your database or cloud, and no testing of your live app</li>
         <li>Smallest Claude model first, with a spend cap per check</li>
-        <li>Median model cost $0.46 per app (n=20, 9 Nov 2026)</li>
-      </ul>
+              </ul>
     </div>
   </div>
 </section>
@@ -152,7 +151,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
       <li><span><a href="https://www.aikido.dev" rel="noopener">Aikido homepage</a> · product areas, Detect/Fix/Deploy/Verify agents, “Scan results in 32 seconds”, sign-up flow</span><span class="when">checked 10 Nov 2026</span></li>
       <li><span><a href="https://www.aikido.dev/pricing" rel="noopener">Aikido pricing</a> · Developer tier limits, pentest pricing including the Lovable launch price</span><span class="when">checked 10 Nov 2026</span></li>
       <li><span><a href="https://docs.lovable.dev/features/security" rel="noopener">Lovable docs: Security</a> · the Aikido connector for agentic pentests</span><span class="when">checked 10 Nov 2026</span></li>
-      <li><span><a href="/research/methodology">PatchLabs methodology</a> · 3.5-minute and $0.46 medians (n=20, 9 Nov 2026)</span><span class="when">ours</span></li>
+      <li><span><a href="/research/methodology">PatchLabs methodology</a> · 3.5-minute median check time (n=20, 9 Nov 2026)</span><span class="when">ours</span></li>
     </ul>
     <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Aikido Security.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
   </div>

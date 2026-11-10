@@ -1,0 +1,312 @@
+<!--
+title: Free security headers check: HTTPS, HSTS, CSP and cookies | PatchLabs
+description: Check your site's security headers free, no sign-up. We load your public home page once and grade HTTPS, the certificate, HSTS, CSP, framing, cookies and mixed content.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PatchLabs free security headers check","url":"https://patchlabs.dev/tools/headers-check","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">Free headers check</li></ol></nav>
+    <p class="lab">Free tool · no sign-up</p>
+    <h1>Check your site’s security headers and HTTPS.</h1>
+    <p class="lede">Type your site’s address. We load your public home page once, like any visitor, and grade HTTPS, the certificate, the security headers, cookie flags and mixed content, each with the fix for Vercel, Netlify, Cloudflare and Lovable. No account, and the result isn’t stored.</p>
+
+    <form class="repo-form one" id="hc-form" action="/tools/headers-check" method="get" novalidate>
+      <div class="in">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M1.9 8h12.2M8 1.75c1.7 1.7 2.55 3.8 2.55 6.25S9.7 12.55 8 14.25C6.3 12.55 5.45 10.45 5.45 8S6.3 3.45 8 1.75z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+        <label class="sr-only" for="hc-url">Your site’s address</label>
+        <input id="hc-url" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com" aria-describedby="hc-help">
+      </div>
+      <button class="btn primary" type="submit" id="hc-go">Check my headers <span class="arrow" aria-hidden="true">→</span></button>
+    </form>
+    <p class="err" role="alert" id="hc-err"></p>
+    <noscript><p class="small muted mt-1">The check runs in your browser, so it needs JavaScript. Without it, the example below shows what you’d get, and <code>curl -sI https://your-app.com</code> shows the raw headers.</p></noscript>
+    <div class="form-meta" id="hc-help">
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Loads your public home page only</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Result not stored</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>10 checks per hour per network</span>
+      <span>No address handy? <button type="button" class="t-try" id="hc-ours">Try patchlabs.dev</button></span>
+    </div>
+
+    <div class="rls-out" id="hc-out" aria-live="polite">
+<!-- Example result: the exact markup H.render() below produces for a synthetic site (keep them in sync) -->
+<p class="rls-example-tag">Example result · synthetic site, for illustration</p><div class="rls-head"><div><p class="tag mb-1">Result · 10 Nov 2026</p><h2>https://demo-app.patchlabs-demo.example</h2><ul class="t-meta"><li>HTTP 200</li><li>TLSv1.3</li><li>3 findings</li><li>7 passed</li></ul></div></div><div class="hc-top"><div class="hc-grade g-mid" role="img" aria-label="Grade C, score 65 out of 100"><b>C</b><span>65<small>/100</small></span></div><div class="sev-strip hc-strip"><div class="high zero"><b>0</b><span>High</span></div><div class="med"><b>2</b><span>Medium</span></div><div><b>1</b><span>Low</span></div><div class="zero"><b>0</b><span>Info</span></div><div class="ok"><b>7</b><span>Passed</span></div></div></div><div class="sev-group"><h3>Medium <span class="ct">2</span></h3><article class="finding s-medium"><div class="f-top"><span class="pill sev-medium">medium</span><a class="f-id" href="/findings/pl-030">PL-030</a></div><h4>No Content-Security-Policy</h4><pre>The page sends no Content-Security-Policy header or meta tag.</pre><p class="f-detail"><strong>Fix:</strong> Send a Content-Security-Policy that lists where scripts may load from (start with default-src &#39;self&#39;).</p><p class="f-more"><a class="link-arrow" href="/findings/pl-030">PL-030 explained, with the fix for Vercel, Netlify, Cloudflare and Lovable</a></p></article><article class="finding s-medium"><div class="f-top"><span class="pill sev-medium">medium</span><a class="f-id" href="/findings/pl-033">PL-033</a><code>cookie sb-demo-auth-token</code></div><h4>Cookie set without Secure, or a session cookie without HttpOnly</h4><pre>Cookie sb-demo-auth-token is set without HttpOnly.</pre><p class="f-detail"><strong>Fix:</strong> Set cookies with Secure and SameSite=Lax; add HttpOnly to session cookies.</p><p class="f-more"><a class="link-arrow" href="/findings/pl-033">PL-033 explained, with the fix for Vercel, Netlify, Cloudflare and Lovable</a></p></article></div><div class="sev-group"><h3>Low <span class="ct">1</span></h3><article class="finding s-low"><div class="f-top"><span class="pill sev-low">low</span><a class="f-id" href="/findings/pl-032">PL-032</a></div><h4>No X-Content-Type-Options: nosniff</h4><pre>X-Content-Type-Options is missing or isn&#39;t nosniff.</pre><p class="f-detail"><strong>Fix:</strong> Send X-Content-Type-Options: nosniff</p><p class="f-more"><a class="link-arrow" href="/findings/pl-032">PL-032 explained, with the fix for Vercel, Netlify, Cloudflare and Lovable</a></p></article></div><div class="sev-group"><h3>Passed <span class="ct">7</span></h3><ul class="hc-passed"><li><a class="f-id" href="/findings/pl-027">PL-027</a><span>HTTPS is forced</span></li><li><a class="f-id" href="/findings/pl-028">PL-028</a><span>TLS certificate is valid</span></li><li><a class="f-id" href="/findings/pl-029">PL-029</a><span>HSTS is on</span></li><li><a class="f-id" href="/findings/pl-031">PL-031</a><span>Framing is restricted</span></li><li><a class="f-id" href="/findings/pl-034">PL-034</a><span>No scripts or styles over plain HTTP</span></li><li><a class="f-id" href="/findings/pl-035">PL-035</a><span>No software versions in headers</span></li><li><a class="f-id" href="/findings/pl-036">PL-036</a><span>Referrer-Policy is set</span></li></ul></div><h3 class="h4 mt-4 mb-2">What we saw</h3><div class="hc-facts"><div class="hc-fact"><p class="tag">HTTPS and certificate</p><dl class="kv"><dt>HTTP to HTTPS</dt><dd>yes, http:// redirects to https://</dd><dt>Redirects</dt><dd class="mono small">https://demo-app.patchlabs-demo.example/</dd><dt>Protocol</dt><dd>TLSv1.3</dd><dt>Issuer</dt><dd>Let&#39;s Encrypt</dd><dt>Expires</dt><dd>5 Jan 2027 <span class="muted">(56 days left)</span></dd></dl></div><div class="hc-fact"><p class="tag">Cookies set on a signed-out visit</p><div class="table-wrap"><table class="table compact hc-cookies"><thead><tr><th scope="col">Cookie</th><th scope="col">Secure</th><th scope="col">HttpOnly</th><th scope="col">SameSite</th></tr></thead><tbody><tr><th scope="row"><code>sb-demo-auth-token</code></th><td data-label="Secure"><span class="hc-yes">yes</span></td><td data-label="HttpOnly"><span class="hc-no">no</span></td><td data-label="SameSite">Lax</td></tr></tbody></table></div></div></div><div class="hc-fact mt-2"><p class="tag">Response headers</p><div class="table-wrap"><table class="table compact hc-headers"><thead><tr><th scope="col">Header</th><th scope="col">Value</th></tr></thead><tbody><tr><th scope="row"><code>strict-transport-security</code> <a class="hc-ref" href="/findings/pl-029">PL-029</a></th><td><code class="hc-val">max-age=63072000; includeSubDomains</code></td></tr><tr><th scope="row"><code>content-security-policy</code> <a class="hc-ref" href="/findings/pl-030">PL-030</a></th><td><span class="muted">not sent</span></td></tr><tr><th scope="row"><code>content-security-policy-report-only</code></th><td><span class="muted">not sent</span></td></tr><tr><th scope="row"><code>x-frame-options</code> <a class="hc-ref" href="/findings/pl-031">PL-031</a></th><td><code class="hc-val">DENY</code></td></tr><tr><th scope="row"><code>x-content-type-options</code> <a class="hc-ref" href="/findings/pl-032">PL-032</a></th><td><span class="muted">not sent</span></td></tr><tr><th scope="row"><code>referrer-policy</code> <a class="hc-ref" href="/findings/pl-036">PL-036</a></th><td><code class="hc-val">strict-origin-when-cross-origin</code></td></tr><tr><th scope="row"><code>permissions-policy</code></th><td><span class="muted">not sent</span></td></tr><tr><th scope="row"><code>server</code> <a class="hc-ref" href="/findings/pl-035">PL-035</a></th><td><code class="hc-val">Vercel</code></td></tr><tr><th scope="row"><code>x-powered-by</code> <a class="hc-ref" href="/findings/pl-035">PL-035</a></th><td><span class="muted">not sent</span></td></tr></tbody></table></div></div><div class="callout limit mt-3"><p><strong>A header check, not a security test.</strong> This reads one public page, the way any visitor’s browser does. It can’t see who can read your database, what your code does or whether your keys are exposed, and those cause the leaks that matter most in AI-built apps. The <a href="/#check">full check</a> covers them, and never touches your database.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="looks-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What it checks</p>
+      <h2 id="looks-h">Ten checks, from one ordinary page load.</h2>
+      <p>Each finding links to a page that explains it, shows how to check it yourself and gives the fix for your host. The points are what each failed check costs in the grade.</p>
+    </div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th scope="col">ID</th><th scope="col">What we flag</th><th scope="col">Severity</th><th scope="col" class="num">Points</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-027">PL-027</a></th><td>The plain <code>http://</code> address serves the page instead of redirecting to <code>https://</code>.</td><td><span class="pill sev-medium">medium</span></td><td class="num">15</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-028">PL-028</a></th><td>The TLS certificate is invalid, expired, or expires within 21 days.</td><td><span class="pill sev-high">high</span> <span class="pill sev-medium">medium</span></td><td class="num">30 / 15</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-029">PL-029</a></th><td>No <code>Strict-Transport-Security</code> header, or a <code>max-age</code> under 180 days.</td><td><span class="pill sev-low">low</span></td><td class="num">5</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-030">PL-030</a></th><td>No <code>Content-Security-Policy</code> (a report-only policy blocks nothing, so it doesn’t count).</td><td><span class="pill sev-medium">medium</span></td><td class="num">15</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-031">PL-031</a></th><td>Any site can put the page in a frame: no <code>frame-ancestors</code> and no <code>X-Frame-Options</code>.</td><td><span class="pill sev-low">low</span></td><td class="num">5</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-032">PL-032</a></th><td>No <code>X-Content-Type-Options: nosniff</code>.</td><td><span class="pill sev-low">low</span></td><td class="num">5</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-033">PL-033</a></th><td>A cookie set without <code>Secure</code>, or a session cookie without <code>HttpOnly</code>.</td><td><span class="pill sev-medium">medium</span></td><td class="num">15</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-034">PL-034</a></th><td>The page loads scripts or stylesheets over plain <code>http://</code>.</td><td><span class="pill sev-medium">medium</span></td><td class="num">15</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-035">PL-035</a></th><td><code>Server</code> or <code>X-Powered-By</code> headers that name software versions.</td><td><span class="pill sev-low">info</span></td><td class="num">0</td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-036">PL-036</a></th><td>No <code>Referrer-Policy</code> header or meta tag.</td><td><span class="pill sev-low">info</span></td><td class="num">0</td></tr>
+      </tbody>
+    </table></div>
+    <div class="split top mt-4">
+      <div>
+        <h3 class="h4">How the grade works</h3>
+        <p class="muted">Start at 100. Each failed check costs its points once, however many cookies it caught. A is 90 or more, B 75, C 60, D 40, anything lower F. An invalid or expired certificate is always F, because browsers show a full-page warning.</p>
+      </div>
+      <div>
+        <h3 class="h4">Sites on <code>.app</code> and <code>.dev</code></h3>
+        <p class="muted">Some top-level domains, including <code>.app</code> and <code>.dev</code>, are on every browser’s HSTS preload list, so browsers never load them over plain HTTP. Sites on them pass PL-027 and PL-029 without a redirect or header of their own.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="never-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What it does, exactly</p>
+      <h2 id="never-h">The same requests any visitor’s browser makes.</h2>
+      <p>This is a passive check, like Mozilla Observatory or securityheaders.com. It reads what your site already sends to everyone.</p>
+    </div>
+    <div class="vs">
+      <div>
+        <p class="lab">What we send</p>
+        <h3>Three things, once</h3>
+        <ul class="ticks">
+          <li>One plain <code>http://</code> request to your home page, to see whether it redirects to HTTPS</li>
+          <li>One <code>https://</code> load of your home page, following at most 5 redirects</li>
+          <li>The TLS handshake of that load, to read the certificate</li>
+        </ul>
+      </div>
+      <div>
+        <p class="lab green">What we never do</p>
+        <h3>No probing, no payloads</h3>
+        <ul class="ticks">
+          <li class="x">Request any other path, guess URLs or follow links</li>
+          <li class="x">Submit forms, call your API or sign in</li>
+          <li class="x">Touch your database, or test for data leaks</li>
+          <li class="x">Store the result: it comes back to your browser and nowhere else</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="api-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">For engineers</p>
+      <h2 id="api-h" class="h-md">Run it from your terminal or CI.</h2>
+      <p class="muted">The same check is a public endpoint. It returns the grade, every finding with its fix, the checks that passed and the raw facts: redirects, certificate, headers and cookie flags (names only, never values).</p>
+      <ul class="ticks small">
+        <li>Any public <code>https://</code> or <code>http://</code> address; IP addresses and private names are refused</li>
+        <li>10 requests per network per hour</li>
+        <li>422 for an address it won’t check, 502 when the page can’t be loaded, both with a sentence saying why</li>
+      </ul>
+      <p class="small"><a href="/docs/api#post-tools-headers-check">REST API docs</a></p>
+    </div>
+    <div>
+      <div class="code dark">
+        <div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>curl -s https://api.patchlabs.dev/tools/headers-check \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://your-app.com"}'</code></pre>
+      </div>
+      <div class="code">
+        <div class="code-bar"><span class="name">response (shortened)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="scroll"><code>{
+  "url": "https://your-app.com",
+  "final_url": "https://your-app.com/",
+  "grade": "C", "score": 65,
+  "counts": {"critical": 0, "high": 0, "medium": 2, "low": 1, "info": 0},
+  "findings": [
+    {"id": "PL-030", "severity": "medium",
+     "title": "No Content-Security-Policy",
+     "evidence": "The page sends no Content-Security-Policy header or meta tag.",
+     "fix": "Send a Content-Security-Policy that lists where scripts may load from (start with default-src 'self')."}
+  ],
+  "passed": [{"id": "PL-027", "title": "HTTPS is forced"}],
+  "facts": {
+    "status": 200, "https_redirect": true,
+    "tls": {"version": "TLSv1.3", "issuer": "Let's Encrypt",
+            "expires": "2027-01-05", "days_left": 56},
+    "headers": {"strict-transport-security": "max-age=63072000", "content-security-policy": null},
+    "cookies": [{"name": "sb-auth-token", "secure": true, "httponly": false, "samesite": "Lax"}]
+  }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h" class="h-md">About the headers check</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>I got an A. Is my app secure?</summary><div class="acc-body"><p>Your site sends the right headers, which is worth having. It says nothing about your data: the most common leak in AI-built apps is a database rule that lets strangers read other people’s rows, and no header stops that. The <a href="/#check">full check</a> rebuilds your database from its migrations and tests who can read what.</p></div></details>
+      <details class="acc"><summary>Do you keep the address or the result?</summary><div class="acc-body"><p>The result isn’t stored: it goes back to your browser. To enforce the hourly limit we keep the host name and a hashed network address. Cookie values are never read into the result, only their names and flags.</p></div></details>
+      <details class="acc"><summary>Can I check a site that isn’t mine?</summary><div class="acc-body"><p>The tool makes the same requests any visitor makes to a public page, so yes, as with any header checker. Daily re-checks and alerts in the app only run on a domain your team proves it controls.</p></div></details>
+      <details class="acc"><summary>My host doesn’t let me set headers.</summary><div class="acc-body"><p>Each finding page covers that case. Two options work almost anywhere: put your custom domain behind Cloudflare and add the headers there, or set the policies that allow it (CSP and Referrer-Policy) with a meta tag in <code>index.html</code>. HSTS, framing and <code>nosniff</code> only work as real headers. See the <a href="/learn/security-headers-ai-built-apps">security headers guide</a>.</p></div></details>
+      <details class="acc"><summary>Why does a missing SameSite not count?</summary><div class="acc-body"><p>Browsers treat a cookie without <code>SameSite</code> as <code>Lax</code>, which already keeps it out of most requests other sites trigger. Setting it explicitly is still good practice, and the facts table shows it for every cookie.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h" id="watch">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab green">Live posture</p>
+      <h2 id="final-h">Get this grade every day, and an alert when it drops.</h2>
+      <p class="lede">Add your app to PatchLabs, verify your domain with a file or a meta tag, and Live posture re-checks it daily, emails your team when the grade drops or a finding appears, and gives you a badge. PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify.</p>
+      <div class="row center"><a class="btn primary large" href="/app/login">Sign up free</a><a class="btn secondary large" href="/product/live-posture">How Live posture works</a></div>
+      <div class="form-meta"><span>Free for your first app</span><span><a href="/#check">Or check your app’s database and code</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $('hc-form'), input = $('hc-url'), btn = $('hc-go'), out = $('hc-out'), errEl = $('hc-err');
+  var example = out.innerHTML, btnLabel = btn.innerHTML;
+  // the renderer is shared with the static example above: keep window.PLHC in sync with it
+  var H = window.PLHC = {};
+  var esc = H.esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var SEV = ['critical', 'high', 'medium', 'low', 'info'];
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  var pillFor = function (s) { return 'pill ' + ({ critical: 'sev-critical', high: 'sev-high', medium: 'sev-medium' }[s] || 'sev-low'); };
+  var slug = function (id) { return /^PL-\d{3}$/i.test(id || '') ? '/findings/' + String(id).toLowerCase() : '/findings'; };
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var day = function (iso) { var t = iso ? new Date(iso) : null; return t && !isNaN(t) ? t.getUTCDate() + ' ' + MON[t.getUTCMonth()] + ' ' + t.getUTCFullYear() : ''; };
+  var gradeCls = function (g) { return { A: 'g-good', B: 'g-good', C: 'g-mid', D: 'g-mid', F: 'g-bad' }[g] || ''; };
+  var yes = function (v) { return v ? '<span class="hc-yes">yes</span>' : '<span class="hc-no">no</span>'; };
+  var HEADERS = [['strict-transport-security', 'PL-029'], ['content-security-policy', 'PL-030'], ['content-security-policy-report-only', ''], ['x-frame-options', 'PL-031'],
+    ['x-content-type-options', 'PL-032'], ['referrer-policy', 'PL-036'], ['permissions-policy', ''], ['server', 'PL-035'], ['x-powered-by', 'PL-035']];
+
+  H.render = function (r, opts) {
+    opts = opts || {};
+    var findings = Array.isArray(r.findings) ? r.findings : [], passed = Array.isArray(r.passed) ? r.passed : [], f = r.facts || {};
+    var c = r.counts || {}, tls = f.tls || {}, hd = f.headers || {}, cookies = Array.isArray(f.cookies) ? f.cookies : [];
+    var g = /^[A-F]$/.test(r.grade || '') ? r.grade : '?';
+    var h = (opts.example ? '<p class="rls-example-tag">Example result · synthetic site, for illustration</p>' : '') +
+      '<div class="rls-head"><div><p class="tag mb-1">Result' + (r.checked_at ? ' · ' + esc(day(r.checked_at)) : '') + '</p><h2>' + esc(r.url) + '</h2><ul class="t-meta">' +
+      (r.final_url && r.final_url !== r.url && r.final_url !== r.url + '/' ? '<li>ended at ' + esc(r.final_url) + '</li>' : '') +
+      (f.status ? '<li>HTTP ' + esc(f.status) + '</li>' : '') + (tls.version ? '<li>' + esc(tls.version) + '</li>' : '') +
+      '<li>' + (findings.length === 1 ? '1 finding' : findings.length + ' findings') + '</li><li>' + passed.length + ' passed</li></ul></div>' +
+      (opts.example ? '' : '<div class="row"><button class="btn small secondary" type="button" id="hc-copy">Copy link to this result</button><button class="btn small ghost" type="button" id="hc-again">Run again</button></div>') + '</div>';
+    h += '<div class="hc-top"><div class="hc-grade ' + gradeCls(g) + '" role="img" aria-label="Grade ' + esc(g) + ', score ' + esc(r.score) + ' out of 100"><b>' + esc(g) + '</b><span>' + esc(r.score) + '<small>/100</small></span></div>' +
+      '<div class="sev-strip hc-strip">' +
+      '<div class="high' + (c.high ? '' : ' zero') + '"><b>' + (c.high || 0) + '</b><span>High</span></div>' +
+      '<div class="med' + (c.medium ? '' : ' zero') + '"><b>' + (c.medium || 0) + '</b><span>Medium</span></div>' +
+      '<div' + (c.low ? '' : ' class="zero"') + '><b>' + (c.low || 0) + '</b><span>Low</span></div>' +
+      '<div' + (c.info ? '' : ' class="zero"') + '><b>' + (c.info || 0) + '</b><span>Info</span></div>' +
+      '<div class="ok"><b>' + passed.length + '</b><span>Passed</span></div></div></div>';
+    if (!findings.length) h += '<div class="callout ok"><p><strong>Every check passed.</strong> Your home page sends the headers and settings this tool looks for. That is about your site’s headers only, not your data: see the note below.</p></div>';
+    SEV.forEach(function (s) {
+      var list = findings.filter(function (x) { return x.severity === s; });
+      if (!list.length) return;
+      h += '<div class="sev-group"><h3>' + cap(s) + ' <span class="ct">' + list.length + '</span></h3>' + list.map(function (x) {
+        return '<article class="finding s-' + esc(s) + '"><div class="f-top"><span class="' + pillFor(s) + '">' + esc(s) + '</span><a class="f-id" href="' + slug(x.id) + '">' + esc(x.id) + '</a>' +
+          (x.object && x.object !== r.url && x.object !== r.final_url ? '<code>' + esc(x.object) + '</code>' : '') + '</div>' +
+          '<h4>' + esc(x.title) + '</h4>' + (x.evidence ? '<pre>' + esc(x.evidence) + '</pre>' : '') +
+          (x.fix ? '<p class="f-detail"><strong>Fix:</strong> ' + esc(x.fix) + '</p>' : '') +
+          '<p class="f-more"><a class="link-arrow" href="' + slug(x.id) + '">' + esc(x.id) + ' explained, with the fix for Vercel, Netlify, Cloudflare and Lovable</a></p></article>';
+      }).join('') + '</div>';
+    });
+    if (passed.length) h += '<div class="sev-group"><h3>Passed <span class="ct">' + passed.length + '</span></h3><ul class="hc-passed">' + passed.map(function (p) {
+      return '<li><a class="f-id" href="' + slug(p.id) + '">' + esc(p.id) + '</a><span>' + esc(p.title) + '</span></li>';
+    }).join('') + '</ul></div>';
+    // facts
+    var redirect = f.https_preloaded_tld ? 'not needed: the domain’s top-level domain is HSTS-preloaded' : f.https_redirect === true ? 'yes, http:// redirects to https://' : f.https_redirect === false ? 'no, http:// serves the page' : 'nothing answers on http://';
+    h += '<h3 class="h4 mt-4 mb-2">What we saw</h3><div class="hc-facts">' +
+      '<div class="hc-fact"><p class="tag">HTTPS and certificate</p><dl class="kv">' +
+      '<dt>HTTP to HTTPS</dt><dd>' + esc(redirect) + '</dd>' +
+      (Array.isArray(f.redirects) && f.redirects.length ? '<dt>Redirects</dt><dd class="mono small">' + f.redirects.map(esc).join(' →<br>') + '</dd>' : '') +
+      '<dt>Protocol</dt><dd>' + esc(tls.version || '–') + '</dd><dt>Issuer</dt><dd>' + esc(tls.issuer || '–') + '</dd>' +
+      '<dt>Expires</dt><dd>' + (tls.expires ? esc(day(tls.expires)) + (tls.days_left != null ? ' <span class="' + (tls.days_left < 21 ? 'red' : 'muted') + '">(' + (tls.days_left < 0 ? 'expired' : esc(tls.days_left) + ' days left') + ')</span>' : '') : '–') + '</dd></dl></div>' +
+      '<div class="hc-fact"><p class="tag">Cookies set on a signed-out visit</p>' + (cookies.length
+        ? '<div class="table-wrap"><table class="table compact hc-cookies"><thead><tr><th scope="col">Cookie</th><th scope="col">Secure</th><th scope="col">HttpOnly</th><th scope="col">SameSite</th></tr></thead><tbody>' +
+          cookies.map(function (k) { return '<tr><th scope="row"><code>' + esc(k.name) + '</code></th><td data-label="Secure">' + yes(k.secure) + '</td><td data-label="HttpOnly">' + yes(k.httponly) + '</td><td data-label="SameSite">' + (k.samesite ? esc(k.samesite) : '<span class="muted">not set (Lax)</span>') + '</td></tr>'; }).join('') + '</tbody></table></div>'
+        : '<p class="small muted mb-0">None. Many apps keep the session in the browser’s storage instead, which this check can’t see.</p>') + '</div></div>' +
+      '<div class="hc-fact mt-2"><p class="tag">Response headers</p><div class="table-wrap"><table class="table compact hc-headers"><thead><tr><th scope="col">Header</th><th scope="col">Value</th></tr></thead><tbody>' +
+      HEADERS.map(function (x) {
+        var v = hd[x[0]];
+        return '<tr><th scope="row"><code>' + esc(x[0]) + '</code>' + (x[1] ? ' <a class="hc-ref" href="' + slug(x[1]) + '">' + x[1] + '</a>' : '') + '</th><td>' + (v ? '<code class="hc-val">' + esc(v) + '</code>' : '<span class="muted">not sent</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>';
+    h += '<div class="callout limit mt-3"><p><strong>A header check, not a security test.</strong> This reads one public page, the way any visitor’s browser does. It can’t see who can read your database, what your code does or whether your keys are exposed, and those cause the leaks that matter most in AI-built apps. The <a href="/#check">full check</a> covers them, and never touches your database.</p></div>';
+    h += opts.example ? '' : '<div class="row mt-3"><a class="btn primary" href="#watch">Get this daily, with alerts</a><a class="link-arrow" href="/product/live-posture">How Live posture works</a></div>';
+    return h;
+  };
+
+  function show(r) {
+    out.innerHTML = H.render(r);
+    $('hc-copy').onclick = function () { copyText(location.href).then(function () { toast('Link copied', 'ok'); }, function () { toast('Copy failed. Copy the address bar instead.', 'err'); }); };
+    $('hc-again').onclick = function () { run(r.url); };
+  }
+
+  function renderError(e, url) {
+    var msg, kind = 'note';
+    var detail = e.data && e.data.detail;
+    if (e.status === 404 && /not found/i.test(String(detail || '')) && String(detail).length < 20 || e.status === 404 && detail === undefined || /isn’t available yet/.test(e.message)) {
+      kind = 'limit';
+      msg = '<strong>The headers check isn’t live on our server yet.</strong> Nothing is wrong with your site. Try again shortly, or run <code>curl -sI ' + esc(url) + '</code> to see the raw headers.';
+    } else if (e.status === 422) {
+      msg = '<strong>' + esc(typeof detail === 'string' ? detail : 'Enter a full web address, like https://your-app.com.') + '</strong> Use your site’s public address, like <code>https://your-app.com</code>.';
+    } else if (e.status === 429) {
+      kind = 'limit';
+      msg = '<strong>That’s the hourly limit for the free tool.</strong> ' + esc(e.message) + ' The limit is 10 checks per network per hour.';
+    } else if (e.status === 502) {
+      msg = '<strong>We couldn’t load that page.</strong> ' + esc(e.message) + ' Check the address opens in your browser, then try again.';
+    } else if (e.status === 0) {
+      msg = '<strong>We couldn’t reach PatchLabs.</strong> Check your connection and try again. Our <a href="/status">status page</a> says whether something is down.';
+    } else {
+      msg = '<strong>' + esc(e.message) + '</strong> Try again in a minute.';
+    }
+    out.innerHTML = '<div class="callout ' + kind + '" role="status"><p>' + msg + '</p></div>' +
+      '<div class="row mb-4"><button class="btn secondary" type="button" id="hc-retry">Try again</button></div>' + example;
+    $('hc-retry').onclick = function () { run(url); };
+  }
+
+  var busy = false;
+  async function run(url) {
+    url = String(url || '').trim();
+    errEl.textContent = '';
+    if (!url) { errEl.textContent = 'Enter your site’s address, like https://your-app.com.'; input.focus(); return; }
+    if (busy) return; busy = true;
+    btn.disabled = true; btn.textContent = 'Loading your page…';
+    out.innerHTML = '<div class="rls-loading"><span class="spin" aria-hidden="true"></span>Loading ' + esc(url) + ' the way a visitor’s browser would…</div>';
+    try {
+      var r = await api('/tools/headers-check', { method: 'POST', body: { url: url }, auth: false });
+      show(r);
+      try { history.replaceState(null, '', location.pathname + '?url=' + encodeURIComponent(r.url || url)); } catch (x) {}
+    } catch (e) {
+      renderError(e, url);
+    } finally {
+      busy = false; btn.disabled = false; btn.innerHTML = btnLabel;
+    }
+  }
+
+  form.addEventListener('submit', function (e) { e.preventDefault(); run(input.value); });
+  $('hc-ours').addEventListener('click', function () { input.value = 'https://patchlabs.dev'; run(input.value); });
+  var q = new URLSearchParams(location.search).get('url');
+  if (q) { input.value = q; run(q); }
+})();
+</script>

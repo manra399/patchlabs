@@ -1,6 +1,6 @@
 <!--
 title: Security and trust: what PatchLabs reads, keeps and never touches | PatchLabs
-description: PatchLabs works from your GitHub repo only, proves fixes in a disposable lab and never connects to your live app or database. Retention, subprocessors, receipts and limits.
+description: PatchLabs checks work from your GitHub repo, prove fixes in a disposable lab and never touch your database. Live posture, retention, subprocessors, receipts and limits.
 layout: marketing
 nav: security
 head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
@@ -13,15 +13,15 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
     <div>
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Security</li></ol></nav>
       <p class="lab">Trust</p>
-      <h1 id="sec-h1">We prove the fix on a copy. Your live app is never touched.</h1>
-      <p class="lede">PatchLabs reads your GitHub repo, rebuilds your database from its migrations in a throwaway lab, and tests the fix there. We never ask for your database password and we never send a single request to your app. This page says exactly what we read, what we keep, who else is involved and where our limits are.</p>
+      <h1 id="sec-h1">We prove the fix on a copy. Your database is never touched.</h1>
+      <p class="lede">PatchLabs reads your GitHub repo, rebuilds your database from its migrations in a throwaway lab, and tests the fix there. We never ask for your database password, and a check never sends a single request to your app. The one exception is opt-in: Live posture loads your public home page, like any visitor, and only on a domain you verify. This page says exactly what we read, what we keep, who else is involved and where our limits are.</p>
       <div class="row mt-3">
         <a class="btn primary large" href="/legal/disclosure-policy">Report a security issue</a>
         <a class="btn secondary large" href="/proof#verify">Verify a receipt</a>
       </div>
       <ul class="sec-toc" aria-label="On this page">
         <li><a href="#access">Access</a></li>
-        <li><a href="#live">Live probes</a></li>
+        <li><a href="#live">Production</a></li>
         <li><a href="#lab">Lab lifecycle</a></li>
         <li><a href="#agent">Fix agent</a></li>
         <li><a href="#retention">Retention</a></li>
@@ -47,6 +47,8 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
 <span class="ln"> </span>
 <span class="ln"><span class="c"># what a check never touches</span></span>
 <span class="ln"><span class="step">[LIVE]</span>    your live app         <span class="deny">NONE</span></span>
+<span class="ln"><span class="dim">          Live posture is separate: opt-in,</span></span>
+<span class="ln"><span class="dim">          public home page, verified domain</span></span>
 <span class="ln"><span class="step">[DB]</span>      your Supabase project <span class="deny">NONE</span></span>
 <span class="ln"><span class="step">[SECRETS]</span> database password     <span class="deny">NEVER</span></span>
 <span class="ln"><span class="step">[PUSH]</span>    your repo             <span class="deny">NONE</span></span>
@@ -66,7 +68,7 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
 <section class="sec tight" aria-label="Security at a glance">
   <div class="wrap">
     <div class="trust-facts">
-      <div><b>0</b><span>requests sent to your live app or database by a check</span></div>
+      <div><b>0</b><span>requests sent to your live app or database by a Lab or Code check</span></div>
       <div><b>0</b><span>passwords: sign-in is by emailed link, and we never ask for your database password</span></div>
       <div><b>Ed25519</b><span>signature on every finished check’s receipt, verifiable by anyone</span></div>
       <div><b>0</b><span>cookies or third-party analytics on patchlabs.dev</span></div>
@@ -96,7 +98,7 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
         <ul class="ticks mt-2">
           <li class="x"><span>Your database password or service-role key<small>The lab is built from your migrations, so it has its own roles and keys.</small></span></li>
           <li class="x"><span>Your production data<small>The lab holds fake rows we generate. Your customers’ records never leave your database.</small></span></li>
-          <li class="x"><span>Access to your live app or Supabase project<small>No URL scans, no API calls, no logins to your dashboard.</small></span></li>
+          <li class="x"><span>Access to your live app or Supabase project<small>No API calls, no logins to your dashboard, no database connection. Live posture, if you turn it on, loads only your public home page on a domain you verified.</small></span></li>
           <li class="x"><span>Write access to your repo<small>You commit the fix yourself, after your engineer reads it.</small></span></li>
         </ul>
       </div>
@@ -110,11 +112,12 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
   <div class="wrap split top">
     <div>
       <p class="lab green">Production</p>
-      <h2 id="live-h">Live probes: none.</h2>
-      <p class="lede">We never connect to your live app or database. Not to test, not to confirm a leak, not to check a fix.</p>
+      <h2 id="live-h">Your database: never touched.</h2>
+      <p class="lede">A check never connects to your live app or database. Not to test, not to confirm a leak, not to check a fix.</p>
       <p class="mt-3">When a report says “an anonymous visitor can read <code>profiles</code>”, that was observed in our lab, against a database rebuilt from your own migrations, as the lab’s <code>anon</code> role: the role your public key maps to. Your real key and your real users are never part of it.</p>
       <p>That is also why a fix can be proven before you ship it: the same lab is rebuilt with the fix applied, and the three identities are tested again.</p>
       <div class="callout limit"><p>Because we never look at production, anything changed directly in the Supabase dashboard and not captured in <code>supabase/migrations</code> is invisible to us. The report says what the lab could and couldn’t rebuild.</p></div>
+      <div class="callout note"><p><strong>Live posture is opt-in and separate.</strong> PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify (a file or meta tag on that domain). Each check is one plain <code>http://</code> request to see whether it redirects, one <code>https://</code> page load following at most 5 redirects, and that load’s TLS handshake. It grades HTTPS, the certificate, security headers, cookie flags and mixed content. No other paths, no forms, no API calls, no attack payloads. <a href="/product/live-posture">How Live posture works</a>.</p></div>
     </div>
     <div class="code" data-reveal>
       <div class="code-bar"><span class="name">who the lab tests as</span></div>
@@ -188,6 +191,7 @@ head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
         <thead><tr><th scope="col">Data</th><th scope="col">Kept for</th><th scope="col">Notes</th></tr></thead>
         <tbody>
           <tr><th scope="row">Lab database (rebuilt schema and fake rows)</th><td class="when">Deleted after each check</td><td>Dropped as soon as the probe and the proof finish.</td></tr>
+          <tr><th scope="row">Live posture results</th><td class="when">Until you remove the domain or delete the app</td><td>The grade, findings and the response headers and cookie names of your public home page. Removing the domain deletes its history. The free headers check stores nothing.</td></tr>
           <tr><th scope="row">Working copy of your repo and run files on the worker</th><td class="when">Up to 30 days</td><td>A clone of public code plus logs, kept briefly so we can investigate a failed check, then deleted.</td></tr>
           <tr><th scope="row">Reports, fixes and receipts</th><td class="when">Until you delete them</td><td>So your report link keeps working. Delete them from your account, or email us for a check made without an account.</td></tr>
           <tr><th scope="row">Email address, name and account data</th><td class="when">Until you delete your account</td><td><code>DELETE /me</code> (or the button in Settings) removes your user, sessions, solely owned workspaces, apps, checks and keys, plus earlier checks made with your email.</td></tr>
@@ -318,6 +322,10 @@ print(<span class="s">"genuine:"</span>, r[<span class="s">"receipt"</span>][<sp
         <p>Our free tool reads a public repo’s migration files and reports patterns, without a lab, without a fix and without verification. It sees exactly what anyone browsing the repo on GitHub sees. It is rate limited.</p>
       </div>
       <div class="card sunk">
+        <h3>Live posture and the free headers check</h3>
+        <p>Daily Live posture checks run only on a domain the app’s team has verified, with a code in <code>/patchlabs-verify.txt</code> or a <code>patchlabs-verify</code> meta tag on the home page. The free <a href="/tools/headers-check">headers check</a> loads one public page you name, once, exactly as a browser would, and keeps no result. It is rate limited and refuses private addresses.</p>
+      </div>
+      <div class="card sunk">
         <h3>Opting out</h3>
         <p>If you own a public repo and don’t want it in PatchLabs research samples or free-tool results, email <a href="mailto:manraj@patchlabs.dev?subject=Opt%20out">manraj@patchlabs.dev</a> with the subject “Opt out” and the repo URL. We’ll confirm within two working days and delete anything we hold about it. Our published research is aggregate only and never names an app.</p>
       </div>
@@ -362,7 +370,8 @@ Policy: https://patchlabs.dev/legal/disclosure-policy</code></pre>
     <ul class="limit-list">
       <li><b>Database access rules only</b>We test who can read personal data in Supabase/Postgres tables, and scan for exposed keys. We don’t test the rest of your app.</li>
       <li><b>As complete as your migrations</b>The lab is rebuilt from <code>supabase/migrations</code>. Changes made only in the Supabase dashboard are invisible to us.</li>
-      <li><b>Not a penetration test</b>We don’t attack your app, test business logic or check dependencies for known vulnerabilities.</li>
+      <li><b>Live posture is not a vulnerability test</b>It reads the headers, certificate and cookies of your public home page. It doesn’t test your app for data leaks, log in, or try other URLs.</li>
+      <li><b>Not a penetration test</b>We don’t attack your app or test business logic. Dependencies are checked against known advisories (PL-023) from your lockfiles, not by probing the running app.</li>
       <li><b>Proof covers the tables we test</b>A passing proof means the three identities behave correctly for the tables checked, not that your whole app is secure.</li>
       <li><b>Public repos only, for now</b>Private repos and automatic pull requests need our GitHub App, which is coming.</li>
       <li><b>One worker machine</b>Checks run one at a time, so a busy queue means a longer wait. The <a href="/status">status page</a> shows the queue live.</li>

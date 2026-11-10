@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live posture: daily HTTPS, certificate and security header grade | PatchLabs</title>
+<meta name="description" content="Live posture loads your public home page daily, like any visitor, and grades HTTPS, the certificate, security headers and cookies on a domain you verify. Part of Watch.">
+<link rel="canonical" href="https://patchlabs.dev/product/live-posture">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Live posture: daily HTTPS, certificate and security header grade | PatchLabs">
+<meta property="og:description" content="Live posture loads your public home page daily, like any visitor, and grades HTTPS, the certificate, security headers and cookies on a domain you verify. Part of Watch.">
+<meta property="og:url" content="https://patchlabs.dev/product/live-posture">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Live posture: daily HTTPS, certificate and security header grade | PatchLabs">
+<meta name="twitter:description" content="Live posture loads your public home page daily, like any visitor, and grades HTTPS, the certificate, security headers and cookies on a domain you verify. Part of Watch.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/platform.css"><link rel="stylesheet" href="/assets/pages/A-product.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture" aria-current="page"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/product/watch">Watch</a></li><li aria-current="page">Live posture</li></ol></nav>
+      <div class="p2-kicker"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span><span>Part of PatchLabs Watch</span><b>Live posture</b></span></div>
+      <h1>Your live site’s HTTPS and headers, graded every day.</h1>
+      <p class="lede">Verify your app’s domain once. Every day, PatchLabs loads your public home page the way any visitor’s browser does and grades HTTPS, the certificate, the security headers, cookie flags and mixed content, then tells your team when the grade drops.</p>
+      <div class="row"><a class="btn primary large" href="/tools/headers-check">Check my headers free</a><a class="btn secondary large" href="/app/login">Sign up free</a></div>
+      <p class="meta-line">PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify.</p>
+    </div>
+    <figure class="figure">
+      <div class="ui" role="img" aria-label="The Live posture panel in the PatchLabs app for a demo domain: grade C, score 65, two medium findings and one low, with the last checks listed.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/demo · live posture</span><span class="ui-tag">Demo workspace · fake data</span></div>
+  <div class="ui-body">
+    <div class="lp-mock-head"><div class="lp-mock-grade"><b>C</b><span>65<small>/100</small></span></div><div><p class="ui-title" style="font-size:15px">demo-app.patchlabs-demo.example</p><p class="ui-sub">Verified · checked 3 hours ago · next check in 21 hours</p></div></div>
+    <div class="ui-card" style="margin:14px 0">
+      <div class="ui-group">Findings <span class="ct">3</span></div>
+      <ul class="lp-mock-list">
+        <li><span class="pill sev-medium">medium</span><code>PL-030</code><span>No Content-Security-Policy</span></li>
+        <li><span class="pill sev-medium">medium</span><code>PL-033</code><span>Session cookie without HttpOnly</span></li>
+        <li><span class="pill sev-low">low</span><code>PL-032</code><span>No X-Content-Type-Options: nosniff</span></li>
+      </ul>
+    </div>
+    <div class="ui-card">
+      <div class="ui-group">Last checks <span class="ct">daily</span></div>
+      <ul class="ui-tl">
+        <li><span class="d"></span><span><b>Scheduled</b> · grade C · 65</span><span class="w">today</span></li>
+        <li><span class="d"></span><span><b>Scheduled</b> · grade B · 80</span><span class="w">yesterday</span></li>
+        <li><span class="d green"></span><span><b>Verified</b> · grade B · 80</span><span class="w">9 days ago</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+      <figcaption>The Live posture panel on a demo app. Domain and results are fake.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="reads-h">
+  <div class="wrap">
+    <div class="sec-head"><p class="lab">What we read</p><h2 id="reads-h">One ordinary page load. Nothing else.</h2><p>A passive check, like Mozilla Observatory or securityheaders.com: it reads what your site already sends to everyone who visits.</p></div>
+    <div class="grid g2 top">
+      <div class="card green-edge">
+        <span class="n-big">EACH CHECK SENDS</span>
+        <h3>Three things, once</h3>
+        <ul class="ticks">
+          <li>One plain <code>http://</code> request to your home page, to see whether it redirects to HTTPS</li>
+          <li>One <code>https://</code> load of your home page, following at most 5 redirects</li>
+          <li>The TLS handshake of that load, to read the certificate</li>
+        </ul>
+        <p class="small muted mb-0">From the response it reads the status, the security headers, the <code>Set-Cookie</code> flags (cookie names, never values) and the script and stylesheet addresses in the page’s HTML.</p>
+      </div>
+      <div class="card">
+        <span class="n-big">WHAT WE NEVER DO</span>
+        <h3>No probing, no payloads</h3>
+        <ul class="ticks">
+          <li class="x">Touch your database, or test your app for data leaks or vulnerabilities</li>
+          <li class="x">Request other paths, guess URLs or follow links</li>
+          <li class="x">Submit forms, call your API or sign in</li>
+          <li class="x">Check a domain your team hasn’t verified</li>
+        </ul>
+        <p class="small muted mb-0">The free <a href="/tools/headers-check">headers check</a> makes the same single page load for any public address, and stores nothing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="verify-h">
+  <div class="wrap">
+    <div class="sec-head"><p class="lab">Verify</p><h2 id="verify-h">Prove the domain is yours, one of two ways.</h2><p>Each app gets its own live code, separate from the repo code you committed to start monitoring. Publish it either way, press Verify, and the first check runs at once.</p></div>
+    <div class="grid g2 top">
+      <div>
+        <h3 class="h4">A file at your site’s root</h3>
+        <p class="muted">A file named <code>patchlabs-verify.txt</code> whose whole content is the code. In a Vite or Lovable project, put it in <code>public/</code>.</p>
+        <div class="code mb-0"><div class="code-bar"><span class="name">https://your-app.com/patchlabs-verify.txt</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>patchlabs-live-3f9c2a17d04be6a1</code></pre></div>
+      </div>
+      <div>
+        <h3 class="h4">Or a meta tag on your home page</h3>
+        <p class="muted">Inside <code>&lt;head&gt;</code> of the page your domain serves at <code>/</code>. Handy when you can’t add files.</p>
+        <div class="code mb-0"><div class="code-bar"><span class="name">index.html</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>&lt;meta name="patchlabs-verify" content="patchlabs-live-3f9c2a17d04be6a1"&gt;</code></pre></div>
+      </div>
+    </div>
+    <p class="small muted mt-2">Example code: your app shows its own. Redirects must stay on the same host (or its <code>www</code> twin), so another site can’t vouch for yours. You can remove the file or tag after verifying.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="grade-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">The grade</p>
+      <h2 id="grade-h">A to F, from ten checks with stable IDs.</h2>
+      <p class="lede">Start at 100. A failed high check costs 30, a medium 15, a low 5; information findings are free. Each check costs its points once, however many cookies it caught. A is 90 or more, B 75, C 60, D 40, anything lower F.</p>
+      <p class="muted">An invalid or expired certificate is always F, because visitors get a full-page browser warning. Sites on HSTS-preloaded top-level domains such as <code>.app</code> and <code>.dev</code> pass the HTTPS redirect and HSTS checks without doing anything, since browsers never load them over plain HTTP.</p>
+    </div>
+    <div class="table-wrap"><table class="table compact">
+      <thead><tr><th scope="col">ID</th><th scope="col">Check</th><th scope="col">Severity</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-027">PL-027</a></th><td>Site doesn’t force HTTPS</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-028">PL-028</a></th><td>Certificate invalid, expired or expiring within 21 days</td><td><span class="pill sev-high">high</span> <span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-029">PL-029</a></th><td>No HSTS, or max-age under 180 days</td><td><span class="pill sev-low">low</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-030">PL-030</a></th><td>No Content-Security-Policy</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-031">PL-031</a></th><td>Any site can frame the page</td><td><span class="pill sev-low">low</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-032">PL-032</a></th><td>No X-Content-Type-Options: nosniff</td><td><span class="pill sev-low">low</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-033">PL-033</a></th><td>Cookie without Secure, or session cookie without HttpOnly</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-034">PL-034</a></th><td>Scripts or styles over plain HTTP</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-035">PL-035</a></th><td>Server headers reveal software versions</td><td><span class="pill sev-low">info</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-036">PL-036</a></th><td>No Referrer-Policy</td><td><span class="pill sev-low">info</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="how-h">
+  <div class="wrap">
+<div class="sec-head"><p class="lab">How it works</p><h2 id="how-h">Verify, check daily, alert, share.</h2></div><ol class="flow" style="--n:4" data-reveal><li><h3>Verify</h3><p>Set your app’s domain in the app and publish the file or meta tag. The first check runs as soon as it’s found.</p><div class="art">patchlabs-verify.txt
+verified · grade B</div></li><li><h3>Check daily</h3><p>A fresh check every day while the app’s re-checks are on, and “Re-check now” whenever you ship a change.</p><div class="art">next check in 24 h
+re-check now</div></li><li><h3>Alert</h3><p>An email to your team and a <code>posture.changed</code> event to your workspace webhook, only when the grade drops or a finding appears.</p><div class="art">B → C · 1 new finding
+PL-030 no CSP</div></li><li><h3>Share</h3><p>An opt-in badge with the grade and the date of the last check, for your README or footer.</p><div class="art">live posture · A
+10 Nov 2026</div></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="badge-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Badge</p>
+        <h2 id="badge-h">Show the grade, dated.</h2>
+        <p class="lede">The live badge shows your latest grade and the day it was checked. It reads “private” until the app’s badge is public and the domain is verified.</p>
+        <p class="small muted">A badge is not a certification. It reports our last check of the headers and settings your home page sends.</p>
+      </div>
+      <div class="stack-ui">
+        <div class="badges">
+          <figure><img src="/assets/pages/badge-live-a.svg" alt="live posture: A · 10 Nov 2026" width="202" height="20"><figcaption>grade A</figcaption></figure>
+          <figure><img src="/assets/pages/badge-live-c.svg" alt="live posture: C · 10 Nov 2026" width="202" height="20"><figcaption>grade C</figcaption></figure>
+          <figure><img src="/assets/pages/badge-live-private.svg" alt="live posture: private" width="149" height="20"><figcaption>private</figcaption></figure>
+        </div>
+        <div class="code mb-0">
+          <div class="code-bar"><span class="name">README.md</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>[![PatchLabs live posture](https://api.patchlabs.dev/badge/&lt;app-id&gt;/live.svg)](https://patchlabs.dev/proof?app=&lt;app-id&gt;)</code></pre>
+        </div>
+        <p class="small"><a class="link-arrow" href="/docs/api#get-badge-aid-live-svg">Badge endpoint</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="why-h">
+  <div class="wrap">
+    <div class="sec-head split"><div><p class="lab">Why it matters</p><h2 id="why-h">AI builders get the app working, not the headers.</h2><p>Generated projects ship with whatever the host sends by default, and that rarely includes a Content-Security-Policy, framing rules or <code>nosniff</code>. The fixes are a few lines in <code>vercel.json</code>, <code>_headers</code> or a Cloudflare rule, and every finding page has them.</p></div><a class="link-arrow" href="/learn/security-headers-ai-built-apps">Security headers guide</a></div>
+    <div class="callout limit"><p><strong>What Live posture can’t see.</strong> It reads one public page, so it says nothing about who can read your database, what your code does or whether your keys are exposed. Those are the leaks that matter most in AI-built apps, and the <a href="/product/lab">Lab</a> and <a href="/product/code">Code</a> checks cover them from your repo. Live posture isn’t a vulnerability scan, a penetration test or uptime monitoring.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Questions about Live posture.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>Does Live posture touch my database or my users’ data?</summary><div class="acc-body"><p>No. PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify. It never signs in, so it sees what a logged-out visitor sees.</p></div></details>
+<details class="acc"><summary>How often does it check?</summary><div class="acc-body"><p>Once a day while the app’s re-checks are on, plus whenever someone presses “Re-check now” (at most once every 10 minutes). Turning the app’s schedule off pauses the daily check too.</p></div></details>
+<details class="acc"><summary>Who gets alerted?</summary><div class="acc-body"><p>Everyone who gets the app’s alert emails, and the workspace webhook as a <code>posture.changed</code> event (with a short message for Slack, Discord and Teams). Only when the grade drops or a new finding appears, never for an unchanged result.</p></div></details>
+<details class="acc"><summary>Can I change or remove the domain?</summary><div class="acc-body"><p>Yes. An owner or admin can change it (it needs verifying again) or remove it, which deletes its check history. Your site isn’t touched either way.</p></div></details>
+<details class="acc"><summary>Do I need a paid plan?</summary><div class="acc-body"><p>Live posture is part of Watch, which every plan includes. Start with the free <a href="/tools/headers-check">headers check</a>, no account needed.</p></div></details></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free headers check</p>
+      <h2 id="final-h">See your grade now, no sign-up.</h2>
+      <p class="lede">Type your site’s address. You get the grade, every finding with the fix for your host, and what we saw. Sign up to have it checked every day.</p>
+      <form class="repo-form one" action="/tools/headers-check" method="get">
+        <div class="in">
+          <label class="sr-only" for="lp-url">Your site’s address</label>
+          <input id="lp-url" name="url" type="text" inputmode="url" required autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://your-app.com">
+        </div>
+        <button class="btn primary" type="submit">Check my headers free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <div class="form-meta">
+        <span>Loads your public home page only</span>
+        <span><a href="/app/login">Sign up free</a></span>
+        <span><a href="/demo/app?id=demo-app-1#live">See it in the demo</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -5,7 +5,8 @@ Owner: Manraj Singh Dhillon (founder, London). Contact: manraj@patchlabs.dev. Wr
 PatchLabs finds personal-data leaks in AI-built apps (Lovable, Supabase, Replit, Bolt, Cursor-exported code), rebuilds the
 app's database from its own migrations in a lab, writes the fix, and **proves** it there: an anonymous visitor is denied,
 a signed-in stranger is denied, and the owner still reads their own rows. It also scans the code and its full git history
-for exposed AI, payment and database keys. The owner's engineer approves every change. Nothing touches the live app.
+for exposed AI, payment and database keys. The owner's engineer approves every change. Nothing touches the live app's database; Live posture (`LIVE.md`) only loads
+the public home page of a domain the team verified.
 
 ## Ground rules for everyone building this
 - **Truth only.** No invented logos, testimonials, customer counts, certifications (SOC 2 etc.), integrations or features.
@@ -420,3 +421,11 @@ A result is stale when the last finished check is older than twice the app's sch
 **UI contract (proof page `/verified?app=` and dashboard):** when `status` is `stale`, show a neutral grey state "Last checked
 N days ago: this result is out of date" (no green, no "no known leaks" wording, no tick icon). On the dashboard, show a grey
 "stale" pill next to the status when `freshness.stale`, with "Run now" as the suggested action (for roles with `run`).
+
+## Live posture (10 Nov 2026)
+
+Contract, finding IDs PL-027..036, grading and endpoints: `LIVE.md`. Engine and routes: `api/posture.py`. Tables:
+`apps.live_url / live_code / live_verified_at / live_next_at` and `posture_checks`. The API runs the daily sweep itself
+(`POSTURE_EVERY` seconds between sweeps, default 600; 0 turns it off), claiming apps with `FOR UPDATE SKIP LOCKED`.
+Audit actions: `app.live_set`, `app.live_verified`, `app.live_removed`, `posture.checked`. Webhook event:
+`posture.changed`. Free tool: `POST /tools/headers-check` (10 an hour per IP, nothing stored but the host in `tool_runs`).

@@ -54,7 +54,7 @@ verify in browser</div></li></ol>
 </section>
 <section class="sec band" aria-labelledby="caps-h">
   <div class="wrap">
-<div class="sec-head split "><div><p class="lab">Capabilities</p><h2 id="caps-h">Monitoring, sharing and teams.</h2><p>All live today, on every plan. Plans differ only in apps, schedule and seats.</p></div><a class="link-arrow" href="/pricing">Plans and limits</a></div><div class="feats" data-reveal><div><span class="k"><span>Re-check</span><span class="live">live</span></span><h3>Scheduled re-checks</h3><p>Weekly or monthly, with a full Lab and Code run each time. <a href="/docs/monitoring">Monitoring</a>.</p></div><div><span class="k"><span>Diff</span><span class="live">live</span></span><h3>What changed since last time</h3><p>New leaks, fixed, still leaking, and tables your team marked as intended.</p></div><div><span class="k"><span>Alert</span><span class="live">live</span></span><h3>Email alerts</h3><p>To every member of the workspace, with “new leak” in the subject only when there is one.</p></div><div><span class="k"><span>Alert</span><span class="live">live</span></span><h3>Signed webhooks</h3><p>HMAC-SHA256 signed, Slack-compatible <code>text</code> field. <a href="/docs/webhooks">Webhooks</a>.</p></div><div><span class="k"><span>Share</span><span class="live">live</span></span><h3>Badge and proof page</h3><p>A dated badge for your README or site, linked to a public proof page. Off until you turn it on.</p></div><div><span class="k"><span>Trust</span><span class="live">live</span></span><h3>Signed receipts</h3><p>Every finished check signed with Ed25519, verifiable by anyone. <a href="/docs/receipts">Receipts</a>.</p></div><div><span class="k"><span>Teams</span><span class="live">live</span></span><h3>Workspaces and roles</h3><p>Owners and members, invites, client labels for agencies. <a href="/docs/teams">Teams</a>.</p></div><div><span class="k"><span>Build</span><span class="live">live</span></span><h3>API keys and CI</h3><p>Start a re-check from your pipeline with a workspace key. <a href="/docs/api">REST API</a>.</p></div><div><span class="k"><span>Agents</span><span class="live">live</span></span><h3>MCP tools</h3><p><code>list_apps</code> and <code>run_check</code> for monitored apps, from your coding agent.</p></div></div>
+<div class="sec-head split "><div><p class="lab">Capabilities</p><h2 id="caps-h">Monitoring, sharing and teams.</h2><p>All live today, on every plan. Plans differ only in apps, schedule and seats.</p></div><a class="link-arrow" href="/pricing">Plans and limits</a></div><div class="feats" data-reveal><div><span class="k"><span>Re-check</span><span class="live">live</span></span><h3>Scheduled re-checks</h3><p>Weekly or monthly, with a full Lab and Code run each time. <a href="/docs/monitoring">Monitoring</a>.</p></div><div><span class="k"><span>Diff</span><span class="live">live</span></span><h3>What changed since last time</h3><p>New leaks, fixed, still leaking, and tables your team marked as intended.</p></div><div><span class="k"><span>Alert</span><span class="live">live</span></span><h3>Email alerts</h3><p>To every member of the workspace, with “new leak” in the subject only when there is one.</p></div><div><span class="k"><span>Alert</span><span class="live">live</span></span><h3>Signed webhooks</h3><p>HMAC-SHA256 signed, Slack-compatible <code>text</code> field. <a href="/docs/webhooks">Webhooks</a>.</p></div><div><span class="k"><span>Share</span><span class="live">live</span></span><h3>Badge and proof page</h3><p>A dated badge for your README or site, linked to a public proof page. Off until you turn it on.</p></div><div><span class="k"><span>Live</span><span class="live">live</span></span><h3>Live posture</h3><p>A daily A-to-F grade for HTTPS, the certificate, security headers and cookies on the domain you verify. <a href="/product/live-posture">Live posture</a>.</p></div><div><span class="k"><span>Trust</span><span class="live">live</span></span><h3>Signed receipts</h3><p>Every finished check signed with Ed25519, verifiable by anyone. <a href="/docs/receipts">Receipts</a>.</p></div><div><span class="k"><span>Teams</span><span class="live">live</span></span><h3>Workspaces and roles</h3><p>Owners and members, invites, client labels for agencies. <a href="/docs/teams">Teams</a>.</p></div><div><span class="k"><span>Build</span><span class="live">live</span></span><h3>API keys and CI</h3><p>Start a re-check from your pipeline with a workspace key. <a href="/docs/api">REST API</a>.</p></div><div><span class="k"><span>Agents</span><span class="live">live</span></span><h3>MCP tools</h3><p><code>list_apps</code> and <code>run_check</code> for monitored apps, from your coding agent.</p></div></div>
   </div>
 </section>
 <section class="sec" aria-labelledby="badge-h">
@@ -79,6 +79,27 @@ verify in browser</div></li></ol>
         </div>
         <p class="small"><a class="link-arrow" href="/docs/badge">Badge docs</a></p>
       </div>
+    </div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="live-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Live posture</p>
+      <h2 id="live-h">Your live site’s HTTPS and headers, graded daily.</h2>
+      <p class="lede">Verify your app’s domain with a file or a meta tag, and Watch also loads your public home page once a day, like any visitor, to grade HTTPS, the certificate, security headers, cookie flags and mixed content. Your team hears about it when the grade drops.</p>
+      <p class="small muted">PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify.</p>
+      <div class="row mt-3"><a class="btn secondary" href="/product/live-posture">How Live posture works</a><a class="link-arrow" href="/tools/headers-check">Try the free headers check</a></div>
+    </div>
+    <div class="stack-ui">
+      <div class="badges">
+        <figure><img src="/assets/pages/badge-live-a.svg" alt="live posture: A · 10 Nov 2026" width="202" height="20" loading="lazy"><figcaption>live badge</figcaption></figure>
+      </div>
+      <ul class="ticks">
+        <li>Ten checks, <a href="/findings/pl-027">PL-027</a> to <a href="/findings/pl-036">PL-036</a>, each with the fix for Vercel, Netlify, Cloudflare and Lovable</li>
+        <li>Re-checked daily while the app’s re-checks are on, or by hand</li>
+        <li>Email and a <code>posture.changed</code> webhook when the grade drops or a finding appears</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -107,7 +128,7 @@ X-PatchLabs-Signature: v1=&lt;hex HMAC-SHA256&gt;</span>
   }
 }</code></pre>
       </div>
-    </div><div class="callout limit mt-4"><p><strong>What Watch can’t see.</strong> Re-checks read your repo, not your live database, so a change made by hand in the Supabase dashboard won’t show up until it’s in a migration. Monitoring isn’t uptime or runtime protection, and a badge isn’t a certification.</p></div>
+    </div><div class="callout limit mt-4"><p><strong>What Watch can’t see.</strong> Re-checks read your repo, not your live database, so a change made by hand in the Supabase dashboard won’t show up until it’s in a migration. Live posture reads only the headers and settings of your public home page. Monitoring isn’t uptime or runtime protection, and a badge isn’t a certification.</p></div>
   </div>
 </section>
 <section class="sec band" aria-labelledby="faq-h">

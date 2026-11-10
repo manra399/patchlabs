@@ -2856,6 +2856,138 @@
       "days_open": 8
      }
     ]
+   },
+   "live": {
+    "url": "https://demo-app.patchlabs-demo.example",
+    "verified": true,
+    "verified_at": "2026-11-01T07:00:00Z",
+    "next_check_at": "2026-11-11T06:00:00Z",
+    "verify": null,
+    "last": {
+     "id": "demo-posture-2026-11-10T06:00:00Z",
+     "url": "https://demo-app.patchlabs-demo.example",
+     "final_url": "https://demo-app.patchlabs-demo.example/",
+     "grade": "C",
+     "score": 65,
+     "checked_at": "2026-11-10T06:00:00Z",
+     "trigger": "scheduled",
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 1,
+      "info": 0
+     },
+     "findings": [
+      {
+       "id": "PL-030",
+       "line": "live",
+       "severity": "medium",
+       "title": "No Content-Security-Policy",
+       "object": "https://demo-app.patchlabs-demo.example",
+       "evidence": "The page sends no Content-Security-Policy header or meta tag.",
+       "fix": "Send a Content-Security-Policy that lists where scripts may load from (start with default-src 'self').",
+       "cwe": [
+        "CWE-693"
+       ],
+       "owasp": "A05:2021",
+       "owasp_name": "Security Misconfiguration"
+      },
+      {
+       "id": "PL-033",
+       "line": "live",
+       "severity": "medium",
+       "title": "Cookie set without Secure, or a session cookie without HttpOnly",
+       "object": "cookie sb-demo-auth-token",
+       "evidence": "Cookie sb-demo-auth-token is set without HttpOnly.",
+       "fix": "Set cookies with Secure and SameSite=Lax; add HttpOnly to session cookies.",
+       "cwe": [
+        "CWE-614",
+        "CWE-1004"
+       ],
+       "owasp": "A05:2021",
+       "owasp_name": "Security Misconfiguration"
+      },
+      {
+       "id": "PL-032",
+       "line": "live",
+       "severity": "low",
+       "title": "No X-Content-Type-Options: nosniff",
+       "object": "https://demo-app.patchlabs-demo.example",
+       "evidence": "X-Content-Type-Options is missing or isn't nosniff.",
+       "fix": "Send X-Content-Type-Options: nosniff",
+       "cwe": [
+        "CWE-693"
+       ],
+       "owasp": "A05:2021",
+       "owasp_name": "Security Misconfiguration"
+      }
+     ],
+     "passed": [
+      {
+       "id": "PL-027",
+       "title": "HTTPS is forced"
+      },
+      {
+       "id": "PL-028",
+       "title": "TLS certificate is valid"
+      },
+      {
+       "id": "PL-029",
+       "title": "HSTS is on"
+      },
+      {
+       "id": "PL-031",
+       "title": "Framing is restricted"
+      },
+      {
+       "id": "PL-034",
+       "title": "No scripts or styles over plain HTTP"
+      },
+      {
+       "id": "PL-035",
+       "title": "No software versions in headers"
+      },
+      {
+       "id": "PL-036",
+       "title": "Referrer-Policy is set"
+      }
+     ],
+     "facts": {
+      "status": 200,
+      "redirects": [
+       "https://demo-app.patchlabs-demo.example/"
+      ],
+      "https_redirect": true,
+      "https_preloaded_tld": false,
+      "tls": {
+       "version": "TLSv1.3",
+       "issuer": "Let's Encrypt",
+       "expires": "2027-01-05",
+       "days_left": 56
+      },
+      "headers": {
+       "strict-transport-security": "max-age=63072000; includeSubDomains",
+       "content-security-policy": null,
+       "content-security-policy-report-only": null,
+       "x-frame-options": "DENY",
+       "x-content-type-options": null,
+       "referrer-policy": "strict-origin-when-cross-origin",
+       "permissions-policy": null,
+       "server": "Vercel",
+       "x-powered-by": null
+      },
+      "cookies": [
+       {
+        "name": "sb-demo-auth-token",
+        "secure": true,
+        "httponly": false,
+        "samesite": "Lax"
+       }
+      ],
+      "server": "Vercel"
+     }
+    }
    }
   },
   "/checks/demo-chk-2-3": {
@@ -3783,6 +3915,19 @@
       "days_open": 30
      }
     ]
+   },
+   "live": {
+    "url": "https://booking-portal.patchlabs-demo.example",
+    "verified": false,
+    "verified_at": null,
+    "next_check_at": null,
+    "verify": {
+     "file": "patchlabs-verify.txt",
+     "file_url": "https://booking-portal.patchlabs-demo.example/patchlabs-verify.txt",
+     "code": "patchlabs-live-0d3e9a51c7b2f846",
+     "meta": "<meta name=\"patchlabs-verify\" content=\"patchlabs-live-0d3e9a51c7b2f846\">"
+    },
+    "last": null
    }
   },
   "/checks/demo-chk-3-2": {
@@ -4101,7 +4246,165 @@
       "days_open": 34
      }
     ]
+   },
+   "live": {
+    "url": null,
+    "verified": false,
+    "verified_at": null,
+    "next_check_at": null,
+    "verify": null,
+    "last": null
    }
+  },
+  "/apps/demo-app-1/live/checks": {
+   "checks": [
+    {
+     "id": "demo-posture-2026-11-10T06:00:00Z",
+     "grade": "C",
+     "score": 65,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-10T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-09T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-09T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-08T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-08T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-07T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-07T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-06T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-06T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-05T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-05T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-04T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-04T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-03T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-03T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-02T06:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "scheduled",
+     "checked_at": "2026-11-02T06:00:00Z"
+    },
+    {
+     "id": "demo-posture-2026-11-01T07:00:00Z",
+     "grade": "B",
+     "score": 80,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     },
+     "trigger": "verify",
+     "checked_at": "2026-11-01T07:00:00Z"
+    }
+   ]
+  },
+  "/apps/demo-app-2/live/checks": {
+   "checks": []
+  },
+  "/apps/demo-app-3/live/checks": {
+   "checks": []
   },
   "/me": {
    "user": {
@@ -4414,6 +4717,77 @@
      ],
      "owasp": "A05:2021",
      "owasp_name": "Security Misconfiguration"
+    },
+    "PL-027": {
+     "cwe": [
+      "CWE-319"
+     ],
+     "owasp": "A02:2021",
+     "owasp_name": "Cryptographic Failures"
+    },
+    "PL-028": {
+     "cwe": [
+      "CWE-295"
+     ],
+     "owasp": "A02:2021",
+     "owasp_name": "Cryptographic Failures"
+    },
+    "PL-029": {
+     "cwe": [
+      "CWE-319"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-030": {
+     "cwe": [
+      "CWE-693"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-031": {
+     "cwe": [
+      "CWE-1021"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-032": {
+     "cwe": [
+      "CWE-693"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-033": {
+     "cwe": [
+      "CWE-614",
+      "CWE-1004"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-034": {
+     "cwe": [
+      "CWE-319"
+     ],
+     "owasp": "A02:2021",
+     "owasp_name": "Cryptographic Failures"
+    },
+    "PL-035": {
+     "cwe": [
+      "CWE-200"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-036": {
+     "cwe": [
+      "CWE-200"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
     }
    },
    "cwe": {
@@ -4423,7 +4797,9 @@
     "CWE-269": "Improper Privilege Management",
     "CWE-284": "Improper Access Control",
     "CWE-287": "Improper Authentication",
+    "CWE-295": "Improper Certificate Validation",
     "CWE-306": "Missing Authentication for Critical Function",
+    "CWE-319": "Cleartext Transmission of Sensitive Information",
     "CWE-345": "Insufficient Verification of Data Authenticity",
     "CWE-347": "Improper Verification of Cryptographic Signature",
     "CWE-359": "Exposure of Private Personal Information to an Unauthorized Actor",
@@ -4431,13 +4807,17 @@
     "CWE-540": "Inclusion of Sensitive Information in Source Code",
     "CWE-552": "Files or Directories Accessible to External Parties",
     "CWE-602": "Client-Side Enforcement of Server-Side Security",
+    "CWE-614": "Sensitive Cookie in HTTPS Session Without 'Secure' Attribute",
     "CWE-639": "Authorization Bypass Through User-Controlled Key",
+    "CWE-693": "Protection Mechanism Failure",
     "CWE-798": "Use of Hard-coded Credentials",
     "CWE-807": "Reliance on Untrusted Inputs in a Security Decision",
     "CWE-862": "Missing Authorization",
     "CWE-863": "Incorrect Authorization",
     "CWE-915": "Improperly Controlled Modification of Dynamically-Determined Object Attributes",
     "CWE-942": "Permissive Cross-domain Policy with Untrusted Domains",
+    "CWE-1004": "Sensitive Cookie Without 'HttpOnly' Flag",
+    "CWE-1021": "Improper Restriction of Rendered UI Layers or Frames",
     "CWE-1395": "Dependency on Vulnerable Third-Party Component"
    },
    "owasp": {
@@ -4470,6 +4850,28 @@
     },
     {
      "id": 999,
+     "at": "2026-11-10T06:03:00Z",
+     "action": "posture.checked",
+     "actor": {
+      "kind": "system",
+      "id": null,
+      "label": "PatchLabs",
+      "email": null
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "url": "https://demo-app.patchlabs-demo.example",
+      "grade": "C",
+      "trigger": "scheduled"
+     }
+    },
+    {
+     "id": 998,
      "at": "2026-11-10T06:00:00Z",
      "action": "check.started",
      "actor": {
@@ -4490,7 +4892,7 @@
      }
     },
     {
-     "id": 998,
+     "id": 997,
      "at": "2026-11-09T13:00:00Z",
      "action": "decision.made",
      "actor": {
@@ -4514,7 +4916,7 @@
      }
     },
     {
-     "id": 997,
+     "id": 996,
      "at": "2026-11-09T09:00:00Z",
      "action": "member.invited",
      "actor": {
@@ -4534,7 +4936,7 @@
      }
     },
     {
-     "id": 996,
+     "id": 995,
      "at": "2026-11-08T09:00:00Z",
      "action": "check.started",
      "actor": {
@@ -4555,7 +4957,7 @@
      }
     },
     {
-     "id": 995,
+     "id": 994,
      "at": "2026-11-07T09:00:00Z",
      "action": "webhook.tested",
      "actor": {
@@ -4577,7 +4979,7 @@
      }
     },
     {
-     "id": 994,
+     "id": 993,
      "at": "2026-11-07T08:00:00Z",
      "action": "webhook.changed",
      "actor": {
@@ -4599,7 +5001,7 @@
      }
     },
     {
-     "id": 993,
+     "id": 992,
      "at": "2026-11-05T09:00:00Z",
      "action": "suppression.added",
      "actor": {
@@ -4619,7 +5021,7 @@
      }
     },
     {
-     "id": 992,
+     "id": 991,
      "at": "2026-11-05T08:00:00Z",
      "action": "suppression.removed",
      "actor": {
@@ -4639,7 +5041,7 @@
      }
     },
     {
-     "id": 991,
+     "id": 990,
      "at": "2026-11-02T09:00:00Z",
      "action": "check.answered",
      "actor": {
@@ -4657,7 +5059,47 @@
      "detail": {}
     },
     {
-     "id": 990,
+     "id": 989,
+     "at": "2026-11-01T07:00:00Z",
+     "action": "app.live_verified",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "url": "https://demo-app.patchlabs-demo.example"
+     }
+    },
+    {
+     "id": 988,
+     "at": "2026-11-01T06:55:00Z",
+     "action": "app.live_set",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "url": "https://demo-app.patchlabs-demo.example"
+     }
+    },
+    {
+     "id": 987,
      "at": "2026-10-29T09:00:00Z",
      "action": "member.apps_changed",
      "actor": {
@@ -4680,7 +5122,7 @@
      }
     },
     {
-     "id": 989,
+     "id": 986,
      "at": "2026-10-29T08:00:00Z",
      "action": "member.joined",
      "actor": {
@@ -4700,7 +5142,7 @@
      }
     },
     {
-     "id": 988,
+     "id": 985,
      "at": "2026-10-27T09:00:00Z",
      "action": "ticket.raised",
      "actor": {
@@ -4722,7 +5164,7 @@
      }
     },
     {
-     "id": 987,
+     "id": 984,
      "at": "2026-10-21T09:00:00Z",
      "action": "member.role_changed",
      "actor": {
@@ -4743,7 +5185,7 @@
      }
     },
     {
-     "id": 986,
+     "id": 983,
      "at": "2026-10-21T07:00:00Z",
      "action": "api_key.revoked",
      "actor": {
@@ -4764,7 +5206,7 @@
      }
     },
     {
-     "id": 985,
+     "id": 982,
      "at": "2026-10-11T09:00:00Z",
      "action": "api_key.created",
      "actor": {
@@ -4784,7 +5226,7 @@
      }
     },
     {
-     "id": 984,
+     "id": 981,
      "at": "2026-10-09T09:00:00Z",
      "action": "app.updated",
      "actor": {
@@ -4807,7 +5249,7 @@
      }
     },
     {
-     "id": 983,
+     "id": 980,
      "at": "2026-10-01T09:00:00Z",
      "action": "app.verified",
      "actor": {
@@ -4825,7 +5267,7 @@
      "detail": {}
     },
     {
-     "id": 982,
+     "id": 979,
      "at": "2026-10-01T08:00:00Z",
      "action": "app.added",
      "actor": {
@@ -4843,7 +5285,7 @@
      "detail": {}
     },
     {
-     "id": 981,
+     "id": 978,
      "at": "2026-09-27T09:00:00Z",
      "action": "member.role_changed",
      "actor": {
@@ -4864,7 +5306,7 @@
      }
     },
     {
-     "id": 980,
+     "id": 977,
      "at": "2026-09-21T09:00:00Z",
      "action": "plan.changed",
      "actor": {
@@ -4887,7 +5329,7 @@
      }
     },
     {
-     "id": 979,
+     "id": 976,
      "at": "2026-09-20T09:00:00Z",
      "action": "upgrade.requested",
      "actor": {
@@ -4907,7 +5349,7 @@
      }
     },
     {
-     "id": 978,
+     "id": 975,
      "at": "2026-09-11T09:00:00Z",
      "action": "workspace.renamed",
      "actor": {
@@ -4928,7 +5370,7 @@
      }
     },
     {
-     "id": 977,
+     "id": 974,
      "at": "2026-09-10T09:00:00Z",
      "action": "webhook.created",
      "actor": {
@@ -4949,7 +5391,7 @@
      }
     },
     {
-     "id": 976,
+     "id": 973,
      "at": "2026-09-09T09:00:00Z",
      "action": "audit.exported",
      "actor": {
@@ -4964,7 +5406,7 @@
      }
     },
     {
-     "id": 975,
+     "id": 972,
      "at": "2026-09-01T09:00:00Z",
      "action": "data.exported",
      "actor": {
@@ -4977,7 +5419,7 @@
      "detail": {}
     },
     {
-     "id": 974,
+     "id": 971,
      "at": "2026-08-27T09:00:00Z",
      "action": "auth.sign_in",
      "actor": {
@@ -5022,7 +5464,11 @@
     "webhook.tested",
     "data.exported",
     "audit.exported",
-    "ticket.raised"
+    "ticket.raised",
+    "app.live_set",
+    "app.live_verified",
+    "app.live_removed",
+    "posture.checked"
    ]
   },
   "/workspaces/demo-ws/apps": {
@@ -5062,6 +5508,25 @@
       "stale": false,
       "days_since_check": 0,
       "stale_after_days": 14
+     },
+     "live": {
+      "url": "https://demo-app.patchlabs-demo.example",
+      "verified": true,
+      "verified_at": "2026-11-01T07:00:00Z",
+      "next_check_at": "2026-11-11T06:00:00Z",
+      "verify": null,
+      "last": {
+       "grade": "C",
+       "score": 65,
+       "checked_at": "2026-11-10T06:00:00Z",
+       "counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 2,
+        "low": 1,
+        "info": 0
+       }
+      }
      }
     },
     {
@@ -5097,6 +5562,19 @@
       "stale": false,
       "days_since_check": 2,
       "stale_after_days": 60
+     },
+     "live": {
+      "url": "https://booking-portal.patchlabs-demo.example",
+      "verified": false,
+      "verified_at": null,
+      "next_check_at": null,
+      "verify": {
+       "file": "patchlabs-verify.txt",
+       "file_url": "https://booking-portal.patchlabs-demo.example/patchlabs-verify.txt",
+       "code": "patchlabs-live-0d3e9a51c7b2f846",
+       "meta": "<meta name=\"patchlabs-verify\" content=\"patchlabs-live-0d3e9a51c7b2f846\">"
+      },
+      "last": null
      }
     },
     {
@@ -5130,6 +5608,14 @@
       "stale": true,
       "days_since_check": 50,
       "stale_after_days": 45
+     },
+     "live": {
+      "url": null,
+      "verified": false,
+      "verified_at": null,
+      "next_check_at": null,
+      "verify": null,
+      "last": null
      }
     }
    ]

@@ -205,7 +205,9 @@
           var findings = !a.last_check ? '<span class="muted">–</span>' : !fresh ? '<span class="skeleton" style="display:inline-block;width:90px;height:12px"></span>'
             : x.counts ? '<a class="fcell" href="' + esc(PL.href('report', { id: a.last_check.id })) + '">' + PL.sevMini(x.counts) + '</a>' : '<span class="muted">–</span>';
           var trend = !a.last_check ? '<span class="muted">–</span>' : !fresh ? '<span class="skeleton" style="display:inline-block;width:80px;height:12px"></span>' : x.trend ? PL.spark(x.trend.pts, x.trend.what) : '<span class="muted">–</span>';
-          return '<tr data-id="' + esc(a.id) + '"><th scope="row" class="c-repo"><a class="repo" href="' + esc(PL.href('app', { id: a.id })) + '">' + esc(a.repo) + '</a>' + (a.client_label ? '<span class="note">' + esc(a.client_label) + '</span>' : '') + '</th>' +
+          var lv = a.live && a.live.last && /^[A-F]$/.test(a.live.last.grade || '') ? a.live.last : null;
+          var chip = lv ? '<a class="lv-chip ' + ({ A: 'g-good', B: 'g-good', C: 'g-mid', D: 'g-mid', F: 'g-bad' }[lv.grade]) + '" href="' + esc(PL.href('app', { id: a.id })) + '#live" title="Live posture of ' + esc(a.live.url || '') + ': grade ' + esc(lv.grade) + ', ' + esc(lv.score) + '/100, checked ' + esc(PL.dateTime(lv.checked_at)) + '"><span>Live</span><b>' + esc(lv.grade) + '</b><span class="sr-only">, live posture grade</span></a>' : '';
+          return '<tr data-id="' + esc(a.id) + '"><th scope="row" class="c-repo"><a class="repo" href="' + esc(PL.href('app', { id: a.id })) + '">' + esc(a.repo) + '</a>' + chip + (a.client_label ? '<span class="note">' + esc(a.client_label) + '</span>' : '') + '</th>' +
             '<td class="c-status">' + PL.pill(st) + (PL.stale(a) ? ' ' + PL.staleHtml(a) : '') + (st.note ? '<span class="note">' + esc(st.note) + '</span>' : '') +
               (PL.stale(a) ? '<span class="note">Last checked ' + PL.plural(a.freshness.days_since_check, 'day') + ' ago: out of date</span>' : '') + '</td>' +
             '<td data-label="Findings">' + findings + '</td>' +
@@ -308,7 +310,7 @@
 
   /* =============================================== app detail =============================================== */
   V.app = function (root) {
-    var id = PL.qs('id'), S = { app: null, ws: null, live: null, reportId: null };
+    var id = PL.qs('id'), S = { app: null, ws: null, live: null, reportId: null, liveKey: null, liveHist: null, liveScrolled: false };
     root.innerHTML = '<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="' + esc(PL.href('apps')) + '">Apps</a></li><li aria-current="page" id="crumb">App</li></ol></nav>' +
       '<div id="top" aria-live="polite"><div class="app-head"><div><p class="lab">App</p><div class="skeleton" style="height:34px;width:min(420px,80vw)"></div><div class="skeleton mt-2" style="height:14px;width:240px"></div></div></div><div class="skeleton sk-block"></div></div>' +
       '<div id="runmsg"></div>' +
@@ -316,6 +318,8 @@
       '<section aria-labelledby="find-h"><h2 class="sec-title" id="find-h">Findings</h2><p class="sec-sub" id="find-sub">From the latest finished check.</p><div id="findings"></div></section>' +
       '<section class="block" aria-labelledby="age-h" id="age-sec" hidden><h2 class="sec-title" id="age-h">Open and fixed</h2><p class="sec-sub">How long each finding has been open across this app’s checks, and what was fixed.</p><div id="ages"></div></section>' +
       '<section class="block" aria-labelledby="diff-h"><h2 class="sec-title" id="diff-h">Since the last check</h2><div id="diff"></div></section>' +
+      '<section class="block live-sec" id="live" aria-labelledby="live-h" hidden><h2 class="sec-title" id="live-h">Live posture</h2>' +
+      '<p class="sec-sub">HTTPS, the certificate, security headers and cookies on your app’s domain, graded daily. PatchLabs never touches your database. Live posture only loads your public home page, like any visitor, and only on domains you verify. <a href="/product/live-posture">How it works</a></p><div id="live-body" aria-live="polite"></div></section>' +
       '<section class="block" aria-labelledby="hist-h"><h2 class="sec-title" id="hist-h">Check history</h2><p class="sec-sub">Every check of this app, newest first. Each report stays available by its link.</p><div id="history"></div></section>' +
       '</div><aside class="side" id="side" aria-label="App settings"></aside></div>';
 
@@ -377,7 +381,7 @@
       if ($('vpanel')) PL.wireVerify($('vpanel'), a.id, function () { PL.toast('Verified. The first check is queued.', 'ok'); load(); });
       if ($('run')) $('run').onclick = runNow;
       $('layout').hidden = false;
-      renderFindings(); renderAges(); renderDiff(); renderHistory();
+      renderFindings(); renderAges(); renderDiff(); renderHistory(); renderLive();
     }
 
     async function renderFindings() {
@@ -480,6 +484,192 @@
         else if (e.status === 409) { $('runmsg').innerHTML = '<div class="callout note"><p>' + esc(e.message) + ' This page updates by itself when it finishes.</p></div>'; refresh(); }
         else $('runmsg').innerHTML = '<p class="err" role="alert">' + esc(e.message) + '</p>';
       }
+    }
+
+
+    /* ---- Live posture (LIVE.md): the app's verified live domain, graded from one public page load ----------------
+       GET /apps/{aid}.live = {url, verified, verified_at, next_check_at, verify: {file, file_url, code, meta} | null, last}.
+       Manage roles set, verify, change and remove the domain; run roles re-check; everyone else reads. */
+    var GRADE_CLS = { A: 'g-good', B: 'g-good', C: 'g-mid', D: 'g-mid', F: 'g-bad' };
+    var LIVE_TRIGGER = { verify: 'First check', scheduled: 'Daily re-check', manual: 'Run by hand' };
+    function liveNone() { return { url: null, verified: false, verified_at: null, next_check_at: null, verify: null, last: null }; }
+    function liveHost(L) { try { return new URL(L.url).hostname; } catch (e) { return L.url || ''; } }
+    function renderLive(force) {
+      var sec = $('live'); if (!sec) return;
+      var L = S.app.live;
+      if (L === undefined) { sec.hidden = true; return; }   // an API from before Live posture
+      L = L || liveNone();
+      var key = JSON.stringify(L) + '|' + JSON.stringify(S.liveHist);
+      if (!force && key === S.liveKey) return;
+      S.liveKey = key; sec.hidden = false;
+      var el = $('live-body'), manage = PL.can(S.ws, 'manage'), run = PL.can(S.ws, 'run');
+      if (!L.url) el.innerHTML = manage ? liveSetForm() : '<div class="empty small"><p>No live domain yet. An owner or admin can add the app’s address, verify it, and its HTTPS and security headers are graded every day.</p></div>';
+      else if (!L.verified) el.innerHTML = manage ? liveVerifyHtml(L) : '<div class="callout note"><p><strong>Waiting for verification.</strong> An owner or admin needs to prove they control <code>' + esc(L.url) + '</code> before it’s checked.</p></div>';
+      else el.innerHTML = liveResultHtml(L, manage, run);
+      wireLive(L);
+      if (L.url && L.verified && S.liveHist === null) loadLiveHist();
+      if (!S.liveScrolled && location.hash === '#live') { S.liveScrolled = true; sec.scrollIntoView(); }
+    }
+    function liveSetForm(value) {
+      return '<div class="panel lv-panel"><form id="lv-form" class="form-row" novalidate><div class="field"><label for="lv-url">Your app’s address</label>' +
+        '<input id="lv-url" class="mono" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://app.example.com" value="' + esc(value || '') + '">' +
+        '</div><button class="btn primary" type="submit" id="lv-set">Set domain</button></form>' +
+        '<p class="small muted mt-1 mb-0">The https:// address people use. Next you’ll prove you control it with a file or a meta tag.</p><p class="err" role="alert" id="lv-err"></p></div>';
+    }
+    function liveVerifyHtml(L) {
+      var v = L.verify || {};
+      return '<div class="panel lv-panel"><div class="lv-head"><div><p class="lab">Verify</p><p class="lv-url mono">' + esc(L.url) + '</p>' +
+        '<p class="small muted mb-0">Prove you control this domain one of two ways, publish the change, then press Verify. The first check runs straight away.</p></div>' +
+        '<div class="actions"><button class="btn small ghost" type="button" data-lv-change>Change domain</button><button class="btn small ghost" type="button" data-lv-remove>Remove</button></div></div>' +
+        '<div class="lv-methods">' +
+        '<div class="lv-method"><p class="lv-k">Option 1 · a file</p><p>Publish a file at <a class="mono" href="' + esc(v.file_url) + '" target="_blank" rel="noopener">' + esc(v.file_url) + '</a> <button class="copy" type="button" data-copy-text="' + esc(v.file_url) + '">Copy URL</button></p>' +
+        '<p>whose whole content is this code:</p><p class="row"><code class="verify-code" id="lv-code">' + esc(v.code) + '</code><button class="copy" type="button" data-copy-text="' + esc(v.code) + '">Copy code</button></p>' +
+        '<p class="small muted mb-0">In a Vite or Lovable project, put <code>' + esc(v.file || 'patchlabs-verify.txt') + '</code> in <code>public/</code>.</p></div>' +
+        '<div class="lv-method"><p class="lv-k">Option 2 · a meta tag</p><p>Add this inside <code>&lt;head&gt;</code> of your home page:</p>' +
+        '<div class="code snip"><div class="code-bar"><span class="name">index.html</span><button class="copy" type="button" data-copy-text="' + esc(v.meta) + '">Copy tag</button></div><pre id="lv-meta">' + esc(v.meta) + '</pre></div></div>' +
+        '</div><div class="row mt-2"><button class="btn primary" type="button" id="lv-verify">Verify</button></div><p class="err" role="alert" id="lv-verr"></p></div>';
+    }
+    function liveFinding(f, L) {
+      var sev = PL.SEV.indexOf(String(f.severity)) >= 0 ? f.severity : 'info', fid = String(f.id || '');
+      var obj = f.object && f.object !== L.url && f.object !== (L.last && L.last.final_url) && f.object !== L.url + '/' ? f.object : '';
+      return '<details class="fnd lv-fnd"><summary><span class="pill sev-' + sev + '">' + sev + '</span><code class="fid">' + esc(fid) + '</code>' +
+        '<span class="ft">' + esc(f.title || fid) + (obj ? '<code class="fo">' + esc(obj) + '</code>' : '') + (f.fix ? '<span class="lv-fix">Fix: ' + esc(f.fix) + '</span>' : '') + '</span><span class="fb"></span></summary>' +
+        '<div class="fnd-body"><dl class="kv">' + (f.evidence ? '<dt>Evidence</dt><dd><pre class="fev">' + esc(f.evidence) + '</pre></dd>' : '') +
+        (f.fix ? '<dt>Fix</dt><dd>' + esc(f.fix) + '</dd>' : '') + '</dl><div class="fnd-foot"><a class="link-arrow small" href="/findings/' + encodeURIComponent(fid.toLowerCase()) + '">What ' + esc(fid) + ' means, with the fix for Vercel, Netlify, Cloudflare and Lovable</a></div></div></details>';
+    }
+    function liveResultHtml(L, manage, run) {
+      var r = L.last, h = '<div class="panel lv-panel">';
+      var next = S.app.schedule === 'off' ? 'Daily re-checks are paused while this app’s re-checks are off.' : L.next_check_at ? 'Next check ' + esc(PL.rel(L.next_check_at)) + '.' : '';
+      var recheck = run ? '<button class="btn secondary" type="button" id="lv-run">Re-check now</button>' : '';
+      if (!r) {
+        h += '<div class="lv-head"><div><p class="lv-url"><a class="mono" href="' + esc(L.url) + '" target="_blank" rel="noopener">' + esc(L.url) + '</a> <span class="pill proven plain">verified</span></p>' +
+          '<p class="small muted mb-0">Verified ' + esc(PL.date(L.verified_at)) + '. No result yet: the first page load didn’t finish. ' + next + '</p></div><div class="actions">' + recheck + '</div></div><div id="lv-msg"></div>';
+      } else {
+        var g = /^[A-F]$/.test(r.grade || '') ? r.grade : '?', c = PL.countsOf(r, r.findings || []), list = PL.sortFindings(r.findings || []);
+        var f = r.facts || {}, tls = f.tls || {}, hd = f.headers || {}, cookies = f.cookies || [];
+        var seen = Object.keys(hd).filter(function (k) { return hd[k]; });
+        h += '<div class="lv-top"><div class="lv-grade ' + (GRADE_CLS[g] || '') + '" role="img" aria-label="Grade ' + esc(g) + ', ' + esc(r.score) + ' out of 100"><b>' + esc(g) + '</b><span>' + esc(r.score) + '<small>/100</small></span></div>' +
+          '<div class="lv-meta"><p class="lv-url"><a class="mono" href="' + esc(L.url) + '" target="_blank" rel="noopener">' + esc(L.url) + '</a> <span class="pill proven plain">verified</span></p>' +
+          '<p class="small muted">' + esc(LIVE_TRIGGER[r.trigger] || 'Checked') + ' ' + esc(PL.rel(r.checked_at)) + ' (' + esc(PL.dateTime(r.checked_at)) + '). ' + next + '</p>' + PL.sevMini(c) + '</div>' +
+          '<div class="actions">' + recheck + '</div></div><div id="lv-msg"></div>';
+        h += list.length ? '<div class="lv-list">' + list.map(function (x) { return liveFinding(x, L); }).join('') + '</div>'
+          : '<div class="callout clear"><p><strong>Every check passed.</strong> Your home page sends the headers and settings Live posture looks for.</p></div>';
+        var passed = r.passed || [];
+        if (passed.length) h += '<details class="lv-passed"><summary>Passed ' + PL.plural(passed.length, 'check') + '</summary><ul>' + passed.map(function (p) {
+          return '<li><a class="mono" href="/findings/' + encodeURIComponent(String(p.id).toLowerCase()) + '">' + esc(p.id) + '</a> ' + esc(p.title) + '</li>'; }).join('') + '</ul></details>';
+        h += '<dl class="kv lv-facts"><dt>HTTPS</dt><dd>' + (f.https_preloaded_tld ? 'Forced by the browser: the top-level domain is HSTS-preloaded' : f.https_redirect === true ? 'http:// redirects to https://' : f.https_redirect === false ? 'http:// serves the page without redirecting' : 'Nothing answers on http://') + '</dd>' +
+          '<dt>Certificate</dt><dd>' + (tls.expires ? esc(tls.issuer || 'Unknown issuer') + ', expires ' + esc(PL.date(tls.expires)) + (tls.days_left != null ? ' <span class="' + (tls.days_left < 21 ? 'amber' : 'muted') + '">(' + (tls.days_left < 0 ? 'expired' : PL.plural(tls.days_left, 'day') + ' left') + ')</span>' : '') + (tls.version ? ' · ' + esc(tls.version) : '') : '<span class="muted">Not read</span>') + '</dd>' +
+          '<dt>Headers seen</dt><dd>' + (seen.length ? seen.map(function (k) { return '<code>' + esc(k) + '</code>'; }).join(' ') : '<span class="muted">None of the security headers</span>') + '</dd>' +
+          '<dt>Cookies</dt><dd>' + (cookies.length ? cookies.map(function (k) { return '<code>' + esc(k.name) + '</code> <span class="small muted">' + [k.secure ? 'Secure' : 'no Secure', k.httponly ? 'HttpOnly' : 'no HttpOnly', 'SameSite ' + (k.samesite || 'not set')].join(' · ') + '</span>'; }).join('<br>') : '<span class="muted">None on a signed-out visit</span>') + '</dd></dl>';
+      }
+      h += '</div>';
+      h += '<div class="lv-cols"><div><h3 class="h4 mb-1">History</h3><div id="lv-hist">' + liveHistHtml() + '</div></div>';
+      if (manage) {
+        var md = '[![PatchLabs live posture](' + PROD_API + '/badge/' + S.app.id + '/live.svg)](' + PROD_SITE + '/proof?app=' + S.app.id + ')';
+        var html = '<a href="' + PROD_SITE + '/proof?app=' + S.app.id + '"><img src="' + PROD_API + '/badge/' + S.app.id + '/live.svg" alt="PatchLabs live posture" height="20"></a>';
+        h += '<div><h3 class="h4 mb-1">Badge</h3><p class="small muted">' + (S.app.badge_public ? 'Public: anyone with the link sees the grade and the date of the last check.' : 'Reads “private” until you make the app’s badge public (in the settings on this page).') + '</p>' +
+          '<div class="badge-preview"><img id="lv-badge" alt="Live posture badge preview" src="' + esc(liveBadgeSrc(r)) + '"></div>' +
+          '<div class="code snip"><div class="code-bar"><span class="name">Markdown (README)</span><button class="copy" type="button" data-copy="#lv-md">Copy</button></div><pre id="lv-md">' + esc(md) + '</pre></div>' +
+          '<div class="code snip"><div class="code-bar"><span class="name">HTML</span><button class="copy" type="button" data-copy="#lv-html">Copy</button></div><pre id="lv-html">' + esc(html) + '</pre></div>' +
+          '<div class="row mt-3"><button class="btn small ghost" type="button" data-lv-change>Change domain</button><button class="btn small danger" type="button" data-lv-remove>Remove domain</button></div></div>';
+      }
+      return h + '</div>';
+    }
+    function liveHistHtml() {
+      var H = S.liveHist;
+      if (H === null) return PL.skeleton(2);
+      if (H === false) return '<p class="small muted">The history didn’t load. <button class="linkish" type="button" data-lv-hist>Try again</button></p>';
+      if (!H.length) return '<div class="empty small"><p>No checks yet.</p></div>';
+      var dot = { A: 'green', B: 'green', C: 'amber', D: 'amber', F: 'red' };
+      var item = function (k) {
+        return '<li><span class="dot ' + (dot[k.grade] || '') + '" aria-hidden="true"></span><div class="what"><b>Grade ' + esc(k.grade) + '</b> <span class="muted">' + esc(k.score) + '/100</span> · ' + esc(LIVE_TRIGGER[k.trigger] || 'Check') +
+          '<div class="meta">' + esc(PL.dateTime(k.checked_at)) + (k.counts ? ' · ' + esc(PL.sevLabel(PL.countsOf(k, []))) : '') + '</div></div></li>';
+      };
+      var rows = H.map(item), first = rows.slice(0, 6).join(''), rest = rows.slice(6).join('');
+      return '<ol class="timeline lv-timeline">' + first + '</ol>' + (rest ? '<details class="lv-older"><summary>' + PL.plural(H.length - 6, 'older check') + '</summary><ol class="timeline lv-timeline">' + rest + '</ol></details>' : '') + (H.length >= 30 ? '<p class="small muted mt-2">The latest 30 checks.</p>' : '');
+    }
+    async function loadLiveHist() {
+      try { var r = await PL.call('/apps/' + encodeURIComponent(id) + '/live/checks'); S.liveHist = r.checks || []; }
+      catch (e) { if (PL.handled(e)) return; S.liveHist = false; }
+      var h = $('lv-hist'); if (h) { h.innerHTML = liveHistHtml(); wireHistRetry(); }
+      S.liveKey = JSON.stringify(S.app.live || liveNone()) + '|' + JSON.stringify(S.liveHist);
+    }
+    function wireHistRetry() { var b = document.querySelector('[data-lv-hist]'); if (b) b.onclick = function () { S.liveHist = null; $('lv-hist').innerHTML = liveHistHtml(); loadLiveHist(); }; }
+    function svgBadge(label, message, color) {   // mirrors api/monitor.py svg_badge, for the demo (which never calls the API)
+      var e = function (x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }, lw = Math.floor(label.length * 6.6 + 12), mw = Math.floor(message.length * 6.6 + 12);
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + (lw + mw) + '" height="20" role="img" aria-label="' + e(label) + ': ' + e(message) + '">' +
+        '<clipPath id="r"><rect width="' + (lw + mw) + '" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="' + lw + '" height="20" fill="#1c1917"/><rect x="' + lw + '" width="' + mw + '" height="20" fill="' + color + '"/></g>' +
+        '<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11"><text x="' + (lw / 2) + '" y="14">' + e(label) + '</text><text x="' + (lw + mw / 2) + '" y="14">' + e(message) + '</text></g></svg>');
+    }
+    function liveBadgeSrc(r) {
+      if (!PL.demo) return API + '/badge/' + encodeURIComponent(S.app.id) + '/live.svg?v=' + Date.now();
+      var C = { A: '#2ea44f', B: '#4c9a2a', C: '#dfb317', D: '#e16f24', F: '#d1242f' };
+      return S.app.badge_public && r && C[r.grade] ? svgBadge('live posture', r.grade + ' · ' + PL.date(r.checked_at), C[r.grade]) : svgBadge('live posture', 'private', '#9f9f9f');
+    }
+    function wireLive(L) {
+      var form = $('lv-form');
+      if (form) form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var url = $('lv-url').value.trim(), err = $('lv-err');
+        if (!url) { err.textContent = 'Enter your app’s address, for example https://app.example.com'; $('lv-url').focus(); return; }
+        var restore = PL.busy($('lv-set'), 'Saving…'); err.textContent = '';
+        try { S.app.live = await PL.call('/apps/' + encodeURIComponent(id) + '/live', { method: 'PUT', body: { url: url } }); S.liveHist = null; PL.toast('Domain saved. Now verify it.', 'ok'); renderLive(true); }
+        catch (x) { restore(); if (!PL.handled(x)) err.textContent = x.status === 422 && x.data && typeof x.data.detail !== 'string' ? 'Enter a full address, like https://app.example.com' : x.message; }
+      });
+      var vb = $('lv-verify');
+      if (vb) vb.addEventListener('click', async function () {
+        var restore = PL.busy(vb, 'Looking for your code…'), err = $('lv-verr'); err.textContent = '';
+        try {
+          var r = await PL.call('/apps/' + encodeURIComponent(id) + '/live/verify', { method: 'POST' });
+          S.app.live = Object.assign({}, L, { verified: true, verify: null, verified_at: L.verified_at || new Date().toISOString(), last: r.posture || null });
+          S.liveHist = null;
+          try { S.app = await PL.call('/apps/' + encodeURIComponent(id)); } catch (x) { if (x.redirecting) return; }
+          PL.toast(r.posture ? 'Verified. First grade: ' + r.posture.grade + '.' : 'Verified.', 'ok');
+          renderLive(true);
+          if (r.detail && $('lv-msg')) $('lv-msg').innerHTML = '<div class="callout note"><p>' + esc(r.detail) + '</p></div>';
+        } catch (x) { restore(); if (!PL.handled(x)) err.textContent = x.message; }
+      });
+      var rb = $('lv-run');
+      if (rb) rb.addEventListener('click', async function () {
+        var restore = PL.busy(rb, 'Loading your page…'), msg = $('lv-msg'); msg.innerHTML = '';
+        try {
+          var r = await PL.call('/apps/' + encodeURIComponent(id) + '/live/checks', { method: 'POST' });
+          S.app.live = Object.assign({}, S.app.live, { last: r }); S.liveHist = null;
+          PL.toast('Re-checked: grade ' + r.grade, 'ok'); renderLive(true);
+        } catch (x) {
+          restore();
+          if (PL.handled(x)) return;
+          msg.innerHTML = '<div class="callout ' + (x.status === 429 ? 'limit' : 'note') + '"><p>' + (x.status === 502 ? '<strong>We couldn’t load the page.</strong> ' : '') + esc(x.message) + '</p></div>';
+        }
+      });
+      document.querySelectorAll('#live [data-lv-change]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (PL.demo) { PL.demoNotice(); return; }
+          var dlg = PL.modal({ title: 'Change the live domain', body: '<p class="muted">The new domain gets a new code to verify, and this domain’s history is deleted.</p>' + liveSetForm(L.url).replace('class="panel lv-panel"', 'class="lv-modal"'),
+            foot: '<button class="btn ghost" type="button" data-close>Cancel</button>' });
+          var f = dlg.querySelector('#lv-form');
+          dlg.querySelector('#lv-url').focus();
+          f.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            var url = dlg.querySelector('#lv-url').value.trim(), err = dlg.querySelector('#lv-err'), restore = PL.busy(dlg.querySelector('#lv-set'), 'Saving…'); err.textContent = '';
+            try { S.app.live = await PL.call('/apps/' + encodeURIComponent(id) + '/live', { method: 'PUT', body: { url: url } }); S.liveHist = null; dlg.close(); PL.toast('Domain saved. Now verify it.', 'ok'); renderLive(true); }
+            catch (x) { restore(); if (!PL.handled(x)) err.textContent = x.message; }
+          });
+        });
+      });
+      document.querySelectorAll('#live [data-lv-remove]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (PL.demo) { PL.demoNotice(); return; }
+          var n = Array.isArray(S.liveHist) ? S.liveHist.length : 0;
+          var ok = await PL.confirm({ title: 'Remove ' + liveHost(L) + '?', danger: true, confirm: 'Remove domain',
+            text: '<p>This stops daily checks of <code>' + esc(L.url) + '</code> and deletes ' + (n ? 'its ' + PL.plural(n, 'check') : 'its history') + ' from PatchLabs. Your site isn’t touched. To add it back, you’ll verify it again.</p>' });
+          if (!ok) return;
+          var restore = PL.busy(b, 'Removing…');
+          try { await PL.call('/apps/' + encodeURIComponent(id) + '/live', { method: 'DELETE' }); S.app.live = liveNone(); S.liveHist = null; PL.toast('Domain removed', 'ok'); renderLive(true); }
+          catch (x) { restore(); if (!PL.handled(x)) PL.toast(x.message, 'err'); }
+        });
+      });
+      wireHistRetry();
     }
 
     function badgeSrc(on) {
@@ -1019,6 +1209,10 @@
         case 'app.added': return 'added ' + T;
         case 'app.updated': return 'changed ' + esc(Object.keys(d).join(', ').replace(/_/g, ' ') || 'settings') + ' on ' + T;
         case 'app.verified': return 'verified ' + T;
+        case 'app.live_set': return 'set the live domain of ' + T + ' to <code>' + esc(d.url) + '</code>';
+        case 'app.live_verified': return 'verified the live domain <code>' + esc(d.url) + '</code> of ' + T;
+        case 'app.live_removed': return 'removed the live domain <code>' + esc(d.url) + '</code> from ' + T;
+        case 'posture.checked': return 'checked the live posture of ' + T + ': grade ' + esc(d.grade || '–') + (d.trigger === 'scheduled' ? ' (daily re-check)' : d.trigger === 'verify' ? ' (first check)' : '');
         case 'app.removed': return 'removed ' + T;
         case 'check.started': return 'started ' + ({ verify: 'the first', manual: 'a manual', api: 'an API', scheduled: 'a scheduled' }[d.trigger] || 'a') + ' check of ' + T;
         case 'decision.made': return (d.action === 'reject' ? 'marked ' + esc((d.tables || []).join(', ') || 'tables') + ' as intended on ' : 'approved the fix for ' + esc((d.tables || []).join(', ')) + ' on ') + T;

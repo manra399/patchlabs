@@ -25,7 +25,9 @@ CWE = {"CWE-79": "Improper Neutralization of Input During Web Page Generation ('
        "CWE-269": "Improper Privilege Management",
        "CWE-284": "Improper Access Control",
        "CWE-287": "Improper Authentication",
+       "CWE-295": "Improper Certificate Validation",
        "CWE-306": "Missing Authentication for Critical Function",
+       "CWE-319": "Cleartext Transmission of Sensitive Information",
        "CWE-345": "Insufficient Verification of Data Authenticity",
        "CWE-347": "Improper Verification of Cryptographic Signature",
        "CWE-359": "Exposure of Private Personal Information to an Unauthorized Actor",
@@ -33,13 +35,17 @@ CWE = {"CWE-79": "Improper Neutralization of Input During Web Page Generation ('
        "CWE-540": "Inclusion of Sensitive Information in Source Code",
        "CWE-552": "Files or Directories Accessible to External Parties",
        "CWE-602": "Client-Side Enforcement of Server-Side Security",
+       "CWE-614": "Sensitive Cookie in HTTPS Session Without 'Secure' Attribute",
        "CWE-639": "Authorization Bypass Through User-Controlled Key",
+       "CWE-693": "Protection Mechanism Failure",
        "CWE-798": "Use of Hard-coded Credentials",
        "CWE-807": "Reliance on Untrusted Inputs in a Security Decision",
        "CWE-862": "Missing Authorization",
        "CWE-863": "Incorrect Authorization",
        "CWE-915": "Improperly Controlled Modification of Dynamically-Determined Object Attributes",
        "CWE-942": "Permissive Cross-domain Policy with Untrusted Domains",
+       "CWE-1004": "Sensitive Cookie Without 'HttpOnly' Flag",
+       "CWE-1021": "Improper Restriction of Rendered UI Layers or Frames",
        "CWE-1395": "Dependency on Vulnerable Third-Party Component"}
 
 # id: (CWEs, OWASP 2021 category)
@@ -70,6 +76,17 @@ TAGS = {
     "PL-024": (["CWE-79"], "A03:2021"),               # user content rendered as raw HTML
     "PL-025": (["CWE-862"], "A01:2021"),              # Firebase rules allow anyone
     "PL-026": (["CWE-942"], "A05:2021"),              # CORS * with credentials
+    # live posture (LIVE.md): read from one public page load of a verified domain
+    "PL-027": (["CWE-319"], "A02:2021"),              # site doesn't force HTTPS
+    "PL-028": (["CWE-295"], "A02:2021"),              # certificate invalid, expired or expiring
+    "PL-029": (["CWE-319"], "A05:2021"),              # no HSTS
+    "PL-030": (["CWE-693"], "A05:2021"),              # no Content-Security-Policy
+    "PL-031": (["CWE-1021"], "A05:2021"),             # page can be framed by any site
+    "PL-032": (["CWE-693"], "A05:2021"),              # no nosniff
+    "PL-033": (["CWE-614", "CWE-1004"], "A05:2021"),  # cookie without Secure, or session cookie without HttpOnly
+    "PL-034": (["CWE-319"], "A02:2021"),              # scripts or styles over plain HTTP
+    "PL-035": (["CWE-200"], "A05:2021"),              # software versions in headers
+    "PL-036": (["CWE-200"], "A05:2021"),              # no Referrer-Policy
 }
 SEVERITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 

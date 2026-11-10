@@ -12,9 +12,10 @@ lede: Every problem PatchLabs reports, whether the Lab reproduced it in a rebuil
     <tr><th scope="row"><a href="/product/code">Code</a></th><td>Reads the repo without running it: keys in the code and the full git history, Edge Functions and their config, webhooks, CORS, admin checks in the browser, <code>user_metadata</code> role checks, raw HTML, Firebase rules, and dependency versions checked against OSV.</td><td>Findings with <code>line: "code"</code>, with file and line</td></tr>
     <tr><th scope="row"><a href="/product/fix">Fix</a></th><td>Writes the database fix as a migration, proves it in a fresh lab as the same three identities, asks you the business questions only you can answer, and hands it to your engineer to approve. Commit on GitHub in one click, or use MCP and CI.</td><td>The fix, the proof and <code>fixed_in_lab</code> on each finding. Automatic pull requests: coming with the GitHub App.</td></tr>
     <tr><th scope="row"><a href="/product/watch">Watch</a></th><td>Re-checks on a schedule, shows what changed since last time, alerts by email and webhook, and signs every result.</td><td>Diffs, alerts, the badge and <a href="/docs/receipts">signed receipts</a></td></tr>
+    <tr><th scope="row"><a href="/product/live-posture">Live posture</a> <span class="muted">(part of Watch)</span></th><td>For a domain your team verifies, loads the public home page once a day like any visitor and grades HTTPS, the TLS certificate, security headers, cookie flags and mixed content.</td><td>Findings with <code>line: "live"</code>, an A to F grade and a live badge (<a href="/docs/api">REST API</a>)</td></tr>
   </tbody>
 </table></div>
-<p>Lab and Code run on every check; there is nothing to switch on. Both work from the repo and the rebuilt lab database only: PatchLabs never connects to your live app or database.</p>
+<p>Lab and Code run on every check; there is nothing to switch on. Both work from the repo and the rebuilt lab database only: they never connect to your live app or database. Live posture is opt-in per app: PatchLabs never touches your database, and Live posture only loads your public home page, like any visitor, and only on domains you verify.</p>
 
 <h2 id="shape">One finding shape</h2>
 <p>Each finding, from either line, has the same fields. This one is from our deliberately leaky demo app (fake data):</p>
@@ -30,7 +31,7 @@ lede: Every problem PatchLabs reports, whether the Lab reproduced it in a rebuil
  "fixed_in_lab": true}</code></pre></div>
 <dl class="defs">
   <dt id="f-id"><code>id</code></dt><dd>The stable finding ID, such as <code>PL-001</code>. Each has a page explaining it: <a href="/findings">the finding index</a>. IDs never change meaning and are never reused.</dd>
-  <dt id="f-line"><code>line</code></dt><dd><code>lab</code> or <code>code</code>: which product line found it. The report groups findings by line.</dd>
+  <dt id="f-line"><code>line</code></dt><dd><code>lab</code>, <code>code</code> or <code>live</code>: which product line found it. The report groups findings by line; <code>live</code> findings come from Live posture and appear on the app page, not in a repo check.</dd>
   <dt id="f-severity"><code>severity</code></dt><dd><code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code> or <code>info</code>. See <a href="#severity">severity</a> below.</dd>
   <dt id="f-title"><code>title</code></dt><dd>A plain-English summary. It can be more specific than the ID’s general title (for example naming the provider of a key).</dd>
   <dt id="f-object"><code>object</code></dt><dd>What the finding is about: a table (<code>public.profiles</code>), a bucket, a function folder or a source file (<code>src/pages/Admin.tsx</code>).</dd>
@@ -63,6 +64,7 @@ lede: Every problem PatchLabs reports, whether the Lab reproduced it in a rebuil
   <tbody>
     <tr><th scope="row">Lab</th><td><a href="/findings/pl-001">PL-001</a> to <a href="/findings/pl-008">PL-008</a>: who can read each table, RLS off or empty, open writes, exposed definer functions, public buckets</td><td><a href="/findings/pl-012">PL-012</a> to <a href="/findings/pl-016">PL-016</a>: strangers changing rows, self-made admins, views skipping RLS, open storage policies, Realtime streams</td></tr>
     <tr><th scope="row">Code</th><td><a href="/findings/pl-009">PL-009</a>, <a href="/findings/pl-010">PL-010</a>, <a href="/findings/pl-011">PL-011</a> (keys in code and history), <a href="/findings/pl-017">PL-017</a> to <a href="/findings/pl-026">PL-026</a> (functions, sign-up, <code>user_metadata</code>, admin checks, webhooks, trusted ids, dependencies, raw HTML, Firebase rules, CORS)</td><td>None</td></tr>
+    <tr><th scope="row">Live posture</th><td><a href="/findings/pl-027">PL-027</a> to <a href="/findings/pl-036">PL-036</a>: HTTPS not forced, certificate invalid or expiring, HSTS, Content-Security-Policy, framing, nosniff, cookie flags, mixed content, version headers, Referrer-Policy. Opt-in per app, on a verified domain</td><td>None</td></tr>
   </tbody>
 </table></div>
 <p>Coming checks have pages so you can check your own project, but they won’t appear in a report until they ship. The <a href="/changelog">changelog</a> records when each one does.</p>

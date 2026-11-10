@@ -1,5 +1,5 @@
 """Remote MCP server at POST /mcp: JSON-RPC 2.0 over Streamable HTTP, stateless, plain JSON responses.
-Tools: rls_check, start_check, get_check (open); list_apps, run_check (need an X-API-Key header)."""
+Tools: rls_check, headers_check, start_check, get_check (open); list_apps, run_check (need an X-API-Key header)."""
 import json
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -8,14 +8,15 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
-import core, monitor, rls
+import core, monitor, posture, rls
 from core import ORIGINS, ip_hash, pool
 
 router = APIRouter()
 PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
 MAX_BODY, MAX_BATCH = 256 * 1024, 20
 INSTRUCTIONS = ("PatchLabs finds personal-data leaks in Supabase / Lovable apps. rls_check is a free static scan of a public repo's "
-                "migrations. start_check asks for the full lab check (the owner must verify the repo by email). list_apps and "
+                "migrations. headers_check grades a public site's HTTPS, certificate, security headers and cookies from one page load. "
+                "start_check asks for the full lab check (the owner must verify the repo by email). list_apps and "
                 "run_check work on a workspace's monitored apps and need the workspace API key in the X-API-Key header.")
 
 
@@ -27,6 +28,10 @@ REPO = {"type": "string", "description": "Public GitHub repo, e.g. owner/name or
 TOOLS = [
     {"name": "rls_check", "title": "Static RLS check", "inputSchema": schema({"repo": REPO}, ["repo"]),
      "description": "Scan a public repo's supabase/migrations for row-level-security mistakes (static analysis, no sign-up)."},
+    {"name": "headers_check", "title": "Security headers check",
+     "inputSchema": schema({"url": {"type": "string", "description": "A public site, e.g. https://app.example.com"}}, ["url"]),
+     "description": "Grade a public site's HTTPS, TLS certificate, security headers and cookie flags from one load of its home page "
+                    "(no sign-up). Returns findings PL-027..PL-036 with fixes."},
     {"name": "start_check", "title": "Request a full leak check",
      "inputSchema": schema({"repo": REPO, "email": {"type": "string", "description": "Where the report goes"}}, ["repo", "email"]),
      "description": "Request the full lab check. Returns a check id and a link; the repo owner proves ownership with a one-line file."},
@@ -44,6 +49,8 @@ def call_tool(name, args, request, c):
     import app as main  # loaded by now; imported here to avoid a cycle
     if name == "rls_check":
         return rls.rls_check(c, str(args["repo"]), ip_hash(request))
+    if name == "headers_check":
+        return posture.headers_check(posture.HeadersCheck(url=str(args["url"])), request, c)
     if name == "start_check":
         return main.create_check(main.NewCheck(repo=str(args["repo"]), email=str(args["email"])), request, c)
     if name == "get_check":

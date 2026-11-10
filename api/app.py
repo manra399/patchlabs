@@ -1,6 +1,7 @@
 """PatchLabs API: takes leak-check requests, proves the requester controls the repo, hands checks to the
 worker and serves the results. Accounts and workspaces live in accounts.py, monitored apps in monitor.py, decisions and
-signed receipts in receipts.py, the free RLS tool in rls.py and the MCP server in mcp_server.py.
+signed receipts in receipts.py, the free RLS tool in rls.py, live posture and the free headers tool in posture.py
+and the MCP server in mcp_server.py.
 
 Public:  POST /checks, GET /checks/{id}, POST /checks/{id}/verify, GET /health
 Worker:  POST /worker/claim, POST /worker/heartbeat, POST /worker/checks/{id}/result   (Bearer WORKER_TOKEN)
@@ -14,12 +15,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field
 
-import accounts, audit, mcp_server, monitor, receipts, rls, support, taxonomy
+import accounts, audit, mcp_server, monitor, posture, receipts, rls, support, taxonomy
 from core import (ADMIN_TOKEN, EMAIL_RE, ORIGINS, SITE_URL, VERIFY_FILE, WORKER_TOKEN, bearer, clean_report, db, event, ip_hash, notify,
                   parse_repo, pool, repo_has_code, repo_lookup, scrub, send_email, verify_info)  # noqa: F401 (send_email re-exported)
 
 MAX_OPEN_PER_EMAIL = 3
 MAX_PER_IP_PER_DAY = 10
+POSTURE_EVERY = int(os.environ.get("POSTURE_EVERY", "600"))  # seconds between live posture sweeps; 0 turns them off
 SCHEMA = os.environ.get("SCHEMA_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql"))
 
 
@@ -28,7 +30,10 @@ async def lifespan(_):
     pool.open()
     with pool.connection() as c:
         c.execute(open(SCHEMA).read())
+    if POSTURE_EVERY > 0:
+        posture.start_loop(POSTURE_EVERY)
     yield
+    posture.stop_loop()
     pool.close()
 
 
@@ -43,6 +48,7 @@ app.include_router(mcp_server.router)
 app.include_router(support.router)
 app.include_router(audit.router)
 app.include_router(taxonomy.router)
+app.include_router(posture.router)
 
 
 class NewCheck(BaseModel):
