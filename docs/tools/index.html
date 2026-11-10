@@ -6,12 +6,12 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Free security tools for AI-built apps | PatchLabs</title>
-<meta name="description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.">
+<meta name="description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, an in-browser key check, a leak cost calculator and a sample proof report.">
 <link rel="canonical" href="https://patchlabs.dev/tools/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
 <meta property="og:title" content="Free security tools for AI-built apps | PatchLabs">
-<meta property="og:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.">
+<meta property="og:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, an in-browser key check, a leak cost calculator and a sample proof report.">
 <meta property="og:url" content="https://patchlabs.dev/tools/">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Free security tools for AI-built apps | PatchLabs">
-<meta name="twitter:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, a leak cost calculator and a sample proof report.">
+<meta name="twitter:description" content="Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, an in-browser key check, a leak cost calculator and a sample proof report.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -170,6 +170,20 @@ low    PL-032 no nosniff
           <div class="tc-foot"><span>one public page load</span><span class="link-arrow">Check it</span></div>
         </div>
       </a>
+      <a class="card link tool-card" href="/tools/key-check">
+<div class="tc-art" aria-hidden="true"><span class="d">$ key-check .env</span>
+<span class="d">7 lines · 0 bytes sent</span>
+<span class="r">critical</span> PL-010 service_role key
+  in a VITE_ variable
+<span class="r">critical</span> PL-010 OpenAI key
+<span class="g">safe</span>     anon key, Stripe pk_live</div>
+        <div class="tc-body">
+          <span class="n-big">NO SIGN-UP · NOTHING UPLOADED</span>
+          <h3>Free key check</h3>
+          <p>Paste code, a <code>.env</code> or your built JavaScript. Your browser flags secret keys and tells a Supabase <code>anon</code> key from a <code>service_role</code> key.</p>
+          <div class="tc-foot"><span>runs in your browser</span><span class="link-arrow">Check it</span></div>
+        </div>
+      </a>
       <a class="card link tool-card" href="/tools/leak-cost">
 <div class="tc-art" aria-hidden="true"><span class="d">people exposed</span>       1,000
 <span class="d">× notify</span>             £0.50
@@ -184,7 +198,7 @@ low    PL-032 no nosniff
           <div class="tc-foot"><span>runs in your browser</span><span class="link-arrow">Work it out</span></div>
         </div>
       </a>
-      <a class="card link tool-card" href="/sample-report">
+      <a class="card link tool-card t-wide" href="/sample-report">
 <div class="tc-art" aria-hidden="true"><span class="d">[PROVE]</span> anon      0 rows <span class="g">DENIED</span>
         stranger  0 rows <span class="g">DENIED</span>
         owner     1 row  <span class="g">OK</span>
@@ -308,6 +322,7 @@ low    PL-032 no nosniff
         <li><a href="/docs/receipts">Signed receipts</a></li>
         <li><a href="/tools/rls-check">Free RLS check</a></li>
         <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/tools/key-check">Free key check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

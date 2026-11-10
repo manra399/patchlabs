@@ -1,0 +1,191 @@
+<!--
+title: Free key check: is my Supabase key anon or service_role? | PatchLabs
+description: Paste code, a .env file or a built JS bundle. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PatchLabs free key check","url":"https://patchlabs.dev/tools/key-check","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">Free key check</li></ol></nav>
+    <p class="lab">Free tool · runs in your browser</p>
+    <h1>Is that key safe to ship?</h1>
+    <p class="lede">Paste code, a <code>.env</code> file or your built JavaScript. Your browser checks it for secret AI, payment and database keys, and reads any Supabase key to tell you whether it’s the public <code>anon</code> key or the <code>service_role</code> key that skips every access rule. Nothing you paste leaves this page.</p>
+
+    <form class="kc-form" id="kc-form" novalidate>
+      <label class="sr-only" for="kc-in">Code, .env file or JavaScript bundle to check</label>
+      <textarea class="input kc-in" id="kc-in" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="VITE_SUPABASE_URL=https://abcd.supabase.co&#10;VITE_SUPABASE_ANON_KEY=eyJhbGciOi…&#10;&#10;or paste a file from src/, or dist/assets/index-*.js" aria-describedby="kc-help"></textarea>
+      <div class="kc-bar">
+        <button class="btn primary" type="submit" id="kc-go">Check for keys <span class="arrow" aria-hidden="true">→</span></button>
+        <button class="btn ghost" type="button" id="kc-clear">Clear</button>
+        <span class="kc-count mono small muted" id="kc-count" aria-live="polite"></span>
+      </div>
+    </form>
+    <p class="err" role="alert" id="kc-err"></p>
+    <noscript><p class="small muted mt-1">This tool runs entirely in your browser, so it needs JavaScript. The <a href="/tools/rls-check">free RLS check</a> and the <a href="/#check">full check</a> work without it.</p></noscript>
+    <div class="form-meta" id="kc-help">
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>No upload, no network request</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Keys are shown masked</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>30 key types</span>
+      <span>Nothing to paste? <button type="button" class="t-try" id="kc-demo">Try a sample</button></span>
+    </div>
+
+    <div class="rls-out" id="kc-out" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="sb-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Supabase keys</p>
+      <h2 id="sb-h" class="h-md">Two keys look the same. One of them opens everything.</h2>
+      <p class="muted">Supabase gives every project two keys that both start with <code>eyJ</code>. They are JSON Web Tokens, and the middle part says which role the key carries. Builders paste the wrong one into a <code>VITE_</code> variable more often than you’d think, because the variable names and the dashboard boxes sit side by side.</p>
+      <p class="muted">Newer projects use <code>sb_publishable_…</code> and <code>sb_secret_…</code> keys instead. The same rule applies: publishable is fine in the browser, secret never is.</p>
+    </div>
+    <div class="cov">
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th scope="col">Key</th><th scope="col">In browser code</th><th scope="col">Why</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><code>role: anon</code><br><code>sb_publishable_…</code></th><td><span class="pill proven">fine</span></td><td>Meant to be public. Your row level security rules decide what it can read, so those rules are what matter.</td></tr>
+          <tr><th scope="row"><code>role: service_role</code><br><code>sb_secret_…</code></th><td><span class="pill leak">never</span></td><td>Skips row level security. Anyone who finds it can read, change and delete every row in every table. <a href="/findings/pl-010">PL-010</a></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="looks-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What it looks for</p>
+      <h2 id="looks-h">The keys AI-built apps leak most.</h2>
+      <p>The same patterns our full check runs over your code and its whole git history. Each finding names the key, the line, and the page where you revoke it.</p>
+    </div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th scope="col">Group</th><th scope="col">Keys</th><th scope="col">Finding</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Database</th><td>Supabase <code>service_role</code> and <code>sb_secret_</code> keys, Postgres connection strings with a password</td><td><a class="mono" href="/findings/pl-010">PL-010</a></td></tr>
+        <tr><th scope="row">AI providers</th><td>OpenAI, Anthropic, OpenRouter, Google AI Studio, Groq, Replicate, Hugging Face, Perplexity, xAI, ElevenLabs, Fireworks, DeepSeek, and named variables for 30 more</td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
+        <tr><th scope="row">Payments</th><td>Stripe live secret and restricted keys (test keys are flagged low)</td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
+        <tr><th scope="row">Platform</th><td>AWS access keys, GitHub tokens, Slack tokens, Resend keys, private key blocks, tokens inside URLs</td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
+        <tr><th scope="row">Exposure</th><td>A secret in a <code>VITE_</code>, <code>NEXT_PUBLIC_</code>, <code>EXPO_PUBLIC_</code> or <code>REACT_APP_</code> variable, which the build copies into the JavaScript every visitor downloads</td><td><a class="mono" href="/findings/pl-010">PL-010</a></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h" class="h-md">About the key check</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>Is it really safe to paste a key here?</summary><div class="acc-body"><p>The check is a script on this page. It reads the text box and draws the result; it makes no network request and stores nothing. You can confirm it: open your browser’s developer tools, go to the Network tab, and run a check. If you’d rather not paste a live key anywhere, revoke it first and paste the old one: the check reads the key’s format, not whether it still works.</p></div></details>
+      <details class="acc"><summary>It found a key. What now?</summary><div class="acc-body"><p>Revoke it at the provider first (each finding links to the page), then create a new one and keep it on the server: an edge function, a backend route or your host’s secret settings. Deleting the line is not enough if the key was ever committed or deployed, because it stays in your git history and in old builds. <a href="/findings/pl-011">PL-011</a> explains the history part.</p></div></details>
+      <details class="acc"><summary>How do I check my live site?</summary><div class="acc-body"><p>Open your site, press View Source or open the Sources tab in developer tools, and copy the main JavaScript file (usually <code>/assets/index-….js</code>). Paste it here. That file is exactly what every visitor downloads.</p></div></details>
+      <details class="acc"><summary>No keys found. Am I safe?</summary><div class="acc-body"><p>For the text you pasted, the known secret formats aren’t there. Keys can still sit in other files, in old commits, or in a format we don’t recognise. And a public <code>anon</code> key is only as safe as your row level security rules, which the <a href="/tools/rls-check">free RLS check</a> reads and the full check proves.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h" id="full-check">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab green">Whole repo, whole history</p>
+      <h2 id="final-h">Check every file and every old commit, then prove your access rules.</h2>
+      <p class="lede">The full check scans your code and full git history for keys, rebuilds your database in our lab, tests it as three identities, writes the fix and proves it works. Free for your first app.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-full">Public GitHub repo</label>
+          <input id="repo-full" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-full">Your email</label>
+          <input id="email-full" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Median 3.5 min to a proven fix · lab study, n=20, 9 Nov 2026</span><span><a href="/sample-report">See a sample proof report</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<script src="/assets/key-check.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var KC = window.PLKeyCheck;
+  var form = $('kc-form'), input = $('kc-in'), out = $('kc-out'), errEl = $('kc-err'), count = $('kc-count');
+  var SEV = ['critical', 'high', 'medium', 'low'];
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  var pillFor = function (s) { return 'pill ' + ({ critical: 'sev-critical', high: 'sev-high', medium: 'sev-medium' }[s] || 'sev-low'); };
+  var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); };
+  var linkOrText = function (r) { return /^https:\/\//.test(r) ? '<a href="' + esc(r) + '" target="_blank" rel="noopener">' + esc(r.replace(/^https:\/\//, '')) + '</a>' : esc(r); };
+
+  function findingHtml(f) {
+    var slug = '/findings/' + f.finding.toLowerCase();
+    return '<article class="finding s-' + esc(f.severity) + '">' +
+      '<div class="f-top"><span class="' + pillFor(f.severity) + '">' + esc(f.severity) + '</span><a class="f-id" href="' + slug + '">' + esc(f.finding) + '</a><span class="small muted">line ' + esc(f.line) + '</span></div>' +
+      '<h4>' + esc(f.title) + '</h4>' +
+      '<pre>' + esc(f.masked) + '</pre>' +
+      (f.detail ? '<p class="f-detail">' + esc(f.detail) + '</p>' : '') +
+      (f.rotate ? '<p class="f-detail"><strong>Revoke it:</strong> ' + linkOrText(f.rotate) + '</p>' : '') +
+      '<p class="f-more"><a class="link-arrow" href="' + slug + '">What ' + esc(f.finding) + ' means and how to fix it</a></p></article>';
+  }
+
+  function render(r, lines) {
+    var counts = { critical: 0, high: 0, medium: 0, low: 0 };
+    r.findings.forEach(function (f) { counts[f.severity]++; });
+    var h = '<div class="rls-head"><div><p class="tag mb-1">Result · checked in your browser</p><h2>' +
+      (r.findings.length ? plural(r.findings.length, 'key') + ' to deal with' : 'No secret keys found') +
+      '</h2><ul class="t-meta"><li>' + plural(lines, 'line') + ' read</li><li>' + plural(r.safe.length, 'public key') + ' recognised</li><li>0 bytes sent</li></ul></div></div>';
+    h += '<div class="sev-strip">' +
+      '<div class="crit' + (counts.critical ? '' : ' zero') + '"><b>' + counts.critical + '</b><span>Critical</span></div>' +
+      '<div class="high' + (counts.high ? '' : ' zero') + '"><b>' + counts.high + '</b><span>High</span></div>' +
+      '<div class="med' + (counts.medium ? '' : ' zero') + '"><b>' + counts.medium + '</b><span>Medium</span></div>' +
+      '<div' + (counts.low ? '' : ' class="zero"') + '><b>' + counts.low + '</b><span>Low</span></div>' +
+      '<div class="' + (r.safe.length ? 'ok' : 'zero') + '"><b>' + r.safe.length + '</b><span>Safe to ship</span></div></div>';
+    SEV.forEach(function (s) {
+      var list = r.findings.filter(function (f) { return f.severity === s; });
+      if (!list.length) return;
+      h += '<div class="sev-group"><h3>' + cap(s) + ' <span class="ct">' + list.length + '</span></h3>' + list.map(findingHtml).join('') + '</div>';
+    });
+    if (r.safe.length) {
+      h += '<h3 class="h4 mt-4 mb-2">Public keys: fine in browser code</h3><ul class="hc-passed">' +
+        r.safe.map(function (s) { return '<li><span><strong>' + esc(s.title) + '</strong> <span class="mono small muted">line ' + esc(s.line) + '</span><br><span class="small muted">' + esc(s.detail) + '</span></span></li>'; }).join('') + '</ul>';
+    }
+    if (!r.findings.length) {
+      h += '<div class="callout note mt-3"><p><strong>None of the 30 secret key formats appear in what you pasted.</strong> That covers this text only. Keys can sit in other files or in old commits, and a public key is only as safe as your access rules. The full check scans the whole repo and its history and tests the rules in the lab.</p></div>';
+    } else {
+      h += '<div class="callout limit mt-3"><p><strong>Revoke first, then move it.</strong> A key that was committed or deployed is already copied into git history and old builds, so deleting the line doesn’t un-leak it. Revoke it at the provider, create a new one, and keep the new one on the server.</p></div>';
+    }
+    h += '<div class="row mt-3"><a class="btn primary" href="#full-check">Check the whole repo and history, free</a><a class="link-arrow" href="/tools/rls-check">Check your access rules</a></div>';
+    out.innerHTML = h;
+  }
+
+  function run(noScroll) {
+    errEl.textContent = '';
+    var text = input.value;
+    if (!text.trim()) { errEl.textContent = 'Paste some code, a .env file or a JavaScript bundle first.'; input.focus(); return; }
+    var r = KC.scan(text);
+    render(r, text.split('\n').length);
+    if (!noScroll) out.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  input.addEventListener('input', function () { var n = input.value.length; count.textContent = n ? n.toLocaleString() + ' characters' : ''; });
+  form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
+  $('kc-clear').addEventListener('click', function () { input.value = ''; out.innerHTML = ''; count.textContent = ''; errEl.textContent = ''; input.focus(); });
+  $('kc-demo').addEventListener('click', function () { input.value = KC.sample(); input.dispatchEvent(new Event('input')); run(); });
+  if (/[?&]sample\b/.test(location.search)) { input.value = KC.sample(); input.dispatchEvent(new Event('input')); run(true); }
+})();
+</script>

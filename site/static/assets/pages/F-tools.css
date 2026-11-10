@@ -1,4 +1,4 @@
-/* Group F (tools + sample report) page styles. Only used by /tools, /tools/rls-check, /tools/leak-cost and /sample-report.
+/* Group F (tools + sample report) page styles. Only used by /tools, /tools/rls-check, /tools/key-check, /tools/leak-cost and /sample-report.
    Builds on style.css tokens and components; nothing here overrides a shared component globally. */
 
 /* ---------- shared bits ---------- */
@@ -267,3 +267,12 @@
   .hc-cookies td { display: inline-block; border: 0; padding: 0 14px 0 0; font-size: 14px; }
   .hc-cookies td::before { content: attr(data-label) " "; color: var(--muted); font-weight: 400; }
 }
+
+/* ---------- /tools/key-check (paste box; results reuse the rls-check styles) ---------- */
+.kc-form { max-width: 880px; }
+.kc-in { width: 100%; min-height: 200px; font: 400 13px/1.6 var(--mono); padding: 16px 18px; background: var(--card); }
+.kc-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; }
+.kc-count { margin-left: auto; }
+@media (max-width: 640px) { .kc-in { min-height: 160px; } .kc-count { margin-left: 0; width: 100%; } }
+.finding .f-detail a { overflow-wrap: anywhere; }
+@media (min-width: 701px) { .tool-card.t-wide { grid-column: 1 / -1; } }
