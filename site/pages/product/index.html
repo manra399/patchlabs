@@ -1,0 +1,106 @@
+<!--
+title: PatchLabs products: Lab, Code, Fix, Watch and Live posture | PatchLabs
+description: The PatchLabs platform for apps built with Lovable, Supabase, Bolt, Replit or Cursor: Lab reproduces leaks, Code reads the repo, Fix writes a proven fix your engineer approves, Watch re-checks and Live posture grades your live site.
+layout: marketing
+nav: product
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
+-->
+<main id="main">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Products</li></ol></nav>
+    <p class="lab">Products</p>
+    <h1>Four product lines, one report.</h1>
+    <p class="lede">Lab and Code find the problem, Fix writes a change that has been tested and waits for your engineer to approve it, and Watch keeps checking. Every plan includes all four, free for your first app.</p>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="prod-h" style="padding-top:0">
+  <div class="wrap">
+    <h2 id="prod-h" class="sr-only">Product lines</h2>
+    <div class="grid g2">
+      <a class="card link tool-card" href="/product/lab">
+<div class="tc-art" aria-hidden="true"><span class="d">$ lab rebuild supabase/migrations</span>
+<span class="d">disposable Postgres · fake rows</span>
+anon      12 rows <span class="r">LEAK</span>
+stranger  12 rows <span class="r">LEAK</span>
+owner      1 row  <span class="g">OK</span></div>
+        <div class="tc-body">
+          <span class="n-big">LAB · 8 CHECKS</span>
+          <h3>Lab</h3>
+          <p>Rebuilds your database from its migrations in a throwaway copy and reproduces each leak as an anonymous visitor, a signed-in stranger and the owner. Never connects to your live database.</p>
+          <div class="tc-foot"><span>PL-001 to PL-008</span><span class="link-arrow">See Lab</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/product/code">
+<div class="tc-art" aria-hidden="true"><span class="d">$ code scan repo + git history</span>
+<span class="r">critical</span> PL-010 service_role in client
+<span class="r">high</span>     PL-021 webhook not verified
+<span class="d">low</span>      PL-023 advisory (OSV)
+<span class="d">nothing run or installed</span></div>
+        <div class="tc-body">
+          <span class="n-big">CODE · 13 CHECKS</span>
+          <h3>Code</h3>
+          <p>Reads your repo and its full history for exposed keys, dependencies with known vulnerabilities and the risky patterns AI-written code gets wrong, each with the file and line.</p>
+          <div class="tc-foot"><span>PL-009 to PL-026</span><span class="link-arrow">See Code</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/product/fix">
+<div class="tc-art" aria-hidden="true"><span class="d">$ fix PL-001 profiles</span>
+<span class="d">migration written · re-tested</span>
+anon      0 rows  <span class="g">DENIED</span>
+stranger  0 rows  <span class="g">DENIED</span>
+owner     1 row   <span class="g">OK</span>
+<b>waiting for your engineer</b></div>
+        <div class="tc-body">
+          <span class="n-big">FIX · YOUR ENGINEER APPROVES</span>
+          <h3>Fix</h3>
+          <p>Writes the migration, proves it as the same three people, then waits. Nothing reaches your repo until your own engineer approves, and every result comes with a signed receipt.</p>
+          <div class="tc-foot"><span>proven before you see it</span><span class="link-arrow">See Fix</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/product/watch">
+<div class="tc-art" aria-hidden="true"><span class="d">$ watch · weekly re-check</span>
+<span class="d">no change since 3 Nov</span>
+<span class="r">new</span>  PL-007 public bucket
+<span class="d">alert sent · email + webhook</span>
+<span class="g">badge</span> updated, dated</div>
+        <div class="tc-body">
+          <span class="n-big">WATCH · RE-CHECKS AND ALERTS</span>
+          <h3>Watch</h3>
+          <p>Re-checks your app on a schedule, alerts your team only when something new appears, and keeps a dated badge, proof page and signed receipts.</p>
+          <div class="tc-foot"><span>alerts only on change</span><span class="link-arrow">See Watch</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card t-wide" href="/product/live-posture">
+<div class="tc-art" aria-hidden="true"><span class="d">$ live-posture https://your-app.com</span>
+<span class="d">1 page load a day · domain verified</span>
+<b>grade C</b>  65/100
+medium PL-030 no Content-Security-Policy</div>
+        <div class="tc-body">
+          <span class="n-big">PART OF WATCH · 10 CHECKS</span>
+          <h3>Live posture</h3>
+          <p>Loads your public home page once a day, like any visitor, on a domain you verify, and grades HTTPS, the certificate, security headers and cookies. Never touches your database.</p>
+          <div class="tc-foot"><span>PL-027 to PL-036</span><span class="link-arrow">See Live posture</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="start-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Start</p>
+      <h2 id="start-h">Try it before you sign up.</h2>
+      <p>The <a href="/demo">demo</a> runs the real app on made-up projects with no sign-in. The <a href="/tools">free tools</a> need no account. Every finding has its own page with the fix and a prompt you can paste into your AI builder, in the <a href="/findings">findings library</a>.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      <a class="btn primary" href="/#check">Check my app free</a>
+      <a class="btn" href="/pricing">See pricing</a>
+    </div>
+  </div>
+</section>
+
+</main>

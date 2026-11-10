@@ -7,6 +7,8 @@ Mini formats:
 """
 import html, os, re
 
+from builder_prompts import prompt_for, retest_for
+
 ROOT = os.environ.get("PL_GEN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "site", "pages", "findings")
 REVIEWED = "10 Nov 2026"
@@ -2262,7 +2264,7 @@ def page(f):
     toc = [("what", "What it is")]
     if f.get("why"):
         toc.append(("why", "Why AI builders produce it"))
-    toc += [("example", "What we see" if live else "Example"), ("check", "Check it yourself"), ("fix", "The fix" if (coming or code or f.get("why")) else "The fix we write"),
+    toc += [("example", "What we see" if live else "Example"), ("check", "Check it yourself"), ("fix", "The fix" if (coming or code or f.get("why")) else "The fix we write"), ("prompt", "Ask your AI builder"),
             ("proof", "How we test it" if coming else "How we find it" if live else "The proof"), ("intended", "When it’s intended")]
     if f.get("sevwhy"):
         toc.append(("severity", "Severity"))
@@ -2304,6 +2306,18 @@ def page(f):
         fix_note = '<p class="small muted">Code findings come with the file, the line and a one-line fix in the report, for your engineer to make. PatchLabs never pushes to your repo.</p>'
     else:
         fix_note = '<p class="small muted">Every fix arrives as a migration file (plus any code change it needs, noted in the report) for your engineer to approve. Download it, or commit it on GitHub in one click from the report page. Automatic pull requests need our GitHub App, which is coming.</p>'
+    retest = None if coming else retest_for(f["id"], f["line"])
+    if retest:
+        retest_p = f'<p class="small">Then check again with the <a href="{retest[0]}">{retest[1]}</a>, or <a href="/#check">run the full free check</a> on your repo.</p>'
+    elif coming:
+        retest_p = '<p class="small muted">PatchLabs doesn’t test for this yet, so have your engineer review the change.</p>'
+    else:
+        retest_p = '<p class="small">Then <a href="/#check">run the free check</a> on your repo again to confirm it’s gone.</p>'
+    prompt_block = ('<p>Built with Lovable, Bolt, Replit or Cursor? Paste this into the chat. It asks for this one fix and nothing else, '
+                    'and to see the change before it’s applied. Read the change, or have your engineer read it, before you accept.</p>\n      '
+                    f'<div class="code">\n  <div class="code-bar"><span class="name">Prompt for your AI builder</span>'
+                    f'<button class="copy" type="button" data-copy>Copy</button></div>\n'
+                    f'<pre class="wrap-lines"><code>{esc(prompt_for(f["id"]))}</code></pre>\n</div>\n      {retest_p}')
     fix_h = "The fix" if (coming or code or f.get("why")) else "The fix PatchLabs writes"
     proof_h = "How PatchLabs will test it" if coming else ("How PatchLabs finds it" if (code or live) else "The proof it runs")
     proof_block = (f["proof_tr"] or "") + "\n      " + f["proof_note"]
@@ -2392,6 +2406,9 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>{fix_h}</h2>
       {f["fix"]}
       {fix_note}
+
+      <h2 id="prompt"><span class="lab" aria-hidden="true">Prompt</span>Ask your AI builder to fix it</h2>
+      {prompt_block}
 
       <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>{proof_h}</h2>
       {proof_block}

@@ -145,6 +145,14 @@ curl -sI https://your-app.com/assets/index.js | grep -i content-type</code></pre
 </div><p>Uploaded files are better still served from a different domain. Supabase Storage already does that: files come from your <code>supabase.co</code> project host, not your app’s domain. Keep personal uploads in a private bucket (<a href="/findings/pl-007">PL-007</a>).</p>
       <p class="small muted">Live posture findings come with the header or setting to change. PatchLabs never changes your hosting or your repo.</p>
 
+      <h2 id="prompt"><span class="lab" aria-hidden="true">Prompt</span>Ask your AI builder to fix it</h2>
+      <p>Built with Lovable, Bolt, Replit or Cursor? Paste this into the chat. It asks for this one fix and nothing else, and to see the change before it’s applied. Read the change, or have your engineer read it, before you accept.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">Prompt for your AI builder</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>My site doesn't send X-Content-Type-Options: nosniff. Add it to every response, using my host's headers config (for example vercel.json, netlify.toml or _headers). Show me the exact change before you apply it, and don't change anything else.</code></pre>
+</div>
+      <p class="small">Then check again with the <a href="/tools/headers-check">free headers check</a>, or <a href="/#check">run the full free check</a> on your repo.</p>
+
       <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
       <div class="window">
   <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">live posture · report excerpt</span></div>
@@ -188,7 +196,7 @@ curl -sI https://your-app.com/assets/index.js | grep -i content-type</code></pre
     </article>
     <aside class="toc" aria-label="On this page">
       <h2>On this page</h2>
-      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">What we see</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">How we find it</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">What we see</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#prompt">Ask your AI builder</a></li><li><a href="#proof">How we find it</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
     </aside>
   </div>
   <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
