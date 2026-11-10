@@ -1,0 +1,112 @@
+title: Glossary
+description: Plain-English definitions of the terms used in PatchLabs reports and docs: anon key, RLS, policy, migration, lab proof, proven fix, receipt, suppression and more.
+lab: Glossary
+h1: Glossary
+lede: The words you’ll meet in reports and these docs, in plain English. Engineers will know most of them; founders shouldn’t have to.
+---
+<ul class="gloss-letters" aria-label="Jump to letter">
+  <li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li>
+</ul>
+
+<h2 id="a">A</h2>
+<dl class="gloss">
+  <dt id="anon">Anonymous visitor (anon)</dt><dd>Someone using your app without signing in. In the lab, the identity that uses only your public anon key. If it can read personal data, so can anyone on the internet.</dd>
+  <dt id="anon-key">Anon key</dt><dd>Supabase’s public API key. It is built into your frontend, so treat it as known to everyone. It’s meant to be public; your <a href="#policy">policies</a> are what keep data private.</dd>
+  <dt id="api-key">API key (PatchLabs)</dt><dd>A <code>pl_live_…</code> key for one workspace, used by CI, scripts and the MCP server. Shown once, stored as a hash, revocable. <a href="/docs/api#api-keys">More</a>.</dd>
+  <dt id="app">App</dt><dd>A repo you monitor in a workspace. Verified once, then re-checked on a schedule. <a href="/docs/monitoring">More</a>.</dd>
+  <dt id="approve">Approve</dt><dd>A <a href="#decision">decision</a> that says “this is a real leak; we’re applying the fix”.</dd>
+</dl>
+
+<h2 id="b">B</h2>
+<dl class="gloss">
+  <dt id="badge">Badge</dt><dd>A small dated image for your README showing your app’s latest result. Off until you turn it on. <a href="/docs/badge">More</a>.</dd>
+  <dt id="business-question">Business question</dt><dd>A plain-English question in a report that only the owner can answer, such as whether sellers’ emails should be public. Comes with a recommended answer. <a href="/docs/decisions#questions">More</a>.</dd>
+</dl>
+
+<h2 id="c">C</h2>
+<dl class="gloss">
+  <dt id="check">Check</dt><dd>One run of the lab against your repo: rebuild, probe, fix, prove, plus the key scan. Ends with a report and a <a href="#receipt">receipt</a>.</dd>
+  <dt id="client-label">Client label</dt><dd>A short name on an app, such as the client it belongs to. Shown in the dashboard and every alert.</dd>
+</dl>
+
+<h2 id="d">D</h2>
+<dl class="gloss">
+  <dt id="decision">Decision</dt><dd>A recorded <a href="#approve">approve</a> or <a href="#reject">reject</a> on a finished check, with who, when and why. Included in the signed receipt.</dd>
+  <dt id="default-branch">Default branch</dt><dd>The branch GitHub shows first, usually <code>main</code>. Verification and every check read this branch.</dd>
+  <dt id="diff">Diff</dt><dd>What changed between an app’s last two checks: new leaks, fixed, still leaking, and marked as intended.</dd>
+</dl>
+
+<h2 id="e">E</h2>
+<dl class="gloss">
+  <dt id="ed25519">Ed25519</dt><dd>A widely used digital signature scheme. We sign receipts with it so anyone can check them against our published public key.</dd>
+</dl>
+
+<h2 id="f">F</h2>
+<dl class="gloss">
+  <dt id="finding-id">Finding ID</dt><dd>A stable code for a kind of problem the free RLS check spots, from <code>PL-001</code> (anyone with the public key can read personal data) to <code>PL-008</code> (row level security not enabled). <a href="/docs/api#finding-ids">The list</a>.</dd>
+  <dt id="fix">Fix</dt><dd>A SQL migration (plus any code change it notes) that closes a leak. Called a <a href="#proven-fix">proven fix</a> once it passes the lab proof.</dd>
+</dl>
+
+<h2 id="k">K</h2>
+<dl class="gloss">
+  <dt id="key-scan">Key scan</dt><dd>The part of a check that looks for exposed AI, payment and database keys in your code and its full git history.</dd>
+</dl>
+
+<h2 id="l">L</h2>
+<dl class="gloss">
+  <dt id="lab">Lab</dt><dd>A disposable local Postgres that copies Supabase’s roles, auth functions and default grants. We rebuild your database in it from your migrations, test it, and throw it away. It never touches your live app.</dd>
+  <dt id="lab-proof">Lab proof</dt><dd>The three tests a fix must pass: anonymous visitor denied, signed-in stranger denied, owner still reads their own rows.</dd>
+  <dt id="leak">Leak</dt><dd>Personal data that the wrong people can read: an anonymous visitor, or a signed-in user who doesn’t own it.</dd>
+</dl>
+
+<h2 id="m">M</h2>
+<dl class="gloss">
+  <dt id="mcp">MCP</dt><dd>Model Context Protocol: a standard way for AI coding agents to use outside tools. PatchLabs runs a remote MCP server. <a href="/docs/mcp">More</a>.</dd>
+  <dt id="migration">Migration</dt><dd>A SQL file in <code>supabase/migrations/</code> that changes your database’s structure or rules. Migrations run in filename order, which is why fix files start with a timestamp.</dd>
+</dl>
+
+<h2 id="n">N</h2>
+<dl class="gloss">
+  <dt id="needs-review">Needs review</dt><dd>A check status meaning leaks were found but no fix passed the proof on its own, so a person reviews it before you apply anything.</dd>
+</dl>
+
+<h2 id="o">O</h2>
+<dl class="gloss">
+  <dt id="owner-identity">Owner (in the lab)</dt><dd>The test user who owns a seeded row. After a fix they must still read their own data, or the proof fails.</dd>
+  <dt id="owner-role">Owner (in a workspace)</dt><dd>The role that manages a workspace: invites, roles, webhook and name. The other role is member. <a href="/docs/teams#roles">More</a>.</dd>
+</dl>
+
+<h2 id="p">P</h2>
+<dl class="gloss">
+  <dt id="personal-data">Personal data</dt><dd>Information about a person, such as an email address, phone number, home address or date of birth. These are the columns a check looks for.</dd>
+  <dt id="policy">Policy</dt><dd>A row level security rule in Postgres that says who may read or change which rows, for example “users can read their own profile”.</dd>
+  <dt id="proven-fix">Proven fix</dt><dd>A fix that has passed the <a href="#lab-proof">lab proof</a>. A scanner gives you a finding; a proven fix is one you’ve seen work.</dd>
+</dl>
+
+<h2 id="r">R</h2>
+<dl class="gloss">
+  <dt id="re-check">Re-check</dt><dd>Another check of the same app, on a schedule, from Run now, CI or MCP. The quickest way to confirm a fix is live.</dd>
+  <dt id="receipt">Receipt</dt><dd>A signed record of a finished check: result, tables, whether the proof passed, the fix’s hash, and every decision and answer. <a href="/docs/receipts">More</a>.</dd>
+  <dt id="reject">Reject</dt><dd>A <a href="#decision">decision</a> that says “these tables are meant to be readable”. Creates a <a href="#suppression">suppression</a>.</dd>
+  <dt id="rls">RLS (row level security)</dt><dd>The Postgres feature Supabase uses to decide which rows each user can see. When it’s off, or a policy is too broad, data leaks.</dd>
+</dl>
+
+<h2 id="s">S</h2>
+<dl class="gloss">
+  <dt id="seeded-rows">Seeded rows</dt><dd>Fake rows we put in the lab database so there is something to read. Never real data.</dd>
+  <dt id="security-definer">SECURITY DEFINER</dt><dd>A Postgres function that runs with its creator’s rights instead of the caller’s. Useful, but risky if anyone can call it or its <code>search_path</code> isn’t fixed.</dd>
+  <dt id="service-role-key">Service role key</dt><dd>Supabase’s secret key that bypasses every policy. It must never appear in frontend code or a repo; the key scan looks for it.</dd>
+  <dt id="stranger">Signed-in stranger</dt><dd>In the lab, a freshly signed-up user who owns nothing. If they can read other people’s rows, anyone who signs up can.</dd>
+  <dt id="suppression">Suppression</dt><dd>A table your team marked as intended for one app. Later checks list it as “marked as intended” and don’t alert on it. <a href="/docs/decisions#suppressions">More</a>.</dd>
+</dl>
+
+<h2 id="v">V</h2>
+<dl class="gloss">
+  <dt id="verification-file">Verification file</dt><dd><code>patchlabs-verify.txt</code>, committed with a one-time code to prove you control the repo. <a href="/docs/verification">More</a>.</dd>
+</dl>
+
+<h2 id="w">W</h2>
+<dl class="gloss">
+  <dt id="webhook">Webhook</dt><dd>A URL we POST to when a check finishes. Works with Slack and Discord incoming webhooks. <a href="/docs/webhooks">More</a>.</dd>
+  <dt id="workspace">Workspace</dt><dd>Where apps, members, API keys, the webhook and the plan live. You can belong to several. <a href="/docs/teams">More</a>.</dd>
+</dl>

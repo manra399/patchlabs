@@ -1,0 +1,101 @@
+<!--
+title: Badge | PatchLabs docs
+description: Add a dated PatchLabs badge to your README or site showing your app's latest check result. What each state means, how to embed it, and what becomes public.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Badge","item":"https://patchlabs.dev/docs/badge"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge" aria-current="page">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Badge</li></ol></nav>
+<p class="lab">Badge</p>
+<h1>Badge</h1>
+<p class="lede">A small, dated badge for your README or website that shows the result of your app’s latest check. It is off until you turn it on, and it shows a status, not your report.</p>
+<h2 id="states">What the badge can say</h2>
+<p>These are the real badges, drawn by the same code as the API:</p>
+<dl class="status-key">
+  <dt><svg xmlns="http://www.w3.org/2000/svg" width="261" height="20" role="img" aria-label="PatchLabs: no known leaks · 9 Nov 2026"><title>PatchLabs: no known leaks · 9 Nov 2026</title><linearGradient id="s190" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r190"><rect width="261" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r190)"><rect width="71" height="20" fill="#1c1917"/><rect x="71" width="190" height="20" fill="#2ea44f"/><rect width="261" height="20" fill="url(#s190)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11"><text x="35.5" y="14">PatchLabs</text><text x="166.0" y="14">no known leaks · 9 Nov 2026</text></g></svg></dt><dd>The latest finished check found no leaks in the tables we test. The date is when it finished.</dd>
+  <dt><svg xmlns="http://www.w3.org/2000/svg" width="267" height="20" role="img" aria-label="PatchLabs: fix in progress · 9 Nov 2026"><title>PatchLabs: fix in progress · 9 Nov 2026</title><linearGradient id="s196" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r196"><rect width="267" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r196)"><rect width="71" height="20" fill="#1c1917"/><rect x="71" width="196" height="20" fill="#dfb317"/><rect width="267" height="20" fill="url(#s196)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11"><text x="35.5" y="14">PatchLabs</text><text x="169.0" y="14">fix in progress · 9 Nov 2026</text></g></svg></dt><dd>The latest finished check found leaks. A fix is ready or being reviewed, and not yet confirmed by a clean re-check.</dd>
+  <dt><svg xmlns="http://www.w3.org/2000/svg" width="182" height="20" role="img" aria-label="PatchLabs: not checked yet"><title>PatchLabs: not checked yet</title><linearGradient id="s111" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r111"><rect width="182" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r111)"><rect width="71" height="20" fill="#1c1917"/><rect x="71" width="111" height="20" fill="#9f9f9f"/><rect width="182" height="20" fill="url(#s111)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11"><text x="35.5" y="14">PatchLabs</text><text x="126.5" y="14">not checked yet</text></g></svg></dt><dd>The badge is public but no check has finished yet.</dd>
+  <dt><svg xmlns="http://www.w3.org/2000/svg" width="129" height="20" role="img" aria-label="PatchLabs: private"><title>PatchLabs: private</title><linearGradient id="s58" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r58"><rect width="129" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r58)"><rect width="71" height="20" fill="#1c1917"/><rect x="71" width="58" height="20" fill="#9f9f9f"/><rect width="129" height="20" fill="url(#s58)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11"><text x="35.5" y="14">PatchLabs</text><text x="100.0" y="14">private</text></g></svg></dt><dd>The badge isn’t public, the app isn’t verified, or the ID is wrong. Nothing about the app is revealed.</dd>
+</dl>
+
+<h2 id="turn-on">Turn it on</h2>
+<p>On the app’s page in your dashboard, switch on <strong>Public badge</strong>. Or with the API:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/apps/$APP_ID \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"badge_public": true}'</code></pre></div>
+<p>Only verified apps can show a status. Switch it off the same way with <code>false</code>; the badge goes back to “private” within the hour.</p>
+
+<h2 id="embed">Embed it</h2>
+<p>Paste your app ID (from the app’s page in your dashboard) to preview the badge and get snippets:</p>
+<div class="doc-tool" data-tool="badge">
+  <p class="lab">Badge builder</p>
+  <h3 id="badge-builder" data-notoc>Make your snippet</h3>
+  <form class="needs-js">
+    <div class="fields-row">
+      <div class="field"><label for="badge-app">App ID</label><input id="badge-app" name="app_id" class="input mono" autocomplete="off" spellcheck="false" placeholder="3f2b9c1e-8a4d-4c55-9f0e-2b7d1c6a9e10"></div>
+      <button class="btn primary" type="submit">Preview</button>
+    </div>
+  </form>
+  <p class="nojs-note small muted mb-0">The builder needs JavaScript. The snippets below work as they are: replace APP_ID.</p>
+  <div class="out" aria-live="polite"></div>
+</div>
+<div class="code"><div class="code-bar"><span class="name">README.md</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="wrap-lines"><code>[![PatchLabs status](https://api.patchlabs.dev/badge/APP_ID.svg)](https://patchlabs.dev/proof?app=APP_ID)</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">HTML</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="wrap-lines"><code>&lt;a href="https://patchlabs.dev/proof?app=APP_ID"&gt;&lt;img src="https://api.patchlabs.dev/badge/APP_ID.svg" alt="PatchLabs status" height="20"&gt;&lt;/a&gt;</code></pre></div>
+
+<h2 id="public">What becomes public</h2>
+<p>Turning the badge on publishes three things and nothing else:</p>
+<ul>
+  <li>the repo name,</li>
+  <li>the status word (<code>no_known_leaks</code>, <code>fix_in_progress</code> or <code>not_checked_yet</code>),</li>
+  <li>the date of the latest finished check.</li>
+</ul>
+<p>Table names, the report, the fix and your team stay private. The badge links to your app’s <a href="/proof">public proof page</a>, which shows the same status. The three fields are also available as JSON, for your own status page:</p>
+<div class="code"><div class="code-bar"><span class="name">GET /public/apps/{app_id}</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/public/apps/$APP_ID
+<span class="c"># {"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "2026-11-09T16:56:41+00:00"}</span>
+<span class="c"># 404 {"detail": "This app's status isn't public."} when the badge is off</span></code></pre></div>
+
+<h2 id="caching">Caching</h2>
+<p>The badge is served with <code>Cache-Control: public, max-age=3600</code>, so a new result can take up to an hour to appear. GitHub also caches README images through its own image proxy, which can add a little more.</p>
+
+<h2 id="what-it-means">What the badge means, and doesn’t</h2>
+<div class="callout limit"><p>“No known leaks” means our latest check, on the date shown, found no personal data readable by the wrong people in the tables we test. It isn’t a certificate or a guarantee about the whole app. Tables your team <a href="/docs/decisions#suppressions">marked as intended</a> still count today, so an app with only intended public tables shows “fix in progress”.</p></div>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Badge">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/monitoring" rel="prev"><span>Previous</span>Monitoring</a><a class="next" href="/docs/receipts" rel="next"><span>Next</span>Signed receipts</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#states">What the badge can say</a></li><li><a href="#turn-on">Turn it on</a></li><li><a href="#embed">Embed it</a></li><li><a href="#public">What becomes public</a></li><li><a href="#caching">Caching</a></li><li><a href="#what-it-means">What the badge means, and doesn’t</a></li></ul>
+</aside>
+</div>
+</main>

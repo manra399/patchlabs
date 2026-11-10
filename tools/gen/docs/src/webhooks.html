@@ -1,0 +1,93 @@
+title: Webhooks
+description: Send PatchLabs check results to Slack, Discord or your own endpoint. Payloads, the test button, delivery rules (one attempt, 5 second timeout) and security.
+lab: Webhooks
+h1: Webhooks
+lede: When a monitored app’s check finishes, PatchLabs can POST the result to a URL you choose. The payload has a ready-made text line, so a Slack incoming webhook works with no code.
+---
+<h2 id="set-up">Set up</h2>
+<ol>
+  <li>A workspace owner opens <strong>Settings → Webhook</strong>, pastes a URL and saves.</li>
+  <li>Press <strong>Send test</strong>. You’ll see the status code your endpoint answered.</li>
+</ol>
+<p>Or with the API:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/workspaces/$WORKSPACE_ID \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"webhook_url": "https://hooks.slack.com/services/T000/B000/XXXX"}'
+
+curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/webhook/test \
+  -H "Authorization: Bearer $PL_SESSION"
+<span class="c"># {"ok": true, "status_code": 200}</span></code></pre></div>
+<p>A workspace has one webhook URL. It must start with <code>https://</code> and point at a public host: addresses that resolve to private, loopback or link-local networks are refused. To remove it, save an empty value (or send <code>"webhook_url": null</code>).</p>
+
+<h2 id="events">Events</h2>
+<h3 id="check-finished"><code>check.finished</code></h3>
+<p>Sent when any check on any of the workspace’s apps finishes: scheduled, run-now, CI or MCP. Free checks that aren’t linked to an app don’t send webhooks.</p>
+<div class="code"><div class="code-bar"><span class="name">POST your-url · application/json</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="wrap-lines"><code>{
+  "event": "check.finished",
+  "text": "PatchLabs: you/shop-app (Acme): leaks found and a tested fix is ready. https://patchlabs.dev/check?id=7c1e…",
+  "check": {
+    "id": "7c1e2f0a-…",
+    "app_id": "3f2b9c1e-…",
+    "repo": "you/shop-app",
+    "status": "done",
+    "tables_leaking": ["orders", "shops"],
+    "url": "https://patchlabs.dev/check?id=7c1e2f0a-…",
+    "new_leaks": ["orders"],
+    "fixed": ["profiles"],
+    "suppressed": ["shops"]
+  }
+}</code></pre></div>
+<dl class="defs">
+  <dt><code>text</code></dt><dd>One line for people: app name and client label, the headline, and the report link.</dd>
+  <dt><code>check.status</code></dt><dd><code>done</code>, <code>no_leaks</code>, <code>needs_review</code> or <code>failed</code>. See <a href="/docs/api#statuses">statuses</a>.</dd>
+  <dt><code>check.tables_leaking</code></dt><dd>Every leaking table in this check, including ones marked as intended.</dd>
+  <dt><code>check.new_leaks</code>, <code>fixed</code>, <code>suppressed</code></dt><dd>The <a href="/docs/monitoring#diff">diff</a> against the previous finished check. Alert on <code>new_leaks</code>; <code>suppressed</code> lists tables your team marked as intended. All three are empty for a failed check.</dd>
+</dl>
+<p>The headline in <code>text</code> is one of: “no data leaks found”, “leaks found and a tested fix is ready”, “leaks found; a person is reviewing the fix”, or “the check could not finish; we have been alerted”.</p>
+
+<h3 id="test"><code>test</code></h3>
+<p>Sent by the test button. Use it to check your endpoint and your channel.</p>
+<div class="code"><div class="code-bar"><span class="name">POST your-url · application/json</span></div><pre><code>{"event": "test", "text": "PatchLabs: webhooks for Acme are working.",
+ "workspace": {"id": "…", "name": "Acme"}}</code></pre></div>
+
+<h2 id="slack">Slack</h2>
+<p>Create an incoming webhook for the channel you want (in Slack: a Slack app with <em>Incoming Webhooks</em> turned on), copy its <code>https://hooks.slack.com/services/…</code> URL, and save it as your webhook. Slack posts the <code>text</code> field as the message and ignores the rest. Slack changes its set-up screens from time to time, so check Slack’s docs for the current steps.</p>
+<div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">#alerts</span></div>
+<pre class="transcript lines" aria-label="How the message reads in Slack">
+<span class="ln"><span class="k">PatchLabs</span>  <span class="dim">09:41</span></span>
+<span class="ln">you/shop-app (Acme): leaks found and a</span>
+<span class="ln">tested fix is ready.</span>
+<span class="ln"><span class="dim">https://patchlabs.dev/check?id=7c1e…</span></span>
+</pre>
+</div>
+
+<h2 id="discord">Discord</h2>
+<p>Discord webhooks expect a different field name, but Discord also accepts Slack-style payloads at the same URL with <code>/slack</code> on the end. Create a webhook in the channel’s settings, add <code>/slack</code>, and save that. Check Discord’s docs if it doesn’t post.</p>
+<div class="code"><div class="code-bar"><span class="name">Webhook URL</span></div><pre class="wrap-lines"><code>https://discord.com/api/webhooks/123456789/abcdef…/slack</code></pre></div>
+
+<h2 id="your-endpoint">Your own endpoint</h2>
+<p>Any HTTPS endpoint that accepts a JSON POST and answers <code>2xx</code> within 5 seconds works. Do the slow work after you answer. A minimal receiver:</p>
+<div class="code"><div class="code-bar"><span class="name">server.js (Node 18+, Express)</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>import express from 'express';
+const app = express();
+app.post('/hooks/patchlabs', express.json(), (req, res) => {
+  res.sendStatus(204);                       <span class="c">// answer first: you have 5 seconds</span>
+  const { event, check } = req.body;
+  if (event === 'check.finished' &amp;&amp; check.new_leaks.length) {
+    openTicket(check.repo, check.new_leaks, check.url);   <span class="c">// your code</span>
+  }
+});
+app.listen(3000);</code></pre></div>
+
+<h2 id="delivery">Delivery rules</h2>
+<dl class="defs">
+  <dt>Attempts</dt><dd><strong>One.</strong> There are no retries. If your endpoint is down, that delivery is lost (the check, its report and the emails are not).</dd>
+  <dt>Timeout</dt><dd>5 seconds for the whole request.</dd>
+  <dt>Redirects</dt><dd>Not followed. Use the final URL.</dd>
+  <dt>Headers</dt><dd><code>Content-Type: application/json</code> and <code>User-Agent: PatchLabs-Webhook/1</code>.</dd>
+  <dt>Address</dt><dd>We resolve the host, refuse private addresses, and connect to the address we checked, so a DNS change mid-request can’t redirect it inside a network.</dd>
+</dl>
+<p>Because there are no retries, treat webhooks as a fast nudge, not a record. Members get the same news by email, and the <a href="/docs/api#get-apps-aid">app endpoint</a> always has the full history.</p>
+
+<h2 id="security">Security</h2>
+<div class="callout limit"><p><strong>Webhook requests aren’t signed yet.</strong> Anyone who learns your URL could post a look-alike payload to it. Keep the URL secret, and before acting on a payload automatically, fetch the check yourself with <code>GET /v1/checks/{id}</code> and your API key, or verify its <a href="/docs/receipts">signed receipt</a>.</p></div>

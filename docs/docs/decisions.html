@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decisions, questions and suppressions | PatchLabs docs</title>
+<meta name="description" content="Approve or reject a PatchLabs finding, answer the report's business questions, and mark tables as intentionally public so later checks don't alert on them.">
+<link rel="canonical" href="https://patchlabs.dev/docs/decisions">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Decisions, questions and suppressions | PatchLabs docs">
+<meta property="og:description" content="Approve or reject a PatchLabs finding, answer the report's business questions, and mark tables as intentionally public so later checks don't alert on them.">
+<meta property="og:url" content="https://patchlabs.dev/docs/decisions">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Decisions, questions and suppressions | PatchLabs docs">
+<meta name="twitter:description" content="Approve or reject a PatchLabs finding, answer the report's business questions, and mark tables as intentionally public so later checks don't alert on them.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Decisions and questions","item":"https://patchlabs.dev/docs/decisions"}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd">
+        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel">
+          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
+          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
+          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
+          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
+          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
+          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
+          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
+          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
+          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+        </div>
+      </details>
+      <a href="/how-it-works">How it works</a>
+      <a href="/research/1-in-4">Research</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs" aria-current="page">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="urgent" href="/leaking-now">Leaking right now?</a>
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions" aria-current="page">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Decisions and questions</li></ol></nav>
+<p class="lab">Decide</p>
+<h1>Decisions, questions and suppressions</h1>
+<p class="lede">Some tables a check flags are mistakes. Some are public on purpose. Decisions let your team say which is which once, and every later check remembers. Everything you decide goes into the check’s signed receipt.</p>
+<h2 id="who">Who can decide</h2>
+<p>Any member of the workspace that the app belongs to, once the check has finished. Decisions and answers belong to monitored apps, so a free check that isn’t linked to an app can’t take them (the API answers <code>403</code>). To record decisions, <a href="/docs/monitoring#add-an-app">add the repo as an app</a> first.</p>
+<p>The easiest place is the report itself. Open a check of your app while signed in and a <strong>Your decision</strong> panel appears under the result: tick the tables it applies to, then press <strong>Approve the fix</strong>, or <strong>These are meant to be readable…</strong> and say why. Business questions appear in the same panel with a box for each answer. Everything below can also be done with the API, using your signed-in session.</p>
+
+<h2 id="approve-reject">Approve or reject</h2>
+<dl class="defs">
+  <dt>Approve</dt><dd>“Yes, this is a leak and we’re applying the fix.” It records who approved which tables and when, and removes those tables from the app’s suppressions if they were there.</dd>
+  <dt>Reject</dt><dd>“These tables are meant to be readable.” For example, a public directory of shops. The tables are remembered for this app as <strong>intended</strong> (a suppression), and later checks stop alerting on them.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">Approve every flagged table</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/checks/$CHECK_ID/decision \
+  -H "Authorization: Bearer $PL_SESSION" \
+  -H 'Content-Type: application/json' \
+  -d '{"action": "approve", "reason": "Applying the fix in PR #42"}'</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Mark one table as intended</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/checks/$CHECK_ID/decision \
+  -H "Authorization: Bearer $PL_SESSION" \
+  -H 'Content-Type: application/json' \
+  -d '{"action": "reject", "tables": ["shops"], "reason": "Shop listings are public by design"}'</code></pre></div>
+<p><code>tables</code> is optional. Left out, it means every table the check flagged. If you name tables, each one must be a table this check flagged, or the API answers <code>422</code> with “This check didn’t flag …”. The response lists every decision on the check so far:</p>
+<div class="code"><div class="code-bar"><span class="name">201 Created</span></div><pre><code>{"decisions": [
+  {"action": "reject", "tables": ["shops"], "reason": "Shop listings are public by design",
+   "by": "Priya", "at": "2026-11-10T09:12:44.120391+00:00"}
+]}</code></pre></div>
+
+<h2 id="suppressions">What a suppression changes</h2>
+<p>A rejected table stays suppressed for that app until someone approves it on a later check. Here is exactly what that does, and doesn’t, change today:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Where</th><th scope="col">Effect of a suppression</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Diff between checks</th><td>Listed under <code>suppressed</code>, left out of <code>new_leaks</code> and <code>still_leaking</code></td></tr>
+    <tr><th scope="row">Emails</th><td>No “New leak found” subject for it; listed as “marked as intended by your team”</td></tr>
+    <tr><th scope="row">Webhooks</th><td>Listed in <code>check.suppressed</code></td></tr>
+    <tr><th scope="row">App details</th><td>Listed in <code>suppressed_tables</code></td></tr>
+    <tr><th scope="row">Check status and badge</th><td><strong>Unchanged.</strong> The check still reports the table in <code>tables_leaking</code>, its status stays <code>done</code> or <code>needs_review</code>, and a public badge shows “fix in progress”</td></tr>
+    <tr><th scope="row">GitHub Action</th><td><strong>Unchanged.</strong> With <code>fail-on-leak</code>, the step still fails on that status</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="questions">Business questions</h2>
+<p>Most of the moments where a person is needed aren’t technical. They are questions only the owner can answer, so the report asks them in plain English with a recommended answer. For example:</p>
+<blockquote>Should sellers’ email addresses be visible to every signed-in buyer? Recommended: no, show them only to buyers with an order.</blockquote>
+<p>The questions are listed in the check’s <code>summary.questions_for_owner</code>. Answer them with the question text exactly as it appears there:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/checks/$CHECK_ID/answers \
+  -H "Authorization: Bearer $PL_SESSION" \
+  -H 'Content-Type: application/json' \
+  -d '{"answers": [{"question": "Should sellers’ email addresses be visible to every signed-in buyer?",
+                    "answer": "No. Only buyers with an order."}]}'</code></pre></div>
+<ul>
+  <li>Each <code>question</code> must match one of the check’s questions, or the API answers <code>422</code>. A check with no questions answers <code>409</code>.</li>
+  <li>Answering the same question again replaces the earlier answer (the receipt shows the latest, with who and when).</li>
+  <li>You can send up to 50 answers in one call.</li>
+</ul>
+
+<h2 id="receipt">Everything is signed</h2>
+<p>Decisions and answers appear in <code>GET /checks/{id}</code> (as <code>decisions</code> and <code>answers</code>) and in the check’s <a href="/docs/receipts">signed receipt</a>. Each one records <code>by</code>, the member’s name (or their email if they haven’t set one), and <code>at</code>, the time. If a member later deletes their account, <code>by</code> reads “a former member”.</p>
+
+<h2 id="changing-your-mind">Changing your mind</h2>
+<p>Decisions are a history, not a setting: new ones are added, nothing is edited. To stop treating a table as intended, approve it on any check of the same app that flagged it. From then on it alerts again like any other leak.</p>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Decisions,%20questions%20and%20suppressions">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/applying-a-fix" rel="prev"><span>Previous</span>Applying a fix</a><a class="next" href="/docs/monitoring" rel="next"><span>Next</span>Monitoring</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#who">Who can decide</a></li><li><a href="#approve-reject">Approve or reject</a></li><li><a href="#suppressions">What a suppression changes</a></li><li><a href="#questions">Business questions</a></li><li><a href="#receipt">Everything is signed</a></li><li><a href="#changing-your-mind">Changing your mind</a></li></ul>
+</aside>
+</div>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
+        <li><a href="/product/leak-lab">Leak lab</a></li>
+        <li><a href="/product/key-scan">Key scan</a></li>
+        <li><a href="/product/monitoring">Monitoring</a></li>
+        <li><a href="/product/badge">Badge &amp; proof page</a></li>
+        <li><a href="/agencies">Agencies</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Finding index</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Applying a fix | PatchLabs docs</title>
+<meta name="description" content="How to review and ship a PatchLabs fix migration with the Supabase CLI, the SQL editor, Lovable, Bolt, Replit or Cursor, then confirm it worked.">
+<link rel="canonical" href="https://patchlabs.dev/docs/applying-a-fix">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Applying a fix | PatchLabs docs">
+<meta property="og:description" content="How to review and ship a PatchLabs fix migration with the Supabase CLI, the SQL editor, Lovable, Bolt, Replit or Cursor, then confirm it worked.">
+<meta property="og:url" content="https://patchlabs.dev/docs/applying-a-fix">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Applying a fix | PatchLabs docs">
+<meta name="twitter:description" content="How to review and ship a PatchLabs fix migration with the Supabase CLI, the SQL editor, Lovable, Bolt, Replit or Cursor, then confirm it worked.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Applying a fix","item":"https://patchlabs.dev/docs/applying-a-fix"}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd">
+        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel">
+          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
+          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
+          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
+          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
+          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
+          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
+          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
+          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
+          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+        </div>
+      </details>
+      <a href="/how-it-works">How it works</a>
+      <a href="/research/1-in-4">Research</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs" aria-current="page">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="urgent" href="/leaking-now">Leaking right now?</a>
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix" aria-current="page">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Applying a fix</li></ol></nav>
+<p class="lab">Apply</p>
+<h1>Applying a fix</h1>
+<p class="lede">A fix arrives as one SQL migration file, plus any code change the report lists. Your engineer reviews it and ships it the way they ship any other migration. Nothing reaches your live app until they do.</p>
+<h2 id="before">Before you apply</h2>
+<ul>
+  <li><strong>Read the risk line.</strong> The report rates how likely the fix is to change something your users notice, and why.</li>
+  <li><strong>Check for code changes.</strong> If the report says a page or query needs to change too, plan to ship both together.</li>
+  <li><strong>Read the SQL.</strong> It is a normal migration, usually a few lines that drop an over-broad policy and create a narrower one. Nothing in it is hidden or generated at apply time.</li>
+  <li><strong>Apply it as written.</strong> The proof covers the exact file we tested. If you edit it, the lab result no longer applies to your version (and its hash won’t match the <a href="/docs/receipts">receipt</a>).</li>
+</ul>
+
+<h2 id="get-the-file">Get the file</h2>
+<p>A finished report with a proven fix offers three ways to take it:</p>
+<dl class="defs">
+  <dt>Commit the fix on GitHub</dt><dd>Opens GitHub’s new-file page with <code>supabase/migrations/&lt;timestamp&gt;_patchlabs_leak_fix.sql</code> and the SQL filled in. Review it, then commit to a new branch and open a pull request, or commit straight to your default branch. Shown when the fix is short enough to fit in a GitHub link (under about 7,000 characters).</dd>
+  <dt>Download the fix (.sql)</dt><dd>Saves the same file with the same name. Always available.</dd>
+  <dt>Copy fix</dt><dd>Copies the SQL, for pasting into an SQL editor or your builder’s chat.</dd>
+</dl>
+<div class="callout note"><p><strong>Automatic pull requests are coming.</strong> They need our GitHub App, which isn’t live yet. Today the commit link and the download are the two ways to get a fix into your repo.</p></div>
+
+<h2 id="platforms">Apply it on your platform</h2>
+<ul class="platforms">
+  <li><a href="#supabase-cli">Supabase CLI</a></li><li><a href="#sql-editor">Supabase SQL editor</a></li><li><a href="#lovable">Lovable</a></li><li><a href="#bolt">Bolt</a></li><li><a href="#replit">Replit</a></li><li><a href="#cursor">Cursor or any local repo</a></li>
+</ul>
+<p>Builders change how they handle databases often. Where we say “check your platform’s docs”, we mean it: the steps below are the general shape, not an official guide from any of these companies.</p>
+
+<h3 id="supabase-cli">Supabase CLI</h3>
+<p>The most reliable route, and the one the fix is designed for. With the file in <code>supabase/migrations/</code>:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code><span class="c"># optional: replay every migration on a local database first</span>
+supabase start
+supabase db reset
+
+<span class="c"># link once, preview, then apply to your hosted project</span>
+supabase link --project-ref &lt;your-project-ref&gt;
+supabase db push --dry-run
+supabase db push</code></pre></div>
+<p><code>supabase db push</code> applies migrations that the hosted database hasn’t run yet, in filename order. The fix’s timestamp puts it last.</p>
+
+<h3 id="sql-editor">Supabase SQL editor</h3>
+<p>If you don’t use the CLI, paste the SQL into the SQL editor in your Supabase dashboard and run it. Then keep your repo in step, so a later <code>db push</code> doesn’t try to run it twice:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code><span class="c"># commit the file to supabase/migrations/, then mark it as already applied</span>
+supabase migration repair --status applied &lt;timestamp-from-the-file-name&gt;</code></pre></div>
+
+<h3 id="lovable">Lovable</h3>
+<p>Lovable keeps your project in sync with its GitHub repo, so committing the fix through the GitHub link adds the file to your project. Whether that file is then run against your database automatically depends on how your project’s database is connected, so check Lovable’s docs. Two routes that work either way:</p>
+<ul>
+  <li>Paste the SQL into Lovable’s chat and ask it to apply it as a database migration exactly as written. Review what it proposes before you approve it, and make sure it hasn’t rewritten the SQL.</li>
+  <li>If your project uses your own Supabase project, run the SQL in the <a href="#sql-editor">Supabase SQL editor</a>.</li>
+</ul>
+
+<h3 id="bolt">Bolt</h3>
+<p>For Bolt projects that use Supabase, the same two routes apply: ask Bolt to apply the migration exactly as written and review it before accepting, or run it yourself in the <a href="#sql-editor">Supabase SQL editor</a> or with the <a href="#supabase-cli">CLI</a>. Check Bolt’s docs for how it applies migrations to a connected Supabase project.</p>
+
+<h3 id="replit">Replit</h3>
+<p>If your Replit app uses Supabase and has a <code>supabase/migrations</code> folder, add the file there and run the CLI from the Replit Shell, keeping your Supabase access token in Replit Secrets rather than in code:</p>
+<div class="code"><div class="code-bar"><span class="name">Replit Shell</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>npx supabase link --project-ref &lt;your-project-ref&gt;
+npx supabase db push</code></pre></div>
+<p>Or use the <a href="#sql-editor">SQL editor</a>. PatchLabs checks Supabase migrations only, so apps on a different database aren’t covered. Check Replit’s docs for its current database options.</p>
+
+<h3 id="cursor">Cursor or any local repo</h3>
+<p>Save the file in <code>supabase/migrations/</code>, run <code>supabase db reset</code> to test it locally, commit, and ship it through your usual route (<code>supabase db push</code> or your CI). Asking Cursor’s agent to explain the fix is fine; letting it “improve” the SQL isn’t, because the proof covers the file as written.</p>
+
+<h2 id="code-changes">Code changes</h2>
+<p>Some fixes remove access that a page relied on, such as a public list of every user’s profile. When that’s the case, the report names the change in plain words. Ship it with the migration, or the page may show an empty list after the fix goes live.</p>
+
+<h2 id="confirm">Confirm it worked</h2>
+<ol>
+  <li>Run a re-check: press <strong>Run check now</strong> on the app’s page in your dashboard (or <strong>Run now</strong> in the apps list), call <code>POST /apps/{id}/checks</code>, or request a new free check. The result should read <span class="pill proven">no leaks found</span>.</li>
+  <li>Check you shipped the exact file we proved. Its SHA-256 should match <code>fix_sha256</code> in the check’s <a href="/docs/receipts">signed receipt</a>:</li>
+</ol>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>shasum -a 256 supabase/migrations/*_patchlabs_leak_fix.sql   <span class="c"># macOS</span>
+sha256sum supabase/migrations/*_patchlabs_leak_fix.sql       <span class="c"># Linux</span></code></pre></div>
+<p class="small muted">Compare against the downloaded file. Editors that add a trailing newline on save change the hash without changing the SQL.</p>
+
+<h2 id="rollback">If something breaks</h2>
+<p>Roll forward with a new migration that restores the old behaviour: the fix’s <code>DROP POLICY</code> lines name exactly what it replaced, so you can recreate it. Then <a href="mailto:manraj@patchlabs.dev?subject=Fix%20rollback">tell us</a> with the check link and what broke. We read every one, and it helps the next fix.</p>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Applying%20a%20fix">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/reading-a-report" rel="prev"><span>Previous</span>Reading a report</a><a class="next" href="/docs/decisions" rel="next"><span>Next</span>Decisions and questions</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#before">Before you apply</a></li><li><a href="#get-the-file">Get the file</a></li><li><a href="#platforms">Apply it on your platform</a></li><li><a href="#code-changes">Code changes</a></li><li><a href="#confirm">Confirm it worked</a></li><li><a href="#rollback">If something breaks</a></li></ul>
+</aside>
+</div>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
+        <li><a href="/product/leak-lab">Leak lab</a></li>
+        <li><a href="/product/key-scan">Key scan</a></li>
+        <li><a href="/product/monitoring">Monitoring</a></li>
+        <li><a href="/product/badge">Badge &amp; proof page</a></li>
+        <li><a href="/agencies">Agencies</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Finding index</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

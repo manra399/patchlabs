@@ -1,0 +1,106 @@
+<!--
+title: Vulnerability disclosure policy | PatchLabs
+description: How to report a security issue in PatchLabs, what's in scope, the rules for good-faith research, and how quickly we respond.
+layout: marketing
+nav: legal
+head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
+-->
+<main id="main">
+  <div class="wrap wide docs legal">
+    <nav class="docs-nav" aria-label="Legal">
+      <details open><summary>Legal pages</summary>
+      <h2>Legal</h2>
+      <ul>
+        <li><a href="/legal/terms">Terms of service</a></li>
+        <li><a href="/legal/privacy">Privacy policy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy" aria-current="page">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies</a></li>
+      </ul>
+      <h2>Trust</h2>
+      <ul><li><a href="/security">Security</a></li><li><a href="/status">Status</a></li></ul>
+      </details>
+    </nav>
+    <article class="docs-main">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/legal/terms">Legal</a></li><li aria-current="page">Disclosure policy</li></ol></nav>
+      <p class="draft-note">Draft for review, last updated 10 November 2026</p>
+      <h1>Vulnerability disclosure policy</h1>
+      <p class="lede">We ask people to trust us with their code. If you find a way that trust could be broken, we want to hear about it, and we’ll treat you as a partner, not a threat.</p>
+
+      <div class="summary">
+        <h2>How to report</h2>
+        <p>Email <a href="mailto:manraj@patchlabs.dev?subject=Security">manraj@patchlabs.dev</a> with the subject <strong>“Security”</strong>. It goes straight to the founder.</p>
+        <p class="mb-0 small muted">We don’t publish a PGP key yet. If your report contains something sensitive, send a short first email and we’ll arrange a secure way to receive the details.</p>
+      </div>
+
+      <div class="prose">
+        <h2 id="scope"><span class="n">01</span>In scope</h2>
+        <ul>
+          <li><code>patchlabs.dev</code> and every page under it, including the signed-in app at <code>/app/</code>.</li>
+          <li><code>api.patchlabs.dev</code>: the REST API, the MCP server at <code>/mcp</code>, badges, public proof data and receipts.</li>
+          <li>How our pipeline handles a submitted repository: anything that lets a repository escape the lab, steer the fix agent, read another customer’s data, or get a fix marked “proven” when it isn’t.</li>
+          <li>Receipt signing: anything that lets someone forge or alter a receipt that still verifies.</li>
+        </ul>
+
+        <h2 id="out"><span class="n">02</span>Out of scope</h2>
+        <ul>
+          <li>Services we use (GitHub, Microsoft Azure, Anthropic, Spacemail by Spaceship, Google Fonts, cdnjs). Please report to them directly.</li>
+          <li>Denial of service, load testing, or anything that degrades the service for others.</li>
+          <li>Social engineering, phishing, or physical attacks.</li>
+          <li>Automated scanner output without a demonstrated impact.</li>
+          <li>Missing security headers, email authentication records (SPF, DKIM, DMARC) or best-practice settings, unless you can show a real impact.</li>
+          <li>Leaks in other people’s apps. If you find one, tell the app’s owner. Our <a href="/legal/acceptable-use">acceptable use policy</a> explains how.</li>
+        </ul>
+
+        <h2 id="rules"><span class="n">03</span>Rules for good-faith research</h2>
+        <ul>
+          <li>Use only accounts, workspaces and repositories you own. Don’t run checks on repos you don’t control.</li>
+          <li>Access no more data than you need to demonstrate the issue, and never another user’s reports. If you reach someone else’s data, stop and tell us.</li>
+          <li>Don’t change or delete data that isn’t yours, and don’t keep any data after reporting.</li>
+          <li>Keep request rates reasonable and stop if you notice an impact on the service.</li>
+          <li>Give us time to fix the issue before telling anyone else: we ask for 90 days, or less once a fix has shipped and we’ve agreed a date with you.</li>
+        </ul>
+
+        <h2 id="safe-harbour"><span class="n">04</span>Safe harbour</h2>
+        <p>If you follow these rules in good faith, we will not take legal action against you or ask anyone else to, and we will treat your research as authorised. If someone else brings a claim over research that followed this policy, we’ll make it known that it was authorised. If you’re unsure whether something is allowed, ask us first.</p>
+
+        <h2 id="report"><span class="n">05</span>What to include</h2>
+        <ul>
+          <li>What you found and where (URL, endpoint or step in the pipeline).</li>
+          <li>Steps to reproduce it, ideally with requests or a short script.</li>
+          <li>What an attacker could do with it.</li>
+          <li>How you’d like to be credited, if at all.</li>
+        </ul>
+
+        <h2 id="response"><span class="n">06</span>What you can expect from us</h2>
+        <div class="table-wrap"><table class="table stack-sm">
+          <thead><tr><th scope="col">Step</th><th scope="col">Target</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Acknowledge your report</th><td>Within 2 working days</td></tr>
+            <tr><th scope="row">Confirm the issue and its severity</th><td>Within 5 working days</td></tr>
+            <tr><th scope="row">Fix critical and high issues</th><td>As fast as we can, aiming for 7 days</td></tr>
+            <tr><th scope="row">Fix other issues</th><td>Aiming for 30 to 90 days</td></tr>
+            <tr><th scope="row">Updates</th><td>At least every 7 days until it’s fixed</td></tr>
+          </tbody>
+        </table></div>
+        <p>If an issue exposed customer data, we tell the affected customers, and the ICO where the law requires it.</p>
+
+        <h2 id="thanks"><span class="n">07</span>Rewards and credit</h2>
+        <p>We don’t run a paid bug bounty yet. With your permission, we’ll thank you by name on our <a href="/changelog">changelog</a> when the fix ships.</p>
+
+        <h2 id="securitytxt"><span class="n">08</span>security.txt</h2>
+        <p>This policy is referenced from <a href="/.well-known/security.txt"><code>/.well-known/security.txt</code></a> (RFC 9116).</p>
+      </div>
+      <p class="legal-foot">Draft awaiting legal review. See also our <a href="/security">security page</a>.</p>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul>
+        <li><a href="#scope">In scope</a></li><li><a href="#out">Out of scope</a></li><li><a href="#rules">Rules</a></li>
+        <li><a href="#safe-harbour">Safe harbour</a></li><li><a href="#report">What to include</a></li><li><a href="#response">Our response</a></li>
+        <li><a href="#thanks">Credit</a></li><li><a href="#securitytxt">security.txt</a></li>
+      </ul>
+    </aside>
+  </div>
+</main>

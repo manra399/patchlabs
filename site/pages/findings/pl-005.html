@@ -1,0 +1,153 @@
+<!--
+title: PL-005 Always-true policy | PatchLabs findings
+description: PL-005: a Supabase policy with USING (true) or WITH CHECK (true). When it is a leak, when it is fine, how to check, the fix and the proof.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-005: Always-true policy","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Data access</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005" aria-current="page"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Keys</h2>
+      <ul>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-005</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-005</span><span class="pill sev-high">high to low</span></div>
+        <h1>Always-true policy</h1>
+        <p class="lede">A policy that says yes to everyone. On writes, anyone can change or delete your data.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>High to low</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Anyone the policy applies to</dd></div>
+          <div><dt>Found by</dt><dd>Free RLS check (static) and the full lab check</dd></div>
+          <div><dt>Lab proof</dt><dd>Automatic for reads; write test included</dd></div>
+        </dl>
+      </header>
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p><code>using (true)</code> or <code>with check (true)</code> means the policy approves every row for every role it applies to. How bad that is depends on the command:</p>
+<ul><li><strong>UPDATE, DELETE or ALL:</strong> anyone it applies to can change or wipe every row. With no <code>to</code> clause, that includes logged-out visitors. This is the high-severity case.</li>
+<li><strong>INSERT:</strong> anyone can add rows. Fine for a contact form, a problem for an orders or roles table.</li>
+<li><strong>SELECT:</strong> everyone can read every row. Fine for a product list; <a href="/findings/pl-001">PL-001</a> when the table holds personal data.</li></ul>
+<p>AI builders often write these as a quick way past a permissions error, usually with names like "Enable update for all users".</p>
+      
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_orders.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Enable update for all users"
+  on public.orders for update
+  using (true);
+
+create policy "Enable delete for all users"
+  on public.orders for delete
+  using (true);</code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-005.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Every always-true policy, most dangerous commands first</span>
+select tablename, policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'public'
+  and (qual = 'true' or with_check = 'true')
+order by case cmd when 'ALL' then 0 when 'DELETE' then 1
+                  when 'UPDATE' then 2 when 'INSERT' then 3 else 4 end;</code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix PatchLabs writes</h2>
+      <p>PatchLabs replaces each always-true write policy with the narrowest rule the app needs: the row's owner, or staff according to the role table your app already uses.</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_patchlabs_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Enable update for all users" on public.orders;</span>
+<span class="del">drop policy "Enable delete for all users" on public.orders;</span>
+<span class="add">create policy "Customers update own orders"</span>
+<span class="add">  on public.orders for update</span>
+<span class="add">  to authenticated</span>
+<span class="add">  using ((select auth.uid()) = user_id)</span>
+<span class="add">  with check ((select auth.uid()) = user_id);</span>
+<span class="add">create policy "Admins delete orders"</span>
+<span class="add">  on public.orders for delete</span>
+<span class="add">  to authenticated</span>
+<span class="add">  using (exists (</span>
+<span class="add">    select 1 from public.user_roles r</span>
+<span class="add">    where r.user_id = (select auth.uid()) and r.role = 'admin'</span>
+<span class="add">  ));</span></code></pre>
+</div>
+      <p class="small muted">Every fix arrives as a migration file (plus any code change it needs, noted in the report) for your engineer to approve. Download it, or commit it on GitHub in one click from the report page. Automatic pull requests need our GitHub App, which is coming.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>The proof it runs</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab proof · public.orders</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[READS]</span>   <span class="k">anon</span>      → 0 rows        <span class="deny">DENIED</span></span>
+<span class="ln">          <span class="k">stranger</span>  → 0 rows        <span class="deny">DENIED</span></span>
+<span class="ln">          <span class="k">owner</span>     → 1 row, own    <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[WRITES]</span>  <span class="k">anon</span> update → 0 rows   <span class="deny">DENIED</span></span>
+<span class="ln">          <span class="k">owner</span> update own → 1 row <span class="ok">OK</span></span>
+</pre>
+  <div class="window-foot"><span class="pill proven">reads proven</span><span>Writes: test SQL in the report · fake rows</span></div>
+</div>
+      <p>Reads by the anonymous visitor, a signed-in stranger and the owner are proven automatically on every check. For write policies, the report includes the update and delete tests as SQL for your engineer to run; they are not yet part of the automatic proof.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>Always-true is correct in two common cases:</p>
+<ul><li><code>select ... using (true)</code> on data meant for everyone: products, blog posts, opening hours.</li>
+<li><code>insert ... with check (true)</code> on a contact form or waitlist, as long as nothing lets the public read those rows back.</li></ul>
+<p>The report marks these as intended with its reasoning, and you can confirm them so they don't alert again.</p>
+
+      <h2 id="lint"><span class="lab" aria-hidden="true">Map</span>Supabase linter</h2>
+<dl class="lint"><dt>0024 permissive_rls_policy</dt><dd>Flags always-true policies on UPDATE, DELETE, INSERT and ALL. It deliberately skips SELECT, which is where personal-data reads leak (see <a href="/findings/pl-001">PL-001</a>).</dd></dl>
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3><p class="small">Anyone with your app's public key can read emails, phone numbers or addresses.</p></a><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3><p class="small">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3><p class="small">No rules at all. With API access granted, anyone with the public key can read and change every row.</p></a></div>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your app have PL-005?</h2>
+        <p>Paste your public repo. We rebuild the database from your migrations, test it as a visitor, a stranger and the owner, and hand you the proven fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f005">Public GitHub repo</label>
+            <input id="repo-f005" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f005">Your email</label>
+            <input id="email-f005" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-005">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-004"><span>Previous · PL-004</span>UPDATE policy missing WITH CHECK</a><a class="next" href="/findings/pl-006"><span>Next · PL-006</span>SECURITY DEFINER function exposed</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix we write</a></li><li><a href="#proof">The proof</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#lint">Supabase linter</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

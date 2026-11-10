@@ -1,0 +1,124 @@
+<!--
+title: PatchLabs for Lovable apps: find and fix data leaks | PatchLabs
+description: Check a Lovable app's Supabase database for personal data strangers can read. PatchLabs rebuilds it from the GitHub repo, writes the fix and proves it. Free for one app.
+layout: marketing
+nav: for_lovable
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Lovable apps</li></ol></nav>
+      <p class="lab">For Lovable apps</p>
+      <h1>Built it in Lovable? Check who else can read its data.</h1>
+      <p class="lede">Lovable apps usually keep their database rules in <code>supabase/migrations</code> in the connected GitHub repo. We rebuild that database in a lab, read it as a stranger, and hand you a fix that has already passed the proof.</p>
+      <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-lovable">Public GitHub repo</label><input id="repo-lovable" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-lovable">Your email</label><input id="email-lovable" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <p class="indep">Independent: PatchLabs is not affiliated with Lovable.</p>
+    </div>
+    <figure class="figure">
+      <pre class="tree" aria-label="Typical layout of a Lovable repo">your-lovable-app/
+├─ src/
+│  ├─ integrations/supabase/
+│  │  └─ client.ts   <span class="dim">public key, by design</span>
+│  └─ pages/
+└─ <span class="hl">supabase/</span>
+   └─ <span class="hl">migrations/</span>    <span class="dim">← we rebuild from here</span>
+      ├─ …_init.sql
+      └─ …_profiles.sql</pre>
+      <figcaption>A typical layout. Yours may differ; what matters is the <code>supabase/migrations</code> folder.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="fit-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Will it work?</p>
+      <h2 id="fit-h">Check this before you paste your repo.</h2>
+    </div>
+    <div class="fit">
+      <div><h3>Works today when</h3><ul class="ticks compact mb-0"><li><span>Your project is connected to GitHub through Lovable’s GitHub integration</span></li><li><span>The repo is public (private repos come with our GitHub App)</span></li><li><span>The database is Supabase, with a <code>supabase/migrations</code> folder</span></li></ul></div>
+      <div><h3>Not covered yet</h3><ul class="ticks compact mb-0"><li class="x"><span>Private repos, until our GitHub App ships</span></li><li class="x"><span>Database changes that exist only in Supabase and never reached a migration file</span></li><li class="x"><span>Anything outside the database rules, such as edge functions</span></li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="pat-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">The common leak</p>
+      <h2 id="pat-h">The rule that says “everyone can read profiles”.</h2>
+      <p class="lede">A common way a Lovable app leaks: a read policy written so the profile page works for everyone, on a table that also holds emails and phone numbers. Anyone with the app’s public key can then read every row. The fix keeps what the app needs and closes the rest.</p>
+      <div class="stats mt-3" style="--cols:3">
+        <div class="stat"><b class="num">318</b><span>public Lovable and Supabase apps rebuilt<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+        <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+        <div class="stat"><b class="num">1<small>in 4</small></b><span>exposed real personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+      </div>
+      <ol class="footnotes"><li id="fn1">PatchLabs lab study, Nov 2026. 436 public Lovable and Supabase repos run (from a random sample of 500); 318 built a working database in the lab. 106 of 318 (33%): 70 to anyone with the public key, 36 to anyone who signs up. About 1 in 4 (25–28%) after removing businesses’ own public contact details. The study doesn’t separate Lovable from other Supabase projects. <a href="/research/methodology">Methodology</a>.</li></ol>
+    </div>
+    <div>
+      <div class="code mb-0">
+        <div class="code-bar"><span class="name">the pattern, and the proven fix (our demo app)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- before: anyone with the public key reads every profile</span>
+<span class="del">create policy "Profiles are viewable by everyone"</span>
+<span class="del">  on public.profiles for select using (true);</span>
+
+<span class="c">-- after: each user reads only their own profile</span>
+<span class="add">create policy "Users can view own profile"</span>
+<span class="add">  on public.profiles for select using (auth.uid() = user_id);</span></code></pre>
+      </div>
+      <p class="small muted mt-2">Illustrative SQL. Your report contains the real migration for your tables, and it only counts as proven once the anonymous visitor and the signed-in stranger are denied and the owner still reads their own rows.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="land-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">How the fix lands</p>
+      <h2 id="land-h">From proven fix to your live app.</h2>
+      <p class="lede">Lovable syncs both ways with your GitHub repo, so a file committed on GitHub shows up in your Lovable project. Whether Lovable then applies a new migration file to your database automatically is something we haven’t verified for every setup, so check Lovable’s docs and confirm the result.</p>
+      <div class="callout limit mt-3"><p>We never push to your repo or touch your database. Nothing changes until you, or your engineer, applies the migration. Automatic pull requests need our GitHub App, which is coming.</p></div>
+    </div>
+    <ol class="steps"><li><h3>Get the fix</h3><p>Download the migration from your report, or use “Commit this file on GitHub”.</p></li><li><h3>Apply it to the database</h3><p>Depending on your setup: let Lovable apply it, paste the SQL into your Supabase project’s SQL editor, or ask Lovable’s agent to apply that migration. If your project uses Lovable Cloud rather than a Supabase project you connected yourself, check Lovable’s docs for how database changes are applied.</p></li><li><h3>Make sure the repo matches</h3><p>If you applied the SQL by hand, keep the migration file in the repo too, so the next change builds on it.</p></li><li><h3>Re-check</h3><p>Run the check again. It confirms the leak is closed in what the repo now describes.</p></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Lovable questions.</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+      <div class="other-builders mt-3" aria-label="Other builders"><a class="link-arrow" href="/for/supabase">Supabase apps</a><a class="link-arrow" href="/for/bolt">Bolt apps</a><a class="link-arrow" href="/for/replit">Replit apps</a><a class="link-arrow" href="/for/cursor">Cursor apps</a></div>
+    </div>
+    <div>
+      <details class="acc"><summary>Isn’t Lovable’s own security scan enough?</summary><div class="acc-body"><p>Use it: it’s built in and catches common problems. It tells you a rule looks risky. We rebuild the database, test as an anonymous visitor, a signed-in stranger and the owner, and prove the fix before you apply it. They work well together. <a href="/compare">Comparisons</a>.</p></div></details>
+      <details class="acc"><summary>Do you need access to my Lovable account or Supabase project?</summary><div class="acc-body"><p>No. We only read the public GitHub repo. We never ask for your Supabase password or service-role key, and never connect to your live app.</p></div></details>
+      <details class="acc"><summary>My repo is private. What can I do?</summary><div class="acc-body"><p>Private repos need our GitHub App, which is coming. If you’d rather not make the repo public, <a href="mailto:manraj@patchlabs.dev?subject=Private%20repo">email us</a> and we’ll tell you when it’s ready.</p></div></details>
+      <details class="acc"><summary>Will the fix break my app?</summary><div class="acc-body"><p>Every fix must keep the owner reading their own rows, and the report includes a risk note about anything that could behave differently, such as a logged-out page that relied on the old rule. Read it before you apply.</p></div></details>
+      <details class="acc"><summary>Is PatchLabs part of Lovable?</summary><div class="acc-body"><p>No. PatchLabs is independent and not affiliated with Lovable. We work with apps built on Lovable because their code lives in GitHub.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">You’ll get the leaks, the fix and the proof on one page. <a href="/how-it-works">How it works</a>.</p>
+      <div class="row center" style="justify-content:center"><a class="btn primary large" href="#repo-lovable">Check my app free</a><a class="btn secondary large" href="/sample-report">See a sample report</a></div>
+    </div>
+  </div>
+</section>
+
+</main>

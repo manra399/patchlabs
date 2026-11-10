@@ -1,0 +1,120 @@
+<!--
+title: PatchLabs for Cursor projects: prove your migrations don't leak | PatchLabs
+description: Cursor writes your Supabase migrations; PatchLabs rebuilds the database from them, tests RLS as three identities and proves each fix. Free for one app.
+layout: marketing
+nav: for_cursor
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Cursor projects</li></ol></nav>
+      <p class="lab">For Cursor projects</p>
+      <h1>Cursor writes your migrations. We prove they don’t leak.</h1>
+      <p class="lede">Your code is already in git, and your schema is already in <code>supabase/migrations</code>. That’s exactly what we need: we rebuild the database, test who can read what, and hand back a migration your normal review process can take.</p>
+      <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-cursor">Public GitHub repo</label><input id="repo-cursor" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-cursor">Your email</label><input id="email-cursor" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <p class="indep">Independent: PatchLabs is not affiliated with Cursor.</p>
+    </div>
+    <figure class="figure">
+      <div class="code dark mb-0">
+        <div class="code-bar"><span class="name">.cursor/mcp.json</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  <span class="s">"mcpServers"</span>: {
+    <span class="s">"patchlabs"</span>: {
+      <span class="s">"url"</span>: <span class="s">"https://api.patchlabs.dev/mcp"</span>
+    }
+  }
+}</code></pre>
+      </div>
+      <figcaption>Optional: add the PatchLabs MCP server so your agent can run the free RLS check and start a full check. <a href="/docs/mcp">Setup guide</a>.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="fit-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Will it work?</p>
+      <h2 id="fit-h">Check this before you paste your repo.</h2>
+    </div>
+    <div class="fit">
+      <div><h3>Works today when</h3><ul class="ticks compact mb-0"><li><span>Your project uses Supabase with migrations in <code>supabase/migrations</code></span></li><li><span>The repo is public on GitHub (private repos come with our GitHub App)</span></li><li><span>Access control uses RLS with Supabase Auth</span></li></ul></div>
+      <div><h3>Not covered yet</h3><ul class="ticks compact mb-0"><li class="x"><span>Backends without Supabase migrations, such as an ORM on another database</span></li><li class="x"><span>Checking a pull request before it merges (needs our GitHub App)</span></li><li class="x"><span>API routes and server code</span></li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="pat-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">The common leak</p>
+      <h2 id="pat-h">A policy that looks right and still leaks.</h2>
+      <p class="lede">AI assistants are good at writing a policy that makes the feature work. The typical miss: a rule that lets the signed-in user through without checking the row is theirs, or an UPDATE policy with no <code>with check</code>. The lab catches the first by reading as a stranger; the free RLS check flags the second.</p>
+      <div class="callout note mt-3"><p><strong>No Cursor-specific numbers yet.</strong> Our study sampled public Lovable and Supabase repos, so we don’t publish figures for Cursor apps. The access rules work the same way on any Supabase database, which is what we test.</p></div>
+    </div>
+    <div>
+      <div class="code mb-0">
+        <div class="code-bar"><span class="name">the fix arrives as a migration you review</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- after: owner-only reads, and owners can't reassign rows</span>
+<span class="add">create policy "Users read own notes"</span>
+<span class="add">  on public.notes for select to authenticated</span>
+<span class="add">  using (auth.uid() = user_id);</span>
+<span class="add">create policy "Users update own notes"</span>
+<span class="add">  on public.notes for update to authenticated</span>
+<span class="add">  using (auth.uid() = user_id)</span>
+<span class="add">  with check (auth.uid() = user_id);</span></code></pre>
+      </div>
+      <p class="small muted mt-2">Illustrative SQL. Your report contains the real migration for your tables, and it only counts as proven once the anonymous visitor and the signed-in stranger are denied and the owner still reads their own rows.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="land-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">How the fix lands</p>
+      <h2 id="land-h">From proven fix to your live app.</h2>
+      <p class="lede">Cursor is your editor, so the fix lands the way every migration in your project already does.</p>
+      <div class="callout limit mt-3"><p>We never push to your repo or touch your database. Nothing changes until you, or your engineer, applies the migration. Automatic pull requests need our GitHub App, which is coming.</p></div>
+    </div>
+    <ol class="steps"><li><h3>Pull it into your branch</h3><p>Download the migration, or commit it on GitHub in one click, then pull.</p></li><li><h3>Review it like any change</h3><p>The report shows the proof for each identity and a risk note. Ask Cursor to explain anything you’re unsure about.</p></li><li><h3>Ship it your usual way</h3><p><code>supabase db push</code>, your CI, or Supabase’s GitHub integration if you use it.</p></li><li><h3>Re-check after the merge</h3><p>From the dashboard, on a schedule, or from CI with an API key. <a href="/product/monitoring">Monitoring</a>.</p></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Cursor questions.</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+      <div class="other-builders mt-3" aria-label="Other builders"><a class="link-arrow" href="/for/lovable">Lovable apps</a><a class="link-arrow" href="/for/supabase">Supabase apps</a><a class="link-arrow" href="/for/bolt">Bolt apps</a><a class="link-arrow" href="/for/replit">Replit apps</a></div>
+    </div>
+    <div>
+      <details class="acc"><summary>Does the MCP server cost anything?</summary><div class="acc-body"><p>The free RLS check and starting a check work without an account. Listing and running checks for monitored apps needs your workspace API key. <a href="/docs/mcp">MCP docs</a>.</p></div></details>
+      <details class="acc"><summary>Will Cursor’s agent see my findings?</summary><div class="acc-body"><p>Only if you add the MCP server and ask it to check. Reports are otherwise shared by link.</p></div></details>
+      <details class="acc"><summary>Do you run my code?</summary><div class="acc-body"><p>No. The lab only applies the SQL in your migrations; nothing from your repo is executed.</p></div></details>
+      <details class="acc"><summary>Is PatchLabs part of Cursor?</summary><div class="acc-body"><p>No. PatchLabs is independent and not affiliated with Cursor or Anysphere.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">You’ll get the leaks, the fix and the proof on one page. <a href="/how-it-works">How it works</a>.</p>
+      <div class="row center" style="justify-content:center"><a class="btn primary large" href="#repo-cursor">Check my app free</a><a class="btn secondary large" href="/sample-report">See a sample report</a></div>
+    </div>
+  </div>
+</section>
+
+</main>

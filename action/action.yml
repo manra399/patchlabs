@@ -1,0 +1,77 @@
+name: PatchLabs leak check
+description: Re-check a PatchLabs monitored app from CI, wait for the lab result, and fail the step when personal data is readable by the wrong people.
+author: PatchLabs
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  api-key:
+    description: Workspace API key (pl_live_...). Store it as a repository secret, never in the workflow file.
+    required: true
+  app-id:
+    description: The app's ID, from its page in the PatchLabs dashboard (or GET /workspaces/{wid}/apps).
+    required: true
+  wait:
+    description: Wait for the check to finish ("true") or only start it ("false").
+    required: false
+    default: "true"
+  fail-on-leak:
+    description: Fail the step when the finished check found leaks (status done or needs_review) that your team has not marked as intended. Only applies when wait is true.
+    required: false
+    default: "true"
+  timeout-minutes:
+    description: How long to wait for a result before giving up.
+    required: false
+    default: "30"
+  fail-on-timeout:
+    description: Fail the step if no result arrives within timeout-minutes ("false" only warns).
+    required: false
+    default: "false"
+  poll-seconds:
+    description: Seconds between status checks while waiting.
+    required: false
+    default: "15"
+  api-url:
+    description: PatchLabs API base URL. Leave the default unless you were told otherwise.
+    required: false
+    default: https://api.patchlabs.dev
+
+outputs:
+  check-id:
+    description: ID of the check this run started (empty if none was started).
+    value: ${{ steps.check.outputs.check-id }}
+  status:
+    description: "Final status: done, no_leaks, needs_review or failed; queued/running when wait is false or it timed out; busy or limit when no check could start."
+    value: ${{ steps.check.outputs.status }}
+  url:
+    description: Link to the report.
+    value: ${{ steps.check.outputs.url }}
+  leaks-found:
+    description: '"true" when the finished check found leaking tables.'
+    value: ${{ steps.check.outputs.leaks-found }}
+  tables-leaking:
+    description: Comma-separated list of leaking tables.
+    value: ${{ steps.check.outputs.tables-leaking }}
+  suppressed-tables:
+    description: Comma-separated leaking tables your team marked as intended (fail-on-leak ignores them).
+    value: ${{ steps.check.outputs.suppressed-tables }}
+  lab-proof-passed:
+    description: '"true" when the fix passed the lab proof (anonymous visitor denied, stranger denied, owner still reads their own rows).'
+    value: ${{ steps.check.outputs.lab-proof-passed }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        PL_API_KEY: ${{ inputs.api-key }}
+        PL_APP_ID: ${{ inputs.app-id }}
+        PL_WAIT: ${{ inputs.wait }}
+        PL_FAIL_ON_LEAK: ${{ inputs.fail-on-leak }}
+        PL_TIMEOUT_MINUTES: ${{ inputs.timeout-minutes }}
+        PL_FAIL_ON_TIMEOUT: ${{ inputs.fail-on-timeout }}
+        PL_POLL_SECONDS: ${{ inputs.poll-seconds }}
+        PL_API_URL: ${{ inputs.api-url }}
+      run: bash "$GITHUB_ACTION_PATH/check.sh"

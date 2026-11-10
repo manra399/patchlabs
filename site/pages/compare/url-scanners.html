@@ -1,0 +1,171 @@
+<!--
+title: PatchLabs vs URL scanners for AI-built apps | PatchLabs
+description: URL scanners probe your live app from outside. PatchLabs tests a copy of your database built from your migrations and proves the fix. Five scanners compared fairly.
+layout: marketing
+head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
+-->
+<main id="main">
+
+<section class="page-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/compare">Compare</a></li><li aria-current="page">URL scanners</li></ol></nav>
+    <p class="lab">PatchLabs vs URL scanners</p>
+    <h1>URL scanners look at your live app from outside. PatchLabs tests a copy from the inside.</h1>
+    <p class="lede">Tools such as securityscanner.dev, VAS, VibeEval, SupaExplorer and UNPWNED probe your deployed site, often with the public key that ships inside your app. They’re fast and they see your real deployment. PatchLabs never touches your live app: it rebuilds the database from your migrations, tests every table as three people and proves the fix.</p>
+    <div class="meta-line"><span>Last checked 10 Nov 2026</span><span>Five tools, sources at the end</span><span>Independent of all of them</span></div>
+  </div>
+</section>
+
+<section class="sec tight" aria-label="Summary">
+  <div class="wrap">
+    <div class="verdict">
+      <div>
+        <p class="who">Choose a URL scanner when</p>
+        <h2>You want to see what your live deployment really exposes, in seconds.</h2>
+        <ul class="ticks">
+          <li>Your code isn’t in a public repo, or your app isn’t built on Supabase</li>
+          <li>You want headers, exposed files (<code>.env</code>, <code>.git</code>, source maps) and keys in your shipped JavaScript checked</li>
+          <li>You changed things outside your migrations and want to test what’s actually live</li>
+          <li>You want a first result in seconds to a couple of minutes</li>
+        </ul>
+      </div>
+      <div>
+        <p class="who">Choose PatchLabs when</p>
+        <h2>You want every table tested, and the fix proven before it ships.</h2>
+        <ul class="ticks">
+          <li>You want every table your migrations create tested, including ones your front end never mentions</li>
+          <li>You want a signed-in stranger tested, not only an anonymous visitor</li>
+          <li>You want a fix proven in a lab before you deploy, rather than a re-scan after</li>
+          <li>You’d rather nothing probed your production app at all</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="lanes-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Outside-in vs inside-out</p>
+      <h2 id="lanes-h">Two ways to find out who can read your data.</h2>
+      <p>Neither is wrong. They see different things, which is why they work well together.</p>
+    </div>
+    <div class="lanes">
+      <div class="lane"><div class="name">URL scanner<span>outside-in, on your live app</span></div>
+        <ol aria-label="Typical URL scanner flow"><li>Your live URL</li><li>Read the JS bundle</li><li>Find key and table names</li><li class="r">Query as anon</li><li>Findings and fix prompt</li><li>Re-scan after you ship</li></ol></div>
+      <div class="lane us"><div class="name">PatchLabs<span>inside-out, on a copy</span></div>
+        <ol aria-label="PatchLabs flow"><li>Your public repo</li><li>Rebuild every table</li><li>Seed fake rows</li><li class="r">Query as anon and stranger</li><li>Write migration</li><li class="g">Prove × 3 before you ship</li></ol></div>
+    </div>
+    <p class="small muted mt-2">The scanner flow is typical, not universal. securityscanner.dev, for example, describes pulling table names from the JS bundle and testing each with the anon key. Some scanners add authenticated or repo-based checks; see the table below.</p>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="named-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Named tools</p>
+      <h2 id="named-h">Five scanners, as they describe themselves.</h2>
+      <p>Prices and times are what each site stated on the day we checked. Entry prices only; most have higher tiers.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="table compare">
+        <caption class="sr-only">PatchLabs compared with five URL scanners</caption>
+        <thead><tr><th scope="col">Tool</th><th scope="col">How it tests</th><th scope="col">Help with the fix</th><th scope="col">Entry price</th><th scope="col">First result, as stated</th></tr></thead>
+        <tbody>
+          <tr class="us-row"><th scope="row">PatchLabs</th><td class="us">Rebuilds the database from your repo; tests as anon, signed-in stranger and owner</td><td class="us"><span class="yes">Writes the fix and proves it</span></td><td class="us">Free for 1 app; £19/month</td><td class="us">Median 3.5 min to a proven fix<span class="cell-note">n=20, 9 Nov 2026</span></td></tr>
+          <tr><th scope="row">securityscanner.dev</th><td>Live URL, 80+ modules, including a Supabase RLS probe with the anon key</td><td>A fix file for Claude Code to apply (paid tiers)</td><td>1 free scan; $9 a scan; $29/month</td><td>About 10 s for a quick scan</td></tr>
+          <tr><th scope="row">VAS (Vibe App Scanner)</th><td>Live URL, plus code review of a GitHub repo or ZIP</td><td>Remediation snippets and fix guides</td><td>Free one-finding preview; $29/month</td><td>Not stated</td></tr>
+          <tr><th scope="row">VibeEval</th><td>Live app; access-control and cross-account checks; findings verified by an engineer</td><td>Fix guidance; free RLS checker returns fix SQL and a verification query</td><td>$25/month, 14-day trial</td><td>Under 60 s triage; 3 to 8 min deep</td></tr>
+          <tr><th scope="row">SupaExplorer</th><td>Live URL and Chrome extension: exposed Supabase keys and readable tables</td><td>AI SQL suggestions (paid)</td><td>Free detection; $9/month; $5.99 a scan</td><td>About 30 s</td></tr>
+          <tr><th scope="row">UNPWNED</th><td>Live site: 149 checks free, up to 702 for verified owners</td><td>AI fix prompts and a before/after re-scan (paid)</td><td>Free; $9/month</td><td>About 2 min</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Last checked 10 Nov 2026 against each tool’s public site. Spotted something out of date? <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Tell us</a>.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="sees-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What each one sees</p>
+      <h2 id="sees-h">Different blind spots.</h2>
+    </div>
+    <div class="better">
+      <div class="card">
+        <h3><span class="lab">Scanner</span>Sees, and we don’t</h3>
+        <ul class="ticks mb-0">
+          <li>Your actual deployment, including changes made outside migrations</li>
+          <li>Security headers, exposed files and source maps</li>
+          <li>Keys baked into the JavaScript you shipped</li>
+          <li>Apps on backends other than Supabase, such as Firebase</li>
+        </ul>
+      </div>
+      <div class="card green-edge">
+        <h3><span class="lab green">PatchLabs</span>Sees, and a typical scanner doesn’t</h3>
+        <ul class="ticks mb-0">
+          <li>Every table your migrations create, not just the ones the front end names</li>
+          <li>What a signed-in stranger can read, using a real second test user</li>
+          <li>Whether the fix works for all three people before you deploy it</li>
+          <li>Keys you deleted months ago that are still in your git history</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout limit mt-4"><p><strong>Our limit.</strong> The lab is only as complete as the migrations in your repo. If something was changed in the Supabase dashboard and never written to a migration, an outside scan can see it and we can’t. The report says what it couldn’t check.</p></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Asked about scanners.</h2>
+    </div>
+    <div>
+      <details class="acc"><summary>A scanner found nothing. Am I fine?</summary><div class="acc-body"><p>It means nothing it tested was readable from outside. One scanner in this list says it well in its own words: no findings is not proof of security. A table the scanner never discovered, or one only signed-in users can read, can still leak. That’s what our inside-out test covers.</p></div></details>
+      <details class="acc"><summary>Why don’t you scan the live URL too?</summary><div class="acc-body"><p>We chose never to touch customers’ live apps. Everything happens on a disposable copy built from your repo, with fake rows, so no real person’s data is ever read during a check.</p></div></details>
+      <details class="acc"><summary>Is a re-scan the same as a proof?</summary><div class="acc-body"><p>A re-scan tells you, after you’ve shipped, whether the outside view changed. Our proof runs before you ship: we apply the fix in the lab and check that an anonymous visitor and a signed-in stranger are denied while the owner still reads their own rows.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="src-h">
+  <div class="wrap narrow">
+    <p class="lab">Sources</p>
+    <h2 id="src-h" class="h-md">Where these facts come from.</h2>
+    <ul class="sources">
+      <li><span><a href="https://securityscanner.dev/" rel="noopener">securityscanner.dev</a> · modules, RLS probe method, fix file, pricing, quick-scan time</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="https://vibeappscanner.com/" rel="noopener">VAS – Vibe App Scanner</a> · live and code scans, free preview, pricing, “no findings is not proof of security”</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="https://vibe-eval.com/" rel="noopener">VibeEval</a> · engineer-verified findings, access-control checks, free RLS checker, pricing and timings</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="https://supaexplorer.com/" rel="noopener">SupaExplorer</a> · URL scanner and extension, pricing, scan time</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="https://www.unpwned.io/" rel="noopener">UNPWNED</a> · check counts, owner-verified deep scan, pricing, scan time</span><span class="when">checked 10 Nov 2026</span></li>
+    </ul>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with securityscanner.dev, VAS, VibeEval, SupaExplorer or UNPWNED.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="cta-cmpu">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="cta-cmpu">See the proof for your own app. The first one is free.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page, in a few minutes.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-cmpu">Public GitHub repo</label>
+          <input id="repo-cmpu" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-cmpu">Your email</label>
+          <input id="email-cmpu" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/sample-report">See a sample proof report</a></span><span><a href="/compare">All comparisons</a></span><span>Prefer a person? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
+    </div>
+  </div>
+</section>
+</main>

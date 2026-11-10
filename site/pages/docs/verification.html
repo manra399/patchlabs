@@ -1,0 +1,110 @@
+<!--
+title: Proving repo ownership | PatchLabs docs
+description: Before a full PatchLabs check runs, you commit patchlabs-verify.txt with a one-time code. Why we ask, how it works, and how to fix common errors.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Proving repo ownership","item":"https://patchlabs.dev/docs/verification"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification" aria-current="page">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Proving repo ownership</li></ol></nav>
+<p class="lab">Verify</p>
+<h1>Proving you own the repo</h1>
+<p class="lede">Before we run a full check, you commit one small file to the repo. It stops anyone from checking an app they don’t control, and it takes about thirty seconds.</p>
+<h2 id="why">Why we ask</h2>
+<p>A report shows exactly which tables a stranger can read and how. That is useful to the app’s owner and useful to an attacker, so we only run the full check for someone who can change the repo. Committing a file is a simple test of that.</p>
+<p>It also means we need no GitHub permissions at all. You don’t install anything, sign in with GitHub or hand over a token. We read the public repo like any visitor would.</p>
+
+<h2 id="steps">How it works</h2>
+<ol>
+  <li>You submit your repo and email. Your check page shows a file name, <code>patchlabs-verify.txt</code>, and a one-time code that looks like <code>patchlabs-3f9a1c0b7d2e4a65</code>. We email you the same details.</li>
+  <li>Press <strong>Add the file on GitHub</strong>. It opens GitHub’s new-file page on your default branch with the name and code already filled in. Press <strong>Commit changes</strong>.</li>
+  <li>Back on the check page, press <strong>I’ve added it</strong>. We look for the file, and if the code is there your check joins the queue.</li>
+</ol>
+<div class="code"><div class="code-bar"><span class="name">The link the button opens</span></div><pre class="wrap-lines"><code>https://github.com/OWNER/REPO/new/BRANCH?filename=patchlabs-verify.txt&amp;value=patchlabs-3f9a1c0b7d2e4a65</code></pre></div>
+
+<h3 id="cli">From the command line instead</h3>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>echo "patchlabs-3f9a1c0b7d2e4a65" > patchlabs-verify.txt
+git add patchlabs-verify.txt
+git commit -m "Verify repo for PatchLabs"
+git push origin HEAD:main   <span class="c"># use your default branch name</span></code></pre></div>
+
+<h3 id="api">With the API</h3>
+<p>For a free check, <code>POST /checks</code> returns the check ID, and <code>GET /checks/{id}</code> returns <code>verify: {file, code, add_url}</code> while it waits. After committing, call verify:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/checks/$CHECK_ID/verify
+<span class="c"># {"status": "queued"}</span></code></pre></div>
+
+<h2 id="what-we-check">What we check, exactly</h2>
+<dl class="defs">
+  <dt>Where</dt><dd>A file called <code>patchlabs-verify.txt</code> at the root of the repo, on the default branch (usually <code>main</code>). Not in a subfolder, not on another branch.</dd>
+  <dt>What</dt><dd>The file must contain your code. Extra whitespace or a trailing newline is fine.</dd>
+  <dt>How</dt><dd>We read it through GitHub’s contents API, which is always up to date. If GitHub’s limit for anonymous requests has been reached, we fall back to <code>raw.githubusercontent.com</code>, which can lag a few minutes behind a new commit.</dd>
+  <dt>How often</dt><dd>Only when you press “I’ve added it” (or call the verify endpoint). Press it again after a minute if it doesn’t find the file the first time.</dd>
+</dl>
+
+<h2 id="apps">Verifying a monitored app</h2>
+<p>When you add an app to a workspace, it gets its own code and the same file check. The difference is that an app is verified <strong>for good</strong>: once the file is found, the first check is queued automatically, and every later check (scheduled, run-now or from CI) skips verification.</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/apps/$APP_ID/verify \
+  -H "Authorization: Bearer $PL_SESSION"
+<span class="c"># {"verified": true, "check_id": "…"}</span></code></pre></div>
+
+<h2 id="after">After verification</h2>
+<ul>
+  <li>You can delete <code>patchlabs-verify.txt</code> once the check has started. Nothing else depends on it.</li>
+  <li>The code proves one thing for one check (or one app). It grants no access to anything and is useless to anyone else.</li>
+  <li>Keep your check page’s address. It is how you get back to the report, and it is in the email we sent.</li>
+</ul>
+<div class="callout note"><p><strong>Treat the report link like a private document link.</strong> Check IDs are long random identifiers that can’t be guessed, but anyone you send the link to can open the report. The report never contains your users’ data, because we never connect to your live database.</p></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Message</th><th scope="col">What to do</th></tr></thead>
+  <tbody>
+    <tr><td>We couldn’t find patchlabs-verify.txt with your code on the default branch yet.</td><td>Check the file is at the repo root, on the default branch, with the right code. If you just committed it, wait a minute and press the button again.</td></tr>
+    <tr><td>We couldn’t find that repo. Check the name, and that it’s public on GitHub.</td><td>Fix a typo in the owner or name, or make the repo public. Private repos aren’t supported yet.</td></tr>
+    <tr><td>We couldn’t reach GitHub. Try again in a minute.</td><td>GitHub was slow or unavailable. Nothing is lost: try again shortly.</td></tr>
+    <tr><td>You already have checks in progress.</td><td>An email address can have 3 free checks waiting or running at once. We’ll email you as each finishes.</td></tr>
+    <tr><td>Too many requests today.</td><td>One network can request 10 free checks a day. <a href="mailto:manraj@patchlabs.dev">Email us</a> if you need more, or sign in and monitor apps instead.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="private-repos">Private repos</h2>
+<p>Not yet. Checking private repos needs a GitHub App with read access, which is coming. Until then the full check works on public repos only. If you need a private repo checked now, <a href="mailto:manraj@patchlabs.dev?subject=Private%20repo">email the founder</a>.</p>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Proving%20repo%20ownership">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs" rel="prev"><span>Previous</span>Quickstart</a><a class="next" href="/docs/reading-a-report" rel="next"><span>Next</span>Reading a report</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#why">Why we ask</a></li><li><a href="#steps">How it works</a></li><li><a href="#what-we-check">What we check, exactly</a></li><li><a href="#apps">Verifying a monitored app</a></li><li><a href="#after">After verification</a></li><li><a href="#troubleshooting">Troubleshooting</a></li><li><a href="#private-repos">Private repos</a></li></ul>
+</aside>
+</div>
+</main>

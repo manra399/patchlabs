@@ -1,0 +1,162 @@
+<!--
+title: System status | PatchLabs
+description: Live status of PatchLabs: the website, the API, the database, the lab worker and the check queue, read straight from our health endpoint.
+layout: marketing
+nav: status
+head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
+-->
+<main id="main">
+  <section class="status-hero">
+    <div class="wrap narrow">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Status</li></ol></nav>
+      <p class="lab">Status</p>
+      <h1 class="h2">System status</h1>
+      <p class="lede">Read live from our API by your browser, every minute. Nothing on this page is typed in by hand.</p>
+
+      <div class="overall mt-4 js-only" id="overall" data-state="unknown" role="status" aria-live="polite">
+        <span class="big-dot" aria-hidden="true"></span>
+        <div>
+          <h2 id="overall-h">Checking…</h2>
+          <p id="overall-p">Asking <code>api.patchlabs.dev/health</code>.</p>
+        </div>
+        <span class="when" id="overall-when"></span>
+      </div>
+      <noscript>
+        <div class="callout note mt-3"><p><strong>Live status needs JavaScript.</strong> This page asks our API for its health from your browser. Without JavaScript you can open the raw health check directly: <a href="https://api.patchlabs.dev/health">api.patchlabs.dev/health</a>. <code>"ok": true</code> means the API and database are up; <code>worker_last_seen</code> is when the lab worker last checked in, and <code>queued</code> is the number of checks waiting.</p></div>
+      </noscript>
+    </div>
+  </section>
+
+  <section class="sec tight" style="padding-top:8px" aria-labelledby="comp-h">
+    <div class="wrap narrow">
+      <div class="row between mb-2"><h2 class="h4 mb-0" id="comp-h">Components</h2><button class="btn small secondary" type="button" id="refresh" hidden>Refresh now</button></div>
+      <ul class="components" id="components">
+        <li data-c="site"><div><h3>Website</h3><p class="what">patchlabs.dev on GitHub Pages</p></div><div class="val"><span class="pill proven">up</span><br><span>you’re reading it</span></div></li>
+        <li data-c="api"><div><h3>API</h3><p class="what">api.patchlabs.dev on Microsoft Azure: checks, accounts, reports</p></div><div class="val"><span class="pill neutral">unknown</span></div></li>
+        <li data-c="db"><div><h3>Database</h3><p class="what">Postgres behind the API</p></div><div class="val"><span class="pill neutral">unknown</span></div></li>
+        <li data-c="worker"><div><h3>Lab worker</h3><p class="what">Runs the lab and the fix agent; checks in while it waits for work</p></div><div class="val"><span class="pill neutral">unknown</span></div></li>
+        <li data-c="queue"><div><h3>Check queue</h3><p class="what">Verified checks waiting for the worker</p></div><div class="val"><span class="pill neutral">unknown</span></div></li>
+      </ul>
+      <p class="small muted mt-2">Email delivery is not monitored on this page yet. If a report email hasn’t arrived, your report link still works: it updates by itself.</p>
+    </div>
+  </section>
+
+  <section class="sec tight" id="stats-sec" hidden aria-labelledby="stats-h">
+    <div class="wrap narrow">
+      <h2 class="h4" id="stats-h">Live counters</h2>
+      <p class="small muted">Totals from production since launch, from <code>GET /stats</code>. Counters at zero are hidden.</p>
+      <div class="stats" id="stats" style="--cols:2"></div>
+    </div>
+  </section>
+
+  <section class="sec tight band" aria-labelledby="how-h">
+    <div class="wrap narrow">
+      <p class="lab">How this works</p>
+      <h2 class="h-md" id="how-h">What each light means.</h2>
+      <div class="table-wrap mt-3">
+        <table class="table compact stack-sm">
+          <thead><tr><th scope="col">Component</th><th scope="col">Green when</th><th scope="col">Source</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">API</th><td>The health check answers <code>ok: true</code>.</td><td><code>GET /health</code></td></tr>
+            <tr><th scope="row">Database</th><td>The API ran a query against it for this answer.</td><td><code>db</code></td></tr>
+            <tr><th scope="row">Lab worker</th><td>It checked in within the last 15 minutes. While it is running a long check it may not check in; new checks then wait in the queue.</td><td><code>worker_last_seen</code></td></tr>
+            <tr><th scope="row">Queue</th><td>Informational: how many verified checks are waiting. Checks run one at a time.</td><td><code>queued</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 class="h4 mt-4">This browser’s probes</h3>
+      <p class="small muted">Each request this page made, with how long it took. Kept in memory only.</p>
+      <div class="window mt-2">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">GET /health · every 60 s</span></div>
+<pre class="transcript lines probe-log" id="log" aria-live="off"><span class="ln"><span class="dim">waiting for the first probe…</span></span></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tight" aria-labelledby="inc-h">
+    <div class="wrap narrow">
+      <p class="lab">Incidents</p>
+      <h2 class="h-md" id="inc-h">Incident history</h2>
+      <p class="muted">We haven’t published any incident reports yet. When something breaks in a way that affects checks, we’ll write up what happened, how long it lasted and what we changed, here and on the <a href="/changelog">changelog</a>.</p>
+      <p class="muted">Something looks wrong? Email <a href="mailto:manraj@patchlabs.dev?subject=Status">manraj@patchlabs.dev</a>.</p>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var WORKER_OK_MS = 15 * 60 * 1000, timer = null, probes = [];
+  var row = function (c) { return document.querySelector('[data-c="' + c + '"] .val'); };
+  var pill = function (cls, text) { return '<span class="pill ' + cls + '">' + esc(text) + '</span>'; };
+  var ago = function (ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return s + ' s ago';
+    if (s < 3600) return Math.round(s / 60) + ' min ago';
+    if (s < 172800) return Math.round(s / 3600) + ' h ago';
+    return Math.round(s / 86400) + ' days ago';
+  };
+  var clock = function (d) { return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); };
+  var host = API.replace(/^https?:\/\//, '');
+
+  function overall(state, h, p) {
+    $('overall').setAttribute('data-state', state);
+    $('overall-h').textContent = h;
+    $('overall-p').innerHTML = p;
+    $('overall-when').textContent = 'Checked ' + clock(new Date());
+  }
+
+  function log(line, cls) {
+    probes.unshift('<span class="ln"><span class="dim">' + clock(new Date()) + '</span>  ' + line + '</span>');
+    probes = probes.slice(0, 12);
+    $('log').innerHTML = probes.join('');
+  }
+
+  async function stats() {
+    try {
+      var s = await api('/stats', { auth: false });
+      var items = [['checks_completed', 'checks completed', ''], ['apps_monitored', 'apps monitored', ''], ['leaks_found', 'leaking tables found', 'red'], ['fixes_proven', 'fixes proven in the lab', 'green']];
+      var shown = items.filter(function (i) { return typeof s[i[0]] === 'number' && s[i[0]] > 0; });
+      $('stats').style.setProperty('--cols', Math.max(shown.length, 1));
+      var html = shown.map(function (i) {
+        return '<div class="stat ' + i[2] + '"><b class="num">' + s[i[0]].toLocaleString('en-GB') + '</b><span>' + i[1] + '</span></div>';
+      }).join('');
+      $('stats').innerHTML = html;
+      $('stats-sec').hidden = !html;
+    } catch (e) { $('stats-sec').hidden = true; }
+  }
+
+  async function probe() {
+    clearTimeout(timer);
+    var t0 = performance.now();
+    try {
+      var h = await api('/health', { auth: false });
+      var ms = Math.round(performance.now() - t0);
+      var seen = h.worker_last_seen ? Date.parse(h.worker_last_seen) : 0;
+      var age = seen ? Date.now() - seen : Infinity;
+      var workerOk = age < WORKER_OK_MS, q = typeof h.queued === 'number' ? h.queued : null;
+      row('api').innerHTML = (h.ok ? pill('proven', 'up') : pill('pending', 'problem')) + '<br><span>' + ms + ' ms</span>';
+      row('db').innerHTML = h.db === 'ok' ? pill('proven', 'up') : pill('pending', 'problem');
+      row('worker').innerHTML = (seen ? (workerOk ? pill('proven', 'checking in') : pill('pending', 'delayed')) : pill('neutral', 'not seen yet')) +
+        (seen ? '<br><span title="' + esc(new Date(seen).toISOString()) + '">last seen <b>' + ago(age) + '</b></span>' : '');
+      row('queue').innerHTML = q === null ? pill('neutral', 'unknown') : pill(q > 3 ? 'pending' : 'plain', q + (q === 1 ? ' check waiting' : ' checks waiting'));
+      if (!h.ok || h.db !== 'ok') overall('down', 'The API is reporting a problem', 'Checks and sign-in may fail. We’re on it.');
+      else if (!workerOk) overall('slow', 'Checks may be delayed', 'The API is up, but the lab worker last checked in ' + (seen ? ago(age) : 'a while ago') + '. New checks wait in the queue and run when it’s back.');
+      else overall('ok', 'All systems normal', 'API, database and lab worker are all answering.' + (q ? ' ' + q + ' check' + (q === 1 ? ' is' : 's are') + ' in the queue.' : ''));
+      log('<span class="k">' + esc(host) + '</span>/health → ' + ms + ' ms  ' + (h.ok ? '<span class="ok">OK</span>' : '<span class="step">FAIL</span>') + '  worker ' + (seen ? ago(age) : 'never') + '  queued ' + (q === null ? '?' : q));
+    } catch (e) {
+      var ms2 = Math.round(performance.now() - t0);
+      ['api', 'db', 'worker', 'queue'].forEach(function (c) { row(c).innerHTML = pill('neutral', 'unknown'); });
+      row('api').innerHTML = pill('pending', 'unreachable');
+      overall('down', 'We can’t reach the API', esc(e.message) + ' If your connection is fine, the API may be down. <a href="https://api.patchlabs.dev/health">Open the raw health check</a>.');
+      log('<span class="k">' + esc(host) + '</span>/health → ' + ms2 + ' ms  <span class="step">' + (e.status ? 'HTTP ' + e.status : 'NO ANSWER') + '</span>');
+    }
+    $('refresh').hidden = false;
+    timer = setTimeout(probe, 60000);
+  }
+
+  $('refresh').addEventListener('click', function () { probe(); stats(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) probe(); else clearTimeout(timer); });
+  probe(); stats();
+})();
+</script>

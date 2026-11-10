@@ -1,0 +1,268 @@
+<!--
+title: Leaking right now? What to do in the next hour | PatchLabs
+description: Supabase or Lovable app exposing user data? Rotate exposed keys, find open tables, lock the worst one with copy-paste SQL, check it worked, then get a full proven fix.
+layout: marketing
+nav: leaking
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"What to do in the first hour when a Supabase app is leaking data","totalTime":"PT60M","step":[{"@type":"HowToStep","name":"Rotate any exposed secret key"},{"@type":"HowToStep","name":"Find every table outsiders can read"},{"@type":"HowToStep","name":"Close the worst table"},{"@type":"HowToStep","name":"Check it worked"},{"@type":"HowToStep","name":"Look for access, write it down, decide who to tell"}]}</script>
+-->
+<main id="main">
+
+<section class="urgent-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Leaking right now?</li></ol></nav>
+    <p class="clock">The next 60 minutes</p>
+    <h1>Leaking right now? Do these five things, in order.</h1>
+    <p class="lede">Calm and specific. Each step has copy-paste SQL for the Supabase SQL editor, says what it changes, and how to undo it. Then start a full check and email the founder directly.</p>
+    <ul class="jump" aria-label="Jump to a step">
+      <li><a href="#step-1"><span>0–5 min</span>Rotate secret keys</a></li>
+      <li><a href="#step-2"><span>5–15</span>Find open tables</a></li>
+      <li><a href="#step-3"><span>15–30</span>Close the worst</a></li>
+      <li><a href="#step-4"><span>30–40</span>Check it worked</a></li>
+      <li><a href="#step-5"><span>40–60</span>Record and tell</a></li>
+      <li><a href="#fast"><span>then</span>Full check + founder</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec tight" aria-label="The first hour">
+  <div class="wrap">
+    <div class="callout warn"><p><strong>Don’t do these, even though they feel right.</strong></p>
+      <ul class="ticks mb-0">
+        <li class="x"><span><strong>Don’t make the repo private and stop there.</strong> The leak is in your database, not your repo. It stays open.</span></li>
+        <li class="x"><span><strong>Don’t rotate the public (anon) key to fix it.</strong> It is meant to be public, and the new one ships in your pages too. Access rules are the fix.</span></li>
+        <li class="x"><span><strong>Don’t delete the table or its data.</strong> Your users lose their data and you lose the record of what was exposed.</span></li>
+      </ul>
+    </div>
+
+    <ol class="hour mt-4">
+      <li id="step-1">
+        <div class="when"><b>01</b>0–5 minutes</div>
+        <div class="body">
+          <p class="lab red">Rotate</p>
+          <h2>If a secret key is exposed, rotate it first.</h2>
+          <p>A Supabase service role key (or a newer <code>sb_secret_…</code> key) ignores every access rule, so nothing else on this page helps until it is replaced. The same goes for payment and AI keys found in your code or git history. Deleting the key from the code is not enough: old commits keep it (<a href="/findings/pl-011">PL-011</a>).</p>
+          <div class="grid g3 top">
+            <div class="card sunk"><h3>Supabase</h3><p class="small">Project Settings → API Keys. With newer secret keys: create a new one, switch your server to it, delete the old one. With older JWT keys, rotating the JWT secret also changes the public key and signs every user out, so update your app’s environment variables straight after.</p></div>
+            <div class="card sunk"><h3>Payments</h3><p class="small">Roll the secret key in your payment provider’s dashboard (for Stripe, Developers → API keys). Update the server that uses it.</p></div>
+            <div class="card sunk"><h3>AI providers</h3><p class="small">Delete the exposed key on the provider’s API keys page and create a new one. Check the usage page for spend you don’t recognise.</p></div>
+          </div>
+          <p class="small muted mt-2">Not sure whether a key is server-only? <a href="/findings/pl-010">PL-010</a> shows how to tell in one command, locally.</p>
+        </div>
+      </li>
+
+      <li id="step-2">
+        <div class="when"><b>02</b>5–15 minutes</div>
+        <div class="body">
+          <p class="lab">Find</p>
+          <h2>Find every table outsiders can read.</h2>
+          <p>Paste this into the SQL editor of your Supabase project. It only reads the catalogue: it changes nothing. Tables with personal columns are listed first; start with those.</p>
+          <div class="code">
+            <div class="code-bar"><span class="name">1-find-open-tables.sql · read-only</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="scroll"><code><span class="c">-- PatchLabs: which public tables can outsiders read? Read-only.</span>
+with personal as (
+  select table_name::text as table_name,
+         string_agg(column_name::text, ', ') as personal_columns
+  from information_schema.columns
+  where table_schema = 'public'
+    and column_name ~* '(email|phone|mobile|whatsapp|address|birth|dob|passport|ssn)'
+  group by table_name
+),
+tbl as (
+  select c.relname::text as table_name, c.relrowsecurity as rls_on
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public' and c.relkind = 'r'
+),
+open_reads as (
+  select tablename::text as table_name,
+         string_agg(policyname || ' [' || array_to_string(roles, ',') || ']', '; ') as policies
+  from pg_policies
+  where schemaname = 'public'
+    and cmd in ('SELECT', 'ALL')
+    and (qual = 'true'
+         or qual ilike '%auth.uid() is not null%'
+         or qual ilike '%auth.role() = ''authenticated''%')
+  group by tablename
+)
+select t.table_name,
+       case when not t.rls_on then 'RLS is OFF'
+            else 'Open read policy: ' || o.policies end as problem,
+       coalesce(p.personal_columns, '-') as personal_columns
+from tbl t
+left join personal p using (table_name)
+left join open_reads o using (table_name)
+where not t.rls_on or o.policies is not null
+order by (p.personal_columns is null), t.table_name;</code></pre>
+          </div>
+          <dl class="kv">
+            <dt>RLS is OFF</dt><dd>No rules at all. If the API roles have access, the public key reads and writes everything (<a href="/findings/pl-008">PL-008</a>).</dd>
+            <dt>[anon] or [public]</dt><dd>Anyone on the internet can read every row (<a href="/findings/pl-001">PL-001</a>).</dd>
+            <dt>[authenticated]</dt><dd>Anyone who signs up can read every row (<a href="/findings/pl-002">PL-002</a>).</dd>
+          </dl>
+          <p class="small muted mt-2">Some rows are meant to be public (products, opening hours, a shop’s own phone number). Focus on tables holding your users’ details.</p>
+        </div>
+      </li>
+
+      <li id="step-3">
+        <div class="when"><b>03</b>15–30 minutes</div>
+        <div class="body">
+          <p class="lab red">Close</p>
+          <h2>Close the worst table.</h2>
+          <p>Pick the table with the most sensitive personal columns. First save its current rules, so you can see what you changed and undo it:</p>
+          <div class="code">
+            <div class="code-bar"><span class="name">2-save-current-rules.sql · read-only</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Replace profiles with your table name. Copy the output somewhere safe.</span>
+select policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'public' and tablename = 'profiles';</code></pre>
+          </div>
+          <p>Then choose one of two fixes.</p>
+          <div class="tabs">
+            <div role="tablist" aria-label="Choose a fix">
+              <button role="tab" id="t-owner" aria-controls="p-owner" aria-selected="true">A · Owner-only (keeps the app working)</button>
+              <button role="tab" id="t-lock" aria-controls="p-lock" aria-selected="false">B · Emergency lock (fastest)</button>
+            </div>
+            <div class="tab-panel" id="p-owner" role="tabpanel" aria-labelledby="t-owner">
+              <h3 class="tab-title">A · Owner-only (keeps the app working)</h3>
+              <p>Use this when each row belongs to one user, through a column such as <code>user_id</code> (for a <code>profiles</code> table it is usually <code>id</code>). Users keep reading their own rows; nobody else reads anything.</p>
+              <div class="code">
+                <div class="code-bar"><span class="name">3a-owner-only.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Replace profiles, user_id and the policy name with yours (from step 2).</span>
+alter table public.profiles enable row level security;
+drop policy if exists "Profiles are viewable by everyone" on public.profiles;
+create policy "Owner reads own rows"
+  on public.profiles for select
+  to authenticated
+  using ((select auth.uid()) = user_id);</code></pre>
+              </div>
+            </div>
+            <div class="tab-panel" id="p-lock" role="tabpanel" aria-labelledby="t-lock">
+              <h3 class="tab-title">B · Emergency lock (fastest)</h3>
+              <p>Stops <strong>every</strong> read through the API, including your own app’s, until you add a proper rule. A feature breaks; the leak stops. Use it when you can’t work out the owner column in time.</p>
+              <div class="code">
+                <div class="code-bar"><span class="name">3b-emergency-lock.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Replace profiles with your table. Drops every read rule on it.</span>
+alter table public.profiles enable row level security;
+do $$
+declare p record;
+begin
+  for p in select policyname from pg_policies
+           where schemaname = 'public' and tablename = 'profiles'
+             and cmd in ('SELECT', 'ALL')
+  loop
+    execute format('drop policy %I on public.profiles', p.policyname);
+  end loop;
+end $$;</code></pre>
+              </div>
+              <p class="small muted">To undo, re-create the rules you saved above. A lock like this is a stop-gap: replace it with a proper rule (option A, or the full check below) as soon as you can.</p>
+            </div>
+          </div>
+          <div class="callout note mt-3"><p><strong>Save it in your repo too.</strong> Add the same SQL as a new file in <code>supabase/migrations</code>, so your code matches your database and the next deploy doesn’t quietly reopen the table.</p></div>
+        </div>
+      </li>
+
+      <li id="step-4">
+        <div class="when"><b>04</b>30–40 minutes</div>
+        <div class="body">
+          <p class="lab green">Check</p>
+          <h2>Check it worked, as an outsider would.</h2>
+          <p>Read the table as a logged-out visitor and as a brand-new user. Both run inside a transaction that is rolled back, so nothing changes.</p>
+          <div class="code">
+            <div class="code-bar"><span class="name">4-check-as-outsiders.sql · read-only</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Expect 0 from both. Replace profiles with your table.</span>
+begin;
+set local role anon;
+select count(*) as visitor_can_read from public.profiles;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000000","role":"authenticated"}', true);
+select count(*) as stranger_can_read from public.profiles;
+rollback;</code></pre>
+          </div>
+          <p>Then from outside, against your own project, with the public key from your app:</p>
+          <div class="code">
+            <div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>curl "https://&lt;your-project-ref&gt;.supabase.co/rest/v1/profiles?select=*&amp;limit=1" \
+  -H "apikey: &lt;your public anon key&gt;"
+<span class="c"># [] or a permission error: closed.  Any row: still open.</span></code></pre>
+          </div>
+          <p class="small muted">Finally, sign in to your app as a normal user and check the page that uses this table. If it broke, that is expected with option B; option A should keep it working.</p>
+        </div>
+      </li>
+
+      <li id="step-5">
+        <div class="when"><b>05</b>40–60 minutes</div>
+        <div class="body">
+          <p class="lab">Record</p>
+          <h2>Look for access, write it down, decide who to tell.</h2>
+          <ul class="ticks">
+            <li class="dash"><span><strong>Look at your API logs.</strong> In the Supabase dashboard’s logs, filter requests to <code>/rest/v1/&lt;your table&gt;</code> and look for traffic you don’t recognise. How far back you can see depends on your plan.</span></li>
+            <li class="dash"><span><strong>Write down what happened.</strong> Which tables and columns were open, since when (your migration history shows when the rule arrived), what you changed and when. You will need this record whatever you decide next.</span></li>
+            <li class="dash"><span><strong>Decide who to tell.</strong> If personal data may have been accessed, you may have to report it. Under UK and EU GDPR, a notifiable breach goes to the regulator (the ICO in the UK) within 72 hours of you becoming aware of it, and people at high risk must be told. This is general information, not legal advice; take advice if you are unsure.</span></li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec band" id="fast" aria-labelledby="fast-h">
+  <div class="wrap fast">
+    <div>
+      <p class="lab">Then · full check</p>
+      <h2 id="fast-h">Now find everything else, and get a proven fix.</h2>
+      <p class="lede">You closed one table. A full check rebuilds your whole database from your repo, reads every table as an anonymous visitor, a signed-in stranger and the owner, scans your code and git history for keys, then writes the fix and proves it.</p>
+      <div class="card raised mt-3">
+        <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Leaking%20now%3A%20fast-track%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <label class="sr-only" for="repo-ln">Public GitHub repo</label>
+            <input id="repo-ln" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            <label class="sr-only" for="email-ln">Your email</label>
+            <input id="email-ln" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Start the check <span class="arrow" aria-hidden="true">→</span></button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <noscript><p class="small muted mt-1">Without JavaScript this form opens your email app with the repo and email filled in, and we start the check by hand.</p></noscript>
+        <ol class="steps mt-3">
+          <li><h3>Prove the repo is yours</h3><p>Commit <code>patchlabs-verify.txt</code> with the one-time code we show you. It takes a minute on GitHub.</p></li>
+          <li><h3>The lab runs</h3><p>Median 3.5 minutes of agent time per app in our lab study (n=20, 9 Nov 2026). We never connect to your live app or database.</p></li>
+          <li><h3>Apply the proven fix</h3><p>Download the migration, or commit it on GitHub in one click. Your engineer approves; nothing changes until you apply it.</p></li>
+        </ol>
+        <p class="small muted mb-0">Public repos today; private repos arrive with our GitHub App. Free for your first app.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="person">
+          <span class="av" aria-hidden="true">MD</span>
+          <div>
+            <h3 class="mb-1">Email the founder directly</h3>
+            <p class="small mb-0">Manraj Singh Dhillon, technical founder, London. You reach the person who built the lab.</p>
+          </div>
+        </div>
+        <a class="btn secondary block mt-3" href="mailto:manraj@patchlabs.dev?subject=Leaking%20now&amp;body=Repo%3A%20%0AWhat%20I%20have%20seen%3A%20%0ACheck%20link%20(if%20started)%3A%20">manraj@patchlabs.dev</a>
+        <p class="small mt-2 mb-0">Subject “Leaking now”. Include your repo link, what you have seen, and your check link if you started one. Starting the check and sending its link is the fastest way to get a person looking at your app.</p>
+      </div>
+      <div class="callout warn"><p><strong>Never send keys, passwords or customer data by email.</strong> Your repo link and a description are enough. If you pasted a key anywhere, rotate it.</p></div>
+      <div class="card sunk">
+        <h3>Look up a finding</h3>
+        <ul class="ticks small mb-0 plainlist">
+          <li class="dash"><span><a href="/findings/pl-008">PL-008</a> Row level security not enabled</span></li>
+          <li class="dash"><span><a href="/findings/pl-001">PL-001</a> Anonymous visitor can read personal data</span></li>
+          <li class="dash"><span><a href="/findings/pl-002">PL-002</a> Any signed-in user can read every row</span></li>
+          <li class="dash"><span><a href="/findings/pl-010">PL-010</a> Service role key in client code</span></li>
+          <li class="dash"><span><a href="/findings/pl-011">PL-011</a> Key still in git history</span></li>
+        </ul>
+        <div class="card-foot"><a class="link-arrow" href="/findings">All findings</a></div>
+      </div>
+      <p class="small muted">Found a security problem in PatchLabs itself? Email the same address with the subject “Security”.</p>
+    </div>
+  </div>
+</section>
+
+</main>

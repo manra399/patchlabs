@@ -1,0 +1,31 @@
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd">
+        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel">
+          <a href="/product/leak-lab"{{nav_leak_lab}}><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
+          <a href="/product/key-scan"{{nav_key_scan}}><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
+          <a href="/product/monitoring"{{nav_monitoring}}><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
+          <a href="/product/badge"{{nav_badge}}><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
+          <a href="/agencies"{{nav_agencies}}><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
+          <a href="/tools"{{nav_tools}}><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
+          <a href="/sample-report"{{nav_sample}}><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
+          <a href="/findings"{{nav_findings}}><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
+          <p class="dd-foot">Works with apps built on <a href="/for/lovable"{{nav_for_lovable}}>Lovable</a>, <a href="/for/supabase"{{nav_for_supabase}}>Supabase</a>, <a href="/for/bolt"{{nav_for_bolt}}>Bolt</a>, <a href="/for/replit"{{nav_for_replit}}>Replit</a> and <a href="/for/cursor"{{nav_for_cursor}}>Cursor</a>.</p>
+        </div>
+      </details>
+      <a href="/how-it-works"{{nav_how}}>How it works</a>
+      <a href="/research/1-in-4"{{nav_research}}>Research</a>
+      <a href="/pricing"{{nav_pricing}}>Pricing</a>
+      <a href="/docs"{{nav_docs}}>Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="urgent" href="/leaking-now"{{nav_leaking}}>Leaking right now?</a>
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>

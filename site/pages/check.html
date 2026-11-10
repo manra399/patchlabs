@@ -1,0 +1,235 @@
+<!--
+title: Your leak check | PatchLabs
+description: Your PatchLabs leak check: verification, progress and the proof report.
+layout: marketing
+sitemap: no
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+-->
+<main id="main">
+  <div class="wrap narrow check-head">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Leak check</li></ol></nav>
+    <p class="lab">Leak check</p>
+    <h1 id="title">Loading…</h1>
+    <ul class="progress" id="steps" aria-label="Progress"></ul>
+  </div>
+  <div class="wrap narrow" style="padding-bottom:96px">
+    <div id="body" aria-live="polite">
+      <noscript><div class="panel"><p class="mb-0">This page needs JavaScript to load your report. You can also email <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a> with your check link and we will send the report by email.</p></div></noscript>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var id = new URLSearchParams(location.search).get('id');
+  var STEPS = [['awaiting_verification', 'Prove it’s yours'], ['queued', 'In the queue'], ['running', 'Checking'], ['finished', 'Report ready']];
+  var timer = null;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var $ = function (s) { return document.getElementById(s); };
+
+  function steps(status) {
+    var at = ['done', 'no_leaks', 'needs_review', 'failed'].indexOf(status) >= 0 ? 3 : STEPS.findIndex(function (s) { return s[0] === status; });
+    $('steps').innerHTML = STEPS.map(function (s, i) {
+      return '<li class="' + (i < at ? 'ok' : i === at ? 'on' : '') + '"' + (i === at ? ' aria-current="step"' : '') + '>' + (i < at ? '✓ ' : '') + s[1] + '</li>';
+    }).join('');
+  }
+
+  function list(arr) { return arr && arr.length ? arr.map(function (t) { return '<code>' + esc(t) + '</code>'; }).join(', ') : '<span class="muted">none</span>'; }
+
+  function summaryBlock(c) {
+    var s = c.summary || {};
+    if (!s || (!s.tables_leaking && s.lab_proof_passed == null)) return '';
+    var leaking = s.tables_leaking || [];
+    var h = '<dl class="kv mt-3">';
+    h += '<dt>Tables leaking</dt><dd>' + (leaking.length ? '<span class="pill leak">' + leaking.length + ' table' + (leaking.length > 1 ? 's' : '') + '</span> ' + list(leaking) : '<span class="pill proven">none found</span>') + '</dd>';
+    if (s.readable_by_anyone) h += '<dt>Readable by anyone</dt><dd>' + list(s.readable_by_anyone) + '</dd>';
+    if (s.readable_by_signed_in) h += '<dt>Readable by anyone who signs up</dt><dd>' + list(s.readable_by_signed_in) + '</dd>';
+    if (s.lab_proof_passed != null && leaking.length) h += '<dt>Lab proof</dt><dd>' + (s.lab_proof_passed ? '<span class="pill proven">passed: anon denied, stranger denied, owner OK</span>' : '<span class="pill pending">not passed: a person is reviewing</span>') + '</dd>';
+    if (s.break_risk) h += '<dt>Risk of a visible change</dt><dd>' + esc(s.break_risk) + '</dd>';
+    h += '</dl>';
+    var q = s.questions_for_owner || [];
+    if (q.length) h += '<div class="callout note mt-3" id="qcallout"><p><strong>Questions for you</strong></p><ul class="mb-0">' + q.map(function (x) { return '<li>' + esc(typeof x === 'string' ? x : (x.question || JSON.stringify(x))) + '</li>'; }).join('') + '</ul></div>';
+    return h;
+  }
+
+  function render(c) {
+    $('title').textContent = c.repo;
+    document.title = c.repo + ' | PatchLabs leak check';
+    steps(c.status);
+    var b = $('body');
+    if (c.status === 'awaiting_verification') {
+      b.innerHTML = '<div class="panel"><p class="lab">Verify</p><h2>One step: prove the repo is yours</h2>' +
+        '<p class="muted">So nobody can check an app they don’t own, add a file named <b class="ink">' + esc(c.verify.file) + '</b> to your repo’s default branch containing this code:</p>' +
+        '<p class="row"><code class="verify-code" id="code">' + esc(c.verify.code) + '</code><button class="copy" type="button" data-copy="#code">Copy code</button></p>' +
+        '<div class="row mt-3"><a class="btn primary" target="_blank" rel="noopener" href="' + esc(c.verify.add_url) + '">Add the file on GitHub <span aria-hidden="true">↗</span></a>' +
+        '<button class="btn secondary" type="button" id="vb">I’ve added it</button></div><p class="err" id="verr" role="alert"></p>' +
+        '<p class="small muted mt-3 mb-0">The GitHub link opens the new-file page with the name and code filled in: just press “Commit changes”. You can delete the file once the check starts. Keep this page’s address: it’s how you get back to your report.</p></div>';
+      $('vb').onclick = async function () {
+        var btn = this; btn.disabled = true; btn.textContent = 'Checking…'; $('verr').textContent = '';
+        try { await api('/checks/' + encodeURIComponent(id) + '/verify', { method: 'POST' }); load(); }
+        catch (x) { $('verr').textContent = x.message; btn.disabled = false; btn.textContent = 'I’ve added it'; }
+      };
+      return;
+    }
+    if (c.status === 'queued' || c.status === 'running') {
+      b.innerHTML = '<div class="panel"><p class="mb-1"><span class="spin" aria-hidden="true"></span><b class="ink">' + (c.status === 'queued' ? 'Verified. Your check is in the queue.' : 'Our agents are checking your app now.') + '</b></p>' +
+        '<p class="muted mb-0">We rebuild your database from its migrations in our lab, look for personal data the wrong people can read, write a fix and prove it works. It usually takes 5 to 15 minutes. This page updates by itself, and we’ll email you when the report is ready.</p></div>';
+      poll(); return;
+    }
+    if (c.status === 'failed') {
+      b.innerHTML = '<div class="panel"><p class="lab red">Stopped</p><h2>We couldn’t finish this check automatically.</h2><p class="muted mb-0">' + esc(c.error) + '</p></div>'; return;
+    }
+    var head = { done: 'We found leaks, and a tested fix is ready.', needs_review: 'We found leaks. A person is reviewing the fix before you apply it.', no_leaks: 'Good news: we found no data leaks.' }[c.status];
+    var pill = { done: '<span class="pill proven">fix proven</span>', needs_review: '<span class="pill pending">in review</span>', no_leaks: '<span class="pill proven">no leaks found</span>' }[c.status] || '';
+    var name = (c.finished_at || '').replace(/\D/g, '').slice(0, 14) + '_patchlabs_leak_fix.sql';
+    var gh = c.fix_sql ? 'https://github.com/' + c.repo + '/new/' + encodeURIComponent(c.branch || 'main') + '?filename=' + encodeURIComponent('supabase/migrations/' + name) + '&value=' + encodeURIComponent(c.fix_sql) : '';
+    var html = '<div class="panel"><div class="row between"><p class="lab mb-0">Result</p>' + pill + '</div><h2 class="mt-2">' + esc(head) + '</h2>' + summaryBlock(c);
+    if (c.fix_sql && c.status === 'done') {
+      html += '<div class="row mt-3">' +
+        (gh && gh.length < 7000 ? '<a class="btn primary" id="gh" target="_blank" rel="noopener" href="' + esc(gh) + '">Commit the fix on GitHub <span aria-hidden="true">↗</span></a>' : '') +
+        '<button class="btn ' + (gh && gh.length < 7000 ? 'secondary' : 'primary') + '" type="button" id="dl">Download the fix (.sql)</button>' +
+        '<button class="btn ghost" type="button" data-copy="#fixsql">Copy fix</button></div>' +
+        '<h3 class="h4 mt-4 mb-1">How to apply it</h3><ol class="muted small" style="padding-left:1.2em;margin:0">' +
+        '<li>Add the file to <code>supabase/migrations/</code> in your repo (keep the timestamped name so it runs last). The GitHub button does this for you: review it, then press “Commit changes”.</li>' +
+        '<li>Make any code changes listed in the report below.</li>' +
+        '<li>Merge and deploy as usual. In Lovable or Supabase, the migration applies on your next database push.</li></ol>';
+    }
+    html += '</div><div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || '')) + '</article>';
+    if (c.fix_sql) html += '<div class="code"><div class="code-bar"><span class="name">supabase/migrations/' + esc(name) + '</span><button class="copy" type="button" data-copy="#fixsql">Copy</button></div><pre class="scroll wrap-lines" id="fixsql">' + esc(c.fix_sql) + '</pre></div>';
+    html += '<div id="record"></div><div id="receipt"></div>';
+    html += '<p class="small muted mt-3">Questions about this report? Reply to the email we sent, or write to <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a>. <a href="/#check">Start another check</a>.</p>';
+    b.innerHTML = html;
+    if ($('dl')) $('dl').onclick = function () {
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c.fix_sql], { type: 'text/sql' })); a.download = name; a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    };
+    if (id !== 'sample') extras(c);
+  }
+
+  /* ---- owner tools (signed-in members of the app's workspace), recorded decisions, signed receipt ---- */
+  var actionText = { approve: 'approved the fix for', reject: 'marked as meant to be readable:' };
+  function recordHtml(c) {
+    var items = (c.decisions || []).map(function (x) {
+      return '<li><b class="ink">' + esc(x.by) + '</b> ' + actionText[x.action] + ' ' + list(x.tables) + (x.reason ? '<br><span class="muted">“' + esc(x.reason) + '”</span>' : '') + '<span class="meta">' + esc(PL.dateTime(x.at)) + '</span></li>';
+    }).concat((c.answers || []).map(function (x) {
+      return '<li><span class="muted">Q:</span> ' + esc(x.question) + '<br><span class="muted">A:</span> <b class="ink">' + esc(x.answer) + '</b><span class="meta">' + esc(x.by) + ' · ' + esc(PL.dateTime(x.at)) + '</span></li>';
+    }));
+    return items.length ? '<ul class="record">' + items.join('') + '</ul>' : '';
+  }
+  function questionsOf(c) {
+    return ((c.summary || {}).questions_for_owner || []).map(function (q) {
+      return typeof q === 'string' ? { question: q } : { question: String(q.question || ''), recommended: q.recommended || q.recommendation || q.recommended_answer };
+    }).filter(function (q) { return q.question; });
+  }
+  function renderRecord(c, member) {
+    var r = recordHtml(c);
+    $('record').innerHTML = !member && r ? '<section class="panel" aria-labelledby="rec-h"><p class="lab">Owner decisions</p><h2 class="h3" id="rec-h">Recorded by the app’s team</h2>' + r + '</section>' : '';
+  }
+  async function extras(c) {
+    renderRecord(c, false);
+    receipt(c);
+    if (!c.app_id || !session.get()) return;
+    try { await api('/apps/' + encodeURIComponent(c.app_id)); } catch (e) { return; }  // not a member: public view only
+    ownerTools(c);
+  }
+  function ownerTools(c) {
+    var t = (c.summary || {}).tables_leaking || [], qs = questionsOf(c), ans = {};
+    (c.answers || []).forEach(function (a) { ans[a.question] = a.answer; });
+    if ($('qcallout') && qs.length) $('qcallout').hidden = true;
+    renderRecord(c, true);
+    var h = '<section class="panel owner-tools" aria-labelledby="own-h"><div class="row between"><p class="lab mb-0">Your decision</p><a class="small" href="/app/app?id=' + esc(c.app_id) + '">Open the app</a></div>' +
+      '<h2 class="h3 mt-2" id="own-h">' + (t.length ? 'Approve the fix, or mark tables as intended' : 'Your team’s record for this check') + '</h2>' +
+      '<p class="muted small">You’re a member of the workspace that monitors this app. Decisions and answers go into the signed receipt below.</p>';
+    if (t.length) {
+      h += '<fieldset style="border:0;padding:0;margin:0"><legend class="label">Tables this applies to</legend><div class="tables-pick">' + t.map(function (x, i) {
+        return '<label class="check"><input type="checkbox" value="' + esc(x) + '" checked data-tbl> ' + esc(x) + '</label>';
+      }).join('') + '</div></fieldset>' +
+        '<div class="row"><button class="btn primary" type="button" id="approve">Approve the fix</button><button class="btn secondary" type="button" id="rej-open">These are meant to be readable…</button></div>' +
+        '<div id="rej-box" hidden class="mt-3"><div class="field"><label for="rej-why">Why should these tables be readable?</label><textarea class="input" id="rej-why" maxlength="2000" placeholder="e.g. sellers choose to publish their business email"></textarea><span class="hint">We stop alerting on these tables for this app. Approving the fix later turns alerts back on.</span></div>' +
+        '<div class="row"><button class="btn danger" type="button" id="reject">Reject: mark as intended</button><button class="btn ghost" type="button" id="rej-cancel">Cancel</button></div></div>' +
+        '<p class="err" role="alert" id="dec-err"></p>';
+    } else h += '<p class="muted mb-0">This check found nothing to approve.</p>';
+    if (qs.length) {
+      h += '<h3 class="h4 mt-4 mb-1">Questions for you</h3><p class="small muted">Plain-English business questions from the check. Your answers help the next fix.</p><form id="qf">' + qs.map(function (q, i) {
+        return '<div class="q-item"><p class="q" id="q' + i + '">' + esc(q.question) + '</p>' + (q.recommended ? '<p class="rec">Recommended answer: <b class="ink">' + esc(q.recommended) + '</b></p>' : '') +
+          '<label class="sr-only" for="qa' + i + '">Your answer</label><textarea class="input" id="qa' + i + '" data-q="' + i + '" maxlength="4000" aria-describedby="q' + i + '" placeholder="Your answer">' + esc(ans[q.question] || '') + '</textarea></div>';
+      }).join('') + '<button class="btn secondary mt-2" type="submit" id="qa-go">Save answers</button><p class="err" role="alert" id="qa-err"></p></form>';
+    }
+    h += '<div id="own-rec">' + (recordHtml(c) ? '<h3 class="h4 mt-4 mb-2">Recorded so far</h3>' + recordHtml(c) : '') + '</div></section>';
+    $('owner').innerHTML = h;
+
+    var picked = function () { return Array.prototype.slice.call(document.querySelectorAll('[data-tbl]:checked')).map(function (i) { return i.value; }); };
+    var updated = function (field, rows, msg) {
+      c[field] = rows;
+      $('own-rec').innerHTML = '<h3 class="h4 mt-4 mb-2">Recorded so far</h3>' + recordHtml(c);
+      PL.toast(msg, 'ok'); receipt(c);
+    };
+    var decide = async function (btn, action, reason) {
+      var tables = picked(); $('dec-err').textContent = '';
+      if (!tables.length) { $('dec-err').textContent = 'Pick at least one table.'; return; }
+      var restore = PL.busy(btn, 'Saving…');
+      try {
+        var body = { action: action, tables: tables }; if (reason) body.reason = reason;
+        var r = await api('/checks/' + encodeURIComponent(id) + '/decision', { method: 'POST', body: body });
+        restore(); $('rej-box').hidden = true;
+        updated('decisions', r.decisions, action === 'approve' ? 'Fix approved' : 'Marked as intended: no more alerts for ' + tables.join(', '));
+      } catch (x) { restore(); $('dec-err').textContent = x.status === 401 ? 'Your session has ended. Sign in again to record a decision.' : x.message; }
+    };
+    if ($('approve')) {
+      $('approve').onclick = function () { decide(this, 'approve'); };
+      $('rej-open').onclick = function () { $('rej-box').hidden = false; $('rej-why').focus(); };
+      $('rej-cancel').onclick = function () { $('rej-box').hidden = true; };
+      $('reject').onclick = function () {
+        var why = $('rej-why').value.trim();
+        if (!why) { $('dec-err').textContent = 'Say why these tables are meant to be readable. It goes into the receipt.'; $('rej-why').focus(); return; }
+        decide(this, 'reject', why);
+      };
+    }
+    if ($('qf')) $('qf').addEventListener('submit', async function (e) {
+      e.preventDefault(); $('qa-err').textContent = '';
+      var out = qs.map(function (q, i) { return { question: q.question, answer: $('qa' + i).value.trim() }; }).filter(function (a) { return a.answer; });
+      if (!out.length) { $('qa-err').textContent = 'Write at least one answer.'; return; }
+      var restore = PL.busy($('qa-go'), 'Saving…');
+      try { var r = await api('/checks/' + encodeURIComponent(id) + '/answers', { method: 'POST', body: { answers: out } }); restore(); updated('answers', r.answers, 'Answers saved'); }
+      catch (x) { restore(); $('qa-err').textContent = x.message; }
+    });
+  }
+  async function receipt(c) {
+    var el = $('receipt'); if (!el) return;
+    if (!el.innerHTML) el.innerHTML = '<section class="panel receipt"><p class="lab green">Signed receipt</p>' + PL.skeleton(3) + '</section>';
+    try {
+      var r = await api('/receipts/' + encodeURIComponent(id), { auth: false }), x = r.receipt;
+      el.innerHTML = '<section class="panel receipt" aria-labelledby="rc-h"><p class="lab green">Signed receipt</p><h2 class="h3" id="rc-h">A tamper-evident record of this check</h2>' +
+        '<p class="muted small">We sign the result, a fingerprint of the fix and the team’s decisions with our Ed25519 key. Anyone can check later that none of it was changed. <a href="/docs/receipts">How to verify a receipt</a>.</p>' +
+        '<dl class="kv"><dt>Result</dt><dd>' + esc(x.status.replace('_', ' ')) + ', ' + (x.tables_leaking.length ? PL.plural(x.tables_leaking.length, 'table') + ' leaking' : 'no tables leaking') + (x.tables_leaking.length ? ', lab proof ' + (x.lab_proof_passed ? 'passed' : 'not passed') : '') + '</dd>' +
+        '<dt>Fix SHA-256</dt><dd>' + (x.fix_sha256 ? '<code>' + esc(x.fix_sha256) + '</code>' : '<span class="muted">no fix</span>') + '</dd>' +
+        '<dt>Decisions, answers</dt><dd>' + x.decisions.length + ', ' + x.answers.length + '</dd>' +
+        '<dt>Signed with</dt><dd><code>' + esc(r.key_id) + '</code> (' + esc(r.algorithm) + ')</dd>' +
+        '<dt>Signature</dt><dd><code>' + esc(r.signature.slice(0, 32)) + '…</code></dd></dl>' +
+        '<div class="row mt-3"><a class="btn secondary small" target="_blank" rel="noopener" href="' + esc(API + '/receipts/' + encodeURIComponent(id)) + '">View receipt JSON <span aria-hidden="true">↗</span></a><button class="btn ghost small" type="button" id="rc-dl">Download receipt</button></div></section>';
+      $('rc-dl').onclick = function () { PL.download(new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' }), 'patchlabs-receipt-' + id + '.json'); };
+    } catch (e) {
+      el.innerHTML = '<section class="panel receipt"><p class="lab">Signed receipt</p><p class="muted small mb-0">' + esc(e.message) + ' <a href="/docs/receipts">About receipts</a>.</p></section>';
+    }
+  }
+
+  function poll() { clearTimeout(timer); timer = setTimeout(load, 8000); }
+
+  async function load() {
+    if (!id) {
+      $('title').textContent = 'No check selected';
+      $('steps').innerHTML = '';
+      $('body').innerHTML = '<div class="panel"><p class="mb-0 muted">Start one from the <a href="/#check">home page</a>, or <a href="/check?id=sample">open the sample report</a>.</p></div>';
+      return;
+    }
+    try {
+      var c = id === 'sample' ? await fetch('/sample.json').then(function (r) { if (!r.ok) throw new Error('We couldn’t load the sample report.'); return r.json(); }) : await api('/checks/' + encodeURIComponent(id));
+      render(c);
+    } catch (x) {
+      $('title').textContent = 'We couldn’t load this check';
+      $('body').innerHTML = '<div class="panel"><p class="err mb-0">' + esc(x.message) + '</p></div>';
+      if (x.message.indexOf('reach') >= 0) poll();
+    }
+  }
+  load();
+})();
+</script>

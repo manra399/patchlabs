@@ -1,0 +1,163 @@
+<!--
+title: PL-004 UPDATE policy missing WITH CHECK | PatchLabs findings
+description: PL-004: a Supabase UPDATE policy has no WITH CHECK, so users can set columns they should never control. When it matters, how to check, the fix and the test.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-004: UPDATE policy missing WITH CHECK","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Data access</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004" aria-current="page"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Keys</h2>
+      <ul>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-004</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-004</span><span class="pill sev-medium">medium</span></div>
+        <h1>UPDATE policy missing WITH CHECK</h1>
+        <p class="lede">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Medium</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Signed-in users, on rows they can already edit</dd></div>
+          <div><dt>Found by</dt><dd>Free RLS check (static)</dd></div>
+          <div><dt>Lab proof</dt><dd>Write test included for your engineer</dd></div>
+        </dl>
+      </header>
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>An UPDATE policy answers two questions. <code>USING</code> decides which rows you may change. <code>WITH CHECK</code> decides what a row may look like afterwards. Leave out <code>WITH CHECK</code> and Postgres reuses the <code>USING</code> rule for the new row.</p>
+<p>That fallback is safe for the owner column when <code>USING</code> is a strict ownership test. It is not enough when the row carries columns the user should never set themselves (<code>role</code>, <code>plan</code>, <code>credits</code>, <code>is_verified</code>), or when <code>USING</code> is broader than what a changed row should be allowed to be. Then a user edits their own row and makes themselves an admin.</p>
+      
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_profiles.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create table public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  full_name text,
+  role text not null default 'member'
+);
+
+create policy "Users can update own profile"
+  on public.profiles for update
+  to authenticated
+  using ((select auth.uid()) = id);
+
+<span class="c">-- Any user can now run, from the browser:</span>
+<span class="c">--   update profiles set role = 'admin' where id = auth.uid();</span></code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-004.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- 1. UPDATE (and ALL) policies with no WITH CHECK</span>
+select tablename, policyname, cmd, roles, qual
+from pg_policies
+where schemaname = 'public'
+  and cmd in ('UPDATE', 'ALL')
+  and with_check is null;
+
+<span class="c">-- 2. Which columns can signed-in users change?</span>
+select table_name, column_name
+from information_schema.column_privileges
+where table_schema = 'public'
+  and grantee = 'authenticated'
+  and privilege_type = 'UPDATE'
+order by table_name, column_name;</code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix PatchLabs writes</h2>
+      <p>PatchLabs makes the rule explicit and limits which columns a user may change. The column grant is what actually stops the role change; <code>WITH CHECK</code> stops a row being handed to someone else.</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_patchlabs_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Users can update own profile" on public.profiles;</span>
+<span class="add">create policy "Users can update own profile"</span>
+<span class="add">  on public.profiles for update</span>
+<span class="add">  to authenticated</span>
+<span class="add">  using ((select auth.uid()) = id)</span>
+<span class="add">  with check ((select auth.uid()) = id);</span>
+<span class="add">-- Users may change these columns and no others</span>
+<span class="add">revoke update on public.profiles from authenticated;</span>
+<span class="add">grant update (full_name) on public.profiles to authenticated;</span></code></pre>
+</div>
+      <p class="small muted">Every fix arrives as a migration file (plus any code change it needs, noted in the report) for your engineer to approve. Download it, or commit it on GitHub in one click from the report page. Automatic pull requests need our GitHub App, which is coming.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>The proof it runs</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">write test · public.profiles</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[TEST]</span>    <span class="k">owner</span> set full_name    → 1 row  <span class="ok">OK</span></span>
+<span class="ln">          <span class="k">owner</span> set role='admin'</span>
+<span class="ln">            → permission denied     <span class="deny">DENIED</span></span>
+<span class="ln">          <span class="k">stranger</span> set full_name</span>
+<span class="ln">            on owner's row → 0 rows <span class="deny">DENIED</span></span>
+</pre>
+  <div class="window-foot"><span class="pill plain">test SQL in the report</span><span>Illustrative output · fake rows</span></div>
+</div>
+      <p>Be clear about what is automatic. The lab's three-identity proof covers <strong>reads</strong> on every check. For write findings like this one, the report includes the test above as SQL for your engineer to run in the lab or a branch database; it is not yet part of the automatic proof.</p><div class="code">
+  <div class="code-bar"><span class="name">write-test-pl-004.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>begin;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"&lt;your user id&gt;","role":"authenticated"}', true);
+update public.profiles set role = 'admin' where id = '&lt;your user id&gt;';
+<span class="c">-- before the fix: UPDATE 1 · after: permission denied for table profiles</span>
+rollback;</code></pre>
+</div>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>A missing <code>WITH CHECK</code> is harmless when <code>USING</code> is a strict ownership test and every column on the row is one the user is allowed to set. Many tables are like that, so treat this as a prompt to look, not proof of a hole. The report says which columns signed-in users can change, so you can decide quickly.</p>
+
+      
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-005"><span class="n-big">PL-005</span><h3>Always-true policy</h3><p class="small">A policy that says yes to everyone. On writes, anyone can change or delete your data.</p></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3><p class="small">Signing up unlocks other people's rows. If sign-up is open, that means anyone.</p></a><a class="card link" href="/findings/pl-006"><span class="n-big">PL-006</span><h3>SECURITY DEFINER function exposed</h3><p class="small">A function that runs with the owner's powers, callable by anyone through the API.</p></a></div>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your app have PL-004?</h2>
+        <p>Paste your public repo. We rebuild the database from your migrations, test it as a visitor, a stranger and the owner, and hand you the proven fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f004">Public GitHub repo</label>
+            <input id="repo-f004" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f004">Your email</label>
+            <input id="email-f004" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-004">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-003"><span>Previous · PL-003</span>RLS enabled but no policies (owner locked out)</a><a class="next" href="/findings/pl-005"><span>Next · PL-005</span>Always-true policy</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix we write</a></li><li><a href="#proof">The proof</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

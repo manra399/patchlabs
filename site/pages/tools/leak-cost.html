@@ -1,0 +1,266 @@
+<!--
+title: Data leak cost calculator: your numbers, no scare stats | PatchLabs
+description: Estimate what notifying and supporting people would cost if your app leaked their data. Plain maths with your own figures, plus the UK ICO 72-hour reporting rule.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
+-->
+<main id="main">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">Leak cost calculator</li></ol></nav>
+    <p class="lab">Free tool</p>
+    <h1>What would a leak cost you? Do the maths with your own numbers.</h1>
+    <p class="lede">A plain calculator: the people whose records were exposed, times what it costs you to tell them and answer their questions, plus the time to fix it. No industry averages, no scare statistics. Replace every starting value with your own.</p>
+    <ul class="t-meta"><li>Runs in your browser</li><li>Nothing is sent or stored</li><li>Not legal or financial advice</li></ul>
+  </div>
+</section>
+
+<section class="sec tight band" aria-labelledby="calc-h">
+  <div class="wrap">
+    <h2 id="calc-h" class="sr-only">Calculator</h2>
+    <form class="calc" id="calc" novalidate onsubmit="return false">
+      <div>
+        <fieldset>
+          <legend>1 · Exposure</legend>
+          <div class="field">
+            <label for="n">People whose records were exposed <span class="tag you">your number</span></label>
+            <div class="unit"><input class="input" id="n" name="n" type="number" inputmode="numeric" min="0" step="1" value="1000"><span>people</span></div>
+            <span class="hint">Count the rows a stranger could read, one per person. The <a href="/tools/rls-check">free RLS check</a> names the risky tables; your Supabase dashboard shows how many rows each holds.</span>
+          </div>
+          <div class="field">
+            <label for="cur">Currency</label>
+            <select class="input" id="cur" name="cur"><option value="GBP" selected>£ GBP</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option></select>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>2 · Per-person costs</legend>
+          <div class="field">
+            <label for="nc">Cost to notify one person <span class="tag">assumption</span></label>
+            <div class="unit"><span class="cur">£</span><input class="input" id="nc" name="nc" type="number" inputmode="decimal" min="0" step="any" value="0.50"></div>
+            <span class="hint">Writing, checking and sending the notice: email is cheap, letters cost more.</span>
+          </div>
+          <div class="field">
+            <label for="sr">Share of people who contact you <span class="tag">assumption</span></label>
+            <div class="unit"><input class="input" id="sr" name="sr" type="number" inputmode="decimal" min="0" max="100" step="any" value="10"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="sc">Cost of handling one contact <span class="tag">assumption</span></label>
+            <div class="unit"><span class="cur">£</span><input class="input" id="sc" name="sc" type="number" inputmode="decimal" min="0" step="any" value="8"></div>
+            <span class="hint">Staff time per email or call, at your own hourly cost.</span>
+          </div>
+          <div class="field">
+            <label for="gw">Goodwill credit or refund per person <span class="tag">assumption</span></label>
+            <div class="unit"><span class="cur">£</span><input class="input" id="gw" name="gw" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
+            <span class="hint">Leave at 0 if you wouldn’t offer one.</span>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>3 · One-off costs</legend>
+          <div class="grid g2" style="gap:0 16px">
+            <div class="field">
+              <label for="eh">Engineering hours <span class="tag">assumption</span></label>
+              <div class="unit"><input class="input" id="eh" name="eh" type="number" inputmode="decimal" min="0" step="any" value="16"><span>hours</span></div>
+            </div>
+            <div class="field">
+              <label for="er">Cost per engineering hour <span class="tag">assumption</span></label>
+              <div class="unit"><span class="cur">£</span><input class="input" id="er" name="er" type="number" inputmode="decimal" min="0" step="any" value="75"></div>
+            </div>
+          </div>
+          <span class="hint" style="display:block;margin:-8px 0 18px;font-size:13px;color:var(--muted)">Finding out what was exposed, fixing it, checking nothing else is open.</span>
+          <div class="field">
+            <label for="lg">Legal or privacy advice <span class="tag">assumption</span></label>
+            <div class="unit"><span class="cur">£</span><input class="input" id="lg" name="lg" type="number" inputmode="decimal" min="0" step="any" value="1500"></div>
+          </div>
+          <div class="field">
+            <label for="ot">Anything else <span class="tag you">your number</span></label>
+            <div class="unit"><span class="cur">£</span><input class="input" id="ot" name="ot" type="number" inputmode="decimal" min="0" step="any" value="0"></div>
+            <span class="hint">For example an insurance excess, or outside help with the investigation.</span>
+          </div>
+        </fieldset>
+        <a class="calc-mini" href="#results" aria-hidden="true" tabindex="-1"><span>Your estimate</span><b id="mini">£4,000</b></a>
+        <p class="small muted">The starting values are round placeholders we picked so the maths has something to show. They are not industry averages or research figures. Replace them with your own.</p>
+      </div>
+
+      <div class="calc-out" id="results">
+        <div class="calc-total" aria-live="polite">
+          <p class="lab mb-0">Your estimate</p>
+          <output class="big" id="total" for="n nc sr sc gw eh er lg ot">£4,000</output>
+          <span class="per" id="per">£4.00 per person · 1,000 people</span>
+          <ul class="brk">
+            <li><span>Notifying people</span><b id="o-notify">£500</b><span class="bar"><i id="b-notify" style="--w:12.5%"></i></span><span class="formula" id="f-notify">1,000 × £0.50</span></li>
+            <li><span>Answering questions</span><b id="o-support">£800</b><span class="bar"><i id="b-support" style="--w:20%"></i></span><span class="formula" id="f-support">1,000 × 10% × £8</span></li>
+            <li><span>Goodwill credits</span><b id="o-goodwill">£0</b><span class="bar"><i id="b-goodwill" style="--w:0%"></i></span><span class="formula" id="f-goodwill">1,000 × £0</span></li>
+            <li><span>Engineering time</span><b id="o-eng">£1,200</b><span class="bar"><i id="b-eng" style="--w:30%"></i></span><span class="formula" id="f-eng">16 h × £75</span></li>
+            <li><span>Legal or privacy advice</span><b id="o-legal">£1,500</b><span class="bar"><i id="b-legal" style="--w:37.5%"></i></span><span class="formula">as entered</span></li>
+            <li><span>Anything else</span><b id="o-other">£0</b><span class="bar"><i id="b-other" style="--w:0%"></i></span><span class="formula">as entered</span></li>
+          </ul>
+          <div class="calc-actions">
+            <button class="btn small secondary" type="button" id="share">Copy link with my numbers</button>
+            <button class="btn small ghost" type="button" id="copy">Copy breakdown</button>
+            <button class="btn small ghost" type="button" id="reset">Reset</button>
+          </div>
+          <noscript><p class="small muted mt-2 mb-0">The figures above use the starting values. Without JavaScript they don’t update; the worked example below shows the formula to do it by hand.</p></noscript>
+        </div>
+        <p class="small muted mt-2">Leaves out regulatory fines, lost customers and your own stress. Regulators decide fines case by case, and we won’t print a guess.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="maths-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">The maths</p>
+      <h2 id="maths-h" class="h-md">Six lines, all visible.</h2>
+      <p class="muted">Every figure is something you can check against your own costs. Here it is with the starting values.</p>
+      <div class="code">
+        <div class="code-bar"><span class="name">formula</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>notify   = people × cost to notify one person
+support  = people × share who contact you × cost per contact
+goodwill = people × credit per person
+engineer = hours × cost per hour
+total    = notify + support + goodwill + engineer
+         + legal advice + anything else</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="table-wrap worked"><table class="table">
+        <caption class="sr-only">Worked example with the starting values</caption>
+        <thead><tr><th scope="col">Line</th><th scope="col">Working</th><th scope="col" class="num">Amount</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Notifying people</th><td class="mono small">1,000 × £0.50</td><td class="num">£500</td></tr>
+          <tr><th scope="row">Answering questions</th><td class="mono small">1,000 × 10% × £8</td><td class="num">£800</td></tr>
+          <tr><th scope="row">Goodwill credits</th><td class="mono small">1,000 × £0</td><td class="num">£0</td></tr>
+          <tr><th scope="row">Engineering time</th><td class="mono small">16 h × £75</td><td class="num">£1,200</td></tr>
+          <tr><th scope="row">Legal or privacy advice</th><td class="mono small">as entered</td><td class="num">£1,500</td></tr>
+          <tr><th scope="row">Anything else</th><td class="mono small">as entered</td><td class="num">£0</td></tr>
+          <tr><th scope="row">Total</th><td class="mono small">£4.00 per person</td><td class="num"><b class="ink">£4,000</b></td></tr>
+        </tbody>
+      </table></div>
+      <p class="small muted mt-2">Placeholders, not research. Your numbers will differ, maybe by a lot.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="ico-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">If it happens in the UK</p>
+      <h2 id="ico-h" class="h-md">The 72-hour rule.</h2>
+      <p class="muted">Under UK GDPR, you must report certain personal data breaches to the Information Commissioner’s Office (ICO) within 72 hours of becoming aware of them.</p>
+    </div>
+    <div>
+      <div class="callout note">
+        <p><strong>Which breaches, and what to do.</strong> The duty applies when a breach is likely to put people’s rights and freedoms at risk. If the risk is high, you must usually tell the affected people too, without undue delay. The ICO has a self-assessment and the reporting form.</p>
+        <p><a href="https://ico.org.uk/for-organisations/report-a-breach/" rel="noopener">Report a breach on ico.org.uk</a> · <a href="https://ico.org.uk/" rel="noopener">ico.org.uk</a></p>
+      </div>
+      <ul class="ticks">
+        <li>Write down what you know and when you found out. The clock starts when you become aware.</li>
+        <li>Close the leak first. Then work out which records were readable, and by whom.</li>
+        <li>Outside the UK, check your own regulator’s rules: deadlines and thresholds differ.</li>
+        <li class="dash">This page is general information, not legal advice. For a real incident, talk to a lawyer or your data protection officer.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="next-h">
+  <div class="wrap">
+    <div class="sec-head center">
+      <p class="lab">Before it happens</p>
+      <h2 id="next-h">The cheapest leak is the one you close first.</h2>
+      <p>Find out which of your tables a stranger can read, then fix it with a change you’ve watched work.</p>
+    </div>
+    <div class="grid g3">
+      <a class="card link" href="/tools/rls-check"><span class="n-big">FREE · SECONDS</span><h3>Free RLS check</h3><p>Scan your migrations for the eight patterns behind most Supabase leaks. No sign-up.</p><div class="card-foot"><span class="link-arrow">Run the free check</span></div></a>
+      <a class="card link" href="/#check"><span class="n-big">FREE FOR YOUR FIRST APP</span><h3>Full lab check</h3><p>We rebuild your database, read it as a stranger, write the fix and prove it. Never touches your live app.</p><div class="card-foot"><span class="link-arrow">Check my app free</span></div></a>
+      <a class="card link" href="/sample-report"><span class="n-big">REAL RUN · DEMO APP</span><h3>Sample report</h3><p>See exactly what you get: the leak, the exposed columns, the fix and the proof as three identities.</p><div class="card-foot"><span class="link-arrow">Open the sample</span></div></a>
+    </div>
+  </div>
+</section>
+
+</main>
+<script>
+(function () {
+  'use strict';
+  var F = ['n', 'nc', 'sr', 'sc', 'gw', 'eh', 'er', 'lg', 'ot'];
+  var DEF = { n: 1000, nc: 0.5, sr: 10, sc: 8, gw: 0, eh: 16, er: 75, lg: 1500, ot: 0, cur: 'GBP' };
+  var SYM = { GBP: '£', USD: '$', EUR: '€' };
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $('calc');
+  var val = function (k) { var v = parseFloat($(k).value); v = isFinite(v) && v > 0 ? v : 0; return k === 'sr' ? Math.min(v, 100) : v; };
+  var cur = function () { return SYM[$('cur').value] ? $('cur').value : 'GBP'; };
+  var money = function (x, dp) {
+    try { return new Intl.NumberFormat('en-GB', { style: 'currency', currency: cur(), currencyDisplay: 'narrowSymbol', minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }).format(x); }
+    catch (e) { return SYM[cur()] + x.toFixed(dp || 0); }
+  };
+  var num = function (x) { return new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 }).format(x); };
+  var unit = function (x) { return x < 10 && x % 1 ? money(x, 2) : money(x, x % 1 ? 2 : 0); };
+
+  function calc() {
+    var v = {}; F.forEach(function (k) { v[k] = val(k); });
+    var parts = {
+      notify: v.n * v.nc, support: v.n * (v.sr / 100) * v.sc, goodwill: v.n * v.gw,
+      eng: v.eh * v.er, legal: v.lg, other: v.ot
+    };
+    var total = 0; for (var k in parts) total += parts[k];
+    $('total').textContent = money(total); $('mini').textContent = money(total);
+    $('per').textContent = (v.n ? money(total / v.n, 2) + ' per person · ' : '') + num(v.n) + (v.n === 1 ? ' person' : ' people');
+    for (var p in parts) {
+      $('o-' + p).textContent = money(parts[p]);
+      $('b-' + p).style.setProperty('--w', (total ? (parts[p] / total * 100) : 0).toFixed(1) + '%');
+    }
+    $('f-notify').textContent = num(v.n) + ' × ' + unit(v.nc);
+    $('f-support').textContent = num(v.n) + ' × ' + num(v.sr) + '% × ' + unit(v.sc);
+    $('f-goodwill').textContent = num(v.n) + ' × ' + unit(v.gw);
+    $('f-eng').textContent = num(v.eh) + ' h × ' + unit(v.er);
+    document.querySelectorAll('.calc .cur').forEach(function (s) { s.textContent = SYM[cur()]; });
+    return { v: v, parts: parts, total: total };
+  }
+
+  function shareUrl() {
+    var q = new URLSearchParams();
+    F.forEach(function (k) { q.set(k, String(val(k))); });
+    q.set('cur', cur());
+    return location.origin + location.pathname + '?' + q.toString();
+  }
+
+  // load numbers from the link, if any (numbers only; nothing personal goes in the URL)
+  var qs = new URLSearchParams(location.search);
+  F.forEach(function (k) { var x = parseFloat(qs.get(k)); if (isFinite(x) && x >= 0) $(k).value = x; });
+  if (SYM[qs.get('cur')]) $('cur').value = qs.get('cur');
+
+  form.addEventListener('input', calc);
+  form.addEventListener('change', calc);
+  $('share').addEventListener('click', function () {
+    var u = shareUrl();
+    try { history.replaceState(null, '', u); } catch (e) {}
+    copyText(u).then(function () { toast('Link copied', 'ok'); }, function () { toast('Copy failed. Copy the address bar instead.', 'err'); });
+  });
+  $('copy').addEventListener('click', function () {
+    var r = calc(), v = r.v, p = r.parts;
+    var t = [
+      'Leak cost estimate (PatchLabs calculator; my own assumptions)',
+      'People exposed: ' + num(v.n),
+      'Notifying people: ' + money(p.notify) + '  (' + $('f-notify').textContent + ')',
+      'Answering questions: ' + money(p.support) + '  (' + $('f-support').textContent + ')',
+      'Goodwill credits: ' + money(p.goodwill) + '  (' + $('f-goodwill').textContent + ')',
+      'Engineering time: ' + money(p.eng) + '  (' + $('f-eng').textContent + ')',
+      'Legal or privacy advice: ' + money(p.legal),
+      'Anything else: ' + money(p.other),
+      'Total: ' + money(r.total) + (v.n ? ' (' + money(r.total / v.n, 2) + ' per person)' : ''),
+      'Excludes fines and lost customers. ' + shareUrl()
+    ].join('\n');
+    copyText(t).then(function () { toast('Breakdown copied', 'ok'); }, function () { toast('Copy failed.', 'err'); });
+  });
+  $('reset').addEventListener('click', function () {
+    F.forEach(function (k) { $(k).value = DEF[k]; }); $('cur').value = DEF.cur; calc();
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  });
+  calc();
+})();
+</script>

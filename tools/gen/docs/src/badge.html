@@ -1,0 +1,56 @@
+title: Badge
+description: Add a dated PatchLabs badge to your README or site showing your app's latest check result. What each state means, how to embed it, and what becomes public.
+lab: Badge
+h1: Badge
+lede: A small, dated badge for your README or website that shows the result of your app’s latest check. It is off until you turn it on, and it shows a status, not your report.
+---
+<h2 id="states">What the badge can say</h2>
+<p>These are the real badges, drawn by the same code as the API:</p>
+<dl class="status-key">
+  <dt>[[BADGE green]]</dt><dd>The latest finished check found no leaks in the tables we test. The date is when it finished.</dd>
+  <dt>[[BADGE amber]]</dt><dd>The latest finished check found leaks. A fix is ready or being reviewed, and not yet confirmed by a clean re-check.</dd>
+  <dt>[[BADGE grey]]</dt><dd>The badge is public but no check has finished yet.</dd>
+  <dt>[[BADGE private]]</dt><dd>The badge isn’t public, the app isn’t verified, or the ID is wrong. Nothing about the app is revealed.</dd>
+</dl>
+
+<h2 id="turn-on">Turn it on</h2>
+<p>On the app’s page in your dashboard, switch on <strong>Public badge</strong>. Or with the API:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/apps/$APP_ID \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"badge_public": true}'</code></pre></div>
+<p>Only verified apps can show a status. Switch it off the same way with <code>false</code>; the badge goes back to “private” within the hour.</p>
+
+<h2 id="embed">Embed it</h2>
+<p>Paste your app ID (from the app’s page in your dashboard) to preview the badge and get snippets:</p>
+<div class="doc-tool" data-tool="badge">
+  <p class="lab">Badge builder</p>
+  <h3 id="badge-builder" data-notoc>Make your snippet</h3>
+  <form class="needs-js">
+    <div class="fields-row">
+      <div class="field"><label for="badge-app">App ID</label><input id="badge-app" name="app_id" class="input mono" autocomplete="off" spellcheck="false" placeholder="3f2b9c1e-8a4d-4c55-9f0e-2b7d1c6a9e10"></div>
+      <button class="btn primary" type="submit">Preview</button>
+    </div>
+  </form>
+  <p class="nojs-note small muted mb-0">The builder needs JavaScript. The snippets below work as they are: replace APP_ID.</p>
+  <div class="out" aria-live="polite"></div>
+</div>
+<div class="code"><div class="code-bar"><span class="name">README.md</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="wrap-lines"><code>[![PatchLabs status](https://api.patchlabs.dev/badge/APP_ID.svg)](https://patchlabs.dev/proof?app=APP_ID)</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">HTML</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="wrap-lines"><code>&lt;a href="https://patchlabs.dev/proof?app=APP_ID"&gt;&lt;img src="https://api.patchlabs.dev/badge/APP_ID.svg" alt="PatchLabs status" height="20"&gt;&lt;/a&gt;</code></pre></div>
+
+<h2 id="public">What becomes public</h2>
+<p>Turning the badge on publishes three things and nothing else:</p>
+<ul>
+  <li>the repo name,</li>
+  <li>the status word (<code>no_known_leaks</code>, <code>fix_in_progress</code> or <code>not_checked_yet</code>),</li>
+  <li>the date of the latest finished check.</li>
+</ul>
+<p>Table names, the report, the fix and your team stay private. The badge links to your app’s <a href="/proof">public proof page</a>, which shows the same status. The three fields are also available as JSON, for your own status page:</p>
+<div class="code"><div class="code-bar"><span class="name">GET /public/apps/{app_id}</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/public/apps/$APP_ID
+<span class="c"># {"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "2026-11-09T16:56:41+00:00"}</span>
+<span class="c"># 404 {"detail": "This app's status isn't public."} when the badge is off</span></code></pre></div>
+
+<h2 id="caching">Caching</h2>
+<p>The badge is served with <code>Cache-Control: public, max-age=3600</code>, so a new result can take up to an hour to appear. GitHub also caches README images through its own image proxy, which can add a little more.</p>
+
+<h2 id="what-it-means">What the badge means, and doesn’t</h2>
+<div class="callout limit"><p>“No known leaks” means our latest check, on the date shown, found no personal data readable by the wrong people in the tables we test. It isn’t a certificate or a guarantee about the whole app. Tables your team <a href="/docs/decisions#suppressions">marked as intended</a> still count today, so an app with only intended public tables shows “fix in progress”.</p></div>

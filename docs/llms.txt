@@ -1,0 +1,83 @@
+# PatchLabs
+
+> PatchLabs finds personal-data leaks in apps built with AI (Lovable, Supabase, Bolt, Replit, Cursor-exported code). It rebuilds the app's database from the repo's own `supabase/migrations` in a disposable lab, tests what an anonymous visitor, a signed-in stranger and the owner can read, writes a fix (a SQL migration) and proves it in the lab before anyone ships it. It also scans the code and full git history for exposed AI, payment and database keys. It never connects to the customer's live app or database. The owner's engineer approves every change. Free for one app.
+
+Key facts:
+- Input: a public GitHub repo (private repos need a GitHub App, which is coming). Ownership is proven by committing `patchlabs-verify.txt` with a one-time code.
+- Output: a report, a downloadable migration plus a one-click "commit this file on GitHub" link (automatic pull requests are coming), and an Ed25519-signed receipt.
+- Lab study (PatchLabs, Nov 2026): 318 public Lovable/Supabase repos rebuilt; 106 of 318 (33%) let the wrong people read personal data; about 1 in 4 (25-28%) after removing businesses' own public contact details. Autonomous fixes: 18 of 20 passed the strict lab proof with no human (n=20, 9 Nov 2026); median $0.46 model cost and 3.5 minutes per app.
+- Plans: Free £0 (1 app), Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 per extra app), Enterprise custom. Card payments are not live; paid plans are by request.
+- API: https://api.patchlabs.dev (REST, JSON). Remote MCP server: POST https://api.patchlabs.dev/mcp (JSON-RPC 2.0; tools rls_check, start_check, get_check, list_apps, run_check).
+- Contact: manraj@patchlabs.dev (security reports: same address, subject "Security"). Founder: Manraj Singh Dhillon, London.
+- Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor.
+
+## Start here
+- [Home](https://patchlabs.dev/): what PatchLabs does and the free check
+- [How it works](https://patchlabs.dev/how-it-works): rebuild, probe, fix, prove
+- [Sample report](https://patchlabs.dev/sample-report): a real lab run on our deliberately leaky demo app
+- [Pricing](https://patchlabs.dev/pricing): plans and limits
+- [Full text for language models](https://patchlabs.dev/llms-full.txt): everything below in one file
+
+## Product
+- [Leak lab](https://patchlabs.dev/product/leak-lab): who can read your Supabase data, tested and fixed
+- [Key scan](https://patchlabs.dev/product/key-scan): exposed keys in code and full git history
+- [Monitoring](https://patchlabs.dev/product/monitoring): scheduled re-checks and alerts on new leaks
+- [Badge and proof page](https://patchlabs.dev/product/badge): a dated public record of the last check
+- [Agencies](https://patchlabs.dev/agencies): keep client apps checked after handover
+- [Lovable apps](https://patchlabs.dev/for/lovable)
+- [Supabase apps](https://patchlabs.dev/for/supabase)
+- [Bolt apps](https://patchlabs.dev/for/bolt)
+- [Replit apps](https://patchlabs.dev/for/replit)
+- [Cursor projects](https://patchlabs.dev/for/cursor)
+- [Leaking right now?](https://patchlabs.dev/leaking-now): what to do in the next hour
+
+## Research
+- [The 1-in-4 study](https://patchlabs.dev/research/1-in-4): 318 rebuilt apps, exact counts
+- [Methodology](https://patchlabs.dev/research/methodology): selection, definitions, judging, costs, limits
+- [Finding index](https://patchlabs.dev/findings): stable PL-IDs with the SQL behind each check
+- [PL-001 Anonymous visitor can read personal data](https://patchlabs.dev/findings/pl-001)
+- [PL-002 Any signed-in user can read every row](https://patchlabs.dev/findings/pl-002)
+- [PL-003 RLS enabled but no policies](https://patchlabs.dev/findings/pl-003)
+- [PL-004 UPDATE policy missing WITH CHECK](https://patchlabs.dev/findings/pl-004)
+- [PL-005 Always-true policy](https://patchlabs.dev/findings/pl-005)
+- [PL-006 SECURITY DEFINER function exposed](https://patchlabs.dev/findings/pl-006)
+- [PL-007 Public storage bucket](https://patchlabs.dev/findings/pl-007)
+- [PL-008 Row level security not enabled](https://patchlabs.dev/findings/pl-008)
+- [PL-010 Service role key in client code](https://patchlabs.dev/findings/pl-010)
+- [PL-011 Key still in git history](https://patchlabs.dev/findings/pl-011)
+
+## Free tools
+- [All tools](https://patchlabs.dev/tools)
+- [Free RLS check](https://patchlabs.dev/tools/rls-check): static analysis of a public repo's migrations, no sign-up
+- [Leak cost calculator](https://patchlabs.dev/tools/leak-cost)
+
+## Compare
+- [All comparisons](https://patchlabs.dev/compare)
+- [vs Supabase Security Advisor](https://patchlabs.dev/compare/supabase-security-advisor)
+- [vs Lovable security scan](https://patchlabs.dev/compare/lovable-security-scan)
+- [vs Aikido](https://patchlabs.dev/compare/aikido)
+- [vs a manual pentest](https://patchlabs.dev/compare/manual-pentest)
+
+## Developers
+- [Docs](https://patchlabs.dev/docs): quickstart and guides
+- [REST API](https://patchlabs.dev/docs/api)
+- [MCP server](https://patchlabs.dev/docs/mcp)
+- [Receipts](https://patchlabs.dev/docs/receipts): verifying signed results
+- [Receipt public key](https://api.patchlabs.dev/.well-known/patchlabs-receipt-key)
+- [Health endpoint](https://api.patchlabs.dev/health)
+
+## Trust and company
+- [Security](https://patchlabs.dev/security): what we read, keep and never touch; subprocessors; limits
+- [Status](https://patchlabs.dev/status): live API, database, worker and queue status
+- [Public proof page](https://patchlabs.dev/proof): an app's public record, and in-browser receipt verification
+- [About](https://patchlabs.dev/about)
+- [Changelog](https://patchlabs.dev/changelog)
+- [security.txt](https://patchlabs.dev/.well-known/security.txt)
+
+## Legal
+- [Terms of service](https://patchlabs.dev/legal/terms)
+- [Privacy policy](https://patchlabs.dev/legal/privacy)
+- [Acceptable use](https://patchlabs.dev/legal/acceptable-use)
+- [Data processing agreement](https://patchlabs.dev/legal/dpa)
+- [Disclosure policy](https://patchlabs.dev/legal/disclosure-policy)
+- [Cookies (none)](https://patchlabs.dev/legal/cookies)

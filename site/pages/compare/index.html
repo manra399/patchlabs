@@ -1,0 +1,174 @@
+<!--
+title: Compare PatchLabs: fair, dated, sourced comparisons | PatchLabs
+description: How PatchLabs compares with Supabase Security Advisor, Lovable's security scan, Aikido, URL scanners and manual pentests, including when they are the better choice.
+layout: marketing
+head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
+-->
+<main id="main">
+
+<section class="page-hero">
+  <div class="wrap hero-split">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Compare</li></ol></nav>
+      <p class="lab">Compare</p>
+      <h1>How PatchLabs compares, stated fairly.</h1>
+      <p class="lede">Most security tools tell you what looks wrong. PatchLabs rebuilds your database, writes the fix and proves it as three different people. Here is where that matters, and where another tool is the better choice.</p>
+      <div class="meta-line"><span>Last checked 10 Nov 2026</span><span>Every fact sourced</span><span>Corrections welcome</span></div>
+    </div>
+    <figure class="figure">
+      <div class="window">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">a finding vs a proven fix</span></div>
+<pre class="transcript lines" aria-label="A finding compared with a proven fix">
+<span class="ln"><span class="dim"># a typical finding</span></span>
+<span class="ln"><span class="step">[WARN]</span>    profiles: policy too open</span>
+<span class="ln"><span class="dim">          fix it yourself, then re-scan</span></span>
+<span class="ln"> </span>
+<span class="ln"><span class="dim"># a PatchLabs proven fix</span></span>
+<span class="ln"><span class="step">[FIX]</span>     <span class="add">+ using (auth.uid() = user_id)</span></span>
+<span class="ln"><span class="step">[PROVE]</span>   <span class="k">anon</span>      → 0 rows        <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">stranger</span>  → 0 rows        <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">owner</span>     → own rows      <span class="ok">OK</span></span>
+</pre>
+        <div class="window-foot"><span class="pill proven">proven</span><span>Illustration · demo app, fake data</span></div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="pages-h">
+  <div class="wrap">
+    <div class="sec-head compact">
+      <p class="lab">Named comparisons</p>
+      <h2 id="pages-h" class="h-md">Pick the tool you’re weighing us against.</h2>
+    </div>
+    <div class="cmp-cards">
+      <a class="card link" href="/compare/supabase-security-advisor">
+        <span class="kind">Platform built-in · free</span>
+        <h3><span class="vs">vs</span>Supabase Security Advisor</h3>
+        <p>Documented lint rules on your live project versus a lab that tests who can actually read each row, then proves the fix.</p>
+        <div class="card-foot"><span class="link-arrow">Read the comparison</span></div>
+      </a>
+      <a class="card link" href="/compare/lovable-security-scan">
+        <span class="kind">Platform built-in · free scans</span>
+        <h3><span class="vs">vs</span>Lovable security scan</h3>
+        <p>Checks on publish and fixes inside the editor, versus a migration your engineer approves, proven in a rebuilt copy of your database.</p>
+        <div class="card-foot"><span class="link-arrow">Read the comparison</span></div>
+      </a>
+      <a class="card link" href="/compare/aikido">
+        <span class="kind">AppSec platform · free tier</span>
+        <h3><span class="vs">vs</span>Aikido</h3>
+        <p>A broad platform for code, cloud and pentests, versus one question answered in depth: can the wrong people read your users’ data?</p>
+        <div class="card-foot"><span class="link-arrow">Read the comparison</span></div>
+      </a>
+      <a class="card link" href="/compare/url-scanners">
+        <span class="kind">Category · free to $99 a month</span>
+        <h3><span class="vs">vs</span>URL scanners</h3>
+        <p>Outside-in probes of your live site, versus inside-out tests on a copy built from your migrations. Five named tools, side by side.</p>
+        <div class="card-foot"><span class="link-arrow">Read the comparison</span></div>
+      </a>
+      <a class="card link" href="/compare/manual-pentest">
+        <span class="kind">Category · usually thousands</span>
+        <h3><span class="vs">vs</span>A manual pentest</h3>
+        <p>A person testing your whole system once, versus one risk checked continuously with a proven fix. Most serious launches need both.</p>
+        <div class="card-foot"><span class="link-arrow">Read the comparison</span></div>
+      </a>
+      <div class="card sunk">
+        <span class="kind">How we write these</span>
+        <h3>Our rules for comparisons</h3>
+        <ul class="ticks small mb-0">
+          <li>Facts come from each company’s own public pages and docs</li>
+          <li>Every page is dated and lists its sources</li>
+          <li>Every page says when the other tool is the better choice</li>
+          <li>No disparagement. If we got something wrong, <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">tell us</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="cat-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">By category</p>
+        <h2 id="cat-h">A scanner gives you a list. PatchLabs gives you a fix you have watched work.</h2>
+        <p>Phrased for each category in general; individual products differ, and the named pages go into detail.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table compare">
+        <caption class="sr-only">PatchLabs compared with four categories of security tools</caption>
+        <thead><tr><th scope="col"></th><th scope="col" class="us">PatchLabs</th><th scope="col">Platform built-in</th><th scope="col">AppSec platform</th><th scope="col">URL scanner</th><th scope="col">Manual pentest</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Finds data the wrong people can read</th><td class="us"><span class="yes">Tests who can read which rows</span></td><td><span class="part">Flags risky rules</span></td><td><span class="part">Among many checks</span></td><td><span class="part">What’s reachable from outside</span></td><td><span class="yes">Within the agreed scope</span></td></tr>
+          <tr><th scope="row">Writes the fix</th><td class="us"><span class="yes">SQL migration, plus code notes</span></td><td><span class="part">Some findings</span></td><td><span class="yes">Fix PRs or one-click fixes</span></td><td><span class="part">A prompt, file or snippet</span></td><td><span class="part">Recommendations</span></td></tr>
+          <tr><th scope="row">Proves the fix as anon, stranger and owner</th><td class="us"><span class="yes">Every fix, before you see it</span></td><td><span class="no">Not described</span></td><td><span class="part">Varies; re-scan or smoke test</span></td><td><span class="no">Re-scan after you ship</span></td><td><span class="part">Retest, often extra</span></td></tr>
+          <tr><th scope="row">Needs your live app</th><td class="us"><span class="yes">No. Repo only</span></td><td><span class="part">Runs inside the platform</span></td><td><span class="part">Repos; live app for pentests</span></td><td><span class="no">Probes your live URL</span></td><td><span class="no">Live or staging</span></td></tr>
+          <tr><th scope="row">Covers more than database access</th><td class="us"><span class="part">Keys in code and git history</span></td><td><span class="yes">Dependencies, code, config</span></td><td><span class="yes">Code, cloud, runtime</span></td><td><span class="yes">Headers, files, bundles</span></td><td><span class="yes">Whole system</span></td></tr>
+          <tr><th scope="row">Typical time</th><td class="us"><b>Median 3.5 min</b><span class="cell-note">Lab study, n=20</span></td><td>Seconds to minutes</td><td>Seconds to minutes</td><td>Seconds to minutes</td><td>Days to weeks</td></tr>
+          <tr><th scope="row">Typical cost</th><td class="us"><b>Free for 1 app</b><span class="cell-note">Then from £19/month</span></td><td>Included</td><td>Free tier, then per plan</td><td>Free tiers; paid $9 to $99/month</td><td>Usually thousands</td></tr>
+          <tr><th scope="row">Best at</th><td class="us">Proof that the fix works</td><td>Zero-setup checks</td><td>Breadth across the stack</td><td>Your real deployment</td><td>Depth across everything</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Last checked 10 Nov 2026. Sources are listed on each named page.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="not-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Honest limits</p>
+      <h2 id="not-h">What PatchLabs doesn’t do.</h2>
+      <p class="lede">If you need any of these, use one of the tools on these pages alongside us. We will say so on our own pages before you find out the hard way.</p>
+    </div>
+    <div class="card">
+      <ul class="ticks mb-0">
+        <li class="dash">Pentests, live-URL scanning or dynamic testing of your running app</li>
+        <li class="dash">Dependency or CVE scanning, static analysis of your whole codebase</li>
+        <li class="dash">Compliance certification or audit reports</li>
+        <li class="dash">Databases other than Supabase/Postgres, for now</li>
+        <li class="dash">Private repos and automatic pull requests: coming with our GitHub App</li>
+      </ul>
+      <div class="card-foot"><a class="link-arrow" href="/changelog">What has shipped, and when</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="how-h">
+  <div class="wrap narrow">
+    <p class="lab">Method</p>
+    <h2 id="how-h" class="h-md">Where these facts come from.</h2>
+    <div class="prose">
+      <p>In November 2026 we reviewed the public websites, documentation and pricing pages of 60 security products, from platform built-ins to enterprise security suites. The named pages use only what those companies say about themselves, quoted sparingly and dated. Where a company’s page didn’t state something, we say “not described” rather than guess.</p>
+      <p>Products change quickly. Each page shows the date we last checked it. If you work at one of these companies and something is out of date, email <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">manraj@patchlabs.dev</a> and we’ll correct it.</p>
+    </div>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with any of the companies named on these pages.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="cta-cmpi">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="cta-cmpi">See the proof for your own app. The first one is free.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page, in a few minutes.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-cmpi">Public GitHub repo</label>
+          <input id="repo-cmpi" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-cmpi">Your email</label>
+          <input id="email-cmpi" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/sample-report">See a sample proof report</a></span><span><a href="/compare">All comparisons</a></span><span>Prefer a person? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
+    </div>
+  </div>
+</section>
+</main>

@@ -1,0 +1,116 @@
+<!--
+title: PatchLabs for Bolt apps: find and fix Supabase data leaks | PatchLabs
+description: Built with Bolt and Supabase? PatchLabs rebuilds your database from the GitHub repo, finds personal data strangers can read, and proves the fix. Free for one app.
+layout: marketing
+nav: for_bolt
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Bolt apps</li></ol></nav>
+      <p class="lab">For Bolt apps</p>
+      <h1>Built with Bolt and Supabase? Check who can read its data.</h1>
+      <p class="lede">If your Bolt project uses Supabase and its migrations are in a public GitHub repo, we can rebuild the database in a lab, read it as a stranger, and hand you a proven fix.</p>
+      <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-bolt">Public GitHub repo</label><input id="repo-bolt" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-bolt">Your email</label><input id="email-bolt" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <p class="indep">Independent: PatchLabs is not affiliated with Bolt.</p>
+    </div>
+    <figure class="figure">
+      <pre class="tree" aria-label="What we need in a Bolt project's repo">your-bolt-app/
+├─ src/
+├─ package.json
+└─ <span class="hl">supabase/</span>
+   └─ <span class="hl">migrations/</span>    <span class="dim">← what we need</span>
+      └─ …_create_tables.sql</pre>
+      <figcaption>What we look for. If there’s no <code>supabase/migrations</code> folder in the repo, we can’t rebuild the database yet.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="fit-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Will it work?</p>
+      <h2 id="fit-h">Check this before you paste your repo.</h2>
+    </div>
+    <div class="fit">
+      <div><h3>Works today when</h3><ul class="ticks compact mb-0"><li><span>The project uses Supabase</span></li><li><span>Its migrations are in <code>supabase/migrations</code> in a public GitHub repo</span></li><li><span>Personal data lives in database tables protected by RLS</span></li></ul></div>
+      <div><h3>Not covered yet</h3><ul class="ticks compact mb-0"><li class="x"><span>Projects whose database changes aren’t in the repo as migration files</span></li><li class="x"><span>Private repos, until our GitHub App ships</span></li><li class="x"><span>Non-Supabase databases</span></li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="pat-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">The common leak</p>
+      <h2 id="pat-h">The same Supabase rules, the same ways to leak.</h2>
+      <p class="lede">A Bolt app on Supabase is protected by the same row level security as any other. The usual leaks: a table with RLS switched off, a read policy that is always true, or one that lets any signed-in user read every row.</p>
+      <div class="callout note mt-3"><p><strong>No Bolt-specific numbers yet.</strong> Our study sampled public Lovable and Supabase repos, so we don’t publish figures for Bolt apps. The access rules work the same way on any Supabase database, which is what we test.</p></div>
+    </div>
+    <div>
+      <div class="code mb-0">
+        <div class="code-bar"><span class="name">RLS never enabled: readable through the API</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- before: RLS was never switched on for this table</span>
+<span class="c">-- (with Supabase's default grants, anyone with the key can read it)</span>
+
+<span class="c">-- after: RLS on, owners read their own rows</span>
+<span class="add">alter table public.customers enable row level security;</span>
+<span class="add">create policy "Owners read own customer records"</span>
+<span class="add">  on public.customers for select to authenticated</span>
+<span class="add">  using (auth.uid() = owner_id);</span></code></pre>
+      </div>
+      <p class="small muted mt-2">Illustrative SQL. Your report contains the real migration for your tables, and it only counts as proven once the anonymous visitor and the signed-in stranger are denied and the owner still reads their own rows.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="land-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">How the fix lands</p>
+      <h2 id="land-h">From proven fix to your live app.</h2>
+      <p class="lede">How a new migration file reaches your database depends on how your Bolt project is connected to Supabase. We haven’t verified Bolt’s behaviour for every setup, so check your platform’s docs.</p>
+      <div class="callout limit mt-3"><p>We never push to your repo or touch your database. Nothing changes until you, or your engineer, applies the migration. Automatic pull requests need our GitHub App, which is coming.</p></div>
+    </div>
+    <ol class="steps"><li><h3>Get the fix</h3><p>Download the migration from your report, or commit it on GitHub in one click.</p></li><li><h3>Apply it to your Supabase database</h3><p>Paste the SQL into your Supabase project’s SQL editor, use <code>supabase db push</code> if you work with the Supabase CLI, or ask Bolt to apply the migration. Check your platform’s docs for which applies to you.</p></li><li><h3>Keep the file in the repo</h3><p>So the next change Bolt makes builds on the fixed rules.</p></li><li><h3>Re-check</h3><p>Run the check again to confirm the leak is closed.</p></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Bolt questions.</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+      <div class="other-builders mt-3" aria-label="Other builders"><a class="link-arrow" href="/for/lovable">Lovable apps</a><a class="link-arrow" href="/for/supabase">Supabase apps</a><a class="link-arrow" href="/for/replit">Replit apps</a><a class="link-arrow" href="/for/cursor">Cursor apps</a></div>
+    </div>
+    <div>
+      <details class="acc"><summary>My Bolt project doesn’t have a supabase/migrations folder.</summary><div class="acc-body"><p>Then we can’t rebuild the database yet. The key scan still runs on your code and history. <a href="mailto:manraj@patchlabs.dev?subject=Bolt%20project">Tell us</a> how your project is set up and we’ll see what we can do.</p></div></details>
+      <details class="acc"><summary>Do you need access to my Bolt account?</summary><div class="acc-body"><p>No. We only read the public GitHub repo and never connect to your live app or database.</p></div></details>
+      <details class="acc"><summary>Will the fix break my app?</summary><div class="acc-body"><p>A fix only passes if the owner can still read their own rows. The report also includes a risk note about anything that could behave differently.</p></div></details>
+      <details class="acc"><summary>Is PatchLabs part of Bolt?</summary><div class="acc-body"><p>No. PatchLabs is independent and not affiliated with Bolt or StackBlitz.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">You’ll get the leaks, the fix and the proof on one page. <a href="/how-it-works">How it works</a>.</p>
+      <div class="row center" style="justify-content:center"><a class="btn primary large" href="#repo-bolt">Check my app free</a><a class="btn secondary large" href="/sample-report">See a sample report</a></div>
+    </div>
+  </div>
+</section>
+
+</main>

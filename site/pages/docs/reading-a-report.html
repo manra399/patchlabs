@@ -1,0 +1,122 @@
+<!--
+title: Reading a report | PatchLabs docs
+description: What each part of a PatchLabs report means: the status, leaking tables, the three identities, the before-and-after proof, the fix, exposed keys and its limits.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Reading a report","item":"https://patchlabs.dev/docs/reading-a-report"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report" aria-current="page">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Reading a report</li></ol></nav>
+<p class="lab">Report</p>
+<h1>Reading a report</h1>
+<p class="lede">Every finished check ends on one page: what leaked, who could read it, the fix, and the proof that the fix works. This page walks through each part using the report from our own deliberately leaky demo app.</p>
+<p>Open the <a href="/check?id=sample">sample report</a> in another tab to follow along. It is a real run on <code>manra399/patchlabs-demo-app</code>, a public repo with fake data that we keep leaky on purpose.</p>
+
+<h2 id="status">The status</h2>
+<p>The pill at the top of the result tells you where things stand.</p>
+<dl class="status-key">
+  <dt><span class="pill proven">fix proven</span></dt><dd>We found leaks, wrote a fix, and the fix passed the full lab proof. It is ready for your engineer to review. API status <code>done</code>.</dd>
+  <dt><span class="pill pending">in review</span></dt><dd>We found leaks, but no fix passed the strict proof automatically, so a person is reviewing it before you apply anything. We email you when it’s ready. API status <code>needs_review</code>.</dd>
+  <dt><span class="pill proven">no leaks found</span></dt><dd>None of the tables we tested let the wrong people read personal data. API status <code>no_leaks</code>.</dd>
+  <dt><span class="pill pending">pending</span></dt><dd>Waiting for verification, in the queue, or running: <code>awaiting_verification</code>, <code>queued</code>, <code>running</code>.</dd>
+  <dt><span class="pill neutral">failed</span></dt><dd>The check couldn’t finish (for example, the migrations don’t build). We are alerted automatically and will email you. API status <code>failed</code>.</dd>
+</dl>
+
+<h2 id="summary">The summary</h2>
+<p>Under the headline is a short list of facts:</p>
+<dl class="defs">
+  <dt>Tables leaking</dt><dd>Every table holding personal data (email, phone, address, date of birth and similar) that the wrong people could read in the lab.</dd>
+  <dt>Readable by anyone</dt><dd>Tables an anonymous visitor could read with your public anon key. This is the worst case: no account needed.</dd>
+  <dt>Readable by anyone who signs up</dt><dd>Tables any signed-in user could read, including rows that belong to other people.</dd>
+  <dt>Lab proof</dt><dd><em>Passed</em> means the fix denied the anonymous visitor, denied the stranger, and still let the owner read their own rows. <em>Not passed</em> means a person is reviewing.</dd>
+  <dt>Risk of a visible change</dt><dd>Low, medium or high: how likely the fix is to change something your users notice, with the reason. A fix that removes access your frontend relied on is higher risk.</dd>
+  <dt>Questions for you</dt><dd>Business questions only you can answer, such as whether sellers’ emails should be public. Each comes with a recommended answer. See <a href="/docs/decisions#questions">questions</a>.</dd>
+</dl>
+
+<h2 id="identities">Who “the wrong people” are</h2>
+<p>The lab tests every table as three identities, with fake seeded rows in place:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Identity</th><th scope="col">Who it stands for</th><th scope="col">Should read</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">anon</th><td>An anonymous visitor using your public anon key, which ships inside your frontend</td><td>Only data you meant to publish</td></tr>
+    <tr><th scope="row">stranger</th><td>A signed-in user who owns nothing: anyone who can sign up</td><td>Nobody else’s private rows</td></tr>
+    <tr><th scope="row">owner</th><td>A signed-in user who owns a seeded row</td><td>Their own rows, still, after the fix</td></tr>
+  </tbody>
+</table></div>
+<p>The third test matters as much as the first two. A fix that locks everyone out would “close” the leak and break your app, so the owner must still read their own data for the proof to pass.</p>
+
+<h2 id="proof">The proof table</h2>
+<p>The report’s proof table shows, for each leaking table, how many seeded rows each identity could read before and after the fix. This is the one from the sample report:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Table</th><th scope="col">Who could read it</th><th scope="col">Verdict</th><th scope="col">Before</th><th scope="col">After</th><th scope="col">Result</th></tr></thead>
+  <tbody><tr><th scope="row"><code>profiles</code></th><td>anyone on the internet</td><td>bug</td><td><span class="red">anon 2, stranger 2</span></td><td><span class="green">anon 0, stranger 0, owner 1</span></td><td><span class="pill proven">closed</span></td></tr></tbody>
+</table></div>
+<ul>
+  <li><strong>Verdict</strong> is our judgement of the table. <em>bug</em> means personal data that shouldn’t be readable; data that looks deliberately public, such as a business’s own contact details, is called out separately and usually becomes a <a href="/docs/decisions#questions">question for you</a>.</li>
+  <li><strong>Before</strong> and <strong>After</strong> are row counts from the lab, not from your live database. We never see your real data.</li>
+  <li><strong>Result</strong> is <em>closed</em> when the after-counts pass all three tests.</li>
+</ul>
+
+<h2 id="fix">The fix</h2>
+<p>The fix is a SQL migration, written to be added to <code>supabase/migrations/</code> with a timestamped name so it runs after your existing migrations. It comes with a one-line explanation and the risk note. Here is the sample’s:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/20261109165600_patchlabs_leak_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Only allow users to read their own profile (where user_id = auth.uid())</span>
+<span class="del">DROP POLICY "Profiles are viewable by everyone" ON public.profiles;</span>
+<span class="add">CREATE POLICY "Users can view own profile" ON public.profiles</span>
+<span class="add">  FOR SELECT USING (auth.uid() = user_id);</span></code></pre></div>
+<p>If the fix also needs a change in your app’s code (for example, a page that listed every user’s profile), the report says so in plain words. Make that change too. <a href="/docs/applying-a-fix">How to apply a fix</a>.</p>
+
+<h2 id="decisions-receipt">Your decision and the signed receipt</h2>
+<p>If the check belongs to an app in your workspace and you’re signed in, the report shows a <strong>Your decision</strong> panel: approve the fix, or mark tables as meant to be readable, and answer any questions. <a href="/docs/decisions">How decisions work</a>. Below it, every finished report carries its <strong>signed receipt</strong>, which anyone can verify. <a href="/docs/receipts">About receipts</a>.</p>
+
+<h2 id="keys">Exposed keys</h2>
+<p>The report also lists any AI, payment or database keys found in your code <strong>or anywhere in its git history</strong>. A key deleted in a later commit is still readable by anyone who clones the repo.</p>
+<div class="callout warn"><p><strong>Rotate first, clean up second.</strong> If a key is listed, create a new one at the provider and revoke the old one. Rewriting git history alone doesn’t help: the old key may already have been copied.</p></div>
+
+<h2 id="run-details">Run details</h2>
+<p>The last line of the report records how long the run took and which models were tried. We start with the smallest Claude model and only move to a larger one if the lab proof fails, with a spending cap on every check. In our lab study, 15 of 20 apps needed only the smallest model (n=20, 9 Nov 2026).</p>
+
+<h2 id="in-review">When a report says “in review”</h2>
+<p>If no fix passes the strict proof on its own, the check goes to a person instead of guessing. In the same study, 18 of 20 fixes passed the lab proof with no human and 2 went to a person (n=20, 9 Nov 2026). You’ll get an email when the reviewed fix is ready; nothing changes in your repo meanwhile.</p>
+
+<h2 id="limits">What a report can’t tell you</h2>
+<div class="callout limit"><p>The lab is only as complete as the migrations in your repo. Policies or tables created by hand in the Supabase dashboard, and never saved as a migration, are invisible to us. We test read access to tables in the <code>public</code> schema, not every query your app makes, and a report is not a penetration test. If something looks wrong, <a href="mailto:manraj@patchlabs.dev?subject=Report%20question">email the founder</a> with the check link.</p></div>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Reading%20a%20report">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/verification" rel="prev"><span>Previous</span>Proving repo ownership</a><a class="next" href="/docs/applying-a-fix" rel="next"><span>Next</span>Applying a fix</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#status">The status</a></li><li><a href="#summary">The summary</a></li><li><a href="#identities">Who “the wrong people” are</a></li><li><a href="#proof">The proof table</a></li><li><a href="#fix">The fix</a></li><li><a href="#decisions-receipt">Your decision and the signed receipt</a></li><li><a href="#keys">Exposed keys</a></li><li><a href="#run-details">Run details</a></li><li><a href="#in-review">When a report says “in review”</a></li><li><a href="#limits">What a report can’t tell you</a></li></ul>
+</aside>
+</div>
+</main>

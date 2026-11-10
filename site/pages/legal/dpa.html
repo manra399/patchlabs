@@ -1,0 +1,116 @@
+<!--
+title: Data processing agreement | PatchLabs
+description: PatchLabs' data processing terms under UK GDPR Article 28: roles, instructions, security, subprocessors, breach notice, transfers and deletion.
+layout: marketing
+nav: legal
+head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
+-->
+<main id="main">
+  <div class="wrap wide docs legal">
+    <nav class="docs-nav" aria-label="Legal">
+      <details open><summary>Legal pages</summary>
+      <h2>Legal</h2>
+      <ul>
+        <li><a href="/legal/terms">Terms of service</a></li>
+        <li><a href="/legal/privacy">Privacy policy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa" aria-current="page">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies</a></li>
+      </ul>
+      <h2>Trust</h2>
+      <ul><li><a href="/security">Security</a></li><li><a href="/status">Status</a></li></ul>
+      </details>
+    </nav>
+    <article class="docs-main">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/legal/terms">Legal</a></li><li aria-current="page">Data processing</li></ol></nav>
+      <p class="draft-note">Draft for review, last updated 10 November 2026</p>
+      <h1>Data processing agreement</h1>
+      <p class="lede">For businesses whose repositories contain personal data they control. These terms form part of our <a href="/legal/terms">terms of service</a> and apply automatically when you use PatchLabs for a business.</p>
+
+      <div class="summary">
+        <h2>Need a signed copy?</h2>
+        <p class="mb-0">Email <a href="mailto:manraj@patchlabs.dev?subject=DPA">manraj@patchlabs.dev</a> with the subject “DPA” and your company’s legal name. We’ll send a countersigned copy of this agreement.</p>
+      </div>
+
+      <div class="prose">
+        <h2 id="roles"><span class="n">01</span>Roles</h2>
+        <p>“Customer” is the business using PatchLabs. “PatchLabs” is the provider described in the terms. For personal data contained in the repositories, reports and workspace content the Customer submits (“Customer Personal Data”), the Customer is the controller and PatchLabs is the processor. For account data (such as members’ email addresses and sign-in records), PatchLabs is a controller and the <a href="/legal/privacy">privacy policy</a> applies.</p>
+
+        <h2 id="scope"><span class="n">02</span>What we process</h2>
+        <div class="table-wrap"><table class="table stack-sm">
+          <tbody>
+            <tr><th scope="row">Subject matter</th><td>Providing PatchLabs: lab checks, fixes, reports, receipts, monitoring and alerts.</td></tr>
+            <tr><th scope="row">Duration</th><td>For as long as the Customer uses PatchLabs, then until deletion under section 9.</td></tr>
+            <tr><th scope="row">Nature and purpose</th><td>Cloning repositories, rebuilding databases in a disposable lab with synthetic data, analysing code with AI models, storing and delivering reports.</td></tr>
+            <tr><th scope="row">Types of personal data</th><td>Any personal data present in the submitted code, migrations, seed files or git history (for example names or emails in seed data or commit metadata); names and emails of workspace members recorded on decisions and answers.</td></tr>
+            <tr><th scope="row">Data subjects</th><td>The Customer’s staff, contractors and contributors; any individuals whose data appears in the submitted repositories.</td></tr>
+            <tr><th scope="row">Not processed</th><td>Data in the Customer’s live database. PatchLabs never connects to it.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h2 id="obligations"><span class="n">03</span>Our obligations</h2>
+        <p>PatchLabs will:</p>
+        <ul>
+          <li>process Customer Personal Data only on the Customer’s documented instructions (the terms, this agreement and the Customer’s use of the service), unless the law requires otherwise, in which case we’ll tell the Customer first unless that is prohibited;</li>
+          <li>make sure everyone authorised to process it is bound by confidentiality;</li>
+          <li>apply the security measures in Annex A;</li>
+          <li>help the Customer, taking into account the nature of the processing, to respond to data subject requests, and with security, breach notification, impact assessments and consultations with the ICO;</li>
+          <li>make available the information needed to show compliance with Article 28 UK GDPR, and answer reasonable security questionnaires.</li>
+        </ul>
+
+        <h2 id="subprocessors"><span class="n">04</span>Subprocessors</h2>
+        <p>The Customer gives general authorisation for PatchLabs to use the subprocessors listed in Annex B. We’ll email account owners at least 14 days before adding or replacing one. The Customer may object on reasonable data protection grounds; if we can’t address the objection, the Customer may stop using the affected part of the service and close their account. We impose data protection obligations on each subprocessor equivalent to these and remain responsible for them.</p>
+
+        <h2 id="breach"><span class="n">05</span>Personal data breaches</h2>
+        <p>We’ll notify the Customer without undue delay, and in any case within 48 hours, after becoming aware of a personal data breach affecting Customer Personal Data. The notice will describe what happened, the data and people likely affected, the likely consequences and what we are doing about it, with updates as we learn more.</p>
+
+        <h2 id="transfers"><span class="n">06</span>International transfers</h2>
+        <p>Where Customer Personal Data is transferred outside the UK, we rely on UK adequacy regulations (including the UK Extension to the EU-US Data Privacy Framework where the recipient participates) or the UK International Data Transfer Addendum to the EU standard contractual clauses.</p>
+
+        <h2 id="audits"><span class="n">07</span>Audits</h2>
+        <p>We hold no third-party certifications today. On request, and no more than once a year unless there has been a breach, we’ll answer a written questionnaire and walk the Customer through our pipeline and controls. On-site audits need reasonable notice and must not compromise other customers’ data.</p>
+
+        <h2 id="customer"><span class="n">08</span>Customer obligations</h2>
+        <p>The Customer confirms it has a lawful basis to submit the repositories and any personal data in them, that it is authorised to have them checked, and that its instructions comply with data protection law. We recommend not committing real personal data to repositories at all.</p>
+
+        <h2 id="deletion"><span class="n">09</span>Deletion</h2>
+        <p>The lab database for each check is deleted when the check ends, and the working copy of the repository within 30 days. When the Customer deletes an app, a workspace or its account, we delete the related reports, fixes and receipts from our database, except where the law requires us to keep them. On request, we’ll confirm deletion in writing.</p>
+
+        <h2 id="annex-a"><span class="n">A</span>Annex A: security measures</h2>
+        <ul>
+          <li><strong>No production access.</strong> Checks work only from the repository; we never connect to customers’ live apps or databases.</li>
+          <li><strong>Disposable lab.</strong> A new Postgres database per check, seeded with synthetic data and dropped when the check ends.</li>
+          <li><strong>Constrained AI agent.</strong> No web access; writes limited to the fix folder and the working copy; may run only the lab verifier; repo-supplied agent configuration removed before it runs; spend cap per check.</li>
+          <li><strong>Independent verification.</strong> Every fix is re-tested by a separate verifier on a freshly rebuilt lab before it is offered as proven.</li>
+          <li><strong>Authentication.</strong> Passwordless email links (single use, 20 minutes); sessions and API keys stored only as hashes; sessions revocable.</li>
+          <li><strong>Network.</strong> HTTPS for the website and API; webhooks limited to HTTPS public hosts.</li>
+          <li><strong>Integrity.</strong> Ed25519-signed receipts for every finished check, verifiable with our published public key.</li>
+          <li><strong>Data minimisation.</strong> Only a salted hash of IP addresses is stored; exposed keys are recorded masked; model costs and internal paths are not exposed to users.</li>
+          <li><strong>Access.</strong> Production systems are accessible only to the founder.</li>
+        </ul>
+
+        <h2 id="annex-b"><span class="n">B</span>Annex B: subprocessors</h2>
+        <div class="table-wrap"><table class="table stack-sm">
+          <thead><tr><th scope="col">Subprocessor</th><th scope="col">Purpose</th><th scope="col">Data</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Anthropic</th><td>AI models that write fixes and reports</td><td>Relevant code, migrations, lab results</td></tr>
+            <tr><th scope="row">Microsoft Azure</th><td>Hosting the API and database</td><td>Account data, checks, reports, receipts</td></tr>
+            <tr><th scope="row">GitHub</th><td>Website hosting; repository reads</td><td>Repository names and contents (public repos)</td></tr>
+            <tr><th scope="row">Spacemail by Spaceship</th><td>Email delivery</td><td>Recipient address, message content</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="legal-foot">Draft awaiting legal review. Where this agreement and the terms conflict on data protection, this agreement wins.</p>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul>
+        <li><a href="#roles">Roles</a></li><li><a href="#scope">What we process</a></li><li><a href="#obligations">Our obligations</a></li>
+        <li><a href="#subprocessors">Subprocessors</a></li><li><a href="#breach">Breaches</a></li><li><a href="#transfers">Transfers</a></li>
+        <li><a href="#audits">Audits</a></li><li><a href="#customer">Customer obligations</a></li><li><a href="#deletion">Deletion</a></li>
+        <li><a href="#annex-a">Annex A: security</a></li><li><a href="#annex-b">Annex B: subprocessors</a></li>
+      </ul>
+    </aside>
+  </div>
+</main>

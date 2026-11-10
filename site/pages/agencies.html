@@ -1,0 +1,179 @@
+<!--
+title: For agencies: keep every client app checked after handover | PatchLabs
+description: Monitor up to 10 client apps on one plan, with client labels, weekly re-checks, team seats, Slack-ready alerts and fixes your clients' engineers can approve.
+layout: marketing
+nav: agencies
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Agencies</li></ol></nav>
+      <p class="lab">For agencies</p>
+      <h1>Every client app you ship, still checked after handover.</h1>
+      <p class="lede">You built it fast with AI. The client keeps prompting after you leave. PatchLabs watches every client app on one plan and tells you the moment a new leak appears, with the fix already proven.</p>
+      <div class="row cta"><a class="btn primary large" href="/#check">Check a client app free</a><a class="btn secondary large" href="#pricing">Agency pricing</a></div>
+      <p class="meta-line">£99 / month for 10 apps · +£8 per extra app · 10 team seats</p>
+    </div>
+    <figure class="figure">
+      <div class="mock">
+        <div class="mock-bar"><span>workspace · <b>Your studio</b></span><span>7 of 10 apps</span></div>
+        <div class="table-wrap" style="border:0;border-radius:0">
+          <table class="table compact">
+            <caption class="sr-only">Example agency workspace with fictional client apps</caption>
+            <thead><tr><th scope="col">Client</th><th scope="col">Status</th><th scope="col" class="hide-sm">Next check</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Client A<span class="cell-note mono">studio/booking-app</span></th><td><span class="pill leak">new leak</span></td><td class="mono small hide-sm">running</td></tr>
+              <tr><th scope="row">Client B<span class="cell-note mono">studio/clinic-portal</span></th><td><span class="pill pending">in review</span></td><td class="mono small hide-sm">in 6 days</td></tr>
+              <tr><th scope="row">Client C<span class="cell-note mono">studio/shop-front</span></th><td><span class="pill proven">no leaks</span></td><td class="mono small hide-sm">in 3 days</td></tr>
+              <tr><th scope="row">Client D<span class="cell-note mono">studio/crm-lite</span></th><td><span class="pill proven">fix proven</span></td><td class="mono small hide-sm">in 5 days</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mock-foot">Example workspace · fictional clients</div>
+      </div>
+      <figcaption>The dashboard lists every app with its client label, status, and next scheduled check.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- What you get -->
+<section class="sec band" aria-labelledby="get-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">The agency plan</p>
+      <h2 id="get-h">One workspace for your whole portfolio.</h2>
+      <p>Everything here works today. What’s missing is listed further down.</p>
+    </div>
+    <div class="grid g3" data-reveal>
+      <div class="card"><span class="n-big">PORTFOLIO</span><h3>Client labels on every app</h3><p class="small muted">Name each repo after the client, so alerts and reports say “Client A” instead of a repo slug.</p></div>
+      <div class="card"><span class="n-big">SCHEDULE</span><h3>Weekly or monthly re-checks</h3><p class="small muted">Set per app. Each run is compared with the last, and only new leaks raise an alert.</p></div>
+      <div class="card"><span class="n-big">TEAM</span><h3>10 seats, owners and members</h3><p class="small muted">Invite your developers by email. Owners manage members, invites and the workspace webhook.</p></div>
+      <div class="card"><span class="n-big">ALERTS</span><h3>Into your Slack</h3><p class="small muted">One webhook URL for the workspace. Every finished check posts a one-line summary with the client name and report link.</p></div>
+      <div class="card"><span class="n-big">CI</span><h3>API keys for your pipelines</h3><p class="small muted">Trigger a re-check from any client’s GitHub Actions after a migration merges.</p></div>
+      <div class="card"><span class="n-big">CLIENTS</span><h3>Business questions in plain English</h3><p class="small muted">When the right fix depends on what the client intends, the report asks them directly, with a recommended answer.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Workflow -->
+<section class="sec" aria-labelledby="wf-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">How agencies use it</p>
+      <h2 id="wf-h">From handover to “we caught it first”.</h2>
+      <p class="lede">The value isn’t one clean report at launch. It’s being the one who tells the client about a leak, with the fix in hand, before anyone else finds it.</p>
+      <div class="callout note mt-3"><p><strong>Ownership.</strong> To add an app, someone with write access commits <code>patchlabs-verify.txt</code> with a one-time code. If you still have access to the client’s repo, you can do it yourself in a minute.</p></div>
+    </div>
+    <ol class="steps">
+      <li><h3>Add the client’s repo</h3><p>Give it a client label and a schedule. Public repos today; private repos come with our GitHub App.</p></li>
+      <li><h3>Verify and run the first check</h3><p>Commit the verification file. The first check queues straight away.</p></li>
+      <li><h3>Send the client the report</h3><p>Report links are public by link and written in plain English: what leaked, the fix, and the proof.</p></li>
+      <li><h3>Their engineer, or you, applies the fix</h3><p>A migration file to download or commit on GitHub. Nothing reaches production without a person.</p></li>
+      <li><h3>Weekly re-checks after handover</h3><p>A new leak posts to your Slack and emails your team, with a new proven fix ready.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- Pricing calculator -->
+<section class="sec band" id="pricing" aria-labelledby="pr-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Pricing</p>
+      <h2 id="pr-h">£99 a month for 10 apps. £8 for each one after.</h2>
+      <p class="lede">Every finding, every fix proven, on every app. No per-seat fees up to 10 people, and 200 manual or API runs a month on top of the scheduled re-checks.</p>
+      <ul class="ticks mt-3">
+        <li><span>10 apps included, more at £8 each</span></li>
+        <li><span>Weekly or monthly re-checks per app</span></li>
+        <li><span>10 team seats</span></li>
+        <li><span>Webhooks, API keys, badges and client labels</span></li>
+      </ul>
+      <p class="small muted">Card payments aren’t live yet. Request access and we set up your plan, usually within a day. <a href="/pricing">All plans</a>.</p>
+    </div>
+    <div class="calc" id="calc">
+      <label for="apps">Client apps <output id="apps-out" for="apps">10</output></label>
+      <input class="js-only" type="range" id="apps" min="1" max="60" step="1" value="10" aria-describedby="calc-math">
+      <div class="scale js-only" aria-hidden="true"><span>1</span><span>20</span><span>40</span><span>60</span></div>
+      <p class="total"><b id="total">£99</b><span>/ month</span></p>
+      <p class="math" id="calc-math">10 apps included in the agency plan</p>
+      <div class="table-wrap no-js-table"><table class="table compact">
+        <caption class="sr-only">Agency plan monthly price by number of apps</caption>
+        <thead><tr><th scope="col">Apps</th><th scope="col" class="num">Per month</th></tr></thead>
+        <tbody><tr><th scope="row">Up to 10</th><td class="num">£99</td></tr><tr><th scope="row">20</th><td class="num">£179</td></tr><tr><th scope="row">30</th><td class="num">£259</td></tr><tr><th scope="row">50</th><td class="num">£419</td></tr></tbody>
+      </table></div>
+      <a class="btn primary block mt-3" id="calc-cta" href="mailto:manraj@patchlabs.dev?subject=Agency%20plan%20request&amp;body=Apps%3A%2010">Request agency access</a>
+      <p class="small muted mt-2 mb-0" id="calc-note">Signed in? Request it from Settings → Plan, and we’ll set it up.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Not yet -->
+<section class="sec" aria-labelledby="ny-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Not built yet</p>
+      <h2 id="ny-h">What agencies ask for that we don’t have yet.</h2>
+      <p>We’d rather tell you now than have you find out after you sign up. Tell us which of these matters most and it moves up the list.</p>
+    </div>
+    <div class="grid g3">
+      <div class="card sunk"><span class="n-big">NOT YET</span><h3>Client-only logins</h3><p class="small muted">Everyone in a workspace sees every app in it. Until client views exist, share each client’s report link, which is public by link.</p></div>
+      <div class="card sunk"><span class="n-big">NOT YET</span><h3>White-label monthly reports</h3><p class="small muted">Reports carry PatchLabs branding today. A branded monthly summary per client is on the list.</p></div>
+      <div class="card sunk"><span class="n-big">COMING</span><h3>Private repos and automatic PRs</h3><p class="small muted">Both need our GitHub App. Until then: public repos, and fixes as a file or a one-click GitHub commit.</p></div>
+    </div>
+    <p class="mt-3"><a class="link-arrow" href="mailto:manraj@patchlabs.dev?subject=Agency%20feature%20request">Tell us what you need first</a></p>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div><p class="lab">Questions</p><h2 id="faq-h">Agency FAQ.</h2><p class="muted">Running more than 50 client apps? <a href="mailto:manraj@patchlabs.dev?subject=Enterprise">Talk to us</a> about an enterprise plan.</p></div>
+    <div>
+      <details class="acc"><summary>Can my clients see each other’s apps?</summary><div class="acc-body"><p>Only if you invite them into your workspace, because every member sees every app in it. Keep clients out of the workspace and send them their report links instead.</p></div></details>
+      <details class="acc"><summary>Do I need access to the client’s repo?</summary><div class="acc-body"><p>Someone with write access has to commit the verification file once. That can be you, or the client.</p></div></details>
+      <details class="acc"><summary>What if a client’s app doesn’t use Supabase?</summary><div class="acc-body"><p>The key scan still runs, but the leak lab needs a <code>supabase/migrations</code> folder to rebuild the database. Apps on other backends can’t be lab-tested yet.</p></div></details>
+      <details class="acc"><summary>Can I resell this to clients?</summary><div class="acc-body"><p>Many agencies include monitoring in a care plan. Talk to us before you put our name in a contract, so we can agree how it is described.</p></div></details>
+      <details class="acc"><summary>Is there a free trial?</summary><div class="acc-body"><p>Your first app is free forever, with monthly re-checks. Try it on one client app before you request the agency plan.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Start with the client app you worry about most.</h2>
+      <p class="lede">Paste the public repo. You’ll get the leaks, the fix and the proof on one page, ready to send.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-ag">Public GitHub repo</label><input id="repo-ag" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/studio/client-app"></div>
+        <div class="in"><label class="sr-only" for="email-ag">Your email</label><input id="email-ag" name="email" type="email" required autocomplete="email" placeholder="you@studio.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Want to talk it through? <a href="mailto:manraj@patchlabs.dev?subject=Agency%20plan">Email the founder</a></span></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var r = document.getElementById('apps'), out = document.getElementById('apps-out'), total = document.getElementById('total');
+  var math = document.getElementById('calc-math'), cta = document.getElementById('calc-cta'), note = document.getElementById('calc-note');
+  function price(n) { return 99 + Math.max(0, n - 10) * 8; }
+  function upd() {
+    var n = parseInt(r.value, 10), p = price(n);
+    out.textContent = n;
+    total.textContent = '£' + p;
+    math.textContent = n <= 10 ? (n + (n === 1 ? ' app' : ' apps') + ', within the 10 included · £' + (p / Math.max(n, 1)).toFixed(2) + ' per app')
+      : '£99 for 10 + ' + (n - 10) + ' × £8 · £' + (p / n).toFixed(2) + ' per app';
+    if (n < 4) math.textContent += '. For 3 apps or fewer, Maker at £19 may suit you better.';
+    cta.href = 'mailto:manraj@patchlabs.dev?subject=' + encodeURIComponent('Agency plan request') + '&body=' + encodeURIComponent('Apps: ' + n);
+  }
+  r.addEventListener('input', upd);
+  upd();
+  if (window.session && session.get()) { cta.href = '/app/settings'; cta.textContent = 'Request it in Settings'; note.textContent = 'You’re signed in: the request goes straight to us from Settings → Plan.'; }
+})();
+</script>
+
+</main>

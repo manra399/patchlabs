@@ -1,0 +1,143 @@
+<!--
+title: Sign in | PatchLabs
+description: Sign in to PatchLabs with a one-time link sent to your email. No passwords.
+layout: bare
+sitemap: no
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script>
+-->
+<header class="app-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <div class="right">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+      <a class="btn small ghost" href="/">Back to site</a>
+    </div>
+  </div>
+</header>
+<main id="main" class="app-main">
+  <div class="wrap">
+    <div class="auth-wrap" id="view" aria-live="polite">
+      <div class="panel">
+        <p class="lab">Sign in</p>
+        <h1>Sign in to PatchLabs</h1>
+        <noscript><p class="muted">Signing in needs JavaScript. If you can’t enable it, email <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a> and we’ll help.</p></noscript>
+        <div class="skeleton sk-line mt-3" style="height:46px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var esc = PL.esc, $ = PL.$;
+  var token = PL.qs('token'), invite = PL.qs('invite');
+  var safeNext = function (n) { return n && n.charAt(0) === '/' && n.charAt(1) !== '/' && n.indexOf('\\') < 0 ? n : null; };
+  var next = safeNext(PL.qs('next'));
+  var notice = PL.qs('signed_out') ? ['ok', 'You’re signed out.'] : PL.qs('deleted') ? ['ok', 'Your account and its data were deleted.'] : null;
+  // never leave a one-time token in the address bar or history
+  if (token || invite || notice) history.replaceState(null, '', '/app/login' + (next ? '?next=' + encodeURIComponent(next) : ''));
+
+  var view = $('view');
+  var mailIcon = '<div class="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+  var flash = function (text, kind) { try { sessionStorage.setItem('pl_flash', JSON.stringify({ text: text, kind: kind || 'ok' })); } catch (e) {} };
+  var go = function (dest) { location.replace(dest || '/app/'); };
+
+  function form(opts) {
+    opts = opts || {};
+    view.innerHTML = '<div class="panel">' +
+      (opts.callout || (notice ? '<div class="callout note"><p>' + esc(notice[1]) + '</p></div>' : '')) +
+      '<p class="lab">' + esc(opts.lab || 'Sign in') + '</p><h1>' + esc(opts.title || 'Sign in to PatchLabs') + '</h1>' +
+      '<p class="muted">' + (opts.lede || 'Enter your email and we’ll send you a one-time sign-in link. No passwords.') + '</p>' +
+      '<form id="f" novalidate><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>' +
+      '<button class="btn primary block" type="submit" id="send">Email me a sign-in link</button><p class="err" role="alert" id="err"></p></form>' +
+      '<p class="small muted mt-3 mb-0">New here? The same link creates your account and a personal workspace. By signing in you agree to the <a href="/legal/terms">terms</a> and <a href="/legal/privacy">privacy policy</a>.</p></div>';
+    var f = $('f'), em = $('email');
+    if (opts.email) em.value = opts.email;
+    em.focus();
+    f.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var email = em.value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('err').textContent = 'Enter a valid email address.'; em.focus(); return; }
+      var restore = PL.busy($('send'), 'Sending…'); $('err').textContent = '';
+      try {
+        var dest = invite ? '/app/login?invite=' + encodeURIComponent(invite) : next;
+        await api('/auth/start', { method: 'POST', auth: false, body: dest ? { email: email, next: dest } : { email: email } });
+        sent(email);
+      } catch (x) { restore(); $('err').textContent = x.status === 422 ? 'Enter a valid email address.' : x.message; }
+    });
+  }
+
+  function sent(email) {
+    view.innerHTML = '<div class="panel">' + mailIcon + '<p class="lab green">Link sent</p><h1>Check your inbox</h1>' +
+      '<p class="muted">If <b class="ink">' + esc(email) + '</b> can sign in, a link is on its way. It works once and expires in 20 minutes. Open it on this device to land back here.</p>' +
+      '<div class="callout note"><p>Nothing after a few minutes? Check spam, or send another link. You can ask for up to 5 an hour.</p></div>' +
+      '<div class="row"><button class="btn secondary" type="button" id="again">Send another link</button><button class="btn ghost" type="button" id="other">Use a different email</button></div>' +
+      '<p class="err" role="alert" id="err"></p></div>';
+    var again = $('again'), wait = 30;
+    var cool = function () {
+      again.disabled = true;
+      var t = setInterval(function () { wait--; again.textContent = wait > 0 ? 'Send another link (' + wait + 's)' : 'Send another link'; if (wait <= 0) { clearInterval(t); again.disabled = false; wait = 30; } }, 1000);
+    };
+    cool();
+    again.addEventListener('click', async function () {
+      var restore = PL.busy(again, 'Sending…');
+      try { await api('/auth/start', { method: 'POST', auth: false, body: { email: email, next: invite ? '/app/login?invite=' + encodeURIComponent(invite) : (next || undefined) } }); restore(); PL.toast('Another link is on its way', 'ok'); cool(); }
+      catch (x) { restore(); $('err').textContent = x.message; }
+    });
+    $('other').addEventListener('click', function () { notice = null; form(); });
+  }
+
+  function working(text) {
+    view.innerHTML = '<div class="panel"><p class="lab">Sign in</p><h1>' + esc(text) + '</h1><p class="muted mb-0"><span class="spin" aria-hidden="true"></span>One moment.</p></div>';
+  }
+
+  function problem(title, text, actions) {
+    view.innerHTML = '<div class="panel"><p class="lab red">Couldn’t finish</p><h1>' + esc(title) + '</h1><p class="muted">' + esc(text) + '</p><div class="row">' + actions + '</div></div>';
+  }
+
+  async function finish() {
+    working('Signing you in…');
+    try {
+      var r = await api('/auth/finish', { method: 'POST', auth: false, body: invite ? { token: token, invite: invite } : { token: token } });
+      session.set(r.session);
+      var dest = next || safeNext(r.next) || '/app/';
+      if (r.invite) {
+        if (r.invite.accepted) { PL.store.set('pl_ws', r.invite.workspace_id); flash('You joined ' + r.invite.workspace_name + '.'); }
+        else flash(r.invite.detail, 'warn');
+      }
+      go(dest);
+    } catch (x) {
+      token = null;
+      var expired = x.status === 400;
+      form({
+        lab: expired ? 'Link expired' : 'Sign in',
+        title: expired ? 'That link has expired or was already used' : 'We couldn’t sign you in',
+        lede: expired ? 'Sign-in links work once and last 20 minutes. Enter your email for a fresh one.' : esc(x.message),
+        callout: ''
+      });
+    }
+  }
+
+  async function acceptInvite() {
+    working('Joining the workspace…');
+    try {
+      var r = await api('/invites/accept', { method: 'POST', body: { invite: invite } });
+      PL.store.set('pl_ws', r.workspace_id); flash('You joined ' + r.workspace_name + '.');
+      go('/app/');
+    } catch (x) {
+      if (x.status === 401) { inviteForm(); return; }
+      problem('We couldn’t add you to that workspace', x.message, '<a class="btn primary" href="/app/">Go to your apps</a><button class="btn ghost" type="button" id="sw">Sign in with another email</button>');
+      $('sw').onclick = async function () { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} session.clear(); inviteForm(); };
+    }
+  }
+
+  function inviteForm() {
+    form({ lab: 'Invitation', title: 'You’ve been invited to a workspace', lede: 'Sign in with the email address the invite was sent to. We’ll email you a one-time link, and you’ll join as soon as you open it.' });
+  }
+
+  if (token) finish();
+  else if (invite && session.get()) acceptInvite();
+  else if (invite) inviteForm();
+  else if (session.get()) go(next || '/app/');
+  else form();
+})();
+</script>

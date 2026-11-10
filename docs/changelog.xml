@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>PatchLabs changelog</title>
+  <subtitle>What PatchLabs shipped, and when. Real entries only.</subtitle>
+  <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
+  <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
+  <id>https://patchlabs.dev/changelog</id>
+  <updated>2026-11-10T12:00:00Z</updated>
+  <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>PatchLabs v2: accounts, monitoring and proof anyone can verify</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#v2"/>
+    <id>https://patchlabs.dev/changelog#v2</id>
+    <updated>2026-11-10T12:00:00Z</updated>
+    <summary>New website; email-link accounts and workspaces; monitoring with weekly or monthly re-checks, diffs, email alerts and Slack-compatible webhooks; badges and public status; Ed25519-signed receipts; owner decisions and answers; REST API and API keys; remote MCP server; free RLS check with no sign-up; one-click commit of the fix on GitHub; plans.</summary>
+  </entry>
+  <entry>
+    <title>First public leak checks</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#v1"/>
+    <id>https://patchlabs.dev/changelog#v1</id>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <summary>Public leak checks from a GitHub repo with ownership proof, reports by email and a spend cap per check. Autonomous run on 20 new apps: 18 of 20 fixes passed the strict lab proof with no human (n=20); 15 needed only the smallest model; median model cost $0.46 and 3.5 minutes per app.</summary>
+  </entry>
+  <entry>
+    <title>Fix agents re-verified: 19 of 20 worked first time</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#study-5-nov"/>
+    <id>https://patchlabs.dev/changelog#study-5-nov</id>
+    <updated>2026-11-05T12:00:00Z</updated>
+    <summary>We re-verified 20 real fixes written by our agents: 19 of 20 worked first time and applied cleanly (n=20, 5 Nov 2026).</summary>
+  </entry>
+</feed>

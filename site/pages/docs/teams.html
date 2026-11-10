@@ -1,0 +1,119 @@
+<!--
+title: Teams, roles and agencies | PatchLabs docs
+description: PatchLabs workspaces, invites, owner and member roles, seats, client labels for agencies, handing apps over, and exporting or deleting your data.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Teams and agencies","item":"https://patchlabs.dev/docs/teams"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams" aria-current="page">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Teams and agencies</li></ol></nav>
+<p class="lab">Teams</p>
+<h1>Teams, roles and agencies</h1>
+<p class="lede">A workspace holds your apps, your team, your API keys and your webhook. Invite people by email, give them a role, and label each app with the client it belongs to.</p>
+<h2 id="sign-in">Signing in</h2>
+<p>There are no passwords. Enter your email on the <a href="/app/login">sign-in page</a> and we send a link that works once and expires in 20 minutes. Signing in keeps you signed in on that browser for 30 days, or until you sign out.</p>
+<p>Your first sign-in creates a personal workspace with you as its owner, and links any free checks you ran with the same email so they appear in your dashboard.</p>
+
+<h2 id="workspaces">Workspaces</h2>
+<p>Everything is grouped by workspace: apps, members, pending invites, API keys, the webhook and the plan. You can belong to several workspaces (your own, a client’s, an agency’s) and switch between them from the dashboard.</p>
+
+<h2 id="roles">Roles</h2>
+<p>There are two roles. Owners manage the workspace; members do the day-to-day work.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Action</th><th scope="col">Member</th><th scope="col">Owner</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">See apps, checks, reports and receipts</th><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Add, verify, edit and delete apps</th><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Run checks, change schedules, toggle badges</th><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Approve, reject and answer questions</th><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Create and revoke API keys</th><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Send a webhook test, request an upgrade</th><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Leave the workspace</th><td>Yes</td><td>Yes, if another owner remains</td></tr>
+    <tr><th scope="row">Rename the workspace, set the webhook URL</th><td>No</td><td>Yes</td></tr>
+    <tr><th scope="row">Invite people, cancel invites</th><td>No</td><td>Yes</td></tr>
+    <tr><th scope="row">Change roles, remove members</th><td>No</td><td>Yes</td></tr>
+  </tbody>
+</table></div>
+<p>A workspace always keeps at least one owner. To step down, make someone else an owner first.</p>
+
+<h2 id="invites">Inviting people</h2>
+<ol>
+  <li>In <strong>Settings → Team</strong>, enter their email and choose <em>member</em> or <em>owner</em>.</li>
+  <li>They get an email with a join link. It expires after 14 days.</li>
+  <li>They sign in <strong>with the address the invite was sent to</strong>, and they’re in. Someone already signed in can accept from the same link.</li>
+</ol>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/invites \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"email": "dev@client.com", "role": "member"}'</code></pre></div>
+<ul>
+  <li>Inviting the same address again replaces the earlier invite with a fresh link.</li>
+  <li>Pending invites count towards your seats, so cancel ones you no longer need.</li>
+  <li>If the workspace has no free seat when they accept, the invite asks the owner to upgrade.</li>
+</ul>
+
+<h2 id="seats">Seats</h2>
+<p>Free has 1 seat, Maker 2, Agency 10, and Enterprise whatever we agree. A seat is a member or a pending invite. <a href="/pricing">See plans</a>.</p>
+
+<h2 id="removing">Removing people</h2>
+<p>Owners can remove anyone; members can remove themselves. Removing someone doesn’t touch the apps, checks or decisions they made: their decisions keep their name in the receipts.</p>
+
+<h2 id="client-labels">Client labels</h2>
+<p>Each app can carry a short label, such as the client’s name. It shows in the dashboard and in every alert, so “New leak found in shop-app (Acme)” tells you whose app it is at a glance. Set it when adding the app or later:</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/apps/$APP_ID \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"client_label": "Acme"}'</code></pre></div>
+
+<h2 id="agencies">For agencies</h2>
+<p>Two set-ups work well. Pick by who should see what.</p>
+<div class="grid g2">
+  <div class="card"><h3>One agency workspace</h3><p>All client apps in your workspace, each with a client label. Your team sees everything, alerts name the client, and one Agency plan covers 10 apps (+£8 per extra app).</p></div>
+  <div class="card"><h3>A workspace per client</h3><p>Each client gets their own workspace and you’re a member or owner. Invite the client’s engineer so they receive alerts and can answer the business questions themselves.</p></div>
+</div>
+
+<h3 id="handover">Handing an app over</h3>
+<p>Apps can’t be moved between workspaces yet. To hand one over, the client adds the repo to their own workspace and verifies it (a new code, the same one-file step), and you delete it from yours. Deleting an app also deletes its checks, reports and receipts, so save any receipts you want to keep before you do.</p>
+
+<h2 id="your-data">Your data</h2>
+<ul>
+  <li><strong>Export:</strong> Settings → Your data → <strong>Download my data (JSON)</strong>, or <code>GET /me/export</code>, downloads everything we hold about you as JSON: profile, sessions, workspaces and apps, free checks, API keys you created, invites, upgrade requests, decisions and answers.</li>
+  <li><strong>Delete:</strong> Settings → Delete account → <strong>Delete my account</strong>, or <code>DELETE /me</code>. We delete your account, sessions and your free checks. A workspace you own alone is deleted with its apps, checks and keys; if it has other members, the longest-standing one becomes its owner instead. Your past decisions stay in receipts, signed as “a former member”.</li>
+</ul>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Teams,%20roles%20and%20agencies">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/receipts" rel="prev"><span>Previous</span>Signed receipts</a><a class="next" href="/docs/api" rel="next"><span>Next</span>REST API</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#sign-in">Signing in</a></li><li><a href="#workspaces">Workspaces</a></li><li><a href="#roles">Roles</a></li><li><a href="#invites">Inviting people</a></li><li><a href="#seats">Seats</a></li><li><a href="#removing">Removing people</a></li><li><a href="#client-labels">Client labels</a></li><li><a href="#agencies">For agencies</a></li><li><a href="#your-data">Your data</a></li></ul>
+</aside>
+</div>
+</main>

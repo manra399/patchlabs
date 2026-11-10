@@ -1,0 +1,142 @@
+<!--
+title: Monitoring | PatchLabs docs
+description: Add an app to PatchLabs and it is re-checked weekly or monthly, with run-now, a diff between checks, check history, and email and webhook alerts on new leaks.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Monitoring","item":"https://patchlabs.dev/docs/monitoring"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring" aria-current="page">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Monitoring</li></ol></nav>
+<p class="lab">Monitor</p>
+<h1>Monitoring</h1>
+<p class="lede">Add your app once and PatchLabs re-checks it on a schedule, shows you what changed since last time, and tells your team when a new leak appears.</p>
+<h2 id="add-an-app">Add an app</h2>
+<ol>
+  <li><a href="/app/login">Sign in</a> with your email. We send a magic link; there are no passwords. Your first sign-in creates a personal workspace, and any free checks you ran with that email appear in your dashboard.</li>
+  <li>Press <strong>Add app</strong> and enter the repo. Optionally add a <a href="/docs/teams#client-labels">client label</a> and choose a schedule.</li>
+  <li>Commit the <a href="/docs/verification#apps">verification file</a> with the app’s code and press verify. The app is verified for good and its first check is queued straight away.</li>
+</ol>
+<p>The same with the API (get your workspace ID from <code>GET /me</code>):</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/apps \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"repo": "you/your-app", "client_label": "Acme", "schedule": "monthly"}'
+<span class="c"># 201 → {"id": "…", "verified": false, "verify": {"file": "patchlabs-verify.txt", "code": "patchlabs-…", "add_url": "…"}, …}</span>
+
+curl -s -X POST https://api.patchlabs.dev/apps/$APP_ID/verify -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
+<p>Each repo can be added to a workspace once. Adding more apps than your plan allows answers <code>403</code> with the limit in plain words.</p>
+
+<h2 id="schedules">Schedules</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Schedule</th><th scope="col">What happens</th><th scope="col">Plans</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>monthly</code></th><td>A check every 30 days. The default.</td><td>All plans</td></tr>
+    <tr><th scope="row"><code>weekly</code></th><td>A check every 7 days</td><td>Maker, Agency, Enterprise</td></tr>
+    <tr><th scope="row"><code>off</code></th><td>No scheduled checks; run them yourself</td><td>All plans</td></tr>
+  </tbody>
+</table></div>
+<ul>
+  <li>The clock starts when the app is verified. Changing the schedule restarts it from that moment.</li>
+  <li>A scheduled check is skipped while another check for the app is still queued or running, and picked up on the next pass.</li>
+  <li>Scheduled checks don’t count towards your monthly run limit. They keep running even when you’ve used all your manual runs.</li>
+  <li>Every check reads the repo’s default branch as it is on GitHub at that moment.</li>
+</ul>
+<div class="code"><div class="code-bar"><span class="name">Change the schedule</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/apps/$APP_ID \
+  -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"schedule": "weekly"}'</code></pre></div>
+
+<h2 id="run-now">Run now</h2>
+<p>Press <strong>Run now</strong> in the apps list or <strong>Run check now</strong> on the app’s page, or call the API. It’s the quickest way to confirm a fix you’ve just shipped.</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/apps/$APP_ID/checks -H "Authorization: Bearer $PL_SESSION"
+<span class="c"># 201 → {"check_id": "…", "status": "queued", "url": "https://patchlabs.dev/check?id=…"}</span></code></pre></div>
+<ul>
+  <li><code>409</code> if a check for this app is already queued or running. Wait for it to finish.</li>
+  <li><code>429</code> once the workspace has used its manual runs for the month. Runs from the dashboard, the API, CI and the MCP server share the same allowance, which resets on the 1st of each month.</li>
+</ul>
+
+<h2 id="diff">What changed since last time</h2>
+<p>Each app compares its last two finished checks and sorts the leaking tables into four lists:</p>
+<dl class="defs">
+  <dt><code>new_leaks</code></dt><dd>Leaking now, not leaking last time. These trigger the “New leak found” email.</dd>
+  <dt><code>fixed</code></dt><dd>Leaking last time, not now.</dd>
+  <dt><code>still_leaking</code></dt><dd>Leaking both times.</dd>
+  <dt><code>suppressed</code></dt><dd>Leaking, but your team <a href="/docs/decisions#suppressions">marked it as intended</a>. No alert.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">GET /apps/{id} → diff</span></div><pre><code>"diff": {
+  "new_leaks": ["orders"],
+  "fixed": ["profiles"],
+  "still_leaking": [],
+  "suppressed": ["shops"],
+  "to_check_id": "…", "from_check_id": "…"
+}</code></pre></div>
+
+<h2 id="history">Check history</h2>
+<p>The app’s page lists its latest 50 checks, newest first, with how each one started (its <code>trigger</code>), when it finished, which tables leaked and whether the lab proof passed.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Trigger</th><th scope="col">Started by</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>verify</code></th><td>The first check, queued when the app was verified</td></tr>
+    <tr><th scope="row"><code>scheduled</code></th><td>The schedule</td></tr>
+    <tr><th scope="row"><code>manual</code></th><td>Run now, from the dashboard or <code>POST /apps/{id}/checks</code></td></tr>
+    <tr><th scope="row"><code>api</code></th><td>An API key: CI, the <a href="/docs/github-action">GitHub Action</a> or the <a href="/docs/mcp">MCP server</a></td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="notifications">Notifications</h2>
+<p>When an app’s check finishes, every member of the workspace gets an email, and the workspace webhook (if set) gets a POST.</p>
+<ul>
+  <li>The subject reads <strong>“New leak found in your-app (Acme)”</strong> when there is anything in <code>new_leaks</code>, and “PatchLabs check finished for …” otherwise.</li>
+  <li>The email lists new leaks, fixed tables, tables still leaking and tables marked as intended, with links to the report and the app.</li>
+  <li>If a check couldn’t finish, members aren’t emailed (we are, and we follow up); the webhook still receives it with status <code>failed</code>.</li>
+</ul>
+<p>Set up Slack, Discord or your own endpoint on the <a href="/docs/webhooks">webhooks</a> page.</p>
+
+<h2 id="plan-limits">Plan limits</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Plan</th><th scope="col" class="num">Apps</th><th scope="col">Schedules</th><th scope="col" class="num">Manual runs a month</th><th scope="col" class="num">Seats</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Free</th><td class="num">1</td><td>monthly</td><td class="num">4</td><td class="num">1</td></tr>
+    <tr><th scope="row">Maker</th><td class="num">3</td><td>weekly or monthly</td><td class="num">30</td><td class="num">2</td></tr>
+    <tr><th scope="row">Agency</th><td class="num">10</td><td>weekly or monthly</td><td class="num">200</td><td class="num">10</td></tr>
+    <tr><th scope="row">Enterprise</th><td class="num">agreed</td><td>agreed</td><td class="num">agreed</td><td class="num">agreed</td></tr>
+  </tbody>
+</table></div>
+<p>API keys, webhooks, badges and client labels are on every plan. See <a href="/pricing">pricing</a>. Card payments aren’t live yet: request an upgrade from your settings and we reply within a day.</p>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Monitoring">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/decisions" rel="prev"><span>Previous</span>Decisions and questions</a><a class="next" href="/docs/badge" rel="next"><span>Next</span>Badge</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#add-an-app">Add an app</a></li><li><a href="#schedules">Schedules</a></li><li><a href="#run-now">Run now</a></li><li><a href="#diff">What changed since last time</a></li><li><a href="#history">Check history</a></li><li><a href="#notifications">Notifications</a></li><li><a href="#plan-limits">Plan limits</a></li></ul>
+</aside>
+</div>
+</main>

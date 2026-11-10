@@ -1,0 +1,188 @@
+<!--
+title: Badge and proof page: a dated, public check result | PatchLabs
+description: An opt-in PatchLabs badge for your README or site that shows your app's last check result and date, linked to a public proof page. Free on every plan.
+layout: marketing
+nav: badge
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/how-it-works">Product</a></li><li aria-current="page">Badge &amp; proof page</li></ol></nav>
+      <p class="lab green">Badge &amp; proof page</p>
+      <h1>Show that you checked. Show exactly when.</h1>
+      <p class="lede">An opt-in badge for your README or website. It shows the result of your app’s last PatchLabs check and the date it ran, and links to a public page anyone can read. It never claims more than that check proved.</p>
+      <div class="row cta"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="#embed">Get the embed code</a></div>
+      <p class="meta-line">Every plan, including Free · off until you turn it on</p>
+    </div>
+    <figure class="figure">
+      <div class="readme">
+        <div class="mock-bar"><span>README.md</span><span class="pill plain">example</span></div>
+        <div class="readme-body">
+          <h3>your-app</h3>
+          <div class="badges">
+            <span class="fake-badge" aria-hidden="true"><span>build</span><span>passing</span></span>
+            <img src="/assets/pages/badge-example-green.svg" alt="PatchLabs: no known leaks · 9 Nov 2026 (example)" width="261" height="20">
+          </div>
+          <p>A booking app built with Lovable and Supabase.</p>
+          <p class="small">Click the badge to see when it was last checked and what was covered.</p>
+        </div>
+      </div>
+      <figcaption>A static example, rendered with the same code as the live badge. Repo and date are illustrative.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- States -->
+<section class="sec band" aria-labelledby="st-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What it says</p>
+      <h2 id="st-h">Four states, each with a precise meaning.</h2>
+      <p>The badge reads your app’s latest finished check. The date is always on it, so an old check looks old.</p>
+    </div>
+    <div class="badge-states">
+      <div class="badge-state"><img src="/assets/pages/badge-example-green.svg" alt="PatchLabs: no known leaks · 9 Nov 2026" width="261" height="20" loading="lazy"><div><h3>No known leaks</h3><p>The last finished check found no personal data readable by an anonymous visitor or a signed-in stranger, on the tables we test.</p></div></div>
+      <div class="badge-state"><img src="/assets/pages/badge-example-amber.svg" alt="PatchLabs: fix in progress · 9 Nov 2026" width="267" height="20" loading="lazy"><div><h3>Fix in progress</h3><p>The last check found a leak. The badge doesn’t hide it: it stays amber until a re-check comes back clean.</p></div></div>
+      <div class="badge-state"><img src="/assets/pages/badge-example-grey.svg" alt="PatchLabs: not checked yet" width="182" height="20" loading="lazy"><div><h3>Not checked yet</h3><p>The app is verified and public, but no check has finished yet.</p></div></div>
+      <div class="badge-state"><img src="/assets/pages/badge-example-private.svg" alt="PatchLabs: private" width="129" height="20" loading="lazy"><div><h3>Private</h3><p>The badge is switched off for this app, or the app isn’t verified. Nothing about the app is shown.</p></div></div>
+    </div>
+    <div class="callout limit mt-4"><p><strong>What the badge does not mean.</strong> “No known leaks” is the result of one dated check of who can read your database tables. It is not a certification, a guarantee, or a statement that the whole app is secure.</p></div>
+  </div>
+</section>
+
+<!-- Embed builder -->
+<section class="sec" id="embed" aria-labelledby="em-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Embed</p>
+      <h2 id="em-h">Copy, paste, done.</h2>
+      <p class="lede">Turn on “Public badge” on your app’s page in the dashboard, then paste its app ID here to get your snippet.</p>
+      <ol class="steps mt-4">
+        <li><h3>Add and verify your app</h3><p><a href="/app/login">Sign in</a>, add the repo and commit the verification file.</p></li>
+        <li><h3>Switch on the public badge</h3><p>On the app’s page. You can switch it off again at any time; it turns to “private” within the hour.</p></li>
+        <li><h3>Paste the snippet</h3><p>Markdown for a README, HTML for a website. The image is cached for an hour.</p></li>
+      </ol>
+    </div>
+    <div class="builder-out">
+      <div class="field js-badge" hidden>
+        <label for="app-id">Your app ID</label>
+        <input id="app-id" class="input mono" autocomplete="off" spellcheck="false" placeholder="e.g. 3f9a1c2e-…" aria-describedby="app-id-hint">
+        <span class="hint" id="app-id-hint">The long ID in your app page’s address: /app/app?id=…</span>
+        <p class="err" role="alert" id="app-id-err"></p>
+      </div>
+      <div class="preview-box js-badge" hidden aria-live="polite" id="preview">Your badge preview appears here.</div>
+      <div class="code">
+        <div class="code-bar"><span class="name">Markdown</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code id="snip-md">[![PatchLabs status](https://api.patchlabs.dev/badge/&lt;app-id&gt;.svg)](https://patchlabs.dev/proof?app=&lt;app-id&gt;)</code></pre>
+      </div>
+      <div class="code">
+        <div class="code-bar"><span class="name">HTML</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code id="snip-html">&lt;a href="https://patchlabs.dev/proof?app=&lt;app-id&gt;"&gt;&lt;img src="https://api.patchlabs.dev/badge/&lt;app-id&gt;.svg" alt="PatchLabs status" height="20"&gt;&lt;/a&gt;</code></pre>
+      </div>
+      <noscript><p class="small muted">Replace <code>&lt;app-id&gt;</code> with the ID from your app’s page.</p></noscript>
+    </div>
+  </div>
+</section>
+
+<!-- Proof page -->
+<section class="sec band" aria-labelledby="pp-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Proof page</p>
+      <h2 id="pp-h">Where the badge leads.</h2>
+      <p class="lede">Clicking the badge opens a public page for the app. It confirms the repo, the current state and when it was last checked, and nothing an attacker could use.</p>
+      <div class="fit mt-4">
+        <div><h3>Shows</h3><ul class="ticks compact small mb-0"><li><span>The repo name</span></li><li><span>The current state, as on the badge</span></li><li><span>The date of the last finished check</span></li><li><span>What a PatchLabs check covers, and what it doesn’t</span></li></ul></div>
+        <div><h3>Never shows</h3><ul class="ticks compact small mb-0"><li class="x"><span>Which tables leak, while a leak is open</span></li><li class="x"><span>Rows, columns or any data</span></li><li class="x"><span>The fix, or your report</span></li><li class="x"><span>Who is on your team</span></li></ul></div>
+      </div>
+    </div>
+    <div class="mock">
+      <div class="mock-bar"><span>patchlabs.dev/proof?app=…</span><span class="pill plain">example</span></div>
+      <div class="mock-body">
+        <p class="lab mb-1">Public status</p>
+        <h3 class="h3 mb-2">you/your-app</h3>
+        <dl class="kv">
+          <dt>State</dt><dd><span class="pill proven">no known leaks</span></dd>
+          <dt>Last checked</dt><dd>9 Nov 2026</dd>
+          <dt>Checked</dt><dd>Who can read personal data in the app’s database tables: an anonymous visitor, a signed-in stranger, and the owner.</dd>
+          <dt>Not checked</dt><dd>The rest of the app. This is not a certification.</dd>
+        </dl>
+      </div>
+      <div class="mock-foot">Illustrative layout · data from the public status endpoint</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div><p class="lab">Questions</p><h2 id="faq-h">Badge FAQ.</h2></div>
+    <div>
+      <details class="acc"><summary>Does the badge cost anything?</summary><div class="acc-body"><p>No. Badges are on every plan, including Free.</p></div></details>
+      <details class="acc"><summary>What happens if a new leak appears?</summary><div class="acc-body"><p>After the next finished check, the badge turns amber (“fix in progress”). It never pretends a leak isn’t there. The public page doesn’t name the table while the leak is open.</p></div></details>
+      <details class="acc"><summary>How fresh is it?</summary><div class="acc-body"><p>The image is cached for up to an hour. It always reads the latest finished check and shows that check’s date.</p></div></details>
+      <details class="acc"><summary>Can anyone make a badge for my repo?</summary><div class="acc-body"><p>No. Only a verified app with the badge switched on shows a result. Verification means committing a one-time code to the repo, which only someone with write access can do. Everything else shows “private”.</p></div></details>
+      <details class="acc"><summary>Can I verify the result myself?</summary><div class="acc-body"><p>Each finished check has an Ed25519-signed receipt. Your team can share a check link, and anyone can verify its receipt against our published key. <a href="/how-it-works#approval">How</a>.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Earn the green badge.</h2>
+      <p class="lede">Start with a free check. Fix what it finds, re-check, and switch the badge on.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-bd">Public GitHub repo</label><input id="repo-bd" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-bd">Your email</label><input id="email-bd" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var BADGE = 'https://api.patchlabs.dev/badge/', PROOF = 'https://patchlabs.dev/proof?app=';
+  var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var input = document.getElementById('app-id'), err = document.getElementById('app-id-err');
+  var md = document.getElementById('snip-md'), html = document.getElementById('snip-html'), prev = document.getElementById('preview');
+  document.querySelectorAll('.js-badge').forEach(function (el) { el.hidden = false; });
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fill(id) {
+    var shown = id || '<app-id>';
+    md.textContent = '[![PatchLabs status](' + BADGE + shown + '.svg)](' + PROOF + shown + ')';
+    html.textContent = '<a href="' + PROOF + shown + '"><img src="' + BADGE + shown + '.svg" alt="PatchLabs status" height="20"></a>';
+  }
+  var t;
+  input.addEventListener('input', function () {
+    clearTimeout(t);
+    var raw = input.value.trim(), m = raw.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i), id = m ? m[0].toLowerCase() : '';
+    err.textContent = '';
+    if (!raw) { fill(''); prev.textContent = 'Your badge preview appears here.'; return; }
+    if (!UUID.test(id)) { fill(''); prev.textContent = 'Waiting for a full app ID.'; if (raw.length > 30) err.textContent = 'That doesn’t look like an app ID. Copy it from your app page’s address.'; return; }
+    fill(id);
+    t = setTimeout(function () {
+      prev.textContent = '';
+      var img = new Image();
+      img.alt = 'Your live PatchLabs badge';
+      img.onerror = function () { img.replaceWith(document.createTextNode('The badge service didn’t answer. Try again in a minute.')); };
+      img.src = BADGE + id + '.svg';
+      prev.appendChild(img);
+      prev.insertAdjacentHTML('beforeend', '<span>Live from api.patchlabs.dev</span>');
+      api('/public/apps/' + id, { auth: false }).then(function (a) {
+        var s = { no_known_leaks: 'no known leaks', fix_in_progress: 'fix in progress', not_checked_yet: 'not checked yet' }[a.status] || a.status;
+        prev.insertAdjacentHTML('beforeend', '<span>· ' + esc(a.repo) + ': ' + esc(s) + '</span>');
+      }).catch(function () {
+        prev.insertAdjacentHTML('beforeend', '<span>· Not public yet: switch on “Public badge” on the app’s page.</span>');
+      });
+    }, 350);
+  });
+})();
+</script>
+
+</main>

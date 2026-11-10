@@ -1,0 +1,59 @@
+<!--
+title: Cookie notice: we set none | PatchLabs
+description: patchlabs.dev sets no cookies and runs no analytics. Your browser stores a session token and a theme choice in localStorage, and nothing else.
+layout: marketing
+nav: legal
+head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
+-->
+<main id="main">
+  <div class="wrap wide docs legal">
+    <nav class="docs-nav" aria-label="Legal">
+      <details open><summary>Legal pages</summary>
+      <h2>Legal</h2>
+      <ul>
+        <li><a href="/legal/terms">Terms of service</a></li>
+        <li><a href="/legal/privacy">Privacy policy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies" aria-current="page">Cookies</a></li>
+      </ul>
+      <h2>Trust</h2>
+      <ul><li><a href="/security">Security</a></li><li><a href="/status">Status</a></li></ul>
+      </details>
+    </nav>
+    <article class="docs-main">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/legal/terms">Legal</a></li><li aria-current="page">Cookies</li></ol></nav>
+      <p class="draft-note">Draft for review, last updated 10 November 2026</p>
+      <h1>We set no cookies.</h1>
+      <p class="lede">That’s why there’s no cookie banner. patchlabs.dev runs no analytics, no advertising and no tracking pixels.</p>
+
+      <div class="prose">
+        <h2 id="storage"><span class="n">01</span>What your browser does store</h2>
+        <p>Two small items in your browser’s <code>localStorage</code>. They never leave your device except as described, and we can’t read them from our side.</p>
+        <div class="table-wrap"><table class="table stack-sm">
+          <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Set when</th><th scope="col">Removed when</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>pl_session</code></th><td>Keeps you signed in. Sent to our API as an <code>Authorization</code> header, never as a cookie.</td><td>You sign in</td><td>You sign out or clear site data. Our API stops accepting it after 30 days.</td></tr>
+            <tr><th scope="row"><code>pl_theme</code></th><td>Remembers light or dark mode.</td><td>You press the theme button</td><td>You clear site data</td></tr>
+          </tbody>
+        </table></div>
+        <p>Both are strictly necessary for something you asked for (staying signed in, keeping your theme), so UK law (PECR) does not require a consent banner for them.</p>
+
+        <h2 id="thirdparty"><span class="n">02</span>Files loaded from other services</h2>
+        <p>Pages load fonts from Google Fonts (<code>fonts.googleapis.com</code>, <code>fonts.gstatic.com</code>), and the report page loads two open-source libraries from cdnjs (<code>cdnjs.cloudflare.com</code>). Those requests go to the providers’ own domains, which see your IP address and browser details. patchlabs.dev does not ask them to set cookies, and any they use are governed by their own policies. The site is hosted on GitHub Pages, which keeps standard server logs.</p>
+
+        <h2 id="clear"><span class="n">03</span>How to clear it</h2>
+        <p>Sign out to remove <code>pl_session</code>. To remove everything, clear “site data” for patchlabs.dev in your browser settings. The site works without either item: you’ll just need to sign in again, and the theme will follow your device setting.</p>
+
+        <h2 id="changes"><span class="n">04</span>If this changes</h2>
+        <p>If we ever add analytics, we’ll use a cookieless, self-hosted tool, update this page first and say so on the <a href="/changelog">changelog</a>. More in the <a href="/legal/privacy">privacy policy</a>.</p>
+      </div>
+      <p class="legal-foot">Draft awaiting legal review.</p>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#storage">What we store</a></li><li><a href="#thirdparty">Other services</a></li><li><a href="#clear">Clearing it</a></li><li><a href="#changes">Changes</a></li></ul>
+    </aside>
+  </div>
+</main>

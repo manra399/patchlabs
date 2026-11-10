@@ -1,0 +1,200 @@
+<!--
+title: PatchLabs vs Supabase Security Advisor | PatchLabs
+description: Supabase Security Advisor flags risky database rules for free. PatchLabs rebuilds your database, tests it as three people and proves the fix. Use both.
+layout: marketing
+head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
+-->
+<main id="main">
+
+<section class="page-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/compare">Compare</a></li><li aria-current="page">Supabase Security Advisor</li></ol></nav>
+    <p class="lab">PatchLabs vs Supabase Security Advisor</p>
+    <h1>The Advisor says a rule looks risky. PatchLabs proves who can read the rows.</h1>
+    <p class="lede">Supabase’s Security Advisor is free, built into every project and worth running. It checks your database against documented rules. PatchLabs rebuilds your database from your migrations, tests it as three different people, writes the fix and proves it. Most teams should use both.</p>
+    <div class="meta-line"><span>Last checked 10 Nov 2026</span><span>Sources at the end</span><span>Independent of Supabase</span></div>
+  </div>
+</section>
+
+<section class="sec tight" aria-label="Summary">
+  <div class="wrap">
+    <div class="verdict">
+      <div>
+        <p class="who">Choose the Security Advisor when</p>
+        <h2>You want instant, free checks on the database that’s actually running.</h2>
+        <ul class="ticks">
+          <li>You want results in seconds, inside Supabase Studio, the CLI or their MCP server</li>
+          <li>You also want performance and health checks, which we don’t do</li>
+          <li>You changed policies in the dashboard without a migration: the Advisor sees your live project, we only see your repo</li>
+          <li>You’re comfortable writing and testing the fix yourself</li>
+        </ul>
+      </div>
+      <div>
+        <p class="who">Choose PatchLabs when</p>
+        <h2>You want the fix written, and proof that it works, before it ships.</h2>
+        <ul class="ticks">
+          <li>You want every fix tested as an anonymous visitor, a signed-in stranger and the owner</li>
+          <li>Your code lives in GitHub (exported from Lovable, Bolt, Replit or Cursor) and you want a migration to review</li>
+          <li>You need to know whether a “permissive” table is actually leaking personal data, or meant to be public</li>
+          <li>You want scheduled re-checks, alerts, keys found in git history and signed receipts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="table-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Side by side</p>
+      <h2 id="table-h">Same database, two different questions.</h2>
+      <p>The Advisor asks “does this database break a known rule?” PatchLabs asks “who can actually read these rows, and does the fix stop them?”</p>
+    </div>
+    <div class="table-wrap">
+      <table class="table compare pair">
+        <caption class="sr-only">PatchLabs compared with Supabase Security Advisor</caption>
+        <thead><tr><th scope="col"></th><th scope="col" class="us">PatchLabs</th><th scope="col">Supabase Security Advisor</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">What it is</th><td class="us">A lab check that starts from your GitHub repo</td><td>Deterministic lints built into every Supabase project</td></tr>
+          <tr><th scope="row">What it looks at</th><td class="us">Your <code>supabase/migrations</code>, code and full git history</td><td>Your live project’s database</td></tr>
+          <tr><th scope="row">How it decides</th><td class="us"><span class="yes">Runs real queries as anon, a signed-in stranger and the owner on a rebuilt copy</span></td><td><span class="part">Documented rules</span><span class="cell-note">e.g. RLS disabled in public, sensitive columns exposed, permissive policy</span></td></tr>
+          <tr><th scope="row">Writes the fix</th><td class="us"><span class="yes">SQL migration, plus code notes</span></td><td><span class="part">Docs suggest SQL</span><span class="cell-note">You write and apply it</span></td></tr>
+          <tr><th scope="row">Tests the fix</th><td class="us"><span class="yes">Every fix, as three identities, before you see it</span></td><td><span class="part">You re-run the lints</span><span class="cell-note">Some lint docs explain how to verify</span></td></tr>
+          <tr><th scope="row">Tables meant to be public</th><td class="us"><span class="yes">Asks you in plain English, then remembers your answer</span></td><td><span class="part">Docs note some findings may be intentional</span></td></tr>
+          <tr><th scope="row">Keys in code and git history</th><td class="us"><span class="yes">AI, payment and database keys</span></td><td><span class="no">Not in scope</span></td></tr>
+          <tr><th scope="row">Performance and health checks</th><td class="us"><span class="no">No</span></td><td><span class="yes">Yes, alongside security</span></td></tr>
+          <tr><th scope="row">Monitoring and alerts</th><td class="us"><span class="yes">Scheduled re-checks, email, webhook</span></td><td><span class="part">On demand</span><span class="cell-note">Scheduled runs and email alerts not described in the docs</span></td></tr>
+          <tr><th scope="row">Connects to your live database</th><td class="us"><span class="yes">Never</span></td><td>It is your project’s own tool, so it reads your live project</td></tr>
+          <tr><th scope="row">For agents</th><td class="us">Remote MCP server</td><td>Supabase MCP server (<code>get_advisors</code>)</td></tr>
+          <tr><th scope="row">Time</th><td class="us"><b>Median 3.5 min</b> to a proven fix<span class="cell-note">Lab study, n=20, 9 Nov 2026</span></td><td>Instant</td></tr>
+          <tr><th scope="row">Price</th><td class="us"><b>Free for 1 app</b><span class="cell-note">Then from £19/month</span></td><td>Included in every Supabase project</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Last checked 10 Nov 2026 against Supabase’s public docs. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="map-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Engineers</p>
+      <h2 id="map-h">Advisor lints and our findings, mapped.</h2>
+      <p>Our free RLS check and full reports use stable finding IDs. This is the closest match to Supabase’s lint IDs. The rules aren’t identical; it’s a reading aid, not an official mapping.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="table map">
+        <caption class="sr-only">Supabase Security Advisor lint IDs mapped to PatchLabs finding IDs</caption>
+        <thead><tr><th scope="col">Supabase lint</th><th scope="col">Closest PatchLabs finding</th><th scope="col">What the lab adds</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><code>0013</code> RLS disabled in public</th><td><code>PL-008</code> RLS never enabled</td><td>Shows whether anyone can actually read rows, and which columns</td></tr>
+          <tr><th scope="row"><code>0023</code> sensitive columns exposed</th><td><code>PL-001</code> anon can read personal data</td><td>Runs the read as an anonymous visitor and counts the rows returned</td></tr>
+          <tr><th scope="row"><code>0024</code> permissive RLS policy</th><td><code>PL-005</code> always-true policy · <code>PL-002</code> any signed-in user reads all rows</td><td>Separates real leaks from tables meant to be public, then asks you</td></tr>
+          <tr><th scope="row"><code>0008</code> RLS enabled, no policy</th><td><code>PL-003</code> RLS enabled but no policies</td><td>Checks the owner can still read their own rows after the fix</td></tr>
+          <tr><th scope="row"><code>0011</code> function search path mutable · <code>0028</code>/<code>0029</code> security definer function executable</th><td><code>PL-006</code> SECURITY DEFINER function without <code>search_path</code>, or granted to anon</td><td>Flags it in the report; the fix migration sets the search path or revokes the grant</td></tr>
+          <tr><th scope="row"><code>0025</code> public bucket allows listing</th><td><code>PL-007</code> storage bucket made public in a migration</td><td>Related, not identical: we read it from your migrations</td></tr>
+          <tr><th scope="row">No direct match in the lints we reviewed</th><td><code>PL-004</code> UPDATE policy without <code>WITH CHECK</code></td><td>Catches updates that let a user move a row to someone else</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row mt-3"><a class="btn secondary" href="/tools/rls-check">Run the free RLS check</a><a class="btn ghost" href="/findings">Finding index</a></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="behaviour-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab green">Behaviour, not lint</p>
+      <h2 id="behaviour-h">A rule can look fine and still leak. Or look risky and be exactly right.</h2>
+      <p class="lede">A product catalogue that anyone can read is meant to be public. A profiles table with a policy that looks scoped can still return every row to a signed-in stranger. Only running the query as each person tells you which is which.</p>
+      <div class="callout limit mt-3"><p><strong>Our limit.</strong> The lab is only as complete as the migrations in your repo. If you changed a policy in the Supabase dashboard without a migration, the Advisor sees it and we don’t. Our report says what it couldn’t check.</p></div>
+    </div>
+    <figure class="figure">
+      <div class="window">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab · two tables, two answers</span></div>
+<pre class="transcript lines" aria-label="Illustration: the lab separates an intended public table from a real leak">
+<span class="ln"><span class="step">[PROBE]</span>   <span class="k">anon</span> → public.products</span>
+<span class="ln"><span class="dim">          12 rows · name, price</span></span>
+<span class="ln"><span class="dim">          no personal columns</span></span>
+<span class="ln"><span class="step">[ASK]</span>     Meant to be public?</span>
+<span class="ln"><span class="dim">          recommended: yes, mark intended</span></span>
+<span class="ln"> </span>
+<span class="ln"><span class="step">[PROBE]</span>   <span class="k">stranger</span> → public.profiles</span>
+<span class="ln"><span class="dim">          2 rows · </span>email <span class="redact">•••••@•••••</span>   <span class="leak">LEAK</span></span>
+<span class="ln"><span class="step">[PROVE]</span>   after fix: <span class="k">stranger</span> 0 rows <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">owner</span> → own row        <span class="ok">OK</span></span>
+</pre>
+        <div class="window-foot"><span class="pill proven">proven</span><span>Illustration · synthetic data</span></div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="together-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Use both</p>
+      <h2 id="together-h">A sensible routine for a Supabase app.</h2>
+    </div>
+    <ol class="flow">
+      <li><h3>Run the Advisor</h3><p>Open Security Advisor in Supabase Studio, or run it from the CLI. Fix anything that’s obviously a mistake.</p><span class="when">seconds, free</span></li>
+      <li><h3>Paste your repo here</h3><p>PatchLabs rebuilds the database from your migrations and tests every table as three people.</p><span class="when">median 3.5 min</span></li>
+      <li><h3>Approve the proven fix</h3><p>Download the migration or commit it on GitHub in one click. Answer any business questions.</p><span class="when g">your engineer decides</span></li>
+      <li><h3>Keep both running</h3><p>Re-run the Advisor after dashboard changes; let PatchLabs re-check on a schedule and email you if a leak returns.</p><span class="when">weekly or monthly</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Asked about the Advisor.</h2>
+    </div>
+    <div>
+      <details class="acc"><summary>If the Advisor shows no errors, am I safe?</summary><div class="acc-body"><p>It means your database doesn’t break the rules it checks. It doesn’t run queries as different users, so a policy that looks correct but still returns other people’s rows can pass. That is the gap our lab tests. Neither tool can promise an app is secure.</p></div></details>
+      <details class="acc"><summary>Does PatchLabs connect to my Supabase project?</summary><div class="acc-body"><p>No. We never need your database password or service-role key. We rebuild a disposable copy from the migrations in your public GitHub repo, with Supabase’s roles, auth functions and default grants, seeded with fake rows.</p></div></details>
+      <details class="acc"><summary>Why would a lint flag a table that’s fine?</summary><div class="acc-body"><p>Some tables are meant to be readable by anyone, such as a public product list. Supabase’s docs acknowledge findings can be intentional. Our report asks you in plain English, with a recommended answer, and remembers when you mark a table as intended.</p></div></details>
+      <details class="acc"><summary>Which should I run first?</summary><div class="acc-body"><p>The Advisor, because it’s instant and already in your project. Then run PatchLabs for proof that the fix works as each kind of user.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="src-h">
+  <div class="wrap narrow">
+    <p class="lab">Sources</p>
+    <h2 id="src-h" class="h-md">Where these facts come from.</h2>
+    <ul class="sources">
+      <li><span><a href="https://supabase.com/docs/guides/database/database-advisors" rel="noopener">Supabase docs: Database Advisors</a> · lint IDs, levels, remediation and false-positive notes, access via Studio, CLI, MCP and Management API</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="https://supabase.com/pricing" rel="noopener">Supabase pricing</a> · Advisors are built into projects; the pricing page doesn’t mention plan gating</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="/research/methodology">PatchLabs methodology</a> · the 3.5-minute median (n=20, 9 Nov 2026)</span><span class="when">ours</span></li>
+    </ul>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Supabase.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="cta-cmps">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="cta-cmps">See the proof for your own app. The first one is free.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page, in a few minutes.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-cmps">Public GitHub repo</label>
+          <input id="repo-cmps" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-cmps">Your email</label>
+          <input id="email-cmps" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/sample-report">See a sample proof report</a></span><span><a href="/compare">All comparisons</a></span><span>Prefer a person? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
+    </div>
+  </div>
+</section>
+</main>

@@ -1,0 +1,241 @@
+<!--
+title: Methodology: how PatchLabs measured data exposure and fixes | PatchLabs
+description: How we sampled 500 public repos, rebuilt 318 databases from their migrations, defined a leak, and judged 40 fixes with a strict three-identity lab proof. Every number on the site traces here.
+layout: marketing
+nav: research
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Methodology: how PatchLabs measured data exposure and fixes","datePublished":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+
+<header class="rpt-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Methodology</li></ol></nav>
+    <p class="lab">Methodology · open</p>
+    <h1>How we measured it, and how you can check us.</h1>
+    <p class="lede">Every number on this site comes from one of four small studies. This page says how each was run, what each word in our claims means, how fixes were judged, and what the numbers do not show.</p>
+    <ul class="rpt-meta">
+      <li>Last updated <b>10 Nov 2026</b></li>
+      <li>Author <b>Manraj Singh Dhillon</b></li>
+      <li>Data <b><a href="/research/1-in-4-aggregate.csv">aggregate CSV</a></b></li>
+      <li>Report <b><a href="/research/1-in-4">The 1-in-4 Report</a></b></li>
+    </ul>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="rpt">
+  <nav class="rpt-toc" data-scrollspy aria-label="Methodology contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#studies">The four studies</a></li>
+      <li><a href="#sample">Choosing the repos</a></li>
+      <li><a href="#rebuild">What “rebuilt” means</a></li>
+      <li><a href="#leak">What counts as a leak</a></li>
+      <li><a href="#adjust">The 1-in-4 adjustment</a></li>
+      <li><a href="#fixes">How fixes were made</a></li>
+      <li><a href="#judging">How fixes were judged</a></li>
+      <li><a href="#cost">Cost and time basis</a></li>
+      <li><a href="#keys">The key scan</a></li>
+      <li><a href="#ethics">What we didn’t do</a></li>
+      <li><a href="#repro">Reproducing it</a></li>
+      <li><a href="#changes">Changes</a></li>
+    </ol>
+  </nav>
+
+  <div class="rpt-body">
+
+    <section id="studies" aria-labelledby="studies-h">
+      <p class="lab">01 · Scope</p>
+      <h2 id="studies-h">Four studies, each with its own sample.</h2>
+      <p>We keep the studies separate because they answer different questions with different samples. Every claim on the site names which one it comes from and its sample size.</p>
+      <div class="table-wrap mt-3">
+        <table class="table">
+          <thead><tr><th scope="col">Study</th><th scope="col">Date</th><th scope="col" class="num">Sample</th><th scope="col">Question</th><th scope="col">Headline result</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Exposure study</th><td>Nov 2026</td><td class="num">318 apps</td><td>Who can read personal data in a rebuilt AI-built app?</td><td>106 of 318 (33%); about 25–28% after false alarms</td></tr>
+            <tr><th scope="row">Fix-agent study</th><td>5 Nov 2026</td><td class="num">24 apps</td><td>Can agents write fixes that work, re-checked by hand?</td><td>19 of 20 real fixes worked first time; 4 false alarms caught</td></tr>
+            <tr><th scope="row">Model trial</th><td>9 Nov 2026</td><td class="num">3 apps</td><td>Does a smaller, cheaper model hold up?</td><td>Average $0.25 per app on Haiku vs $2.26 on Opus, behind a strict proof</td></tr>
+            <tr><th scope="row">Autonomous pipeline</th><td>9 Nov 2026</td><td class="num">20 apps</td><td>End to end with no human: how many fixes pass, at what cost?</td><td>18 of 20 passed; median $0.46 and 3.5 minutes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted mt-2">The fix-agent study and the autonomous pipeline drew their apps from the exposure study’s leaking apps. The 20 pipeline apps had never been through a fix agent before.</p>
+    </section>
+
+    <section id="sample" aria-labelledby="sample-h">
+      <p class="lab">02 · Sample</p>
+      <h2 id="sample-h">Choosing the repos.</h2>
+      <ul class="ticks">
+        <li class="dash"><span><strong>Population:</strong> public GitHub repos with a Lovable/Supabase project layout, the shape these builders export (a frontend plus a <code>supabase/</code> folder with migrations).</span></li>
+        <li class="dash"><span><strong>Sample:</strong> a random sample of 500 of them. We ran 436 of them through the lab.</span></li>
+        <li class="dash"><span><strong>Included:</strong> the 318 whose migrations built a working database. The other 118 failed to build (missing files, errors, or SQL our lab could not apply) and are excluded from every rate. They are not counted as safe.</span></li>
+        <li class="dash"><span><strong>Not selected for:</strong> popularity, stars, activity, or any sign of a leak.</span></li>
+      </ul>
+      <div class="callout limit mt-3"><p>Public repos are not all apps. Private and commercial apps may have different habits, and a repo can lag behind or differ from what is deployed. Read the rates as “public AI-built repos of this layout”, not “every AI-built app”.</p></div>
+    </section>
+
+    <section id="rebuild" aria-labelledby="rebuild-h">
+      <p class="lab">03 · The lab</p>
+      <h2 id="rebuild-h">What “rebuilt from its migrations” means.</h2>
+      <p>For each repo the lab creates a fresh, disposable Postgres database on our own machine and gives it the parts of Supabase that access rules depend on:</p>
+      <ul class="ticks">
+        <li class="dash"><span>the API roles: <code>anon</code> (the public key), <code>authenticated</code> (any signed-in user) and <code>service_role</code>;</span></li>
+        <li class="dash"><span>the auth helper functions policies call, such as <code>auth.uid()</code>, <code>auth.role()</code> and <code>auth.jwt()</code>, reading the simulated user from the request claims;</span></li>
+        <li class="dash"><span>Supabase’s default grants, so a table is exposed to the API roles exactly as it would be on a project with those defaults.</span></li>
+      </ul>
+      <p>It then applies every file in <code>supabase/migrations</code> in filename order, the way Supabase does, and reads the final state. Later migrations override earlier ones, so a rule that was opened and later closed counts as closed.</p>
+      <div class="bignums" style="--cols:3">
+        <div class="bignum"><b>2–1,272</b><span>migrations per repo in the 20-app run (median 45.5)</span></div>
+        <div class="bignum"><b>6–389</b><span>tables per rebuilt database (median 32)</span></div>
+        <div class="bignum"><b>2<small>s</small></b><span>median rebuild time (slowest 62 s)</span></div>
+      </div>
+      <p class="mt-3">Then it seeds fake rows: a test row in each table, owned by a first test user wherever the table has an owner column (<code>user_id</code>, <code>owner_id</code>, <code>created_by</code> and similar). A second test user plays the stranger. All values are made up; no real person’s data is ever in the lab. The database is thrown away after the run.</p>
+    </section>
+
+    <section id="leak" aria-labelledby="leak-h">
+      <p class="lab red">04 · Definitions</p>
+      <h2 id="leak-h">What counts as a leak.</h2>
+      <p>We read every table as three identities. The SQL below is simplified from what the lab runs.</p>
+      <div class="grid g3 top mt-3">
+        <div class="card"><span class="n-big">ANONYMOUS VISITOR</span><p>The <code>anon</code> role with no user claims: anyone holding the public key, which ships in every page of the app.</p></div>
+        <div class="card"><span class="n-big">SIGNED-IN STRANGER</span><p>The <code>authenticated</code> role with the claims of a seeded user who owns none of the rows being read. Anyone who can sign up.</p></div>
+        <div class="card"><span class="n-big">OWNER</span><p>The <code>authenticated</code> role with the claims of the user who owns the row. Used to check fixes don’t lock real users out.</p></div>
+      </div>
+      <div class="code mt-3">
+        <div class="code-bar"><span class="name">lab: reading a table as each identity (simplified)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- anonymous visitor</span>
+set local role anon;
+select count(*), count(email) from public.profiles;
+<span class="c">-- signed-in stranger: a seeded user who owns none of these rows</span>
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"&lt;stranger id&gt;","role":"authenticated"}', true);
+select count(*), count(email) from public.profiles;
+<span class="c">-- owner</span>
+select set_config('request.jwt.claims', '{"sub":"&lt;owner id&gt;","role":"authenticated"}', true);
+select count(*), count(email) from public.profiles where id = '&lt;owner id&gt;';</code></pre>
+      </div>
+      <dl class="kv mt-3">
+        <dt>Personal data</dt><dd>A column whose name indicates an email, phone number (including mobile and WhatsApp), postal address or date of birth, or an identity or bank number such as passport, SSN, national ID or IBAN. Technical “addresses” (wallet, IP, server, contract) are excluded. Only tables in the <code>public</code> schema, which the Supabase API exposes, are tested.</dd>
+        <dt>Readable</dt><dd>The identity’s query returns at least one seeded row that includes a personal column the identity should not see.</dd>
+        <dt>Wrong people</dt><dd>The anonymous visitor, or a signed-in stranger reading rows that aren’t theirs.</dd>
+        <dt>Per app</dt><dd>An app counts once, under the widest audience that can read its personal data: “anyone” if the anonymous visitor can, otherwise “signed-in” if a stranger can.</dd>
+      </dl>
+    </section>
+
+    <section id="adjust" aria-labelledby="adjust-h">
+      <p class="lab">05 · Adjustment</p>
+      <h2 id="adjust-h">From 33% to about 1 in 4.</h2>
+      <p>Column names can’t tell a person’s phone number from a shop’s. So the raw rate (106 of 318, 33%) includes some businesses’ own public contact details, which are meant to be visible.</p>
+      <p>We estimate how many from the fix-agent study, where agents read each flagged app’s code and judged intent: 4 of 24 flagged apps (about 1 in 6) were a business’s own public contact details. Removing that share from the 106 leaves about 88 apps, 28% of 318. Because the false-alarm rate comes from only 24 apps, we report a range of <strong>25–28%</strong>, and round it to “about 1 in 4”.</p>
+      <div class="callout note"><p>Where the site says “1 in 4”, the exact counts are 106 of 318 (33%) raw: 70 to anyone and 36 to signed-in strangers. We always show those next to the rounded figure.</p></div>
+    </section>
+
+    <section id="fixes" aria-labelledby="fixes-h">
+      <p class="lab">06 · Fixes</p>
+      <h2 id="fixes-h">How fixes were made.</h2>
+      <p>For each leaking app, a Claude model working as a fix agent received the lab’s findings and the repo, and followed the same steps every time:</p>
+      <ol class="steps mt-3">
+        <li><h3>Understand intent</h3><p>Read the final state of the migrations and how the frontend uses each flagged table: logged-out pages, owner pages, admin pages, and which columns each reads.</p></li>
+        <li><h3>Give a verdict per table</h3><p><em>Bug</em> (private data exposed by mistake), <em>public by design but leaky</em> (rows should be public, personal columns shouldn’t), <em>false alarm</em> (such as a business’s own contact details) or <em>ambiguous</em> (only the owner can decide).</p></li>
+        <li><h3>Write one migration</h3><p>A single SQL file that runs after all existing migrations, closes the leak and keeps what the app needs, plus notes for any code change that must ship with it and plain-English questions for the owner.</p></li>
+        <li><h3>Test in the lab</h3><p>Apply the migration to the rebuilt database and read every flagged table again as all three identities.</p></li>
+      </ol>
+      <div class="callout note mt-3"><p><strong>Repos are untrusted.</strong> Everything in a studied repo was written by strangers, so the agent treats it as data. It may only read files, write its own output, and run the lab verifier. It never follows instructions found in a repo, and never runs or installs anything from one.</p></div>
+      <p>In the autonomous pipeline the models were tried cheapest first: Haiku, then Sonnet, then Opus. Escalation happens only when the independent proof fails, and the failed attempt’s edits are discarded before the next model starts. A spend cap per check stops the chain early.</p>
+    </section>
+
+    <section id="judging" aria-labelledby="judging-h">
+      <p class="lab green">07 · Judging</p>
+      <h2 id="judging-h">How fixes were judged: the strict proof.</h2>
+      <p>An agent’s own report is never the judge. After the agent finishes, a separate verifier rebuilds the database, applies the fix and runs the identity checks itself. It prints one verdict, <code>passed</code>, which is true only if all of these hold:</p>
+      <div class="grid g3 top mt-3">
+        <div class="ident"><div class="who"><b>Anonymous visitor</b><span class="pill proven">DENIED</span></div><p>Reads neither the private rows nor the personal columns.</p></div>
+        <div class="ident"><div class="who"><b>Signed-in stranger</b><span class="pill proven">DENIED</span></div><p>Reads neither the private rows nor the personal columns of rows that aren’t theirs.</p></div>
+        <div class="ident"><div class="who"><b>Owner</b><span class="pill proven">OK</span></div><p>Still reads their own row and its personal columns. Zero rows is a failure. (Skipped when a table has no owner column.)</p></div>
+      </div>
+      <p class="mt-3">The column check means a “keep the rows public, hide the personal columns” fix can pass legitimately. The owner check means a fix that closes a leak by locking everyone out fails. Only a passed fix gets a fix branch; anything else is reported as “needs a person”.</p>
+      <p><strong>Why this matters:</strong> in the model trial, before the verifier printed one explicit verdict, the smallest model’s first attempts failed 2 of 3 in ways a looser check missed: one hid columns from logged-out visitors only, leaving signed-in strangers reading everything; another closed a leak and locked users out of their own history. The strict verdict exists because of those two failures.</p>
+      <p><strong>The 5 Nov study</strong> was judged differently, and more slowly: we re-ran every agent fix ourselves in the lab rather than trusting the agents’ reports. “Worked first time” means the fix applied cleanly and closed the leak in that re-run. That study also recorded whether each fix was safe to apply with no human review (4 of 20 were).</p>
+      <div class="callout limit"><p>The proof covers reads by three identities on the database the migrations build. It is not a test of write rules, functions or storage (those findings are checked statically, with test SQL in the report), and it is not a guarantee that the whole app is secure.</p></div>
+    </section>
+
+    <section id="cost" aria-labelledby="cost-h">
+      <p class="lab">08 · Cost basis</p>
+      <h2 id="cost-h">What the cost and time figures include.</h2>
+      <dl class="kv">
+        <dt>Model cost</dt><dd>The spend reported for each agent attempt by the agent runtime, at Anthropic’s API prices in November 2026, summed per app across every attempt, including failed ones.</dd>
+        <dt>Time</dt><dd>The agents’ working time, summed across attempts. Rebuilding the database and each re-verification took seconds on top (medians of 2 and 3 seconds in the 20-app run), not included.</dd>
+        <dt>Excluded</dt><dd>The lab machine (our own computer running Docker), electricity, and any human time. Human review time in the 5 Nov study was the agent’s own estimate (median 15 minutes), not measured.</dd>
+        <dt>Medians</dt><dd>Reported with the full distribution, because one escalated app ($15.65, 67 minutes) pulls the means up to $1.75 and 9.2 minutes. All 20 values are in the <a href="/research/1-in-4#cost">report</a> and the CSV.</dd>
+      </dl>
+    </section>
+
+    <section id="keys" aria-labelledby="keys-h">
+      <p class="lab">09 · Keys</p>
+      <h2 id="keys-h">The key scan.</h2>
+      <p>Alongside the lab, every check scans the repo’s current code and its full git history for exposed AI, payment and database keys, including Supabase service role keys (<a href="/findings/pl-010">PL-010</a>) and keys deleted from the code but still in old commits (<a href="/findings/pl-011">PL-011</a>). Values are masked in reports. We record where a key was found and where to rotate it; we never use, test or store a key.</p>
+      <p>The key scan is part of the product and ran during the studies, but no key numbers are claimed on this site.</p>
+    </section>
+
+    <section id="ethics" aria-labelledby="ethics-h">
+      <p class="lab">10 · Conduct</p>
+      <h2 id="ethics-h">What we didn’t do.</h2>
+      <ul class="ticks">
+        <li class="x"><span>Connect to any studied app’s live site, API or database.</span></li>
+        <li class="x"><span>View, copy or store any real person’s data. The lab only ever holds fake rows.</span></li>
+        <li class="x"><span>Use, test or store any key found in a repo.</span></li>
+        <li class="x"><span>Push fixes to anyone’s repo. Fix branches existed only on our machine (a dry run).</span></li>
+        <li class="x"><span>Name any app, repo, owner or table, here, in the report or in the CSV.</span></li>
+      </ul>
+    </section>
+
+    <section id="repro" aria-labelledby="repro-h">
+      <p class="lab">11 · Reproduce</p>
+      <h2 id="repro-h">Reproducing it.</h2>
+      <p>What you can check today:</p>
+      <ul class="ticks">
+        <li class="dash"><span><strong>The same test on a known app.</strong> Our deliberately leaky demo app (<code>manra399/patchlabs-demo-app</code>, public, fake data) goes through exactly this pipeline. Its <a href="/check?id=sample">sample report</a> shows the findings, the fix and the proof.</span></li>
+        <li class="dash"><span><strong>The same test on your app.</strong> A <a href="/#check">free check</a> runs the identical lab, verdict and proof on your public repo.</span></li>
+        <li class="dash"><span><strong>The definitions in SQL.</strong> Every <a href="/findings">finding page</a> includes queries that reproduce the identity checks in your own Supabase SQL editor.</span></li>
+        <li class="dash"><span><strong>The numbers.</strong> The <a href="/research/1-in-4-aggregate.csv">aggregate CSV</a> holds every figure we publish and the 20 anonymised runs.</span></li>
+      </ul>
+      <p>What isn’t public yet: the lab scripts themselves, and the list of sampled repos (which we won’t publish, to avoid pointing at leaking apps). Researchers who want to replicate the study can email <a href="mailto:manraj@patchlabs.dev?subject=Research">manraj@patchlabs.dev</a> for the method in more detail.</p>
+    </section>
+
+    <section id="changes" aria-labelledby="changes-h">
+      <p class="lab">12 · Changes</p>
+      <h2 id="changes-h">Changes to this page.</h2>
+      <ol class="steps">
+        <li class="done"><h3>First publication</h3><p>Methodology for the exposure study, the fix-agent study, the model trial and the autonomous pipeline.</p><span class="meta">10 Nov 2026</span></li>
+      </ol>
+      <p class="small muted mt-3">Found an error? Email <a href="mailto:manraj@patchlabs.dev?subject=Research">manraj@patchlabs.dev</a> with the subject “Research”. Corrections are dated here.</p>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2>Run the same test on your app.</h2>
+      <p class="lede">Paste your public repo. Same lab, same three identities, same strict proof.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <label class="sr-only" for="repo-m1">Public GitHub repo</label>
+          <input id="repo-m1" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <label class="sr-only" for="email-m1">Your email</label>
+          <input id="email-m1" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span><a href="/research/1-in-4">Read the 1-in-4 Report</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>

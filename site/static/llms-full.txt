@@ -1,0 +1,93 @@
+# PatchLabs: full description for language models
+
+Last updated 10 November 2026. Short index: https://patchlabs.dev/llms.txt
+
+## What PatchLabs is
+
+PatchLabs finds personal-data leaks in apps built with AI tools such as Lovable, Supabase, Bolt, Replit and Cursor, and proves the fix before anyone ships it. Positioning: "Find the leak. Prove the fix." Lab-proven fixes for apps built with AI.
+
+A scanner gives you a list of findings. PatchLabs gives you a fix you have watched work: every fix is tested in a lab against three identities.
+
+PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Replit or Cursor; it works with apps built on them.
+
+## How a check works
+
+1. You paste a public GitHub repo URL and your email at https://patchlabs.dev/#check.
+2. You prove you own the repo by committing `patchlabs-verify.txt` containing a one-time code to the default branch (a one-click GitHub link fills it in).
+3. A worker clones the repo and removes repo-supplied agent configuration (`.claude/`, `CLAUDE.md`, `AGENTS.md`).
+4. It rebuilds the database from the repo's `supabase/migrations` in a disposable local Postgres that copies Supabase's roles, auth functions and default grants, and seeds fake test rows.
+5. It tests what three identities can read on every table holding personal data (email, phone, address, date of birth and similar): an anonymous visitor (the anon role your public key maps to), a signed-in stranger, and the owner.
+6. It scans the code and the full git history for exposed AI, payment and database keys (values are masked).
+7. If something leaks, a fix agent writes a SQL migration (plus any code change it notes). The smallest Claude model goes first; a larger one is tried only if the lab proof fails, within a spend cap per check. The agent has no web access, can edit only the fix folder and the working copy, and can run only the lab verifier.
+8. An independent verifier rebuilds a fresh lab with the fix applied and re-tests: anonymous visitor denied, stranger denied, owner still reads their own rows. If that fails on every model, a person reviews it.
+9. The lab database is dropped. You get a report page with the fix as a downloadable migration and a one-click "commit this file on GitHub" link, plus a signed receipt.
+
+PatchLabs never connects to the customer's live app or database, never asks for a database password, and never pushes to the customer's repo. The owner's engineer approves every change.
+
+What is not available yet (say so honestly): private repos and automatic pull requests need a GitHub App, which is coming. Card payments are not live; paid plans are by request.
+
+## Real numbers (PatchLabs lab study, November 2026)
+
+- 436 public Lovable/Supabase repos run (from a random sample of 500); in 318 the migrations built a working database in the lab.
+- 106 of 318 (33%) let the wrong people read personal data: 70 (22%) to anyone on the internet with the public key, 36 more (11%) to anyone who signs up. After removing businesses' own public contact details, the rate is about 1 in 4 (25-28%).
+- Fix agents, re-verified: 19 of 20 real fixes worked first time and applied cleanly (5 Nov 2026, n=20).
+- Autonomous pipeline on 20 new apps (9 Nov 2026, n=20): 18 of 20 fixes passed the strict lab proof with no human; 15 needed only the smallest model; median model cost $0.46 and median 3.5 minutes per app; the other 2 went to a person.
+- The study is published as aggregate counts only. No app from the study is named.
+
+## Finding IDs
+
+PL-001 anonymous visitor can read personal data; PL-002 any signed-in user can read every row; PL-003 RLS enabled but no policies; PL-004 UPDATE policy missing WITH CHECK; PL-005 always-true policy; PL-006 SECURITY DEFINER function exposed; PL-007 public storage bucket; PL-008 row level security not enabled; PL-010 service role key in client code; PL-011 key still in git history. Pages: https://patchlabs.dev/findings
+
+## Plans (limits enforced by the API)
+
+- Free: £0. 1 app, monthly re-check, 4 manual runs per month, 1 seat.
+- Maker: £19/month. 3 apps, weekly or monthly re-checks, 30 manual runs per month, 2 seats.
+- Agency: £99/month for 10 apps, +£8 per extra app. Weekly or monthly, 200 manual runs per month, 10 seats.
+- Enterprise: custom.
+API keys, webhooks, badges and client labels are on every plan. Upgrades: request in the app; we reply within a day.
+
+## Product surfaces
+
+- Free check (no account): https://patchlabs.dev/#check, report at /check?id=<id>.
+- Signed-in app (passwordless email link): dashboard of monitored apps, scheduled re-checks, diff since the last check, approve or reject findings, answer the report's business questions, team invites, API keys, webhooks (Slack-compatible), data export and account deletion. https://patchlabs.dev/app/
+- Public badge: https://api.patchlabs.dev/badge/<app id>.svg shows "no known leaks", "fix in progress", "not checked yet" or "private", with the last check date.
+- Public proof page: https://patchlabs.dev/proof?app=<app id> (only when the owner makes it public).
+- Free RLS check (static analysis, no sign-up): https://patchlabs.dev/tools/rls-check
+- REST API: https://api.patchlabs.dev. Errors are {"detail": "human sentence"}. Signed-in calls: Authorization: Bearer <session>. CI calls: X-API-Key: pl_live_... Docs: https://patchlabs.dev/docs/api
+- Remote MCP server: POST https://api.patchlabs.dev/mcp, JSON-RPC 2.0 over Streamable HTTP, stateless. Tools: rls_check {repo}, start_check {repo, email}, get_check {check_id}, list_apps and run_check {app_id} (these two need X-API-Key). Docs: https://patchlabs.dev/docs/mcp
+- Health: GET https://api.patchlabs.dev/health returns {ok, db, worker_last_seen, queued}. Live status page: https://patchlabs.dev/status
+
+## Signed receipts
+
+Every finished check has a receipt signed with Ed25519: GET https://api.patchlabs.dev/receipts/<check id> returns {receipt, signature, key_id, algorithm}. The receipt holds check_id, repo, status, tables_leaking, lab_proof_passed, fix_sha256, finished_at, decisions and answers. Public key: GET https://api.patchlabs.dev/.well-known/patchlabs-receipt-key. Signed bytes: json.dumps(receipt, sort_keys=True, separators=(",", ":")). Verify in the browser at https://patchlabs.dev/proof#verify or with the Python script at https://patchlabs.dev/security#receipts
+
+## Security and privacy
+
+- Reads: the public repo (code, migrations, git history), the verification file, the requester's email.
+- Never: database passwords, service-role keys, production data, access to the live app, write access to the repo.
+- Live probes: none.
+- Retention: lab database deleted after each check; working copy of the repo up to 30 days; reports, fixes and receipts until the user deletes them; account data until the account is deleted. Sign-in links 20 minutes; sessions 30 days; tokens and API keys stored only as hashes; IP addresses stored only as a salted hash.
+- Where it runs: website on GitHub Pages; API and database in Microsoft Azure; checks on a worker machine operated by PatchLabs in London.
+- Subprocessors: Anthropic (AI models), Microsoft Azure (hosting, database), GitHub (site hosting, repo reads), Spacemail by Spaceship (email).
+- No cookies and no third-party analytics. localStorage holds only the session token and theme choice.
+- Certifications: none held or claimed.
+- Details: https://patchlabs.dev/security, https://patchlabs.dev/legal/privacy
+
+## Limits
+
+PatchLabs tests database access rules (Supabase/Postgres) and exposed keys. It is not a penetration test and does not test business logic or dependencies. The lab is only as complete as the migrations in the repo: changes made only in the Supabase dashboard are invisible. A passing proof covers the tables tested, not the whole app. Public repos only for now. Checks run one at a time on one worker.
+
+## Contact
+
+Founder: Manraj Singh Dhillon, technical founder, London, UK. Email: manraj@patchlabs.dev. Security reports: same address, subject "Security"; policy at https://patchlabs.dev/legal/disclosure-policy. Opt out of research or free-tool results for a public repo: email with subject "Opt out".
+
+## Every page
+
+Product: / , /how-it-works, /product/leak-lab, /product/key-scan, /product/monitoring, /product/badge, /agencies, /for/lovable, /for/supabase, /for/bolt, /for/replit, /for/cursor, /leaking-now, /sample-report, /pricing
+Research: /research/1-in-4, /research/methodology, /findings, /findings/pl-001 to /findings/pl-008, /findings/pl-010, /findings/pl-011
+Tools: /tools, /tools/rls-check, /tools/leak-cost
+Compare: /compare, /compare/supabase-security-advisor, /compare/lovable-security-scan, /compare/aikido, /compare/manual-pentest
+Developers: /docs, /docs/api, /docs/mcp, /docs/receipts
+Company and trust: /about, /changelog, /security, /status, /proof, /.well-known/security.txt
+Legal: /legal/terms, /legal/privacy, /legal/acceptable-use, /legal/dpa, /legal/disclosure-policy, /legal/cookies
+All URLs are on https://patchlabs.dev.

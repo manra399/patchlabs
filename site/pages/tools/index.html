@@ -1,0 +1,112 @@
+<!--
+title: Free security tools for AI-built apps | PatchLabs
+description: Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a leak cost calculator, and a full sample proof report.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
+-->
+<main id="main">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Tools</li></ol></nav>
+    <p class="lab">Free tools</p>
+    <h1>Free tools to see who can read your data.</h1>
+    <p class="lede">Start with a quick look at your access rules, work out what a leak would cost, or open a complete report from a real lab run. No account needed for any of them.</p>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="tools-h" style="padding-top:0">
+  <div class="wrap">
+    <h2 id="tools-h" class="sr-only">Tools</h2>
+    <div class="grid g3">
+      <a class="card link tool-card" href="/tools/rls-check">
+<div class="tc-art" aria-hidden="true"><span class="d">$ rls-check manra399/patchlabs-demo-app</span>
+<span class="d">1 file · 2 tables</span>
+<span class="r">critical</span> PL-001 profiles
+  using (true) · email, phone
+medium   PL-004 profiles
+<span class="d">static analysis only</span></div>
+        <div class="tc-body">
+          <span class="n-big">NO SIGN-UP · SECONDS</span>
+          <h3>Free RLS check</h3>
+          <p>Paste a public repo. We read <code>supabase/migrations</code> and flag eight risky patterns, each with the file, the line and what it means.</p>
+          <div class="tc-foot"><span>static analysis</span><span class="link-arrow">Run it</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/tools/leak-cost">
+<div class="tc-art" aria-hidden="true"><span class="d">people exposed</span>       1,000
+<span class="d">× notify</span>             £0.50
+<span class="d">× contact rate × cost</span> 10% × £8
+<span class="d">+ engineering</span>        16 h × £75
+<span class="d">+ legal advice</span>       £1,500
+<b>total                £4,000</b></div>
+        <div class="tc-body">
+          <span class="n-big">YOUR NUMBERS · NO SCARE STATS</span>
+          <h3>Leak cost calculator</h3>
+          <p>Plain maths with your own figures: notifying people, answering their questions, the time to fix it. Plus the UK’s 72-hour reporting rule.</p>
+          <div class="tc-foot"><span>runs in your browser</span><span class="link-arrow">Work it out</span></div>
+        </div>
+      </a>
+      <a class="card link tool-card" href="/sample-report">
+<div class="tc-art" aria-hidden="true"><span class="d">[PROVE]</span> anon      0 rows <span class="g">DENIED</span>
+        stranger  0 rows <span class="g">DENIED</span>
+        owner     1 row  <span class="g">OK</span>
+<span class="d">fix: …_patchlabs_leak_fix.sql</span>
+<span class="d">keys found in history:</span> 0
+<span class="g">lab proof passed</span> <span class="d">· 36 s</span></div>
+        <div class="tc-body">
+          <span class="n-big">REAL RUN · DEMO APP</span>
+          <h3>Sample proof report</h3>
+          <p>The full report from our deliberately leaky demo app: the exploit, the exposed columns, the fix, the proof as three identities, and the key scan.</p>
+          <div class="tc-foot"><span>9 Nov 2026 run</span><span class="link-arrow">Open it</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="ladder-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Which one?</p>
+      <h2 id="ladder-h">From a quick look to a proven fix.</h2>
+      <p>The free tools tell you where to look. Only the lab tells you what a stranger can actually read, and hands you a fix that has been tested.</p>
+    </div>
+    <div class="t-ladder">
+      <div>
+        <p class="lab"><span class="n">01</span>Look</p>
+        <h3>Free RLS check</h3>
+        <p>Seconds. Reads your SQL as text.</p>
+        <ul class="ticks"><li>Risky rules, with file and line</li><li class="x">Can’t tell intended from leaking</li><li class="x">No fix</li></ul>
+      </div>
+      <div>
+        <p class="lab"><span class="n">02</span>Weigh</p>
+        <h3>Leak cost calculator</h3>
+        <p>Minutes. Your own costs, added up.</p>
+        <ul class="ticks"><li>What telling people would cost</li><li>Who to report to in the UK</li><li class="x">Doesn’t look at your app</li></ul>
+      </div>
+      <div class="on">
+        <p class="lab green"><span class="n">03</span>Prove</p>
+        <h3>Full lab check</h3>
+        <p>About 3.5 minutes (median, lab study, n=20). Free for your first app.</p>
+        <ul class="ticks"><li>Rebuilds your database from its migrations</li><li>Reads as anon, stranger and owner</li><li>Writes the fix and proves it</li><li>Scans code and git history for keys</li></ul>
+        <a class="btn primary small mt-2" href="/#check">Check my app free</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="agent-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">In your agent</p>
+      <h2 id="agent-h" class="h-md">Your coding agent can run the free check too.</h2>
+      <p class="muted">The RLS check is a public API endpoint and a tool in the PatchLabs MCP server, so Cursor, Claude Code or any MCP client can check a repo before you ship.</p>
+      <p><a class="link-arrow" href="/docs/mcp">Set up the MCP server</a></p>
+    </div>
+    <div class="callout limit"><p><strong>Not yet a separate tool:</strong> a standalone git-history key check. Today the key scan runs inside every full check, across your code and its full git history. <a href="/product/key-scan">How the key scan works</a>.</p></div>
+  </div>
+</section>
+
+</main>

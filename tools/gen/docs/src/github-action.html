@@ -1,0 +1,131 @@
+title: GitHub Action
+description: Re-check your app with PatchLabs from GitHub Actions after every migration lands, wait for the lab result, and fail the build when a leak is found.
+lab: CI
+h1: GitHub Action
+lede: Re-check your app every time a migration lands on your default branch. The action starts a PatchLabs check, waits for the lab result, prints it in the job summary, and fails the build if strangers can read personal data.
+---
+<h2 id="set-up">Set up in three steps</h2>
+<ol class="qs">
+  <li>
+    <h3 id="ga-app" data-notoc>Add and verify the app</h3>
+    <p><a href="/app/login">Sign in</a>, add the repo as an app and commit its verification file. See <a href="/docs/monitoring#add-an-app">monitoring</a>. Copy the app’s ID from its page.</p>
+  </li>
+  <li>
+    <h3 id="ga-key" data-notoc>Create an API key</h3>
+    <p>In <strong>Settings → API keys</strong>, create a key named, say, “GitHub Actions”. It’s shown once. In your repo, open <strong>Settings → Secrets and variables → Actions</strong> and add it as the secret <code>PATCHLABS_API_KEY</code>. Add the app ID as the variable <code>PATCHLABS_APP_ID</code>.</p>
+  </li>
+  <li>
+    <h3 id="ga-workflow" data-notoc>Add the workflow</h3>
+    <p>Save this as <code>.github/workflows/patchlabs.yml</code>:</p>
+    <div class="code"><div class="code-bar"><span class="name">.github/workflows/patchlabs.yml</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>name: PatchLabs
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+concurrency: patchlabs
+
+jobs:
+  leak-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: manra399/patchlabs/action@main
+        with:
+          api-key: ${{ secrets.PATCHLABS_API_KEY }}
+          app-id: ${{ vars.PATCHLABS_APP_ID }}
+          wait: true
+          fail-on-leak: true</code></pre></div>
+  </li>
+</ol>
+<p>No checkout step is needed: PatchLabs reads the repo from GitHub. <code>concurrency</code> stops two runs from overlapping, since an app can only have one check open at a time.</p>
+
+<h2 id="what-you-see">What you see</h2>
+<div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">leak-check · Run manra399/patchlabs/action@main</span></div>
+<pre class="transcript lines" aria-label="Example log output">
+<span class="ln">PatchLabs check started: 7c1e2f0a-…</span>
+<span class="ln">Status: queued</span>
+<span class="ln">Status: running</span>
+<span class="ln"> </span>
+<span class="ln">PatchLabs · you/shop-app</span>
+<span class="ln"><span class="dim">  result </span>        Leaks found; a lab-proven</span>
+<span class="ln">                  fix is ready</span>
+<span class="ln"><span class="dim">  tables leaking</span>  <span class="leak">profiles</span></span>
+<span class="ln"><span class="dim">  lab proof </span>      <span class="ok">passed</span></span>
+<span class="ln"><span class="dim">  report    </span>      https://patchlabs.dev/check?id=…</span>
+<span class="ln"> </span>
+<span class="ln"><span class="leak">Error:</span> Leaks found … Apply the fix, then re-run.</span>
+</pre>
+  <div class="window-foot"><span class="pill leak">step failed</span><span>Example output with fail-on-leak: true</span></div>
+</div>
+<p>The same result goes into the job summary as a small table with a link to the report. After you apply the fix, re-run the job: it passes once the check reads <code>no_leaks</code>.</p>
+
+<h2 id="inputs">Inputs</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Input</th><th scope="col">Default</th><th scope="col">What it does</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>api-key</code></th><td>required</td><td>Workspace API key (<code>pl_live_…</code>). Pass it from a secret.</td></tr>
+    <tr><th scope="row"><code>app-id</code></th><td>required</td><td>The monitored app’s ID.</td></tr>
+    <tr><th scope="row"><code>wait</code></th><td><code>true</code></td><td>Wait for the result. <code>false</code> starts the check and ends the step straight away.</td></tr>
+    <tr><th scope="row"><code>fail-on-leak</code></th><td><code>true</code></td><td>Fail the step when the finished check’s status is <code>done</code> or <code>needs_review</code>.</td></tr>
+    <tr><th scope="row"><code>timeout-minutes</code></th><td><code>30</code></td><td>How long to wait for a result.</td></tr>
+    <tr><th scope="row"><code>fail-on-timeout</code></th><td><code>false</code></td><td>Fail instead of warn when no result arrives in time.</td></tr>
+    <tr><th scope="row"><code>poll-seconds</code></th><td><code>15</code></td><td>Seconds between status requests (minimum 5).</td></tr>
+    <tr><th scope="row"><code>api-url</code></th><td><code>https://api.patchlabs.dev</code></td><td>API base URL.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="outputs">Outputs</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Output</th><th scope="col">Value</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>check-id</code></th><td>The check this run started</td></tr>
+    <tr><th scope="row"><code>status</code></th><td><code>done</code>, <code>no_leaks</code>, <code>needs_review</code> or <code>failed</code>; <code>queued</code>/<code>running</code> if not waited for or timed out; <code>busy</code> or <code>limit</code> if no check could start</td></tr>
+    <tr><th scope="row"><code>url</code></th><td>Link to the report</td></tr>
+    <tr><th scope="row"><code>leaks-found</code></th><td><code>true</code> or <code>false</code></td></tr>
+    <tr><th scope="row"><code>tables-leaking</code></th><td>Comma-separated table names</td></tr>
+    <tr><th scope="row"><code>lab-proof-passed</code></th><td><code>true</code> when the fix passed the lab proof</td></tr>
+  </tbody>
+</table></div>
+<p>Use them in later steps, for example to post the report link somewhere:</p>
+<div class="code"><div class="code-bar"><span class="name">workflow steps</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>      - id: patchlabs
+        uses: manra399/patchlabs/action@main
+        with:
+          api-key: ${{ secrets.PATCHLABS_API_KEY }}
+          app-id: ${{ vars.PATCHLABS_APP_ID }}
+          fail-on-leak: false
+      - if: steps.patchlabs.outputs.leaks-found == 'true'
+        run: echo "Leaking tables: ${{ steps.patchlabs.outputs.tables-leaking }} → ${{ steps.patchlabs.outputs.url }}"</code></pre></div>
+
+<h2 id="behaviour">How each result is handled</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Situation</th><th scope="col">Step result</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>no_leaks</code></th><td><span class="pill proven">passes</span></td></tr>
+    <tr><th scope="row"><code>done</code> or <code>needs_review</code></th><td><span class="pill leak">fails</span> with <code>fail-on-leak: true</code>, otherwise warns</td></tr>
+    <tr><th scope="row"><code>failed</code> (the check couldn’t finish)</th><td>Warns. We’re alerted and follow up</td></tr>
+    <tr><th scope="row">A check is already open for the app</th><td>Warns and passes; no new check is started</td></tr>
+    <tr><th scope="row">Monthly run limit reached</th><td>Warns and passes</td></tr>
+    <tr><th scope="row">App not verified, bad key, wrong app ID</th><td>Fails with the reason</td></tr>
+    <tr><th scope="row">No result within <code>timeout-minutes</code></th><td>Warns, or fails with <code>fail-on-timeout: true</code></td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="schedule">On a schedule</h2>
+<p>Monitoring already re-checks your app weekly or monthly. If you’d rather see results in GitHub, add a cron trigger:</p>
+<div class="code"><div class="code-bar"><span class="name">on:</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>on:
+  schedule:
+    - cron: '0 6 * * 1'   <span class="c"># Mondays at 06:00 UTC</span>
+  workflow_dispatch:</code></pre></div>
+
+<h2 id="how-it-works">How it works</h2>
+<p>The action is a small shell script that uses <code>curl</code> and <code>jq</code> (both preinstalled on GitHub-hosted Linux and macOS runners). It calls two endpoints with your key:</p>
+<ol>
+  <li><a href="/docs/api#post-v1-apps-aid-checks"><code>POST /v1/apps/{app_id}/checks</code></a> to start a check;</li>
+  <li><a href="/docs/api#get-v1-checks-cid"><code>GET /v1/checks/{id}</code></a> every <code>poll-seconds</code> until <code>finished</code> is true.</li>
+</ol>
+<p>The source is in the <code>action/</code> folder of the <code>manra399/patchlabs</code> repo. Read it before you use it; it’s about 130 lines. For a fixed version, pin a commit SHA instead of <code>@main</code>.</p>
+
+<h2 id="limits">Good to know</h2>
+<div class="callout limit"><p><strong>A check reads your default branch</strong> as it is on GitHub, not the branch of a pull request. Run the action after changes land on your default branch; on a <code>pull_request</code> trigger it would report on the default branch, not the PR. Each run uses one of your plan’s monthly manual runs (Free 4, Maker 30, Agency 200). Tables your team <a href="/docs/decisions#suppressions">marked as intended</a> still count as leaks for <code>fail-on-leak</code> today.</p></div>

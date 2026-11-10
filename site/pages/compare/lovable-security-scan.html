@@ -1,0 +1,180 @@
+<!--
+title: PatchLabs vs Lovable's security scan | PatchLabs
+description: Lovable's built-in security scan checks your app on publish and fixes some issues in the editor. PatchLabs proves each data-access fix in a lab. When to use which.
+layout: marketing
+head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
+-->
+<main id="main">
+
+<section class="page-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/compare">Compare</a></li><li aria-current="page">Lovable security scan</li></ol></nav>
+    <p class="lab">PatchLabs vs Lovable security scan</p>
+    <h1>Lovable checks your app as you build. PatchLabs proves the fix before it ships.</h1>
+    <p class="lede">Lovable’s built-in security tools scan your app when you publish and can fix some issues inside the editor. PatchLabs works on the code in GitHub: it rebuilds your database, writes a migration and proves it as three different people before your engineer approves it.</p>
+    <div class="meta-line"><span>Last checked 10 Nov 2026</span><span>Sources at the end</span><span>Independent of Lovable</span></div>
+  </div>
+</section>
+
+<section class="sec tight" aria-label="Summary">
+  <div class="wrap">
+    <div class="verdict">
+      <div>
+        <p class="who">Choose Lovable’s scan when</p>
+        <h2>You build and publish in Lovable and want checks with no setup at all.</h2>
+        <ul class="ticks">
+          <li>You want a quick scan on every publish, in seconds, without leaving the editor</li>
+          <li>You want broad coverage: dependencies, and a deep scan of all app code for auth, payments, injection and leaked secrets</li>
+          <li>You want the Lovable agent to apply fixes inside your build</li>
+          <li>You want to block publishing when a critical issue is open</li>
+        </ul>
+      </div>
+      <div>
+        <p class="who">Choose PatchLabs when</p>
+        <h2>You want each data-access fix proven, and reviewed by your engineer.</h2>
+        <ul class="ticks">
+          <li>You want every fix tested as an anonymous visitor, a signed-in stranger and the owner before it ships</li>
+          <li>Your code is in GitHub, whether it came from Lovable, Bolt, Replit or Cursor</li>
+          <li>You want a migration file your engineer can read and approve, not a change made inside the editor</li>
+          <li>You want an independent second opinion with monitoring, alerts and signed receipts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="lanes-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">How each one works</p>
+      <h2 id="lanes-h">One runs inside the builder. One runs on a copy built from your repo.</h2>
+    </div>
+    <div class="lanes">
+      <div class="lane"><div class="name">Lovable scan<span>inside the editor</span></div>
+        <ol aria-label="Lovable security scan flow"><li>Build in Lovable</li><li>Publish</li><li>Quick scan, seconds</li><li class="a">Critical / Warning / Info</li><li>Fix in the editor</li><li>Live</li></ol></div>
+      <div class="lane us"><div class="name">PatchLabs<span>on your GitHub repo</span></div>
+        <ol aria-label="PatchLabs flow"><li>Public repo</li><li>Rebuild from migrations</li><li class="r">Read as anon, stranger</li><li>Write migration</li><li class="g">Prove × 3</li><li>Engineer approves</li></ol></div>
+    </div>
+    <p class="small muted mt-2">Lovable’s flow as described in its own docs and blog. Lovable also offers a deep scan (2 to 4 minutes, on demand or scheduled on Enterprise) and optional third-party connectors.</p>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="table-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Side by side</p>
+      <h2 id="table-h">The details.</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="table compare pair">
+        <caption class="sr-only">PatchLabs compared with Lovable's built-in security scan</caption>
+        <thead><tr><th scope="col"></th><th scope="col" class="us">PatchLabs</th><th scope="col">Lovable security scan</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Where it runs</th><td class="us">On your GitHub repo, in our disposable lab</td><td>Inside Lovable, on publish or on demand</td></tr>
+          <tr><th scope="row">What it checks</th><td class="us">Who can read which rows (core), plus exposed keys in code and full git history</td><td>Quick scan: database review, dependency audit, MCP server check. Deep scan: all app code, including access control, auth, payments and leaked secrets</td></tr>
+          <tr><th scope="row">Writes fixes</th><td class="us"><span class="yes">A SQL migration for every leak, plus code notes</span></td><td><span class="part">Auto-fix for a few critical quick-scan findings</span><span class="cell-note">Deep-scan findings aren’t auto-fixed. “Try to fix all”: 10 free fixes per account, renewing 24 hours after use, then credits</span></td></tr>
+          <tr><th scope="row">Proves the fix as anon, stranger and owner</th><td class="us"><span class="yes">Every fix, before you see it</span></td><td><span class="no">Not described in Lovable’s docs</span></td></tr>
+          <tr><th scope="row">Who approves the change</th><td class="us">Your engineer, by applying a migration. Nothing changes until then</td><td>Fixes are made by the Lovable agent inside the build flow</td></tr>
+          <tr><th scope="row">Works outside Lovable</th><td class="us"><span class="yes">Any public repo with Supabase migrations</span></td><td><span class="no">Lovable projects only</span></td></tr>
+          <tr><th scope="row">Blocks publishing</th><td class="us"><span class="no">No publish gate yet</span></td><td><span class="yes">Optional; on by default for new Enterprise workspaces</span></td></tr>
+          <tr><th scope="row">Scheduled scans</th><td class="us"><span class="yes">Every plan (monthly on Free)</span></td><td><span class="part">Enterprise</span></td></tr>
+          <tr><th scope="row">Dependencies and wider code</th><td class="us"><span class="no">Not in scope</span></td><td><span class="yes">Dependency audit and deep code scan</span></td></tr>
+          <tr><th scope="row">Learns from your choices</th><td class="us">Remembers tables you mark as meant to be public</td><td>Security memory learns from dismissals</td></tr>
+          <tr><th scope="row">Evidence you can share</th><td class="us">Report link and a signed (Ed25519) receipt</td><td>JSON report download; a trust centre page on your app’s domain</td></tr>
+          <tr><th scope="row">Price</th><td class="us"><b>Free for 1 app</b><span class="cell-note">Then from £19/month</span></td><td>Scans free; fixes use the free quota, then credits; workspace security centre on Business and Enterprise</td></tr>
+          <tr><th scope="row">On its limits</th><td class="us">Proof covers the access rules we test, not the whole app</td><td>Lovable says its tools cannot guarantee complete security</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Last checked 10 Nov 2026 against Lovable’s public docs and blog. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="proof-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab green">The difference</p>
+      <h2 id="proof-h">A fix should be tested as the people it’s meant to stop.</h2>
+      <p class="lede">An access rule that looks right can still let a signed-in stranger read other people’s rows, or lock the owner out of their own. We rebuild your database, apply the fix and run the same read as each person. Only when all three pass do we call it proven.</p>
+      <p class="muted">In our lab study, the pipeline fixed 20 new apps on its own: 18 of 20 fixes passed this proof with no human, and the other 2 went to a person (n=20, 9 Nov 2026).</p>
+    </div>
+    <div class="code">
+      <div class="code-bar"><span class="name">supabase/migrations/…_patchlabs_leak_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- From our demo app. Proven: anon DENIED,
+-- stranger DENIED, owner reads own row.</span>
+<span class="del">DROP POLICY "Profiles are viewable by everyone" ON public.profiles;</span>
+<span class="add">CREATE POLICY "Users can view own profile" ON public.profiles</span>
+<span class="add">  FOR SELECT USING (auth.uid() = user_id);</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="together-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Use both</p>
+      <h2 id="together-h">Keep Lovable’s scan on. Add proof for the data that matters.</h2>
+    </div>
+    <ol class="flow">
+      <li><h3>Leave Lovable’s checks on</h3><p>Let the quick scan run on every publish. Run a deep scan before launch.</p><span class="when">built in</span></li>
+      <li><h3>Paste your repo here</h3><p>If your project’s code is in a public GitHub repo, paste it. We rebuild the database from its migrations.</p><span class="when">median 3.5 min</span></li>
+      <li><h3>Approve the proven fix</h3><p>Commit the migration on GitHub in one click, or download it. Then publish from Lovable as usual.</p><span class="when g">your engineer decides</span></li>
+      <li><h3>Get told if it comes back</h3><p>Scheduled re-checks email you, or post to Slack, when a new leak appears after a later change.</p><span class="when">weekly or monthly</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Asked by Lovable builders.</h2>
+      <p class="muted">More on our <a href="/for/lovable">page for Lovable apps</a>.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>Lovable’s scan passed. Do I still need this?</summary><div class="acc-body"><p>Not always. If your app holds no personal data, the built-in scan may be enough. If it stores emails, phone numbers, addresses or dates of birth, a proof that strangers can’t read them is worth having. In our study of 318 rebuilt apps, 106 let the wrong people read personal data (PatchLabs lab study, Nov 2026).</p></div></details>
+      <details class="acc"><summary>Will your fix conflict with changes Lovable makes?</summary><div class="acc-body"><p>The fix is an ordinary migration in <code>supabase/migrations</code>. Your engineer applies it like any other change, and our scheduled re-checks will tell you if a later change reopens the leak.</p></div></details>
+      <details class="acc"><summary>Is PatchLabs a Lovable connector?</summary><div class="acc-body"><p>No. We have no partnership with Lovable and nothing runs inside the editor. We work from your GitHub repo.</p></div></details>
+      <details class="acc"><summary>Do you check dependencies like Lovable does?</summary><div class="acc-body"><p>No. We focus on who can read your data, plus exposed keys in your code and git history. Keep Lovable’s dependency audit on.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="src-h">
+  <div class="wrap narrow">
+    <p class="lab">Sources</p>
+    <h2 id="src-h" class="h-md">Where these facts come from.</h2>
+    <ul class="sources">
+      <li><span><a href="https://docs.lovable.dev/features/security" rel="noopener">Lovable docs: Security</a> · scan types, auto-fix limits, “Try to fix all” quota, publish blocking, plan gating, connectors, the limits disclaimer</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="https://lovable.dev/blog/how-lovable-protects-your-apps-automatically" rel="noopener">Lovable blog: how Lovable protects your apps automatically</a> · quick scan timing (10 to 15 s), deep scan (2 to 4 min), security memory</span><span class="when">checked 10 Nov 2026</span></li>
+      <li><span><a href="/research/1-in-4">PatchLabs lab study</a> · 106 of 318 apps; 18 of 20 fixes (n=20, 9 Nov 2026)</span><span class="when">ours</span></li>
+    </ul>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Lovable.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="cta-cmpl">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="cta-cmpl">See the proof for your own app. The first one is free.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page, in a few minutes.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-cmpl">Public GitHub repo</label>
+          <input id="repo-cmpl" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-cmpl">Your email</label>
+          <input id="email-cmpl" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/sample-report">See a sample proof report</a></span><span><a href="/compare">All comparisons</a></span><span>Prefer a person? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
+    </div>
+  </div>
+</section>
+</main>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | PatchLabs</title>
+<meta name="description" content="PatchLabs admin: workspaces and plans, upgrade requests, recent checks.">
+<link rel="canonical" href="https://patchlabs.dev/admin">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Admin | PatchLabs">
+<meta property="og:description" content="PatchLabs admin: workspaces and plans, upgrade requests, recent checks.">
+<meta property="og:url" content="https://patchlabs.dev/admin">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Admin | PatchLabs">
+<meta name="twitter:description" content="PatchLabs admin: workspaces and plans, upgrade requests, recent checks.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="app-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="hide-sm">PatchLabs</span></a>
+    <span class="pill plain">admin</span>
+    <div class="right">
+      <button class="theme-toggle hide-sm" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+      <button class="btn small secondary" type="button" id="lock" hidden>Lock</button>
+    </div>
+  </div>
+</header>
+<main id="main" class="app-main">
+  <div class="wrap wide">
+    <div class="app-head"><div><p class="lab">Admin</p><h1 class="app-title">Admin</h1><p class="app-sub">Plans are set here until card payments are connected.</p></div><div class="actions"><button class="btn secondary" type="button" id="reload" hidden>Refresh</button></div></div>
+
+    <form class="panel admin-gate" id="gate" novalidate>
+      <h2 class="sec-title">Unlock</h2>
+      <p class="sec-sub">Paste the admin token. It stays in this tab only (session storage) and is sent as a Bearer header.</p>
+      <div class="field"><label for="tok">Admin token</label><input id="tok" type="password" class="mono" autocomplete="off" spellcheck="false"></div>
+      <button class="btn primary" type="submit" id="unlock">Unlock</button>
+      <p class="err" role="alert" id="gate-err"></p>
+    </form>
+
+    <div id="console" hidden>
+      <div class="tabs">
+        <div role="tablist" aria-label="Admin">
+          <button role="tab" id="t-ws" aria-controls="p-ws" aria-selected="true">Workspaces</button>
+          <button role="tab" id="t-up" aria-controls="p-up" aria-selected="false">Upgrade requests</button>
+          <button role="tab" id="t-ck" aria-controls="p-ck" aria-selected="false">Recent checks</button>
+        </div>
+        <div class="tab-panel" id="p-ws" role="tabpanel" aria-labelledby="t-ws"><h2 class="tab-title sr-only">Workspaces</h2><div id="ws"></div></div>
+        <div class="tab-panel" id="p-up" role="tabpanel" aria-labelledby="t-up"><h2 class="tab-title sr-only">Upgrade requests</h2><div id="up"></div></div>
+        <div class="tab-panel" id="p-ck" role="tabpanel" aria-labelledby="t-ck"><h2 class="tab-title sr-only">Recent checks</h2><div id="ck"></div></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var esc = PL.esc, $ = PL.$, KEY = 'pl_admin';
+  var tok = function () { try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } };
+  var S = { ws: [], up: [], ck: [] };
+
+  var admin = function (path, opts) {
+    opts = opts || {}; opts.auth = false; opts.headers = { Authorization: 'Bearer ' + tok() };
+    return api(path, opts).catch(function (e) {
+      if (e.status === 401) { lock('That admin token was refused.'); e.locked = true; }
+      throw e;
+    });
+  };
+
+  function lock(msg) {
+    try { sessionStorage.removeItem(KEY); } catch (e) {}
+    $('console').hidden = true; $('gate').hidden = false; $('lock').hidden = true; $('reload').hidden = true;
+    $('gate-err').textContent = msg || ''; $('tok').value = ''; $('tok').focus();
+  }
+
+  $('gate').addEventListener('submit', async function (e) {
+    e.preventDefault(); var t = $('tok').value.trim();
+    if (!t) { $('gate-err').textContent = 'Paste the admin token.'; return; }
+    try { sessionStorage.setItem(KEY, t); } catch (x) {}
+    var restore = PL.busy($('unlock'), 'Checking…'); $('gate-err').textContent = '';
+    await open_(); restore();
+  });
+  $('lock').onclick = function () { lock(); };
+  $('reload').onclick = function () { open_(); };
+
+  async function open_() {
+    var sk = '<div class="table-wrap"><div style="padding:8px 20px">' + PL.skeleton(4) + '</div></div>';
+    $('ws').innerHTML = sk; $('up').innerHTML = sk; $('ck').innerHTML = sk;
+    try {
+      var r = await Promise.all([admin('/admin/workspaces'), admin('/admin/upgrade-requests'), admin('/admin/checks')]);
+      S.ws = r[0].workspaces; S.up = r[1].upgrade_requests; S.ck = r[2].checks;
+      $('gate').hidden = true; $('console').hidden = false; $('lock').hidden = false; $('reload').hidden = false;
+      $('t-up').textContent = 'Upgrade requests (' + S.up.length + ')';
+      renderWs(); renderUp(); renderCk();
+    } catch (e) {
+      if (!e.locked) { $('gate-err').textContent = e.message; if (!$('console').hidden) PL.toast(e.message, 'err'); }
+    }
+  }
+
+  var lim = function (v) { return v == null ? '' : String(v); };
+  function renderWs() {
+    if (!S.ws.length) { $('ws').innerHTML = '<div class="empty small"><p>No workspaces yet.</p></div>'; return; }
+    $('ws').innerHTML = '<p class="sec-sub">Blank limits use the plan default. Saving sends the plan and all three overrides.</p><div class="table-wrap"><table class="table compact admin stack-sm"><thead><tr><th scope="col">Workspace</th><th scope="col">Members</th><th scope="col">Usage</th><th scope="col">Plan</th><th scope="col">Overrides: apps / runs / seats</th><th scope="col"><span class="sr-only">Save</span></th></tr></thead><tbody>' +
+      S.ws.map(function (w) {
+        return '<tr data-wid="' + esc(w.id) + '"><th scope="row">' + esc(w.name) + '<div class="tiny muted mono" style="font-weight:400">' + esc(w.id) + '</div><div class="tiny muted" style="font-weight:400">since ' + esc(PL.date(w.created_at)) + '</div></th>' +
+          '<td data-label="Members" class="small">' + w.members.map(function (m) { return esc(m.email) + (m.role === 'owner' ? ' <span class="tag">owner</span>' : ''); }).join('<br>') + '</td>' +
+          '<td data-label="Usage" class="small num">' + w.usage.apps + '/' + w.limits.apps + ' apps<br>' + w.usage.runs_this_month + '/' + w.limits.runs_per_month + ' runs<br>' + w.usage.members + '/' + w.limits.seats + ' seats</td>' +
+          '<td data-label="Plan"><label class="sr-only" for="pl-' + esc(w.id) + '">Plan</label><select class="input" id="pl-' + esc(w.id) + '" data-plan>' + ['free', 'maker', 'agency', 'enterprise'].map(function (p) { return '<option value="' + p + '"' + (p === w.plan ? ' selected' : '') + '>' + PL.planName(p) + '</option>'; }).join('') + '</select></td>' +
+          '<td data-label="Overrides"><div class="lims"><input class="input num" inputmode="numeric" aria-label="App limit" placeholder="–" data-k="app_limit" value="' + lim(w.app_limit) + '"><input class="input num" inputmode="numeric" aria-label="Run limit" placeholder="–" data-k="run_limit" value="' + lim(w.run_limit) + '"><input class="input num" inputmode="numeric" aria-label="Seat limit" placeholder="–" data-k="seat_limit" value="' + lim(w.seat_limit) + '"></div></td>' +
+          '<td class="acts"><button class="btn small primary" type="button" data-save>Save</button></td></tr>';
+      }).join('') + '</tbody></table></div>';
+    $('ws').querySelectorAll('[data-save]').forEach(function (b) {
+      b.onclick = async function () {
+        var tr = b.closest('tr'), body = { plan: tr.querySelector('[data-plan]').value }, bad = null;
+        tr.querySelectorAll('[data-k]').forEach(function (i) {
+          var v = i.value.trim();
+          if (v === '') body[i.dataset.k] = null;
+          else if (/^\d+$/.test(v)) body[i.dataset.k] = parseInt(v, 10);
+          else bad = i;
+        });
+        if (bad) { PL.toast('Limits must be whole numbers, or blank for the plan default.', 'err'); bad.focus(); return; }
+        var restore = PL.busy(b, 'Saving…');
+        try {
+          var w = await admin('/admin/workspaces/' + tr.dataset.wid, { method: 'PATCH', body: body });
+          S.ws = S.ws.map(function (x) { return x.id === w.id ? w : x; }); renderWs(); renderUp();
+          PL.toast(w.name + ' is now on ' + PL.planName(w.plan), 'ok');
+        } catch (e) { restore(); if (!e.locked) PL.toast(e.message, 'err'); }
+      };
+    });
+  }
+
+  function renderUp() {
+    if (!S.up.length) { $('up').innerHTML = '<div class="empty small"><p>No upgrade requests yet.</p></div>'; return; }
+    var cur = {}; S.ws.forEach(function (w) { cur[w.id] = w.plan; });
+    $('up').innerHTML = '<div class="table-wrap"><table class="table compact admin stack-sm"><thead><tr><th scope="col">When</th><th scope="col">Workspace</th><th scope="col">From → to</th><th scope="col">Who</th><th scope="col">Note</th><th scope="col"><span class="sr-only">Apply</span></th></tr></thead><tbody>' +
+      S.up.map(function (r) {
+        var now = cur[r.workspace_id] || r.current_plan, done = now === r.plan;
+        return '<tr data-wid="' + esc(r.workspace_id) + '" data-plan="' + esc(r.plan) + '"><td data-label="When" class="small">' + esc(PL.dateTime(r.created_at)) + '</td><th scope="row">' + esc(r.workspace_name) + '</th>' +
+          '<td data-label="Plan">' + esc(PL.planName(now)) + ' → <b class="ink">' + esc(PL.planName(r.plan)) + '</b></td><td data-label="Who" class="small">' + esc(r.email || 'deleted user') + '</td>' +
+          '<td data-label="Note" class="small" style="max-width:320px;white-space:pre-wrap">' + (r.note ? esc(r.note) : '<span class="muted">none</span>') + '</td>' +
+          '<td class="acts">' + (done ? '<span class="pill proven">applied</span>' : '<button class="btn small secondary" type="button" data-apply>Set ' + esc(PL.planName(r.plan)) + '</button>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    $('up').querySelectorAll('[data-apply]').forEach(function (b) {
+      b.onclick = async function () {
+        var tr = b.closest('tr'), restore = PL.busy(b, 'Saving…');
+        try {
+          var w = await admin('/admin/workspaces/' + tr.dataset.wid, { method: 'PATCH', body: { plan: tr.dataset.plan } });
+          S.ws = S.ws.map(function (x) { return x.id === w.id ? w : x; }); renderWs(); renderUp();
+          PL.toast(w.name + ' is now on ' + PL.planName(w.plan), 'ok');
+        } catch (e) { restore(); if (!e.locked) PL.toast(e.message, 'err'); }
+      };
+    });
+  }
+
+  function renderCk() {
+    if (!S.ck.length) { $('ck').innerHTML = '<div class="empty small"><p>No checks yet.</p></div>'; return; }
+    var total = S.ck.reduce(function (s, c) { return s + (parseFloat(c.cost_usd) || 0); }, 0);
+    $('ck').innerHTML = '<p class="sec-sub">Latest ' + S.ck.length + ' checks. Model cost shown here only, never to users. Total for these: <span class="cost">$' + total.toFixed(2) + '</span>.</p>' +
+      '<div class="table-wrap"><table class="table compact admin stack-sm"><thead><tr><th scope="col">Created</th><th scope="col">Repo</th><th scope="col">Status</th><th scope="col">Source</th><th scope="col">Email</th><th scope="col" class="num">Cost</th><th scope="col"><span class="sr-only">Open</span></th></tr></thead><tbody>' +
+      S.ck.map(function (c) {
+        var t = (c.summary && c.summary.tables_leaking) || [];
+        return '<tr><td data-label="Created" class="small">' + esc(PL.dateTime(c.created_at)) + '</td><th scope="row" class="mono small">' + esc(c.repo) + (t.length ? '<div class="tiny red" style="font-weight:400">' + PL.plural(t.length, 'table') + ' leaking</div>' : '') + '</th>' +
+          '<td data-label="Status">' + PL.checkPill(c.status) + '</td><td data-label="Source" class="small">' + (c.app_id ? esc(PL.TRIGGERS[c.trigger] || c.trigger || 'app') : 'one-off') + '</td>' +
+          '<td data-label="Email" class="small">' + esc(c.email || '–') + '</td><td data-label="Cost" class="num cost">' + (c.cost_usd != null ? '$' + Number(c.cost_usd).toFixed(2) : '–') + '</td>' +
+          '<td class="acts"><a class="link-arrow small" href="/check?id=' + esc(c.id) + '">Open</a></td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  if (tok()) open_(); else $('tok').focus();
+})();
+</script>
+
+</body>
+</html>

@@ -7,11 +7,16 @@ the report back. It runs on the machine that has the lab (Docker) and the fix ag
 
 Config comes from ~/.patchlabs/worker.env (KEY=value lines): API_URL, WORKER_TOKEN, PIPELINE (path to run.py).
 Only one check runs at a time. The pipeline is always run in dry-run mode: nothing is pushed to anyone's repo.
+Retention: pipeline run folders (runs/<YYYYMMDD-HHMMSS>/ next to PIPELINE) older than 30 days are deleted at start and
+then once a day.
 """
-import json, os, re, subprocess, sys, time, urllib.request
+import datetime, json, os, re, shutil, subprocess, sys, time, urllib.request
 
 ENV_FILE = os.environ.get("PATCHLABS_ENV", os.path.expanduser("~/.patchlabs/worker.env"))
 POLL_SECONDS = 30
+RETENTION_DAYS = 30
+CLEANUP_EVERY = 24 * 3600
+RUN_NAME = re.compile(r"^\d{8}-\d{6}$")  # run.py names each run folder datetime.now().strftime("%Y%m%d-%H%M%S")
 
 
 def load_env():
@@ -71,6 +76,47 @@ def run_check(check):
             "cost_usd": agent.get("total_cost_usd")}
 
 
+def runs_dir(pipeline):
+    """The pipeline keeps its run folders in runs/ beside run.py."""
+    return os.path.join(os.path.dirname(os.path.abspath(pipeline)), "runs")
+
+
+def expired_runs(runs, now=None, days=RETENTION_DAYS):
+    """Run folders directly inside `runs` whose name is a run timestamp older than `days`. Nothing else is ever chosen:
+    no files, no symlinks, no other names, nothing nested."""
+    now, out = now or time.time(), []
+    try:
+        names = sorted(os.listdir(runs))
+    except OSError:
+        return out
+    root = os.path.realpath(runs)
+    for name in names:
+        path = os.path.join(runs, name)
+        if not RUN_NAME.match(name) or os.path.islink(path) or not os.path.isdir(path):
+            continue
+        if os.path.dirname(os.path.realpath(path)) != root:
+            continue
+        try:
+            started = datetime.datetime.strptime(name, "%Y%m%d-%H%M%S").timestamp()
+        except ValueError:
+            continue
+        if now - started > days * 86400:
+            out.append(path)
+    return out
+
+
+def cleanup_runs():
+    runs, removed = runs_dir(PIPELINE), 0
+    for path in expired_runs(runs):
+        try:
+            shutil.rmtree(path)
+            removed += 1
+        except OSError as e:
+            log(f"retention: couldn't delete {path}: {e!r}")
+    log(f"retention: removed {removed} run folder{'' if removed == 1 else 's'} older than {RETENTION_DAYS} days from {runs}")
+    return removed
+
+
 def once():
     check = call("/worker/claim")["check"]
     if not check:
@@ -85,11 +131,19 @@ def once():
 
 
 def main():
+    cleanup_runs()
     if "--once" in sys.argv:
         once()
         return
     log(f"worker started, polling {API}")
+    last_cleanup = time.time()
     while True:
+        if time.time() - last_cleanup >= CLEANUP_EVERY:
+            last_cleanup = time.time()
+            try:
+                cleanup_runs()
+            except Exception as e:  # retention must never stop the worker
+                log(f"retention error: {e!r}")
         try:
             if not once():
                 time.sleep(POLL_SECONDS)

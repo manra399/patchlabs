@@ -1,109 +1,638 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PatchLabs: leak checks and tested fixes for AI-built apps</title>
-<meta name="description" content="About 1 in 4 AI-built apps we tested let strangers read customer data. PatchLabs finds the leaks in Lovable, Replit and Bolt apps, writes the fix, proves it works, and sends a pull request your engineer approves.">
+<title>PatchLabs: find the leak, prove the fix, for apps built with AI</title>
+<meta name="description" content="PatchLabs rebuilds your Lovable or Supabase app's database from its migrations, finds the personal data strangers can read, writes the fix and proves it in a lab. Free for your first app.">
 <link rel="canonical" href="https://patchlabs.dev/">
-<meta property="og:title" content="PatchLabs: leak checks and tested fixes for AI-built apps">
-<meta property="og:description" content="We find the data leaks in your AI-built app, write the fix and prove it works before anything ships.">
-<meta property="og:url" content="https://patchlabs.dev/">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1917'/%3E%3Cpath d='M9 17l5 5 9-11' stroke='%23fafaf9' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="PatchLabs: find the leak, prove the fix, for apps built with AI">
+<meta property="og:description" content="PatchLabs rebuilds your Lovable or Supabase app's database from its migrations, finds the personal data strangers can read, writes the fix and proves it in a lab. Free for your first app.">
+<meta property="og:url" content="https://patchlabs.dev/">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PatchLabs: find the leak, prove the fix, for apps built with AI">
+<meta name="twitter:description" content="PatchLabs rebuilds your Lovable or Supabase app's database from its migrations, finds the personal data strangers can read, writes the fix and proves it in a lab. Free for your first app.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev","logo":"https://patchlabs.dev/assets/favicon.svg","email":"manraj@patchlabs.dev","founder":{"@type":"Person","name":"Manraj Singh Dhillon"},"address":{"@type":"PostalAddress","addressLocality":"London","addressCountry":"GB"}}</script>
 </head>
 <body>
-<header><div class="wrap">
-  <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M9 17l5 5 9-11" stroke="var(--bg)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
-  <a class="btn-o" href="#check">Free leak check</a>
-</div></header>
+<a class="skip" href="#main">Skip to content</a>
 
-<main>
-  <section class="hero"><div class="wrap">
-    <p class="eyebrow">For apps built with Lovable, Replit and Bolt</p>
-    <h1>1 in 4 AI-built apps we tested leak customer data.</h1>
-    <p class="lede">PatchLabs finds the leaks in your app, writes the fix and proves it works before anything ships. Your engineer approves it with one merge.</p>
-    <div id="check">
-      <form class="lc"><label hidden for="repo1">GitHub repo</label><input id="repo1" name="repo" required placeholder="github.com/you/your-app"><label hidden for="email1">Email</label><input id="email1" name="email" type="email" required placeholder="you@company.com"><button type="submit">Get my free leak check</button></form>
-      <p class="err" role="alert"></p>
-      <p class="note">Read-only code access. We never touch your live app or see your customers’ data.</p>
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd">
+        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel">
+          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
+          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
+          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
+          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
+          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
+          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
+          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
+          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
+          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+        </div>
+      </details>
+      <a href="/how-it-works">How it works</a>
+      <a href="/research/1-in-4">Research</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="urgent" href="/leaking-now">Leaking right now?</a>
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
     </div>
-  </div></section>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
 
-  <section class="stats">
-    <div class="wrap grid">
-      <div class="stat"><b>318</b><p>public Lovable and Supabase apps rebuilt in our lab</p></div>
-      <div class="stat"><b>1 in 4</b><p>let strangers read personal data like emails and phone numbers</p></div>
-      <div class="stat"><b>19 of 20</b><p>of our agent’s fixes worked first time, re-checked in the lab</p></div>
+<main id="main">
+
+<!-- 1-2. Hero -->
+<section class="hero" id="check">
+  <div class="wrap hero-grid">
+    <div>
+      <a class="announce-pill" href="/research/1-in-4"><span class="lab">New study</span>We rebuilt 318 Lovable and Supabase apps <span aria-hidden="true">→</span></a>
+      <h1>Find the <span class="r">leak</span>.<br>Prove the <span class="g">fix</span>.</h1>
+      <p class="lede">For apps built with Lovable, Supabase, Bolt, Replit or Cursor. We rebuild your database from its own migrations, read it as a stranger, then write the fix and <strong>prove it works</strong> in the lab before you ship. Your engineer approves every change.</p>
+      <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo1">Public GitHub repo</label>
+          <input id="repo1" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email1">Your email</label>
+          <input id="email1" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <noscript><p class="small muted mt-1">Without JavaScript this form opens your email app with the repo and email filled in, and we start the check by hand.</p></noscript>
+      <div class="form-meta">
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Free for your first app</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Reads your public repo only</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Never connects to your live app or database</span>
+      </div>
+      <div class="cta-row">
+        <a class="link-arrow" href="/sample-report">See a sample proof report</a>
+        <span class="median">Median 3.5 min to a proven fix · lab study, n=20, 9 Nov 2026</span>
+      </div>
     </div>
-    <p class="wrap src">PatchLabs lab study, November 2026: public GitHub projects only, code-only, no live systems accessed.</p>
-  </section>
 
-  <section class="block"><div class="wrap">
-    <h2>How it works</h2>
-    <ol class="steps">
-      <li><span class="n">01</span><h3>Share your repo</h3><p>Read-only GitHub access. Works with apps built in Lovable, Replit, Bolt or Cursor.</p></li>
-      <li><span class="n">02</span><h3>We rebuild your database</h3><p>In our lab, from your own migrations, with fake data. Your live app and customer data are never touched.</p></li>
-      <li><span class="n">03</span><h3>Agents find and fix</h3><p>They check who can read what, write the fix, and prove it closes the leak without locking out your users.</p></li>
-      <li><span class="n">04</span><h3>You approve</h3><p>You get a pull request with the proof and any questions in plain English. Nothing ships until your engineer merges it.</p></li>
+    <figure class="figure">
+      <div class="window replay" data-replay>
+        <div class="window-bar">
+          <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="title">lab run · manra399/patchlabs-demo-app</span>
+          <button type="button" data-replay-toggle aria-label="Pause the lab replay"><span class="t">Pause</span></button>
+        </div>
+<pre class="transcript lines" aria-label="Replay of a real PatchLabs lab run on our demo app">
+<span class="ln" data-wait="200"><span class="dim">$</span> <span class="cmd">patchlabs check manra399/patchlabs-demo-app</span></span>
+<span class="ln" data-wait="700"><span class="step">[REBUILD]</span> 1 migration → lab Postgres       <span class="ok">OK</span></span>
+<span class="ln" data-wait="250"><span class="dim">          Supabase roles, auth, default grants</span></span>
+<span class="ln" data-wait="600"><span class="step">[SEED]</span>    2 test users, fake rows          <span class="ok">OK</span></span>
+<span class="ln" data-wait="700"><span class="step">[PROBE]</span>   as <span class="k">anon</span> (your public key)</span>
+<span class="ln" data-wait="300"><span class="dim">          </span>select * from public.profiles;</span>
+<span class="ln" data-wait="900" data-status="leak" data-status-text="leak found"><span class="dim">          →</span> 2 rows readable              <span class="leak">LEAK</span></span>
+<span class="ln" data-wait="200"><span class="dim">            email</span> <span class="redact">•••••@•••••</span> <span class="dim">phone</span> <span class="redact">+•• •••• ••••</span></span>
+<span class="ln" data-wait="150"><span class="dim">            email</span> <span class="redact">•••••@•••••</span> <span class="dim">phone</span> <span class="redact">+•• •••• ••••</span></span>
+<span class="ln" data-wait="600"><span class="step">[PROBE]</span>   as <span class="k">stranger</span> → 2 rows         <span class="leak">LEAK</span></span>
+<span class="ln" data-wait="900"><span class="step">[FIX]</span>     smallest model writes migration</span>
+<span class="ln" data-wait="450"><span class="del">- drop policy "Profiles are viewable by everyone"</span></span>
+<span class="ln" data-wait="350"><span class="add">+ create policy "Users can view own profile"</span></span>
+<span class="ln" data-wait="150"><span class="add">+   for select using (auth.uid() = user_id);</span></span>
+<span class="ln" data-wait="900"><span class="step">[PROVE]</span>   <span class="k">anon</span>      → 0 rows          <span class="deny">DENIED</span></span>
+<span class="ln" data-wait="500"><span class="dim">          </span><span class="k">stranger</span>  → 0 rows          <span class="deny">DENIED</span></span>
+<span class="ln" data-wait="500" data-status="proven" data-status-text="proven"><span class="dim">          </span><span class="k">owner</span>     → 1 row, their own    <span class="ok">OK</span></span>
+<span class="ln" data-wait="700"><span class="step">[DONE]</span>    <span class="done">lab proof passed</span> <span class="dim">· 36 s</span></span>
+<span class="ln" data-wait="500"><span class="dim">          </span><span class="approve">Ready for your engineer to approve</span></span>
+</pre>
+        <div class="window-foot">
+          <span class="pill proven" data-replay-status>proven</span>
+          <span>Real run, 9 Nov 2026 · demo app, fake data</span>
+        </div>
+      </div>
+      <figcaption>A real lab run on our own deliberately leaky demo app. Emails and phone numbers are redacted. <a href="/check?id=sample">Open the full report</a>.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 3. Proof strip -->
+<section class="sec tight" aria-labelledby="proof-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">Evidence</p>
+        <h2 id="proof-h">Numbers from our own lab, with the sample sizes.</h2>
+      </div>
+      <a class="link-arrow" href="/research/methodology">How we measured</a>
+    </div>
+    <div class="stats" data-reveal>
+      <div class="stat"><b class="num">318</b><span>public Lovable and Supabase apps rebuilt in our lab<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+      <div class="stat red"><b class="num">106</b><span>of those 318 let the wrong people read personal data<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup></span></div>
+      <div class="stat green"><b class="num">18<small>of 20</small></b><span>fixes passed the strict lab proof with no human<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
+      <div class="stat"><b class="num">3.5<small>min</small></b><span>median time from repo to proven fix<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
+      <div class="stat"><b class="num">$0.46</b><span>median model cost per app<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
+    </div>
+    <ol class="footnotes">
+      <li id="fn1">PatchLabs lab study, Nov 2026. 436 public repos run (from a random sample of 500); in 318 the migrations built a working database in the lab. Public code only; no live systems accessed.</li>
+      <li id="fn2">106 of 318 (33%): 70 (22%) readable by anyone on the internet with the app’s public key, 36 (11%) by anyone who signs up. After removing businesses’ own public contact details, about 1 in 4 (25–28%) exposed real personal data such as emails, phone numbers, addresses or dates of birth.</li>
+      <li id="fn3">Autonomous pipeline on 20 new apps, 9 Nov 2026, n=20. 15 needed only the smallest model; the other 2 of 20 went to a person. Small sample, published with the misses. <a href="/research/methodology">Methodology</a>.</li>
     </ol>
-  </div></section>
+  </div>
+</section>
 
-  <section class="block" style="padding-top:0"><div class="wrap">
-    <h2>What we check</h2>
-    <dl>
-      <div><dt>Who can read your data</dt><dd>Database access rules that let anyone, or anyone who signs up, read other people’s records.</dd></div>
-      <div><dt>Exposed keys</dt><dd>AI, payment and database keys in your code and in its full git history, with where to rotate each one.</dd></div>
-      <div><dt>Open AI endpoints</dt><dd>Functions that call paid AI models without a login, so anyone can run up your bill.</dd></div>
-      <div><dt>Payment webhooks</dt><dd>Stripe events accepted without a signature check.</dd></div>
-    </dl>
-  </div></section>
+<!-- 4. Three problems -->
+<section class="sec" aria-labelledby="problems-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">The problem</p>
+      <h2 id="problems-h">The app works. That is exactly why nobody checks who else can read it.</h2>
+    </div>
+    <div class="problems" data-reveal>
+      <div>
+        <span class="lab red"><span class="n">01</span>Exposed</span>
+        <h3>AI builders ship databases strangers can read.</h3>
+        <p>Your app’s public key ships inside every page. One access rule like <code>using (true)</code> and anyone holding it can read every row. In our study, anyone with the key could read personal data in 70 of 318 rebuilt apps.</p>
+      </div>
+      <div>
+        <span class="lab"><span class="n">02</span>Unfixed</span>
+        <h3>Scanners stop at a list.</h3>
+        <p>A warning is where the work starts. Someone still has to write the policy, work out which pages depend on the old behaviour, and be sure real users are not locked out.</p>
+      </div>
+      <div>
+        <span class="lab"><span class="n">03</span>Unproven</span>
+        <h3>Nobody tests the fix before it ships.</h3>
+        <p>A policy that looks right can still leak to signed-in strangers, or block owners from their own data. Without testing as each kind of user, you find out in production.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <section class="band"><div class="wrap grid">
-    <div><h2>Every change comes with a receipt</h2><p>What our agent found, what it changed, the lab proof, and who approved it. One record per fix, owned by you. Useful when a client or an auditor asks what was done to their app.</p></div>
-    <div><h2>Built for agencies</h2><p>Keep every client app you’ve shipped checked after handover. Fixes arrive as pull requests your team approves, and business questions go to your client in plain English.</p></div>
-  </div></section>
+<!-- 5. How it works -->
+<section class="sec band" aria-labelledby="how-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">How it works</p>
+        <h2 id="how-h">From repo to proven fix, without touching your live app.</h2>
+        <p>Seven steps, each with an artifact you can inspect.</p>
+      </div>
+      <a class="link-arrow" href="/how-it-works">The full technical walkthrough</a>
+    </div>
+    <ol class="pipeline" data-reveal>
+      <li><span class="lab">01 Connect</span><h3>Paste your repo</h3><p>Any public GitHub repo. Prove it’s yours by committing a one-time code.</p><div class="art">patchlabs-verify.txt
+patchlabs-3f9a…</div></li>
+      <li><span class="lab">02 Rebuild</span><h3>Rebuild the database</h3><p>From your <code>supabase/migrations</code>, in a disposable Postgres with Supabase’s roles, auth functions and grants.</p><div class="art">migrations applied
+roles: anon, authenticated</div></li>
+      <li><span class="lab">03 Probe</span><h3>Read as a stranger</h3><p>Seed fake rows, then query as an anonymous visitor and as a signed-in stranger.</p><div class="art">anon → profiles
+2 rows <span class="leak">LEAK</span></div></li>
+      <li><span class="lab">04 Fix</span><h3>Write the fix</h3><p>The smallest Claude model writes a migration first; a larger one only if the proof fails. Spend is capped per check.</p><div class="art">+ create policy …
+  using (auth.uid() = user_id)</div></li>
+      <li class="hl"><span class="lab green">05 Prove</span><h3>Prove it in the lab</h3><p>Re-test as all three identities. A fix only counts when every check passes.</p><div class="art">anon     <span class="ok">DENIED</span>
+stranger <span class="ok">DENIED</span>
+owner    <span class="ok">OK</span></div></li>
+      <li><span class="lab">06 Approve</span><h3>Your engineer approves</h3><p>Download the migration, or commit it on GitHub in one click. Automatic pull requests arrive with our GitHub App.</p><div class="art">supabase/migrations/
+…_patchlabs_leak_fix.sql</div></li>
+      <li><span class="lab">07 Re-check</span><h3>Keep it closed</h3><p>Monitor the app: re-checks monthly on Free, weekly on paid plans, and an email when a new leak appears.</p><div class="art">next check
+in 7 days</div></li>
+      <li class="sum"><span class="lab">Whole run, median</span><div><span class="big">3.5 min</span><p>$0.46 model cost per app. Lab study, 20 apps, 9 Nov 2026.</p></div><a class="link-arrow" href="/research/methodology">Methodology</a></li>
+    </ol>
+    <p class="small muted mt-3">In the same run we scan your code and its full git history for exposed AI, payment and database keys.</p>
+  </div>
+</section>
 
-  <section class="block"><div class="wrap faq">
-    <h2>Questions</h2>
-    <details><summary>Do you need my database password?</summary><p>No. We work from your code alone. The fix arrives as a pull request, and it reaches your live app through your normal deploy once you merge it.</p></details>
-    <details><summary>What if a fix breaks something?</summary><p>Every fix is tested on a rebuilt copy of your database first. If a page would behave differently, the pull request says so, and any change that page needs is included.</p></details>
-    <details><summary>Who decides who should see what?</summary><p>You do. When a fix depends on a business choice, for example whether sellers’ emails should be public, we ask you in plain English with a recommended answer.</p></details>
-    <details><summary>Is it really free?</summary><p>Your first app’s check is free. Agencies managing many client apps get plans priced per app.</p></details>
-  </div></section>
+<!-- 6. What a proof looks like -->
+<section class="sec" aria-labelledby="proof-look-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab green">Prove</p>
+      <h2 id="proof-look-h">A fix only counts when it passes three checks.</h2>
+      <p>Every fix we hand over has been tested in the lab as three different people. If any check fails, it is not called proven.</p>
+    </div>
+    <div class="idents" data-reveal>
+      <div class="ident">
+        <div class="who"><b>Anonymous visitor</b><span class="pill proven">DENIED</span></div>
+        <pre class="q">-- with your app's public key
+select * from public.profiles;
+→ 0 rows</pre>
+        <p>Anyone on the internet has your public key; it ships inside your app. After the fix they read nothing.</p>
+      </div>
+      <div class="ident">
+        <div class="who"><b>Signed-in stranger</b><span class="pill proven">DENIED</span></div>
+        <pre class="q">-- signed in as a different user
+select * from public.profiles;
+→ 0 rows</pre>
+        <p>Anyone can create an account. Signing up must not unlock other people’s rows.</p>
+      </div>
+      <div class="ident">
+        <div class="who"><b>Owner</b><span class="pill proven">OK</span></div>
+        <pre class="q">-- signed in as the row's owner
+select * from public.profiles;
+→ 1 row, their own</pre>
+        <p>A fix that locks real users out is not a fix. The owner must still read their own data.</p>
+      </div>
+    </div>
+    <div class="grid g2 top mt-4">
+      <div class="code">
+        <div class="code-bar"><span class="name">supabase/migrations/20261109165700_patchlabs_leak_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Fix: replace the "everyone can read" policy with owner-only access.
+-- The old policy let anonymous and signed-in users read every
+-- profile row, including email and phone.</span>
+<span class="del">DROP POLICY "Profiles are viewable by everyone" ON public.profiles;</span>
+<span class="add">CREATE POLICY "Users can view own profile" ON public.profiles</span>
+<span class="add">  FOR SELECT USING (auth.uid() = user_id);</span></code></pre>
+      </div>
+      <div>
+        <details class="acc boxed" open>
+          <summary>Show the SQL behind the three checks</summary>
+          <div class="acc-body">
+            <p class="small">Simplified from what the lab runs. The test rows are fake; the identities are simulated inside the disposable database.</p>
+            <div class="code mb-0">
+              <div class="code-bar"><span class="name">lab: three-identity proof</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- 1. anonymous visitor (anon key)</span>
+set local role anon;
+select count(*) from public.profiles;  <span class="c">-- expect 0</span>
+<span class="c">-- 2. signed-in stranger</span>
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"&lt;stranger&gt;"}', true);
+select count(*) from public.profiles;  <span class="c">-- expect 0</span>
+<span class="c">-- 3. owner</span>
+select set_config('request.jwt.claims', '{"sub":"&lt;owner&gt;"}', true);
+select count(*) from public.profiles;  <span class="c">-- expect their own rows</span></code></pre>
+            </div>
+          </div>
+        </details>
+        <details class="acc boxed">
+          <summary>What “proven” does not cover</summary>
+          <div class="acc-body"><p class="small">The proof covers the access rules we test, on the database your migrations build. If a migration is missing from the repo, or the app uses a backend other than Supabase/Postgres, the report says what could not be checked. It is not a guarantee that the whole app is secure.</p></div>
+        </details>
+        <p class="small muted mt-2">This is the real fix from the demo app run above. <a href="/check?id=sample">See it in the report</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <div class="wrap"><div class="cta">
-    <h2>Find out if your app leaks. Free, in 48 hours.</h2>
-    <form class="lc"><label hidden for="repo2">GitHub repo</label><input id="repo2" name="repo" required placeholder="github.com/you/your-app"><label hidden for="email2">Email</label><input id="email2" name="email" type="email" required placeholder="you@company.com"><button type="submit">Get my free leak check</button></form>
-    <p class="err" role="alert"></p>
-    <p class="note">Want to see one first? <a href="/check.html?id=sample">Read a sample report</a> for our demo app.</p>
-  </div></div>
+<!-- Study funnel -->
+<section class="sec band" aria-labelledby="study-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">The 1-in-4 study</p>
+      <h2 id="study-h">We rebuilt 318 real apps. About 1 in 4 exposed personal data.</h2>
+      <p class="lede">We took public Lovable and Supabase repos, rebuilt each database from its own migrations, and tested who could read what. Then we let the pipeline fix 20 new apps on its own and checked every fix.</p>
+      <p class="small muted">We publish aggregate numbers only: no app is named, and no real person’s data appears anywhere on this site.</p>
+      <div class="row mt-3"><a class="btn secondary" href="/research/1-in-4">Read the study</a><a class="btn ghost" href="/research/methodology">Methodology</a></div>
+    </div>
+    <div class="stack">
+      <div class="card" data-reveal>
+        <p class="lab">Who could read personal data · n=318</p>
+        <div class="funnel">
+          <div class="fbar light"><span class="lbl">Apps rebuilt to a working database</span><span class="val">318</span><span class="track"><span class="fill" style="--w:100%"></span></span></div>
+          <div class="fbar red"><span class="lbl">Readable by the wrong people</span><span class="val">106</span><span class="track"><span class="fill" style="--w:33.3%"></span></span></div>
+          <div class="fbar red indent"><span class="lbl">by anyone on the internet</span><span class="val">70</span><span class="track"><span class="fill" style="--w:22%"></span></span></div>
+          <div class="fbar red indent"><span class="lbl">by anyone who signs up</span><span class="val">36</span><span class="track"><span class="fill" style="--w:11.3%"></span></span></div>
+        </div>
+        <p class="small muted mt-2 mb-0">After removing businesses’ own public contact details: <b class="ink">about 1 in 4 (25–28%)</b> exposed real personal data.</p>
+      </div>
+      <div class="card" data-reveal>
+        <p class="lab green">Fixes, no human involved · n=20</p>
+        <div class="funnel">
+          <div class="fbar light"><span class="lbl">Fixes attempted, 9 Nov 2026</span><span class="val">20</span><span class="track"><span class="fill" style="--w:100%"></span></span></div>
+          <div class="fbar green"><span class="lbl">Passed the strict lab proof</span><span class="val">18</span><span class="track"><span class="fill" style="--w:90%"></span></span></div>
+          <div class="fbar green indent"><span class="lbl">needed only the smallest model</span><span class="val">15</span><span class="track"><span class="fill" style="--w:75%"></span></span></div>
+          <div class="fbar"><span class="lbl">Went to a person</span><span class="val">2</span><span class="track"><span class="fill" style="--w:10%"></span></span></div>
+        </div>
+        <p class="small muted mt-2 mb-0">Small sample, labelled as one. In a separate check on 5 Nov, 19 of 20 fixes from our agents worked first time and applied cleanly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. What we check today -->
+<section class="sec" aria-labelledby="checks-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What we check today</p>
+      <h2 id="checks-h">Two things, done properly.</h2>
+    </div>
+    <div class="grid g3" data-reveal>
+      <a class="card link red-edge" href="/product/leak-lab">
+        <span class="n-big">CORE</span>
+        <h3>Data-access leaks</h3>
+        <p>Tables holding emails, phone numbers, addresses or dates of birth that an anonymous visitor or a signed-in stranger can read. Ranked by what is exposed, fixed and proven.</p>
+        <div class="card-foot"><span class="link-arrow">Leak lab</span></div>
+      </a>
+      <a class="card link" href="/product/key-scan">
+        <span class="n-big">ALSO IN EVERY RUN</span>
+        <h3>Exposed keys</h3>
+        <p>AI, payment and database keys in your code and its full git history. A deleted key is still in history. Values are masked in the report, with where to rotate each one.</p>
+        <div class="card-foot"><span class="link-arrow">Key scan</span></div>
+      </a>
+      <div class="card sunk">
+        <span class="n-big">NOT YET</span>
+        <h3>What we don’t do</h3>
+        <ul class="ticks small mb-0">
+          <li class="dash">Pentests, dependency scanning or live-URL scanning</li>
+          <li class="dash">Compliance certification</li>
+          <li class="dash">Private repos and automatic pull requests: coming with our GitHub App</li>
+        </ul>
+        <div class="card-foot"><a class="link-arrow" href="/changelog">What has shipped</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. Comparison by category -->
+<section class="sec band" aria-labelledby="compare-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">Compared</p>
+        <h2 id="compare-h">A scanner gives you a list. PatchLabs gives you a fix you have watched work.</h2>
+        <p>By category, because products within each one differ. Use the others too: they cover ground we don’t.</p>
+      </div>
+      <a class="link-arrow" href="/compare">Named, sourced comparisons</a>
+    </div>
+    <div class="table-wrap" data-reveal>
+      <table class="table compare">
+        <caption class="sr-only">PatchLabs compared with three categories of tools</caption>
+        <thead><tr><th scope="col"></th><th scope="col" class="us">PatchLabs</th><th scope="col">Built-in platform scanner</th><th scope="col">URL scanner</th><th scope="col">Manual pentest</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Finds data the wrong people can read</th><td class="us"><span class="yes">Tests who can read which rows</span></td><td><span class="part">Flags risky rules</span><span class="cell-note">Lint-style checks on policies</span></td><td><span class="part">What is reachable from outside</span></td><td><span class="yes">Within the agreed scope</span></td></tr>
+          <tr><th scope="row">Writes the fix</th><td class="us"><span class="yes">SQL migration, plus code notes</span></td><td><span class="part">Sometimes</span><span class="cell-note">Suggestions or auto-fix for some findings</span></td><td><span class="part">Usually a list or snippet</span></td><td><span class="part">Recommendations</span></td></tr>
+          <tr><th scope="row">Proves the fix as anon, stranger and owner</th><td class="us"><span class="yes">Every fix, before you see it</span></td><td><span class="no">Not described</span></td><td><span class="no">Re-scan only</span></td><td><span class="part">Retest, often extra cost</span></td></tr>
+          <tr><th scope="row">Needs your live app</th><td class="us"><span class="yes">No. Works from the repo only</span></td><td><span class="part">Runs inside the platform</span></td><td><span class="no">Probes your live URL</span></td><td><span class="no">Usually live or staging</span></td></tr>
+          <tr><th scope="row">Works on exported code</th><td class="us"><span class="yes">Any repo with Supabase migrations</span></td><td><span class="no">Only inside that platform</span></td><td><span class="part">Needs a deployed URL</span></td><td><span class="yes">Yes</span></td></tr>
+          <tr><th scope="row">Typical time</th><td class="us"><b>Median 3.5 min</b><span class="cell-note">Lab study, n=20</span></td><td>Seconds to minutes</td><td>Minutes</td><td>Days to weeks</td></tr>
+          <tr><th scope="row">Typical cost</th><td class="us"><b>Free for 1 app</b><span class="cell-note">Paid plans from £19/month</span></td><td>Included with the platform</td><td>Free to tens of dollars a month</td><td>Usually thousands</td></tr>
+          <tr><th scope="row">Where it wins</th><td class="us">Proof that the fix works</td><td>Broad health checks, built in</td><td>Sees your real deployment</td><td>Covers far more than data access</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Last checked 10 Nov 2026. Facts are phrased for each category in general; individual products differ. Spotted something out of date? <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Tell us</a>.</p>
+  </div>
+</section>
+
+<!-- 9. Works with -->
+<section class="sec tight" aria-labelledby="works-h">
+  <div class="wrap">
+    <div class="sec-head split compact">
+      <div>
+        <p class="lab">Works with</p>
+        <h2 id="works-h" class="h-md">Apps built on Lovable, Supabase, Bolt, Replit and Cursor.</h2>
+      </div>
+      <p class="small muted mb-0 maxw-sm">Anything with a <code>supabase/migrations</code> folder in a public GitHub repo. Independent: not affiliated with any of these companies.</p>
+    </div>
+    <div class="wordmarks">
+      <a href="/for/lovable">Lovable <span>→</span></a>
+      <a href="/for/supabase">Supabase <span>→</span></a>
+      <a href="/for/bolt">Bolt <span>→</span></a>
+      <a href="/for/replit">Replit <span>→</span></a>
+      <a href="/for/cursor">Cursor <span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- 10. Who it's for -->
+<section class="sec" aria-labelledby="who-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Who it’s for</p>
+      <h2 id="who-h">Built for the person who shipped it, and the one who signs it off.</h2>
+    </div>
+    <div class="grid g3" data-reveal>
+      <div class="card persona">
+        <span class="tag">Solo builder</span>
+        <h3>You built it with AI. Now real people sign up.</h3>
+        <p>Paste the repo, get a plain-English report and a fix you can apply yourself, with the proof attached. Business questions come with a recommended answer.</p>
+        <div class="card-foot"><a class="link-arrow" href="#check">Check my app free</a></div>
+      </div>
+      <div class="card persona">
+        <span class="tag">Agency</span>
+        <h3>You ship client apps and stay on the hook after handover.</h3>
+        <p>Monitor up to 10 client apps on one plan, with client labels, scheduled re-checks, team seats and a webhook to your Slack.</p>
+        <div class="card-foot"><a class="link-arrow" href="/agencies">For agencies</a></div>
+      </div>
+      <div class="card persona">
+        <span class="tag">The approving engineer</span>
+        <h3>You want the SQL and the proof, not a dashboard of warnings.</h3>
+        <p>Each fix is a migration with a risk note and the exact before-and-after counts for each identity. Nothing changes until you apply it.</p>
+        <div class="card-foot"><a class="link-arrow" href="/how-it-works">How it works</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11. Safety and privacy -->
+<section class="sec band" aria-labelledby="safety-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Safety &amp; privacy</p>
+      <h2 id="safety-h">We never need your database password.</h2>
+      <p class="lede">Everything happens on a copy we build from your code. Your live app, your real database and your customers’ data stay where they are.</p>
+      <div class="row mt-3"><a class="btn secondary" href="/security">Security details</a><a class="btn ghost" href="/legal/privacy">Privacy policy</a></div>
+    </div>
+    <div class="card raised" data-reveal>
+      <dl class="kv safety">
+        <dt>We read</dt><dd>Your public GitHub repo: code, migrations and git history. Nothing else.</dd>
+        <dt>You prove</dt><dd>That the repo is yours, by committing <code>patchlabs-verify.txt</code> with a one-time code. Delete it once the check starts.</dd>
+        <dt>We never need</dt><dd>Your database password, service-role key, or any access to your live app. We never connect to them.</dd>
+        <dt>The lab</dt><dd>A disposable local Postgres seeded with fake rows, thrown away after the run.</dd>
+        <dt>Models</dt><dd>Fixes are written by Claude models from Anthropic, which see the relevant code. A spend cap applies to every check.</dd>
+        <dt>We keep</dt><dd>Your email, the repo name, the report and the fix, so your report link keeps working. Signed-in users can export or delete all of it.</dd>
+        <dt>Tracking</dt><dd>None. No cookies and no third-party analytics on this site.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- 12. Pricing teaser -->
+<section class="sec" aria-labelledby="pricing-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">Pricing</p>
+        <h2 id="pricing-h">Start free. Pay when you monitor more apps.</h2>
+        <p>Every plan shows every finding and proves every fix. API keys, webhooks and badges are on every plan.</p>
+      </div>
+      <a class="link-arrow" href="/pricing">Full pricing and limits</a>
+    </div>
+    <div class="plans" data-reveal>
+      <div class="plan">
+        <h3>Free</h3>
+        <p class="for">For one app you built yourself.</p>
+        <p class="price"><b>£0</b></p>
+        <ul><li>1 app, re-checked monthly</li><li>4 manual runs a month</li><li>Every finding, every fix proven</li><li>Key scan of code and git history</li></ul>
+        <a class="btn primary" href="#check">Check my app free</a>
+      </div>
+      <div class="plan featured">
+        <span class="badge">Recommended</span>
+        <h3>Maker</h3>
+        <p class="for">For founders with paying users.</p>
+        <p class="price"><b>£19</b><span>/ month</span></p>
+        <ul><li>3 apps, weekly or monthly re-checks</li><li>30 manual runs a month</li><li>2 team seats</li><li>Email alerts on new leaks</li></ul>
+        <a class="btn secondary" href="/pricing">Request access</a>
+        <p class="fine">Card payments aren’t live yet. We set your plan and invoice you, usually within a day.</p>
+      </div>
+      <div class="plan">
+        <h3>Agency</h3>
+        <p class="for">For studios shipping client apps.</p>
+        <p class="price"><b>£99</b><span>/ month</span></p>
+        <ul><li>10 apps, +£8 per extra app</li><li>200 manual runs a month</li><li>10 team seats, client labels</li><li>Webhooks to Slack or your tools</li></ul>
+        <a class="btn secondary" href="/pricing">Request access</a>
+        <p class="fine">Card payments aren’t live yet. We set your plan and invoice you, usually within a day.</p>
+      </div>
+    </div>
+    <p class="small muted mt-3">Pay yearly and get 2 months free (£190 or £990 a year). Over 50 apps? <a href="/pricing">Enterprise is priced to your app count</a>.</p>
+  </div>
+</section>
+
+<!-- 13. FAQ -->
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Straight answers.</h2>
+      <p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a> and you’ll get a reply from the person who built it.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>Isn’t Lovable’s or Supabase’s built-in check enough?</summary><div class="acc-body"><p>Use them: they are good at flagging common misconfigurations. They tell you a rule looks risky. They don’t rebuild your database and test, as each kind of user, whether a fix actually works. That proof is what we add. <a href="/compare">Detailed comparisons</a>.</p></div></details>
+      <details class="acc"><summary>Do you touch my live database?</summary><div class="acc-body"><p>No. We work only from your GitHub repo and rebuild the database in a disposable lab with fake rows. We never connect to your live app or database, and the fix reaches production only when your engineer applies it.</p></div></details>
+      <details class="acc"><summary>What if the fix can’t be proven?</summary><div class="acc-body"><p>Then we don’t call it proven. The report says a person is reviewing it, and explains why. In our lab study 2 of 20 fixes went to a person. When a fix depends on a business choice, such as whether sellers’ emails should be public, the report asks you in plain English with a recommended answer.</p></div></details>
+      <details class="acc"><summary>Who approves the change?</summary><div class="acc-body"><p>You or your engineer. The fix is a migration file you download, or commit to your repo on GitHub in one click. Nothing changes until someone applies it. Automatic pull requests need our GitHub App, which is coming.</p></div></details>
+      <details class="acc"><summary>What do you keep?</summary><div class="acc-body"><p>Your email, the repo name, the report and the fix. The lab database is thrown away after each run. We never see your customers’ data because we never connect to your database. Signed-in users can export or delete everything we hold.</p></div></details>
+      <details class="acc"><summary>Is this a pentest?</summary><div class="acc-body"><p>No. A pentest is a person attacking your whole system within an agreed scope. We test one thing in depth: who can read which rows in your database, plus exposed keys in your code. For a high-stakes launch, get both.</p></div></details>
+      <details class="acc"><summary>Which apps does it work with?</summary><div class="acc-body"><p>Public GitHub repos with Supabase migrations in <code>supabase/migrations</code>: most Lovable, Bolt and Supabase projects, and many Replit and Cursor ones. Private repos come with our GitHub App.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- 14. Final CTA -->
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo2">Public GitHub repo</label>
+          <input id="repo2" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email2">Your email</label>
+          <input id="email2" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+
 </main>
 
-<footer><div class="wrap">
-  <span>© 2026 PatchLabs · <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a></span>
-  <a href="/privacy.html">Privacy</a>
-</div></footer>
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
+        <li><a href="/product/leak-lab">Leak lab</a></li>
+        <li><a href="/product/key-scan">Key scan</a></li>
+        <li><a href="/product/monitoring">Monitoring</a></li>
+        <li><a href="/product/badge">Badge &amp; proof page</a></li>
+        <li><a href="/agencies">Agencies</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Finding index</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
 
-<script src="/app.js"></script>
-<script>
-document.querySelectorAll('form.lc').forEach(function (f) {
-  f.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var btn = f.querySelector('button'), err = f.nextElementSibling;
-    btn.disabled = true; btn.textContent = 'Starting…'; err.textContent = '';
-    try {
-      var r = await api('/checks', { method: 'POST', body: { repo: f.repo.value, email: f.email.value } });
-      location.href = '/check.html?id=' + r.id;
-    } catch (x) {
-      err.textContent = x.message; btn.disabled = false; btn.textContent = 'Get my free leak check';
-    }
-  });
-});
-</script>
 </body>
 </html>

@@ -1,0 +1,114 @@
+<!--
+title: PatchLabs for Replit apps: what we can check today | PatchLabs
+description: If your Replit app uses Supabase with migrations in GitHub, PatchLabs can rebuild its database, find data strangers can read and prove the fix. Here is what works today.
+layout: marketing
+nav: for_replit
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Replit apps</li></ol></nav>
+      <p class="lab">For Replit apps</p>
+      <h1>On Replit with Supabase? We can test it. Here’s what fits.</h1>
+      <p class="lede">Many Replit apps use Replit’s own database instead of Supabase. We test Supabase row level security, so here’s how to tell whether your app fits before you paste anything.</p>
+      <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-replit">Public GitHub repo</label><input id="repo-replit" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-replit">Your email</label><input id="email-replit" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <p class="indep">Independent: PatchLabs is not affiliated with Replit.</p>
+    </div>
+    <figure class="figure">
+      <div class="fit" style="grid-template-columns:minmax(0,1fr)">
+        <div><h3>Fits: Supabase from a Replit app</h3><p class="small muted mb-0">Your app talks to Supabase, and the schema is in <code>supabase/migrations</code> in a public GitHub repo. The leak lab and the key scan both run.</p></div>
+        <div><h3>Not yet: Replit’s built-in database</h3><p class="small muted mb-0">No Supabase migrations to rebuild from, so the leak lab can’t run. The key scan of your code and git history still does.</p></div>
+      </div>
+      <figcaption>Not sure which you use? Look for a <code>supabase/migrations</code> folder in your repo.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="fit-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Will it work?</p>
+      <h2 id="fit-h">Check this before you paste your repo.</h2>
+    </div>
+    <div class="fit">
+      <div><h3>Works today when</h3><ul class="ticks compact mb-0"><li><span>The app uses Supabase, with its schema in <code>supabase/migrations</code></span></li><li><span>The code is pushed to a public GitHub repo, for example from Replit’s Git pane</span></li><li><span>Access control uses Supabase RLS</span></li></ul></div>
+      <div><h3>Not covered yet</h3><ul class="ticks compact mb-0"><li class="x"><span>Apps on Replit’s built-in database or another backend</span></li><li class="x"><span>Private repos, until our GitHub App ships</span></li><li class="x"><span>API routes and server code that decide who sees what</span></li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="pat-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">The common leak</p>
+      <h2 id="pat-h">Where the leak lives depends on your database.</h2>
+      <p class="lede">With Supabase, the browser often reads the database directly with the public key, so RLS policies decide who sees what, and that’s what we test. With a server-side database, your API routes make that decision instead. We don’t test API routes yet, so we won’t pretend to.</p>
+      <div class="callout note mt-3"><p><strong>No Replit-specific numbers yet.</strong> Our study sampled public Lovable and Supabase repos, so we don’t publish figures for Replit apps. The access rules work the same way on any Supabase database, which is what we test.</p></div>
+    </div>
+    <div>
+      <div class="code mb-0">
+        <div class="code-bar"><span class="name">a Supabase policy that only checks sign-in</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- before: anyone who signs up reads every booking</span>
+<span class="del">create policy "Authenticated can read bookings"</span>
+<span class="del">  on public.bookings for select to authenticated using (true);</span>
+
+<span class="c">-- after: users read their own bookings only</span>
+<span class="add">create policy "Users read own bookings"</span>
+<span class="add">  on public.bookings for select to authenticated</span>
+<span class="add">  using (auth.uid() = user_id);</span></code></pre>
+      </div>
+      <p class="small muted mt-2">Illustrative SQL. Your report contains the real migration for your tables, and it only counts as proven once the anonymous visitor and the signed-in stranger are denied and the owner still reads their own rows.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="land-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">How the fix lands</p>
+      <h2 id="land-h">From proven fix to your live app.</h2>
+      <p class="lede">For a Replit app on Supabase, the fix is applied to your Supabase project, not to Replit. How your deployment picks up schema changes is something to check in your platform’s docs.</p>
+      <div class="callout limit mt-3"><p>We never push to your repo or touch your database. Nothing changes until you, or your engineer, applies the migration. Automatic pull requests need our GitHub App, which is coming.</p></div>
+    </div>
+    <ol class="steps"><li><h3>Get the fix</h3><p>Download the migration from your report, or commit it on GitHub in one click.</p></li><li><h3>Apply it to Supabase</h3><p>Paste the SQL into your Supabase project’s SQL editor, or use <code>supabase db push</code> if you work with the Supabase CLI.</p></li><li><h3>Pull the change into Replit</h3><p>Keep the migration file in your repo and pull it into your Repl, so future changes build on it.</p></li><li><h3>Re-check</h3><p>Run the check again to confirm the leak is closed.</p></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Replit questions.</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+      <div class="other-builders mt-3" aria-label="Other builders"><a class="link-arrow" href="/for/lovable">Lovable apps</a><a class="link-arrow" href="/for/supabase">Supabase apps</a><a class="link-arrow" href="/for/bolt">Bolt apps</a><a class="link-arrow" href="/for/cursor">Cursor apps</a></div>
+    </div>
+    <div>
+      <details class="acc"><summary>My Replit app uses Replit’s database. Can you check it at all?</summary><div class="acc-body"><p>The key scan runs on any public repo, so exposed AI, payment and database keys in your code and git history are still found. The leak lab needs Supabase migrations, so it can’t run on that app yet.</p></div></details>
+      <details class="acc"><summary>How do I get my Repl onto GitHub?</summary><div class="acc-body"><p>Replit has Git built in, so you can connect a GitHub repo and push. Check Replit’s docs for the current steps.</p></div></details>
+      <details class="acc"><summary>Do you need access to my Replit account?</summary><div class="acc-body"><p>No. We only read the public GitHub repo.</p></div></details>
+      <details class="acc"><summary>Is PatchLabs part of Replit?</summary><div class="acc-body"><p>No. PatchLabs is independent and not affiliated with Replit.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">You’ll get the leaks, the fix and the proof on one page. <a href="/how-it-works">How it works</a>.</p>
+      <div class="row center" style="justify-content:center"><a class="btn primary large" href="#repo-replit">Check my app free</a><a class="btn secondary large" href="/sample-report">See a sample report</a></div>
+    </div>
+  </div>
+</section>
+
+</main>

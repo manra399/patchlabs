@@ -1,0 +1,380 @@
+<!--
+title: How it works: rebuild, probe, fix, prove | PatchLabs
+description: The technical walkthrough for the engineer who approves: how PatchLabs rebuilds your Supabase database from migrations, tests three identities and proves each fix.
+layout: marketing
+nav: how
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">How it works</li></ol></nav>
+      <p class="lab">For the engineer who approves</p>
+      <h1>Every fix is tested as three people before you see it.</h1>
+      <p class="lede">PatchLabs rebuilds your database from <code>supabase/migrations</code> in a throwaway lab, reads it as an anonymous visitor and as a signed-in stranger, writes a migration, and re-tests until the leak is closed and the owner can still read their own rows. Below is exactly how, and where it stops.</p>
+      <div class="row cta"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/sample-report">See a sample report</a></div>
+      <p class="meta-line">Median 3.5 min and $0.46 model cost per app · lab study, n=20, 9 Nov 2026</p>
+    </div>
+    <figure class="figure">
+      <div class="window">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">run log · patchlabs-demo-app</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="transcript lines" aria-label="Run log of a real PatchLabs check on our demo app">
+<span class="ln"><span class="dim">16:56:15</span> <span class="step">[VERIFY]</span>  patchlabs-verify.txt found</span>
+<span class="ln"><span class="dim">        </span> <span class="step">[KEYS]</span>    tree + full history   <span class="ok">CLEAN</span></span>
+<span class="ln"><span class="dim">        </span> <span class="step">[REBUILD]</span> migrations → lab db  <span class="ok">OK</span></span>
+<span class="ln"><span class="dim">        </span> <span class="step">[SEED]</span>    fake rows, 2 test users</span>
+<span class="ln"><span class="dim">        </span> <span class="step">[PROBE]</span>   <span class="k">anon</span>     profiles 2  <span class="leak">LEAK</span></span>
+<span class="ln"><span class="dim">        </span>           <span class="k">stranger</span> profiles 2  <span class="leak">LEAK</span></span>
+<span class="ln"><span class="dim">        </span> <span class="step">[FIX]</span>     smallest model writing</span>
+<span class="ln"><span class="dim">        </span> <span class="step">[PROVE]</span>   <span class="k">anon</span>     0 rows  <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">        </span>           <span class="k">stranger</span> 0 rows  <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">        </span>           <span class="k">owner</span>    1 row   <span class="ok">OK</span></span>
+<span class="ln"><span class="dim">16:57:00</span> <span class="step">[DONE]</span>    <span class="done">proven</span> <span class="dim">· receipt signed</span></span>
+</pre>
+        <div class="window-foot"><span class="pill proven">proven</span><span>Real run, 9 Nov 2026 · demo app, fake data</span></div>
+      </div>
+      <figcaption>Our own deliberately leaky demo app. Start and finish times are from the real check; the steps between are condensed. <a href="/check?id=sample">Open the report</a>.</figcaption>
+    </figure>
+  </div>
+  <div class="wrap">
+    <ul class="jump" aria-label="On this page">
+      <li><a href="#pipeline"><span class="n">01</span>Pipeline</a></li>
+      <li><a href="#rebuild"><span class="n">02</span>Rebuild</a></li>
+      <li><a href="#identities"><span class="n">03</span>Identities</a></li>
+      <li><a href="#proven"><span class="n">04</span>Proven</a></li>
+      <li><a href="#failure"><span class="n">05</span>When proof fails</a></li>
+      <li><a href="#approval"><span class="n">06</span>Approval</a></li>
+      <li><a href="#isolation"><span class="n">07</span>Isolation</a></li>
+      <li><a href="#limits"><span class="n">08</span>Limits</a></li>
+      <li><a href="#faq"><span class="n">09</span>FAQ</a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 01 Pipeline -->
+<section class="sec band" id="pipeline" aria-labelledby="pipeline-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab"><span class="n">01</span>Pipeline</p>
+      <h2 id="pipeline-h">Your repo goes in. A proven migration comes out.</h2>
+      <p>Everything in the middle happens in a lab we build for one run and throw away. Your live app and database are never part of it.</p>
+    </div>
+    <div class="lab-diagram" data-reveal>
+      <div class="zone">
+        <span class="tag">Input · read only</span>
+        <h3>Your GitHub repo</h3>
+        <p>Public repos today. Private repos come with our GitHub App.</p>
+        <p class="file">supabase/<br>migrations/*.sql<br>src/**<br>full git history</p>
+      </div>
+      <div class="arrow-x" aria-hidden="true"><span>→</span></div>
+      <div class="zone lab-zone">
+        <span class="tag">PatchLabs lab · one per run, then dropped</span>
+        <h3>Disposable Postgres with Supabase’s roles</h3>
+        <ol class="stages">
+          <li><b>REBUILD</b><span>Apply your migrations in filename order</span></li>
+          <li><b>SEED</b><span>Fake rows owned by two test users</span></li>
+          <li><b>PROBE</b><span>Read as anon and as a signed-in stranger</span></li>
+          <li><b>FIX</b><span>Smallest Claude model writes a migration</span></li>
+          <li class="prove"><b>PROVE</b><span>Independent re-test as all three identities</span></li>
+        </ol>
+        <p class="loop-note"><b>Proof fails?</b> Discard the attempt, retry with a larger model, stop at the spend cap. <b>Also in every run:</b> key scan of code and full git history.</p>
+      </div>
+      <div class="arrow-x" aria-hidden="true"><span>→</span></div>
+      <div class="zone">
+        <span class="tag">Output · you decide</span>
+        <h3>Report and migration</h3>
+        <p>Download the <code>.sql</code>, or commit it on GitHub in one click. Your engineer applies it.</p>
+        <p class="file">…_patchlabs_leak_fix.sql<br>signed receipt</p>
+      </div>
+    </div>
+    <div class="never"><span class="x">NEVER CONNECTED</span><span>Your live app, your production database, your Supabase dashboard, your hosting. We don’t ask for a database password or service-role key, and the pipeline has nowhere to use one.</span></div>
+  </div>
+</section>
+
+<!-- 02 Rebuild -->
+<section class="sec" id="rebuild" aria-labelledby="rebuild-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab"><span class="n">02</span>Rebuild</p>
+      <h2 id="rebuild-h">What “rebuilt from your migrations” means.</h2>
+      <div class="prose-tight mt-3">
+        <p>Supabase gives the <code>anon</code> and <code>authenticated</code> roles access to new tables in <code>public</code> by default. Row level security policies are the only thing between your public key and your rows. A lab that skipped those defaults would miss the leak.</p>
+        <p>So the lab starts as a fresh Postgres that copies Supabase’s defaults: the <code>anon</code>, <code>authenticated</code> and <code>service_role</code> roles, an <code>auth</code> schema with <code>auth.uid()</code>, <code>auth.role()</code>, <code>auth.jwt()</code> and <code>auth.email()</code>, storage tables, and the default grants. Then we apply every file in <code>supabase/migrations</code> in filename order, so later files override earlier ones exactly as they did in production.</p>
+        <p>If a migration fails to apply, we record it and keep going, so one broken file doesn’t stop the whole check.</p>
+      </div>
+      <div class="callout limit mt-3"><p>The lab is only as complete as the migrations in your repo. A policy someone edited in the Supabase dashboard and never wrote to a migration is invisible to us. If you suspect drift, pull your schema into a migration first.</p></div>
+    </div>
+    <div>
+      <div class="code">
+        <div class="code-bar"><span class="name">lab: Supabase defaults (excerpt)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- roles your app's keys map to</span>
+<span class="kw">CREATE ROLE</span> anon NOLOGIN NOINHERIT;
+<span class="kw">CREATE ROLE</span> authenticated NOLOGIN NOINHERIT;
+<span class="kw">CREATE ROLE</span> service_role NOLOGIN NOINHERIT BYPASSRLS;
+
+<span class="c">-- auth.uid() reads the signed-in user from the JWT claims</span>
+<span class="kw">CREATE FUNCTION</span> auth.uid() <span class="kw">RETURNS</span> uuid <span class="kw">AS</span>
+  $$ <span class="kw">SELECT</span> nullif(current_setting(<span class="s">'request.jwt.claim.sub'</span>, true), <span class="s">''</span>)::uuid $$;
+
+<span class="c">-- Supabase's default grants: the reason RLS matters</span>
+<span class="kw">ALTER DEFAULT PRIVILEGES IN SCHEMA</span> public
+  <span class="kw">GRANT ALL ON TABLES TO</span> anon, authenticated, service_role;</code></pre>
+      </div>
+      <dl class="kv mt-3">
+        <dt>Your code</dt><dd>Never run. The lab reads SQL from your migrations; nothing from your repo is executed or installed.</dd>
+        <dt>Agent config</dt><dd><code>.claude/</code>, <code>CLAUDE.md</code> and <code>AGENTS.md</code> are removed before the fix agent reads the repo, so a repo can’t steer it.</dd>
+        <dt>Repo text</dt><dd>Treated as untrusted data. Instructions written in it are ignored.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- 03 Identities -->
+<section class="sec band" id="identities" aria-labelledby="ident-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab"><span class="n">03</span>Identities</p>
+      <h2 id="ident-h">Three people, simulated inside the database.</h2>
+      <p>We seed fake rows owned by test users, then switch role and JWT claims exactly as PostgREST does for a real request. No traffic goes anywhere.</p>
+    </div>
+    <div class="idents" data-reveal>
+      <div class="ident">
+        <div class="who"><b>Anonymous visitor</b><span class="pill plain">anon key</span></div>
+        <pre class="q">set role anon;
+-- no JWT claims at all
+select * from public.profiles;</pre>
+        <p>Anyone holding your public key, which ships inside every page of your app.</p>
+      </div>
+      <div class="ident">
+        <div class="who"><b>Signed-in stranger</b><span class="pill plain">user 2</span></div>
+        <pre class="q">set role authenticated;
+-- request.jwt.claim.sub = user 2
+select * from public.profiles;</pre>
+        <p>A real account that owns none of the rows. Anyone can sign up, so signing up must not unlock other people’s data.</p>
+      </div>
+      <div class="ident">
+        <div class="who"><b>Owner</b><span class="pill plain">user 1</span></div>
+        <pre class="q">set role authenticated;
+-- request.jwt.claim.sub = user 1
+select * from public.profiles;</pre>
+        <p>The user who owns the seeded row. A fix that locks them out is a broken app, not a fix.</p>
+      </div>
+    </div>
+    <div class="grid g3 top mt-4">
+      <div><h3 class="h4">Which tables</h3><p class="small muted">Tables in <code>public</code> with personal columns: names like email, phone, address and date of birth. Those are the ones where a leak hurts someone.</p></div>
+      <div><h3 class="h4">How rows get an owner</h3><p class="small muted">We fill the owner column (<code>user_id</code>, <code>owner_id</code>, <code>created_by</code>, <code>profile_id</code> and similar) with a test user’s id, and required columns with fake values.</p></div>
+      <div><h3 class="h4">Rows and columns</h3><p class="small muted">Rows and personal columns are counted separately. A fix that keeps a table public but hides its personal columns, with column grants or a safe view, can pass.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 Proven -->
+<section class="sec" id="proven" aria-labelledby="proven-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab green"><span class="n">04</span>Proven</p>
+      <h2 id="proven-h">“Proven” has a strict definition.</h2>
+      <p class="lede">A fix is called proven only when every condition below holds, in a check we run ourselves after the fix agent has finished. What the agent says about its own work doesn’t count.</p>
+      <ol class="conds mt-4">
+        <li><div><h3>The migration applies cleanly</h3><p>On top of all your existing migrations, with no errors.</p></div><span class="pill plain">fix_errors = 0</span></li>
+        <li><div><h3>The anonymous visitor reads nothing private</h3><p>Zero private rows and zero personal column values.</p></div><span class="pill proven">DENIED</span></li>
+        <li><div><h3>The signed-in stranger reads nothing private</h3><p>Same test, as a different signed-in user.</p></div><span class="pill proven">DENIED</span></li>
+        <li><div><h3>The owner still reads their own row</h3><p>Including its personal columns. Zero here means the owner was locked out, and the fix fails.</p></div><span class="pill proven">OK</span></li>
+      </ol>
+    </div>
+    <div class="stack">
+      <div class="code">
+        <div class="code-bar"><span class="name">proof result · profiles (simplified)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre><code>{
+  <span class="s">"table"</span>: <span class="s">"profiles"</span>,
+  <span class="s">"anon_before"</span>: 2,         <span class="s">"anon_after"</span>: 0,
+  <span class="s">"stranger_before"</span>: 2,     <span class="s">"stranger_after"</span>: 0,
+  <span class="s">"owner_after"</span>: 1,
+  <span class="s">"personal_cols_after"</span>: { <span class="s">"anon"</span>: 0, <span class="s">"stranger"</span>: 0 },
+  <span class="s">"fix_errors"</span>: [],
+  <span class="s">"passed"</span>: <span class="kw">true</span>
+}</code></pre>
+      </div>
+      <div class="card sunk">
+        <span class="n-big">MODEL ESCALATION</span>
+        <h3>Smallest model first. Bigger only when the proof fails.</h3>
+        <p class="small muted">Each check starts with the smallest Claude model. If its fix doesn’t pass, the attempt and any code edits are discarded and a larger model tries, up to a spend cap per check. In our 9 Nov study, 15 of 20 apps needed only the smallest model (n=20).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 Failure -->
+<section class="sec band" id="failure" aria-labelledby="fail-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab"><span class="n">05</span>When proof fails</p>
+      <h2 id="fail-h">No proof, no “proven”. A person looks first.</h2>
+      <p class="lede">If no model produces a fix that passes, we don’t ship a guess. The check is marked <span class="pill pending">needs review</span>, nothing is called proven, and a person reviews it before you act on it.</p>
+      <p>In the 9 Nov study, 2 of 20 apps ended this way (n=20). We publish them because they show where the line is:</p>
+      <div class="stack mt-3">
+        <div class="card">
+          <span class="n-big">MISS 1 OF 2</span>
+          <h3>The agent decided the data was meant to be public.</h3>
+          <p class="small muted">It judged the flagged table a false positive and wrote no change. The lab still saw the data readable, so the check could not pass. That’s the correct outcome: whether the data should be public is the owner’s call, so it became a question for the owner, not a silent dismissal.</p>
+        </div>
+        <div class="card">
+          <span class="n-big">MISS 2 OF 2</span>
+          <h3>An orders table readable by anyone, and no fix passed.</h3>
+          <p class="small muted">Three models in turn wrote fixes. None closed the leak while keeping the owner’s access in the lab. The report went to a person with two business questions for the owner about who should see orders.</p>
+        </div>
+      </div>
+      <p class="small muted mt-2">Apps from the study are never named. <a href="/research/methodology">How we ran it</a>.</p>
+    </div>
+    <div class="stack">
+      <div class="window">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">run log · shape of miss 2</span></div>
+<pre class="transcript lines" aria-label="Shape of a run where no fix passed">
+<span class="ln"><span class="step">[PROBE]</span>   <span class="k">anon</span> → orders      <span class="leak">LEAK</span></span>
+<span class="ln"><span class="step">[FIX]</span>     smallest model</span>
+<span class="ln"><span class="step">[PROVE]</span>   passed = false    <span class="leak">FAIL</span></span>
+<span class="ln"><span class="dim">          attempt discarded</span></span>
+<span class="ln"><span class="step">[FIX]</span>     larger model</span>
+<span class="ln"><span class="step">[PROVE]</span>   passed = false    <span class="leak">FAIL</span></span>
+<span class="ln"><span class="step">[FIX]</span>     largest model</span>
+<span class="ln"><span class="step">[PROVE]</span>   passed = false    <span class="leak">FAIL</span></span>
+<span class="ln"><span class="step">[STOP]</span>    nothing marked proven</span>
+<span class="ln"><span class="dim">          status: needs review</span></span>
+<span class="ln"><span class="dim">          2 questions for the owner</span></span>
+</pre>
+        <div class="window-foot"><span class="pill pending">needs review</span><span>Real run, 9 Nov 2026 · app not named</span></div>
+      </div>
+      <div class="q-card">
+        <p class="lab">Question for the owner · example</p>
+        <p class="q">Should shoppers be able to see sellers’ email addresses?</p>
+        <ul class="opts">
+          <li>Yes, show them on listings</li>
+          <li class="rec">No, only through a contact form</li>
+        </ul>
+        <p class="small muted mb-0">Most of the human moments are business questions like this one. The report asks them in plain English with a recommended answer, and signed-in members can record the answer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 Approval -->
+<section class="sec" id="approval" aria-labelledby="approve-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab"><span class="n">06</span>Approval</p>
+      <h2 id="approve-h">Nothing reaches production until your engineer applies it.</h2>
+      <p>We never push to your repo or touch your database. You get a file and the evidence behind it, and you ship it the way you ship any migration.</p>
+    </div>
+    <div class="split top">
+      <ol class="steps">
+        <li><h3>Read the report</h3><p>Who could read which table, the before-and-after counts for each identity, the migration, and a risk note (low, medium or high) saying what on the site could behave differently.</p></li>
+        <li><h3>Answer any business questions</h3><p>Only where the right fix depends on what you intend, with a recommended answer.</p></li>
+        <li><h3>Approve or reject</h3><p>Signed-in members record a decision. Rejecting says “these tables are meant to be readable”: we remember that for the app, and future re-checks don’t alert on them.</p></li>
+        <li><h3>Apply the migration</h3><p>Download the <code>.sql</code>, or use “Commit this file on GitHub”, which opens GitHub’s new-file page with <code>supabase/migrations/&lt;timestamp&gt;_patchlabs_leak_fix.sql</code> filled in. Automatic pull requests need our GitHub App, which is coming.</p></li>
+        <li><h3>Re-check</h3><p>Run the check again, or let the schedule do it, and confirm the leak is gone against your merged code.</p></li>
+      </ol>
+      <div>
+        <p class="lab green">Signed receipt</p>
+        <h3 class="h-md">Anyone can check the result wasn’t edited.</h3>
+        <p class="muted">Every finished check has a receipt signed with Ed25519: repo, status, tables leaking, whether the lab proof passed, a SHA-256 of the fix, and every decision and answer with who made it. Verify it against our published key:</p>
+        <div class="code mt-2">
+          <div class="code-bar"><span class="name">verify_receipt.py</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="scroll"><code><span class="kw">import</span> base64, json, urllib.request
+<span class="kw">from</span> cryptography.hazmat.primitives.asymmetric.ed25519 <span class="kw">import</span> Ed25519PublicKey
+API, CHECK = <span class="s">"https://api.patchlabs.dev"</span>, <span class="s">"&lt;check id&gt;"</span>
+r = json.load(urllib.request.urlopen(f<span class="s">"{API}/receipts/{CHECK}"</span>))
+k = json.load(urllib.request.urlopen(f<span class="s">"{API}/.well-known/patchlabs-receipt-key"</span>))
+<span class="kw">assert</span> r[<span class="s">"key_id"</span>] == k[<span class="s">"key_id"</span>], <span class="s">"signed with a different key"</span>
+msg = json.dumps(r[<span class="s">"receipt"</span>], sort_keys=True, separators=(<span class="s">","</span>, <span class="s">":"</span>)).encode()
+pub = Ed25519PublicKey.from_public_bytes(base64.b64decode(k[<span class="s">"public_key"</span>]))
+pub.verify(base64.b64decode(r[<span class="s">"signature"</span>]), msg)  <span class="c"># raises if changed</span>
+print(<span class="s">"receipt is genuine:"</span>, r[<span class="s">"receipt"</span>][<span class="s">"status"</span>])</code></pre>
+        </div>
+        <p class="small muted">Full details in the <a href="/docs/api">API docs</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 Isolation -->
+<section class="sec band" id="isolation" aria-labelledby="iso-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab"><span class="n">07</span>Isolation</p>
+      <h2 id="iso-h">A lab built for one run, then dropped.</h2>
+      <p class="lede">The lab runs on a PatchLabs worker machine, in a Docker container running Postgres. Each run gets its own database, and that database is dropped when the run ends.</p>
+      <div class="row mt-3"><a class="btn secondary" href="/security">Security details</a></div>
+    </div>
+    <div class="card raised">
+      <dl class="kv">
+        <dt>Database</dt><dd>A fresh database per run, rebuilt from your migrations and dropped with <code>DROP DATABASE … WITH (FORCE)</code> after the probe and after each proof.</dd>
+        <dt>Data</dt><dd>Fake rows only (values like <code>x@example.com</code>). Your customers’ data never enters the lab because we never connect to your database.</dd>
+        <dt>Network</dt><dd>The pipeline makes no request to your app, API, database or hosting.</dd>
+        <dt>Fix agent</dt><dd>Can read the repo copy, write inside its own run folder, edit the repo copy, and call the lab verifier. Nothing else.</dd>
+        <dt>Your repo</dt><dd>Read only. Nothing is pushed: the pipeline runs in dry-run mode.</dd>
+        <dt>Spend</dt><dd>A cap per check stops model escalation, so one hard repo can’t run up an open-ended bill.</dd>
+        <dt>Kept</dt><dd>Your email, the repo name, the report and the fix, so the report link keeps working. Signed-in users can export or delete it.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- 08 Limits -->
+<section class="sec" id="limits" aria-labelledby="limits-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab"><span class="n">08</span>Limits</p>
+      <h2 id="limits-h">What a proven fix does not cover.</h2>
+      <p>Proof covers the access rules we test, on the database your migrations build. Here is everything outside that line.</p>
+    </div>
+    <div class="grid g2 top">
+      <div class="callout limit"><p><strong>Missing or drifted migrations.</strong> Changes made in the dashboard and never written to <code>supabase/migrations</code> aren’t in the lab, so the proof can’t see them.</p></div>
+      <div class="callout limit"><p><strong>Non-Supabase backends.</strong> Firebase, a platform’s own built-in database, or an ORM with no Supabase migrations: we can’t rebuild those yet.</p></div>
+      <div class="callout limit"><p><strong>Custom auth.</strong> Policies that rely on auth outside Supabase’s <code>auth.uid()</code> and JWT claims may not map onto our three identities. If that’s you, email us before relying on the result.</p></div>
+      <div class="callout limit"><p><strong>Reads, not writes.</strong> The lab proof tests who can read personal data. Write rules (for example an UPDATE policy without <code>WITH CHECK</code>) are flagged by the <a href="/tools/rls-check">free RLS check</a>, which reads your migrations, not proven in the lab.</p></div>
+      <div class="callout limit"><p><strong>Tables, not everything.</strong> Storage buckets, edge functions, API routes and business logic aren’t proven. The free RLS check flags public buckets.</p></div>
+      <div class="callout limit"><p><strong>Not a pentest.</strong> We test one thing in depth: who can read which rows, plus exposed keys. For a high-stakes launch, get a pentest too.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 FAQ -->
+<section class="sec band" id="faq" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab"><span class="n">09</span>FAQ</p>
+      <h2 id="faq-h">Engineer questions.</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>. You’ll get a reply from the person who built the pipeline.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>Do you need my service-role key or database password?</summary><div class="acc-body"><p>No. We never ask for them and never connect to your database. Everything runs against a copy rebuilt from your repo.</p></div></details>
+      <details class="acc"><summary>Do you run my app’s code?</summary><div class="acc-body"><p>No. The lab only applies the SQL in your migrations. The fix agent reads your frontend to understand which pages use which tables, and can propose a small code change, but nothing from your repo is executed.</p></div></details>
+      <details class="acc"><summary>What if my migrations don’t build?</summary><div class="acc-body"><p>We record each migration that fails to apply and keep going. If the tables that matter never get built, there is nothing to prove, so <a href="mailto:manraj@patchlabs.dev">email us</a> and we’ll look. In our study, 318 of the 436 public repos we ran built a working database in the lab (PatchLabs lab study, Nov 2026).</p></div></details>
+      <details class="acc"><summary>Which models write the fix, and what do they see?</summary><div class="acc-body"><p>Claude models from Anthropic: the smallest first, larger ones only if the proof fails. They see the relevant code in your repo and the lab’s findings. They never see your production data, because we never have it.</p></div></details>
+      <details class="acc"><summary>Could the fix break my app?</summary><div class="acc-body"><p>That’s why the owner check exists: a fix that locks owners out fails. Every report also carries a risk note saying what could behave differently, such as a logged-out page that relied on the old rule. Review it, then apply.</p></div></details>
+      <details class="acc"><summary>Can I test against a pull request before merging?</summary><div class="acc-body"><p>Checks read your default branch today. Re-proving every pull request needs our GitHub App, which is coming. Meanwhile you can trigger a re-check from CI after a merge: see <a href="/product/monitoring">Monitoring</a>.</p></div></details>
+      <details class="acc"><summary>How long does a check take?</summary><div class="acc-body"><p>Median 3.5 minutes from repo to proven fix in our 9 Nov study (n=20). Large schemas and model escalation take longer.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Watch a fix pass before you ship it.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the migration and the proof transcript on one page.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-how">Public GitHub repo</label><input id="repo-how" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-how">Your email</label><input id="email-how" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span><span><a href="/sample-report">See a sample proof report</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>

@@ -1,0 +1,81 @@
+title: REST API
+description: PatchLabs REST API reference: authentication, errors, rate limits and every endpoint for checks, receipts, workspaces, apps, CI, badges and the free RLS check, with curl examples.
+lab: Reference
+h1: REST API
+lede: Everything the PatchLabs site and dashboard do goes through this API, so everything they do, you can script. JSON in, JSON out, plain-English errors.
+---
+<h2 id="overview">Overview</h2>
+<dl class="defs">
+  <dt>Base URL</dt><dd><code>https://api.patchlabs.dev</code></dd>
+  <dt>Format</dt><dd>JSON request and response bodies. Send <code>Content-Type: application/json</code> with a body. Times are ISO 8601 in UTC. IDs are UUIDs.</dd>
+  <dt>Browsers</dt><dd>Cross-origin browser requests are accepted from patchlabs.dev only. Call the API from your server, scripts or CI.</dd>
+  <dt>Stability</dt><dd>Endpoints on this page are live. We add fields over time, so ignore ones you don’t recognise. We announce breaking changes on the <a href="/changelog">changelog</a> before making them.</dd>
+</dl>
+
+<h2 id="authentication">Authentication</h2>
+<p>There are three levels, and each endpoint below says which it needs.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Label</th><th scope="col">Send</th><th scope="col">Use it for</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">No auth</th><td>nothing</td><td>Free checks, reports and receipts by link, badges, stats, the free RLS check</td></tr>
+    <tr><th scope="row">API key</th><td><code>X-API-Key: pl_live_…</code></td><td>Scripts and CI: the <code>/v1</code> endpoints and the MCP app tools</td></tr>
+    <tr><th scope="row">Session</th><td><code>Authorization: Bearer &lt;session&gt;</code></td><td>Everything in the dashboard: workspaces, apps, decisions</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="api-keys">API keys</h3>
+<p>Create one in <strong>Settings → API keys</strong> (or with <code>POST /workspaces/{wid}/api-keys</code>). It looks like <code>pl_live_</code> followed by 32 characters and is shown <strong>once</strong>: we only store a hash and the first 12 characters, so you can tell keys apart. A key belongs to one workspace and can only reach that workspace’s apps. Revoke it at any time; it stops working immediately. Keep it in your CI’s secret store, never in code.</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>export PATCHLABS_API_KEY=pl_live_…
+curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: $PATCHLABS_API_KEY"</code></pre></div>
+
+<h3 id="sessions">Sessions</h3>
+<p>A session comes from the magic-link sign-in (<code>POST /auth/start</code>, then <code>POST /auth/finish</code>) and lasts 30 days. The website keeps it in your browser’s local storage. For your own scripts against workspace and app endpoints, sign in and copy the <code>pl_session</code> value from the browser’s developer tools into <code>$PL_SESSION</code>. Prefer API keys for anything long-lived.</p>
+
+<h2 id="errors">Errors</h2>
+<p>Errors come back with an HTTP status and a body you can show to a person:</p>
+<div class="code"><div class="code-bar"><span class="name">409 Conflict</span></div><pre><code>{"detail": "A check is already queued or running for this app."}</code></pre></div>
+<p>The one exception is a request body that doesn’t match the expected shape (a missing field, a bad email). Those return <code>422</code> with a list that points at the field:</p>
+<div class="code"><div class="code-bar"><span class="name">422 Unprocessable Content</span></div><pre class="wrap-lines"><code>{"detail": [{"type": "missing", "loc": ["body", "email"], "msg": "Field required", "input": {…}}]}</code></pre></div>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Status</th><th scope="col">Meaning</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">400</th><td>A sign-in link that has expired or was already used</td></tr>
+    <tr><th scope="row">401</th><td>Missing or expired session, or a missing, invalid or revoked API key</td></tr>
+    <tr><th scope="row">403</th><td>Signed in, but not allowed: not an owner, wrong workspace, or a plan limit (apps, seats, schedules)</td></tr>
+    <tr><th scope="row">404</th><td>Not found, or not yours to see</td></tr>
+    <tr><th scope="row">409</th><td>Not possible in the current state: not verified yet, a check already running, not finished yet</td></tr>
+    <tr><th scope="row">422</th><td>Input we can’t use: not a GitHub repo, repo not found, unsafe webhook URL, wrong body shape</td></tr>
+    <tr><th scope="row">429</th><td>A rate limit or monthly run limit (see below)</td></tr>
+    <tr><th scope="row">503</th><td>GitHub couldn’t be reached; try again in a minute</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="rate-limits">Rate limits</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">What</th><th scope="col">Limit</th><th scope="col">When exceeded</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>POST /checks</code></th><td>3 open checks per email; 10 requests per network per day</td><td><code>429</code></td></tr>
+    <tr><th scope="row"><code>POST /tools/rls-check</code></th><td>20 requests per network per hour, failed lookups included</td><td><code>429</code></td></tr>
+    <tr><th scope="row"><code>POST /auth/start</code></th><td>5 links per email per hour, plus a per-network cap</td><td>Still <code>202</code>, no email sent</td></tr>
+    <tr><th scope="row">Run now, <code>/v1</code> runs, MCP <code>run_check</code></th><td>The plan’s manual runs per month (4, 30, 200), shared</td><td><code>429</code></td></tr>
+    <tr><th scope="row">Open checks per app</th><td>One queued or running at a time</td><td><code>409</code></td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="statuses">Check statuses</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Status</th><th scope="col">Meaning</th><th scope="col">Finished</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>awaiting_verification</code></th><td>Free check waiting for <code>patchlabs-verify.txt</code></td><td>No</td></tr>
+    <tr><th scope="row"><code>queued</code></th><td>Verified, waiting for the lab</td><td>No</td></tr>
+    <tr><th scope="row"><code>running</code></th><td>In the lab now</td><td>No</td></tr>
+    <tr><th scope="row"><code>done</code></th><td>Leaks found and a fix passed the lab proof</td><td>Yes, receipt issued</td></tr>
+    <tr><th scope="row"><code>needs_review</code></th><td>Leaks found; a person is reviewing the fix</td><td>Yes, receipt issued</td></tr>
+    <tr><th scope="row"><code>no_leaks</code></th><td>No leaks found in the tables tested</td><td>Yes, receipt issued</td></tr>
+    <tr><th scope="row"><code>failed</code></th><td>The check couldn’t finish; we’re alerted</td><td>Yes, no receipt</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="endpoints">All endpoints</h2>
+{{INDEX}}
+<p class="small muted">Internal endpoints used by our lab worker and admin page aren’t listed; they need credentials only PatchLabs holds.</p>

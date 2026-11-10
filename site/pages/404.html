@@ -1,0 +1,57 @@
+<!--
+title: Page not found | PatchLabs
+description: This page doesn't exist. Find what you were looking for on PatchLabs.
+layout: marketing
+sitemap: no
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/D-trust.css">
+-->
+<main id="main">
+  <section class="nf">
+    <div class="wrap split top">
+      <div>
+        <p class="lab">Not found</p>
+        <p class="code-num" aria-hidden="true">404</p>
+        <h1 class="h2">Nothing readable here.</h1>
+        <p class="lede">For once, that’s the result we wanted. The page you asked for doesn’t exist, or it has moved.</p>
+        <div class="row mt-3"><a class="btn primary large" href="/">Go to the home page</a><a class="btn secondary large" href="/#check">Check my app free</a></div>
+      </div>
+      <div class="window">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">probe · patchlabs.dev</span></div>
+<pre class="transcript lines" aria-label="The request returned nothing">
+<span class="ln"><span class="step">[PROBE]</span>  as <span class="k">you</span></span>
+<span class="ln"><span class="dim">         GET </span><span id="nf-path">this page</span></span>
+<span class="ln"><span class="dim">         →</span> 0 rows       <span class="deny">NOT FOUND</span></span>
+<span class="ln"> </span>
+<span class="ln"><span class="c"># try one of these instead</span></span>
+<span class="ln"><span class="dim">         /how-it-works</span></span>
+<span class="ln"><span class="dim">         /sample-report</span></span>
+<span class="ln"><span class="dim">         /docs</span></span>
+</pre>
+      </div>
+    </div>
+  </section>
+  <section class="sec tight band" aria-labelledby="nf-h">
+    <div class="wrap">
+      <h2 class="h4" id="nf-h">Popular pages</h2>
+      <div class="grid g4 mt-2">
+        <a class="card link" href="/how-it-works"><h3>How it works</h3><p>From repo to proven fix, step by step.</p></a>
+        <a class="card link" href="/sample-report"><h3>Sample report</h3><p>A real report from our deliberately leaky demo app.</p></a>
+        <a class="card link" href="/pricing"><h3>Pricing</h3><p>Free for your first app.</p></a>
+        <a class="card link" href="/docs"><h3>Docs</h3><p>API, MCP server, webhooks and badges.</p></a>
+      </div>
+      <p class="small muted mt-3">Followed a broken link from our site? Tell us at <a href="mailto:manraj@patchlabs.dev?subject=Broken%20link">manraj@patchlabs.dev</a> and we’ll fix it.</p>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  var p = location.pathname, el = document.getElementById('nf-path');
+  if (el) el.textContent = p.length > 34 ? p.slice(0, 33) + '…' : p;
+  // Old or guessable addresses: send people to the current page (query string kept).
+  var MOVED = { '/verified': '/proof', '/privacy-policy': '/legal/privacy', '/terms': '/legal/terms', '/legal': '/legal/terms',
+    '/aup': '/legal/acceptable-use', '/dpa': '/legal/dpa', '/cookies': '/legal/cookies', '/disclosure': '/legal/disclosure-policy',
+    '/trust': '/security', '/security.txt': '/.well-known/security.txt', '/login': '/app/login', '/signin': '/app/login', '/dashboard': '/app/' };
+  var key = p.replace(/\.html$/, '').replace(/\/+$/, '') || '/';
+  if (MOVED[key]) { location.replace(MOVED[key] + location.search + location.hash); return; }
+})();
+</script>

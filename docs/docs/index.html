@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PatchLabs docs: find the leak, prove the fix</title>
+<meta name="description" content="PatchLabs docs: check an AI-built Supabase app for data leaks, read the report, apply a lab-proven fix, and automate it with the API, CI and MCP.">
+<link rel="canonical" href="https://patchlabs.dev/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="PatchLabs docs: find the leak, prove the fix">
+<meta property="og:description" content="PatchLabs docs: check an AI-built Supabase app for data leaks, read the report, apply a lab-proven fix, and automate it with the API, CI and MCP.">
+<meta property="og:url" content="https://patchlabs.dev/docs/">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PatchLabs docs: find the leak, prove the fix">
+<meta name="twitter:description" content="PatchLabs docs: check an AI-built Supabase app for data leaks, read the report, apply a lab-proven fix, and automate it with the API, CI and MCP.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd">
+        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel">
+          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
+          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
+          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
+          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
+          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
+          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
+          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
+          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
+          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+        </div>
+      </details>
+      <a href="/how-it-works">How it works</a>
+      <a href="/research/1-in-4">Research</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs" aria-current="page">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="urgent" href="/leaking-now">Leaking right now?</a>
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs" aria-current="page">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose docs-hero">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Docs</li></ol></nav>
+<p class="lab">Docs</p>
+<h1>PatchLabs documentation</h1>
+<p class="lede">Find out who can read your app’s data, get a fix that has already been proven in a lab, and keep it that way. Start with the quickstart below, or jump straight to the part you need.</p>
+<div class="docs-paths">
+  <a class="card link" href="#quickstart"><span class="n-big">Founder</span><h3>Check my app</h3><p>Paste your repo, prove it’s yours, get a report and a fix.</p></a>
+  <a class="card link" href="/docs/applying-a-fix"><span class="n-big">Engineer</span><h3>Review and apply a fix</h3><p>What the migration does, and how to ship it on each platform.</p></a>
+  <a class="card link" href="/docs/teams"><span class="n-big">Agency</span><h3>Watch every client app</h3><p>Workspaces, client labels, schedules and alerts.</p></a>
+  <a class="card link" href="/docs/api"><span class="n-big">Developer</span><h3>Automate it</h3><p>REST API, webhooks, a GitHub Action and an MCP server.</p></a>
+</div>
+
+<h2 id="what-a-check-does">What a check does</h2>
+<p>PatchLabs works from your GitHub repo only. It rebuilds your database from the files in <code>supabase/migrations</code> inside a disposable local Postgres that copies Supabase’s roles, auth functions and default grants. It seeds fake rows, then asks three questions as three different people:</p>
+<ul>
+  <li><strong>An anonymous visitor</strong>, using your public anon key (it ships inside your frontend, so anyone has it).</li>
+  <li><strong>A signed-in stranger</strong>: a brand-new account that owns nothing.</li>
+  <li><strong>The owner</strong>: a user who should see their own rows and nothing else.</li>
+</ul>
+<p>If a stranger can read personal data, an agent writes a fix (a SQL migration, plus any code change it notes) and the lab tests it again: the anonymous visitor must be denied, the stranger must be denied, and the owner must still read their own rows. Only a fix that passes all three is called <strong>proven</strong>. The same run scans your code and its full git history for exposed AI, payment and database keys.</p>
+<div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab run · manra399/patchlabs-demo-app</span></div>
+<pre class="transcript lines" aria-label="A real PatchLabs lab run on our demo app">
+<span class="ln"><span class="step">[REBUILD]</span> 1 migration → lab Postgres  <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[SEED]</span>    2 test users, fake rows     <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[PROBE]</span>   <span class="k">anon</span>     → 2 rows           <span class="leak">LEAK</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">stranger</span> → 2 rows           <span class="leak">LEAK</span></span>
+<span class="ln"><span class="step">[FIX]</span>     owner-only SELECT policy</span>
+<span class="ln"><span class="step">[PROVE]</span>   <span class="k">anon</span>     → 0 rows         <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">stranger</span> → 0 rows         <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">owner</span>    → 1 row              <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[DONE]</span>    <span class="done">lab proof passed</span> <span class="dim">· 36 s</span></span>
+</pre>
+  <div class="window-foot"><span class="pill proven">proven</span><span>Real run on our own demo app, 9 Nov 2026</span></div>
+</div>
+<p>It never connects to your live app or your live database. Your engineer approves every change before it ships.</p>
+
+<h2 id="before-you-start">Before you start</h2>
+<ul>
+  <li><strong>A public GitHub repo</strong> for the app. Private repos need our GitHub App, which is coming; until then, <a href="mailto:manraj@patchlabs.dev?subject=Private%20repo">email the founder</a>.</li>
+  <li><strong>Supabase migrations</strong> in <code>supabase/migrations/*.sql</code>. Apps built with Lovable, Bolt, Replit or Cursor on Supabase usually have them. If yours doesn’t, see <a href="/docs/faq#no-migrations">the FAQ</a>.</li>
+  <li><strong>Permission to commit one file</strong> to the repo’s default branch, so you can prove it’s yours.</li>
+  <li><strong>An email address</strong> for the report link. No account or password needed.</li>
+</ul>
+
+<h2 id="quickstart">Quickstart</h2>
+<ol class="qs">
+  <li>
+    <h3 id="qs-paste" data-notoc>Paste your repo and email</h3>
+    <p>Use the form below, or the one on the <a href="/#check">home page</a>. You’ll land on your check’s own page.</p>
+    <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+      <div class="in">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <label class="sr-only" for="repo-qs">Public GitHub repo</label>
+        <input id="repo-qs" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+      </div>
+      <div class="in">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <label class="sr-only" for="email-qs">Your email</label>
+        <input id="email-qs" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+      </div>
+      <button class="btn primary" type="submit">Check my app free</button>
+    </form>
+    <p class="err" role="alert" data-err></p>
+    <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span></div>
+  </li>
+  <li>
+    <h3 id="qs-verify" data-notoc>Prove the repo is yours</h3>
+    <p>Commit a file named <code>patchlabs-verify.txt</code> containing the one-time code shown on your check page. The “Add the file on GitHub” button opens GitHub with the name and code filled in, so you only press “Commit changes”. Then press “I’ve added it”. <a href="/docs/verification">More on verification</a>.</p>
+    <div class="code"><div class="code-bar"><span class="name">patchlabs-verify.txt</span></div><pre><code>patchlabs-3f9a1c0b7d2e4a65</code></pre></div>
+  </li>
+  <li>
+    <h3 id="qs-wait" data-notoc>Let the lab run</h3>
+    <p>Your check page updates by itself and we email you when the report is ready. In our lab study the median run took 3.5 minutes per app (n=20, 9 Nov 2026); allow 5 to 15 minutes including the queue.</p>
+  </li>
+  <li>
+    <h3 id="qs-read" data-notoc>Read the report</h3>
+    <p>You’ll see one of three results: <span class="pill proven">fix proven</span>, <span class="pill pending">in review</span> (a person checks the fix first) or <span class="pill proven">no leaks found</span>. The report names each leaking table, who could read it, and the before-and-after proof. <a href="/docs/reading-a-report">How to read a report</a>.</p>
+  </li>
+  <li>
+    <h3 id="qs-apply" data-notoc>Apply the fix</h3>
+    <p>Press “Commit the fix on GitHub” to add the migration to <code>supabase/migrations/</code>, or download the <code>.sql</code> file. Your engineer reviews it and ships it like any other migration. <a href="/docs/applying-a-fix">Steps for Supabase, Lovable, Bolt, Replit and Cursor</a>.</p>
+  </li>
+  <li>
+    <h3 id="qs-monitor" data-notoc>Keep it checked</h3>
+    <p><a href="/app/login">Sign in</a> with the same email (a magic link, no password) and add the repo as an app. It gets re-checked on a schedule, and your team hears about any new leak. <a href="/docs/monitoring">Set up monitoring</a>.</p>
+  </li>
+</ol>
+
+<h2 id="seconds">Want an answer in seconds first?</h2>
+<p>The <a href="/tools/rls-check">free RLS check</a> reads your migrations and flags risky row-level-security patterns straight away, with no sign-up and no verification. It is static analysis: it reads the SQL, it doesn’t run it. The full check above is the one that rebuilds the database and proves who can actually read what.</p>
+<div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/tools/rls-check \
+  -H 'Content-Type: application/json' \
+  -d '{"repo": "manra399/patchlabs-demo-app"}'</code></pre></div>
+
+<h2 id="coverage">What a check covers, and what it doesn’t</h2>
+<div class="callout limit"><p>A check covers <strong>who can read which rows</strong> in the <code>public</code> schema of a database rebuilt from your migrations, plus exposed keys in your code and git history. It can’t see changes made by hand in the Supabase dashboard that never made it into a migration, it doesn’t test your live app, and it isn’t a penetration test. A clean result means our checks found nothing on that date, not that the app is secure in every way.</p></div>
+
+<h2 id="next">Where to go next</h2>
+<div class="grid g2">
+  <a class="card link" href="/docs/receipts"><h3>Signed receipts</h3><p>Prove to a client or investor what was checked, found and approved.</p></a>
+  <a class="card link" href="/docs/github-action"><h3>GitHub Action</h3><p>Re-check after every migration lands on main and fail the build on a leak.</p></a>
+  <a class="card link" href="/docs/mcp"><h3>MCP server</h3><p>Run checks from Claude Code, Cursor, VS Code or Windsurf.</p></a>
+  <a class="card link" href="/docs/faq"><h3>FAQ</h3><p>Access, privacy, accuracy, pricing and what we don’t do.</p></a>
+</div>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Quickstart">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a class="next" href="/docs/verification" rel="next"><span>Next</span>Proving repo ownership</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#what-a-check-does">What a check does</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#quickstart">Quickstart</a></li><li><a href="#seconds">Want an answer in seconds first?</a></li><li><a href="#coverage">What a check covers, and what it doesn’t</a></li><li><a href="#next">Where to go next</a></li></ul>
+</aside>
+</div>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
+        <li><a href="/product/leak-lab">Leak lab</a></li>
+        <li><a href="/product/key-scan">Key scan</a></li>
+        <li><a href="/product/monitoring">Monitoring</a></li>
+        <li><a href="/product/badge">Badge &amp; proof page</a></li>
+        <li><a href="/agencies">Agencies</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Finding index</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

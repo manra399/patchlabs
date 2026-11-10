@@ -1,0 +1,234 @@
+study,date,group,metric,value,denominator,unit,notes
+exposure study (318 rebuilt repos),2026-11-05,all,repos_sampled,500,,repos,public GitHub repos with a Lovable/Supabase layout
+exposure study (318 rebuilt repos),2026-11-05,all,repos_run_in_lab,436,500,repos,
+exposure study (318 rebuilt repos),2026-11-05,all,repos_built_working_database,318,436,repos,the other 118 did not build in the lab and are excluded
+exposure study (318 rebuilt repos),2026-11-05,all,personal_data_readable_by_wrong_people,106,318,repos,33%
+exposure study (318 rebuilt repos),2026-11-05,all,readable_by_anyone_with_public_key,70,318,repos,22%
+exposure study (318 rebuilt repos),2026-11-05,all,readable_only_by_signed_in_users,36,318,repos,"11%, in addition to the 70"
+exposure study (318 rebuilt repos),2026-11-05,all,no_personal_data_readable_by_wrong_people,212,318,repos,derived: 318 - 106
+exposure study (318 rebuilt repos),2026-11-05,all,adjusted_rate_low,25,,percent,after removing businesses' own public contact details
+exposure study (318 rebuilt repos),2026-11-05,all,adjusted_rate_high,28,,percent,"false-alarm rate taken from the fix study, n=24"
+fix-agent study (24 apps),2026-11-05,all,apps_given_to_fix_agents,24,,apps,35 tables
+fix-agent study (24 apps),2026-11-05,all,tables_confirmed_exposed_at_row_level,35,35,tables,
+fix-agent study (24 apps),2026-11-05,all,false_alarms_caught_by_agent,4,24,apps,business's own public contact details
+fix-agent study (24 apps),2026-11-05,all,real_fixes_worked_first_try_and_applied_cleanly,19,20,fixes,re-verified by us in the lab
+fix-agent study (24 apps),2026-11-05,all,tables_closed_after_fix,26,35,tables,the other 9 left open on purpose
+fix-agent study (24 apps),2026-11-05,all,fixes_safe_to_apply_with_no_human,4,20,fixes,
+fix-agent study (24 apps),2026-11-05,all,apps_with_password_check_in_browser,5,20,apps,"fake login: needs real auth, not a patch"
+fix-agent study (24 apps),2026-11-05,all,break_risk_high,5,20,fixes,agent's assessment
+fix-agent study (24 apps),2026-11-05,all,break_risk_medium,10,20,fixes,agent's assessment
+fix-agent study (24 apps),2026-11-05,all,break_risk_low,5,20,fixes,agent's assessment
+fix-agent study (24 apps),2026-11-05,all,human_review_minutes_median,15,,minutes,agent's estimate
+autonomous pipeline (20 new apps),2026-11-09,all,apps,20,,apps,"14 readable by anyone, 6 by any signed-up user"
+autonomous pipeline (20 new apps),2026-11-09,all,passed_strict_lab_proof,18,20,apps,no human involved
+autonomous pipeline (20 new apps),2026-11-09,all,passed_on_smallest_model_first_try,15,20,apps,Haiku
+autonomous pipeline (20 new apps),2026-11-09,all,escalated_to_sonnet_and_passed,2,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,all,escalated_to_opus_and_passed,1,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,all,needs_a_person,2,20,apps,failed on all three models; no fix branch
+autonomous pipeline (20 new apps),2026-11-09,all,tables_flagged,37,,tables,
+autonomous pipeline (20 new apps),2026-11-09,all,verdict_real_bug,28,37,tables,
+autonomous pipeline (20 new apps),2026-11-09,all,verdict_public_by_design_but_leaky,7,37,tables,
+autonomous pipeline (20 new apps),2026-11-09,all,verdict_false_alarm,2,37,tables,
+autonomous pipeline (20 new apps),2026-11-09,all,questions_for_owner,18,,questions,across 20 apps
+autonomous pipeline (20 new apps),2026-11-09,all,break_risk_low,18,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,all,break_risk_medium,2,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_median,0.46,,usd,
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_mean,1.75,,usd,pulled up by one app
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_min,0.12,,usd,
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_max,15.65,,usd,escalated through all three models
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_median_smallest_model_passes,0.41,15,usd,
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_max_smallest_model_passes,0.76,15,usd,
+autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_median,3.5,,minutes,agent working time summed across attempts
+autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_mean,9.2,,minutes,
+autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_min,0.8,,minutes,
+autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_max,66.7,,minutes,
+autonomous pipeline (20 new apps),2026-11-09,cost bucket under $0.50,apps,14,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,cost bucket $0.50 to $1,apps,1,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,cost bucket $1 to $3,apps,3,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,cost bucket $3 to $10,apps,1,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,cost bucket over $10,apps,1,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,time bucket under 2 min,apps,4,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,time bucket 2 to 4 min,apps,8,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,time bucket 4 to 10 min,apps,3,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,time bucket 10 to 30 min,apps,4,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,time bucket over 30 min,apps,1,20,apps,
+autonomous pipeline (20 new apps),2026-11-09,run 01,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,model_cost,0.12,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,agent_minutes,0.8,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 01,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,who_could_read,signed-in,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,model_cost,0.15,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,agent_minutes,1.1,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 02,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,tables_flagged,3,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,model_cost,0.25,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,agent_minutes,1.9,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 03,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,model_cost,0.28,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,agent_minutes,2.9,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 04,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,model_cost,0.33,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,agent_minutes,1.6,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 05,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,who_could_read,signed-in,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,model_cost,0.34,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,agent_minutes,2.3,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 06,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,model_cost,0.37,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,agent_minutes,2.5,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 07,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,model_cost,0.41,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,agent_minutes,3.4,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 08,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,tables_flagged,3,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,model_cost,0.42,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,agent_minutes,2.8,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,questions_for_owner,3,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 09,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,model_cost,0.46,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,agent_minutes,9.9,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,who_could_read,signed-in,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,tables_flagged,7,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,model_cost,0.47,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,agent_minutes,3.8,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,questions_for_owner,2,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 11,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,model_cost,0.48,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,agent_minutes,4.2,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 12,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,who_could_read,signed-in,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,model_cost,0.48,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,agent_minutes,3.5,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 13,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,who_could_read,signed-in,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,model_cost,0.48,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,agent_minutes,3.5,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 14,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,who_could_read,signed-in,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,models_tried,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,passed_on,haiku,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,model_cost,0.76,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,agent_minutes,5.1,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,questions_for_owner,0,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 15,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,models_tried,haiku > sonnet,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,passed_on,sonnet,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,model_cost,1.59,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,agent_minutes,12.7,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 16,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,models_tried,haiku > sonnet,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,passed_on,sonnet,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,model_cost,2.13,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,agent_minutes,13.9,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 17,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,models_tried,haiku > sonnet > opus,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,passed_on,none,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,result,needs a person,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,model_cost,2.85,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,agent_minutes,12.0,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 18,break_risk,low,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,tables_flagged,1,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,models_tried,haiku > sonnet > opus,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,passed_on,none,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,result,needs a person,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,model_cost,6.97,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,agent_minutes,29.4,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,questions_for_owner,2,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 19,break_risk,medium,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,who_could_read,anyone,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,models_tried,haiku > sonnet > opus,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,passed_on,opus,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,model_cost,15.65,,usd,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,agent_minutes,66.7,,minutes,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,questions_for_owner,4,,questions,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 20,break_risk,medium,,,runs ordered by cost; no app identifiers

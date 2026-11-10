@@ -1,0 +1,128 @@
+<!--
+title: PatchLabs for Supabase apps: RLS tested as a stranger | PatchLabs
+description: PatchLabs rebuilds your Supabase database from supabase/migrations, tests RLS as anon, a signed-in stranger and the owner, and proves the fix. Free for one app.
+layout: marketing
+nav: for_supabase
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Supabase apps</li></ol></nav>
+      <p class="lab">For Supabase apps</p>
+      <h1>Your row level security, tested as a stranger.</h1>
+      <p class="lede">Supabase gives <code>anon</code> and <code>authenticated</code> access to new tables in <code>public</code> by default, so your RLS policies are the only thing standing between your public key and your rows. We rebuild your database from <code>supabase/migrations</code> and test those policies as three different people.</p>
+      <form class="repo-form stacked" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-supabase">Public GitHub repo</label><input id="repo-supabase" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-supabase">Your email</label><input id="email-supabase" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <p class="indep">Independent: PatchLabs is not affiliated with Supabase.</p>
+    </div>
+    <figure class="figure">
+      <div class="code dark mb-0">
+        <div class="code-bar"><span class="name">applying a PatchLabs fix with the Supabase CLI</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c"># put the migration from your report in the repo</span>
+mv ~/Downloads/*_patchlabs_leak_fix.sql supabase/migrations/
+
+<span class="c"># see which migrations the linked project has applied</span>
+supabase migration list
+
+<span class="c"># apply the pending ones to the linked project</span>
+supabase db push</code></pre>
+      </div>
+      <figcaption>Standard Supabase CLI commands. Review the migration before you push it.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="fit-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Will it work?</p>
+      <h2 id="fit-h">Check this before you paste your repo.</h2>
+    </div>
+    <div class="fit">
+      <div><h3>Works today when</h3><ul class="ticks compact mb-0"><li><span>Your schema lives in <code>supabase/migrations</code> in a public GitHub repo</span></li><li><span>Access control uses RLS with <code>auth.uid()</code> and JWT claims</span></li><li><span>Personal data sits in tables in the <code>public</code> schema</span></li></ul></div>
+      <div><h3>Not covered yet</h3><ul class="ticks compact mb-0"><li class="x"><span>Schema changes made only in the dashboard and never pulled into a migration</span></li><li class="x"><span>Custom auth that doesn’t go through Supabase Auth claims</span></li><li class="x"><span>Storage policies and edge functions, which aren’t proven in the lab</span></li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="pat-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">The common leak</p>
+      <h2 id="pat-h">Three ways RLS lets the wrong person in.</h2>
+      <p class="lede">RLS never enabled on a table (with the default grants, it’s readable through the API). A policy that’s always true. And a policy that checks someone is signed in instead of checking the row is theirs, so one free sign-up unlocks everyone’s data. We test for the effect of all three, not just their shape.</p>
+      <div class="stats mt-3" style="--cols:3">
+        <div class="stat"><b class="num">318</b><span>public Lovable and Supabase apps rebuilt<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+        <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+        <div class="stat"><b class="num">1<small>in 4</small></b><span>exposed real personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+      </div>
+      <ol class="footnotes"><li id="fn1">PatchLabs lab study, Nov 2026. 436 public Lovable and Supabase repos run (from a random sample of 500); 318 built a working database in the lab. 106 of 318 (33%): 70 to anyone with the public key, 36 to anyone who signs up. About 1 in 4 (25–28%) after removing businesses’ own public contact details. The study doesn’t separate Lovable from other Supabase projects. <a href="/research/methodology">Methodology</a>.</li></ol>
+    </div>
+    <div>
+      <div class="code mb-0">
+        <div class="code-bar"><span class="name">signed in is not the same as “owns this row”</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- before: any signed-in user reads every order</span>
+<span class="del">create policy "Signed-in users can read orders"</span>
+<span class="del">  on public.orders for select</span>
+<span class="del">  using (auth.role() = 'authenticated');</span>
+
+<span class="c">-- after: users read only their own orders</span>
+<span class="add">create policy "Users read own orders"</span>
+<span class="add">  on public.orders for select to authenticated</span>
+<span class="add">  using (auth.uid() = user_id);</span></code></pre>
+      </div>
+      <p class="small muted mt-2">Illustrative SQL. Your report contains the real migration for your tables, and it only counts as proven once the anonymous visitor and the signed-in stranger are denied and the owner still reads their own rows.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="land-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">How the fix lands</p>
+      <h2 id="land-h">From proven fix to your live app.</h2>
+      <p class="lede">The fix is a normal Supabase migration, timestamped to run after your existing ones. Ship it exactly as you ship any other migration.</p>
+      <div class="callout limit mt-3"><p>We never push to your repo or touch your database. Nothing changes until you, or your engineer, applies the migration. Automatic pull requests need our GitHub App, which is coming.</p></div>
+    </div>
+    <ol class="steps"><li><h3>Add it to supabase/migrations</h3><p>Download it from the report, or use “Commit this file on GitHub” to open GitHub’s new-file page with the path and SQL filled in.</p></li><li><h3>Apply it</h3><p>With the CLI, <code>supabase db push</code> applies pending migrations to your linked project. If you use Supabase’s GitHub integration with branching, it can run migrations from your repo; check your project’s settings and Supabase’s docs for when that happens.</p></li><li><h3>Or paste it, then commit it</h3><p>Running the SQL in the dashboard’s SQL editor works too. Commit the file as well, so your repo and database stay in step.</p></li><li><h3>Re-check</h3><p>Run the check again, or let the schedule do it.</p></li></ol>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Supabase questions.</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+      <div class="other-builders mt-3" aria-label="Other builders"><a class="link-arrow" href="/for/lovable">Lovable apps</a><a class="link-arrow" href="/for/bolt">Bolt apps</a><a class="link-arrow" href="/for/replit">Replit apps</a><a class="link-arrow" href="/for/cursor">Cursor apps</a></div>
+    </div>
+    <div>
+      <details class="acc"><summary>How is this different from the Security Advisor?</summary><div class="acc-body"><p>The Advisor lints your live project’s configuration, and it covers health and performance too. Keep using it. We rebuild the database from your repo and test behaviour as real identities, then prove a fix. <a href="/product/leak-lab">How our finding IDs map to its lints</a>.</p></div></details>
+      <details class="acc"><summary>Do you need my service-role key or database password?</summary><div class="acc-body"><p>No. We never connect to your project. Everything runs on a disposable copy built from your migrations.</p></div></details>
+      <details class="acc"><summary>What do you seed?</summary><div class="acc-body"><p>Fake rows owned by two test users, with fake values such as <code>x@example.com</code> in required columns. No real data, ever.</p></div></details>
+      <details class="acc"><summary>Can a fix use views or column grants instead of policies?</summary><div class="acc-body"><p>Yes. Rows and personal columns are tested separately, so a fix that keeps a table publicly readable but hides its personal columns can pass.</p></div></details>
+      <details class="acc"><summary>Are you affiliated with Supabase?</summary><div class="acc-body"><p>No. PatchLabs is independent. We copy Supabase’s default roles and grants in our lab so the test matches how Supabase behaves.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">You’ll get the leaks, the fix and the proof on one page. <a href="/how-it-works">How it works</a>.</p>
+      <div class="row center" style="justify-content:center"><a class="btn primary large" href="#repo-supabase">Check my app free</a><a class="btn secondary large" href="/sample-report">See a sample report</a></div>
+    </div>
+  </div>
+</section>
+
+</main>

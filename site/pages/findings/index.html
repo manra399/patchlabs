@@ -1,0 +1,141 @@
+<!--
+title: Finding index: every Supabase leak PatchLabs tests for | PatchLabs
+description: Stable IDs for the data-access and key leaks PatchLabs finds in AI-built Supabase apps, each with example SQL, a self-check, the fix we write and the proof.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css">
+-->
+<main id="main">
+  <section class="sec tight">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
+      <p class="lab">Finding index</p>
+      <h1>Every leak we test for, with the fix and the proof.</h1>
+      <p class="lede">Ten stable IDs for the ways AI-built Supabase apps expose data and keys. Each page shows the vulnerable SQL, a query to check your own project, the fix PatchLabs writes and the test that proves it.</p>
+      <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/tools/rls-check">Free static RLS check</a></div>
+    </div>
+  </section>
+
+  <section class="sec tight" aria-labelledby="list-h">
+    <div class="wrap">
+      <h2 id="list-h" class="sr-only">All findings</h2>
+      <div class="f-group">
+        <p class="lab red">Data access · who can read what</p>
+        <div class="f-index">
+      <a class="f-row" href="/findings/pl-001"><span class="fid">PL-001</span><div><h3>Anonymous visitor can read personal data</h3><p>Anyone with your app's public key can read emails, phone numbers or addresses.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-002"><span class="fid">PL-002</span><div><h3>Any signed-in user can read every row</h3><p>Signing up unlocks other people's rows. If sign-up is open, that means anyone.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-003"><span class="fid">PL-003</span><div><h3>RLS enabled but no policies (owner locked out)</h3><p>Not a leak, yet. The table is locked to everyone, and the quick fix people reach for is the leak.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-004"><span class="fid">PL-004</span><div><h3>UPDATE policy missing WITH CHECK</h3><p>Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-005"><span class="fid">PL-005</span><div><h3>Always-true policy</h3><p>A policy that says yes to everyone. On writes, anyone can change or delete your data.</p></div><span class="sevcell"><span class="pill sev-high">high to low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-006"><span class="fid">PL-006</span><div><h3>SECURITY DEFINER function exposed</h3><p>A function that runs with the owner's powers, callable by anyone through the API.</p></div><span class="sevcell"><span class="pill sev-high">high or medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-007"><span class="fid">PL-007</span><div><h3>Public storage bucket</h3><p>Files in this bucket are served to anyone with the link. ID scans and invoices don't belong there.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-008"><span class="fid">PL-008</span><div><h3>Row level security not enabled</h3><p>No rules at all. With API access granted, anyone with the public key can read and change every row.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="f-group">
+        <p class="lab">Keys · code and git history</p>
+        <div class="f-index">
+      <a class="f-row" href="/findings/pl-010"><span class="fid">PL-010</span><div><h3>Service role key in client code</h3><p>The key that ignores every access rule, shipped to every visitor's browser.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Key scan · code</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-011"><span class="fid">PL-011</span><div><h3>Key still in git history</h3><p>You deleted the key. Every old commit still has it, and so does every clone and fork.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Key scan · history</span><span class="go" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <p class="small muted mt-3">IDs never change meaning and are never reused, so you can link to them from tickets and docs. Gaps (such as PL-009) are reserved. Last reviewed 10 Nov 2026.</p>
+    </div>
+  </section>
+
+  <section class="sec band" aria-labelledby="sev-h">
+    <div class="wrap split top">
+      <div>
+        <p class="lab">Severity</p>
+        <h2 id="sev-h">Ranked by who can reach the data.</h2>
+        <p class="lede">Severity follows one question: who, outside the people meant to see it, can read or change the data? The same rules drive the free RLS check and every full report.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Level</th><th scope="col">Meaning</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="pill sev-critical">critical</span></th><td>Anyone on the internet can read personal data, or read and change a whole table.</td></tr>
+            <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, anyone can change rows, or a privileged function is open to anonymous callers.</td></tr>
+            <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter, such as an UPDATE rule without WITH CHECK or a public bucket.</td></tr>
+            <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed, but the app is likely broken, or the rule only opens non-personal data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lab">Static vs proven</p>
+        <h2 id="how-h">A rule that looks wrong, or data you watched leak.</h2>
+        <p>Two ways a finding reaches you. Both use these IDs.</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <span class="n-big">FREE · NO SIGN-UP</span>
+          <h3>Static RLS check</h3>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. Fast, and honest about its limit: it can't tell whether a public read is intended, or what the database really allows once every migration has run.</p>
+          <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
+        </div>
+        <div class="card green-edge">
+          <span class="n-big">FULL CHECK · FREE FOR ONE APP</span>
+          <h3>Lab proof</h3>
+          <p>Rebuilds the database from your migrations in a disposable Postgres with Supabase's roles and grants, seeds fake rows, and reads every table as an anonymous visitor, a signed-in stranger and the owner. Then writes the fix and proves it the same way. Also scans code and full git history for keys (PL-010, PL-011).</p>
+          <div class="card-foot"><a class="link-arrow" href="/#check">Check my app free</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec band" aria-labelledby="lint-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lab">Map</p>
+        <h2 id="lint-h">How our IDs line up with Supabase’s linter.</h2>
+        <p>Use Supabase's Security Advisor as well: it covers health and performance checks we don't. The difference is in the rows marked "none": public reads, which the linter skips on purpose because only the app's intent can say whether they are a leak.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">PatchLabs ID</th><th scope="col">Finding</th><th scope="col">Related Supabase lint</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="/findings/pl-001">PL-001</a></th><td>Anonymous visitor can read personal data</td><td class="mono">none (0024 skips SELECT)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-002">PL-002</a></th><td>Any signed-in user can read every row</td><td class="mono">none (0024 skips SELECT)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-003">PL-003</a></th><td>RLS enabled but no policies (owner locked out)</td><td class="mono">0008</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-004">PL-004</a></th><td>UPDATE policy missing WITH CHECK</td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-005">PL-005</a></th><td>Always-true policy</td><td class="mono">0024 (writes only)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-006">PL-006</a></th><td>SECURITY DEFINER function exposed</td><td class="mono">0011, 0028, 0029</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-007">PL-007</a></th><td>Public storage bucket</td><td class="mono">0025</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-008">PL-008</a></th><td>Row level security not enabled</td><td class="mono">0013, 0007</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-010">PL-010</a></th><td>Service role key in client code</td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-011">PL-011</a></th><td>Key still in git history</td><td class="mono">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted mt-2">Lint numbers from Supabase's database linter (splinter), checked against its source in Nov 2026. Independent: PatchLabs is not affiliated with Supabase.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="cta-panel">
+        <p class="lab">Free check</p>
+        <h2>Which of these does your app have?</h2>
+        <p class="lede">Paste your public repo. You get every finding, the fix and the proof on one page.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-fi">Public GitHub repo</label>
+            <input id="repo-fi" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-fi">Your email</label>
+            <input id="email-fi" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+    </div>
+  </section>
+</main>

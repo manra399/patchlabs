@@ -1,0 +1,606 @@
+<!--
+title: The 1-in-4 Report: personal-data exposure in AI-built apps, Nov 2026 | PatchLabs
+description: We rebuilt 318 public Lovable and Supabase apps from their migrations. 106 let the wrong people read personal data; about 1 in 4 after false alarms. Full data and method.
+layout: marketing
+nav: research
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Report","name":"The 1-in-4 Report: personal-data exposure in AI-built apps","datePublished":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"url":"https://patchlabs.dev/research/1-in-4","isBasedOn":"https://patchlabs.dev/research/1-in-4-aggregate.csv"}</script>
+-->
+<main id="main">
+
+<header class="rpt-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">The 1-in-4 Report</li></ol></nav>
+    <p class="lab red">The 1-in-4 Report · November 2026</p>
+    <h1>We rebuilt 318 AI-built apps. About <span class="r">1 in 4</span> let strangers read personal data.</h1>
+    <p class="lede">We took public Lovable and Supabase repos, rebuilt each app’s database from its own migrations in a disposable lab, and read it as an anonymous visitor and as a signed-in stranger. Then we let our pipeline fix 20 more apps on its own, and checked every fix. Here is everything we found, including what didn’t work.</p>
+    <div class="row">
+      <a class="btn primary large" href="#data">Download the data (CSV)</a>
+      <a class="btn secondary large" href="/research/methodology">Read the methodology</a>
+    </div>
+    <ul class="rpt-meta">
+      <li>Published <b>10 Nov 2026</b></li>
+      <li>Author <b>Manraj Singh Dhillon</b></li>
+      <li>Samples <b>n=318</b> apps · <b>n=24</b> and <b>n=20</b> fix runs</li>
+      <li>Public code only · <b>no app named</b></li>
+    </ul>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="rpt">
+  <nav class="rpt-toc" data-scrollspy aria-label="Report contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#funnel">From 500 repos to 106</a></li>
+      <li><a href="#who">Who could read it</a></li>
+      <li><a href="#what">What leaked</a></li>
+      <li><a href="#why">Why it happens</a></li>
+      <li><a href="#intent">Mistake or intended?</a></li>
+      <li><a href="#fixes">The fixes</a></li>
+      <li><a href="#cost">Cost and time</a></li>
+      <li><a href="#failures">The two failures</a></li>
+      <li><a href="#people">Where people are still needed</a></li>
+      <li><a href="#others">Other studies</a></li>
+      <li><a href="#limits">Limitations</a></li>
+      <li><a href="#disclosure">Disclosure</a></li>
+      <li><a href="#data">Data and citation</a></li>
+    </ol>
+  </nav>
+
+  <div class="rpt-body">
+
+    <section id="summary" aria-labelledby="summary-h">
+      <p class="lab">01 · Summary</p>
+      <h2 id="summary-h">Five things we found.</h2>
+      <div class="stats" style="--cols:4">
+        <div class="stat"><b class="num">318</b><span>public apps rebuilt to a working database<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+        <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data (33%)<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup></span></div>
+        <div class="stat red"><b class="num">25–28<small>%</small></b><span>real personal-data exposure, after false alarms<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
+        <div class="stat green"><b class="num">18<small>of 20</small></b><span>fixes passed the strict lab proof, no human<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></span></div>
+      </div>
+      <ol class="footnotes">
+        <li id="fn1">PatchLabs lab study, Nov 2026. 500 public repos sampled, 436 run, 318 built a working database in the lab.</li>
+        <li id="fn2">106 of 318: 70 (22%) readable by anyone with the app’s public key, 36 (11%) by anyone who signs up.</li>
+        <li id="fn3">Removing businesses’ own public contact details, using the false-alarm rate from the fix study (4 of 24 flagged apps, n=24, 5 Nov 2026).</li>
+        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20. The other 2 went to a person.</li>
+      </ol>
+      <ol class="keyfind mt-4">
+        <li><span class="n">01</span><p><b>About 1 in 4 public AI-built apps expose personal data to people who shouldn’t see it.</b> Emails, phone numbers, addresses and dates of birth, readable with nothing more than the key every visitor already has, or a throwaway account.</p></li>
+        <li><span class="n">02</span><p><b>A third of the leaks need a sign-up, and outside scans can’t see them.</b> 36 of the 106 apps leaked only to signed-in users. The public studies we reviewed test only as a logged-out visitor, so they miss this group entirely.</p></li>
+        <li><span class="n">03</span><p><b>The cause is a handful of access-rule patterns.</b> Row level security never switched on, or read rules that say yes to everyone (<code>using (true)</code>) or to anyone signed in. Each has a stable ID in our <a href="/findings">finding index</a>.</p></li>
+        <li><span class="n">04</span><p><b>Most fixes can be written and proven by machine, cheaply.</b> 18 of 20 passed a strict three-identity lab proof with no human; 15 needed only the smallest model. Median model cost $0.46 and 3.5 minutes per app.</p></li>
+        <li><span class="n">05</span><p><b>Proven isn’t the same as safe to ship blind.</b> Closing a leak can break a page or needs a business decision. In an earlier study only 4 of 20 fixes were safe to apply with no human review. That’s why an engineer approves every change.</p></li>
+      </ol>
+    </section>
+
+    <section id="funnel" aria-labelledby="funnel-h">
+      <p class="lab">02 · The funnel</p>
+      <h2 id="funnel-h">From 500 sampled repos to 106 exposing personal data.</h2>
+      <p>We drew a random sample of 500 public GitHub repos with a Lovable/Supabase project layout and ran 436 of them through the lab. In 318 the migrations built a working database; those 318 are the denominator for every exposure number in this report. The 118 that didn’t build are excluded, not counted as safe.</p>
+      <figure class="chart">
+        <p class="lab">Figure 1 · n=500 sampled</p>
+        <h3>Each stage of the exposure study</h3>
+        <p class="sub">Bars to scale. Red means personal data a stranger can read.</p>
+        <svg role="img" aria-labelledby="funnel-t funnel-d" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">
+<title id="funnel-t">From 500 sampled repos to 106 exposing personal data</title><desc id="funnel-d">500 sampled, 436 run, 318 built a working database, 106 let the wrong people read personal data: 70 to anyone with the public key and 36 more to anyone who signs up.</desc>
+<defs><pattern id="hatch-funnel" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+<text x="0" y="16">Public repos sampled</text>
+<text class="t-val" x="100%" y="16" text-anchor="end">500</text>
+<rect class="m-track" x="0" y="24" width="100%" height="12" rx="3"/>
+<rect class="mark m-faint" x="0" y="24" width="100.00%" height="12" rx="3"><title>Public repos sampled: 500</title></rect>
+<text x="0" y="62">Run through the lab</text>
+<text class="t-val" x="100%" y="62" text-anchor="end">436</text>
+<rect class="m-track" x="0" y="70" width="100%" height="12" rx="3"/>
+<rect class="mark m-faint" x="0" y="70" width="87.20%" height="12" rx="3"><title>Run through the lab: 436</title></rect>
+<text x="0" y="108">Migrations built a working database</text>
+<text class="t-val" x="100%" y="108" text-anchor="end">318</text>
+<rect class="m-track" x="0" y="116" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="116" width="63.60%" height="12" rx="3"><title>Migrations built a working database: 318</title></rect>
+<text x="0" y="154">Personal data readable by the wrong people</text>
+<text class="t-val red" x="100%" y="154" text-anchor="end">106</text>
+<rect class="m-track" x="0" y="162" width="100%" height="12" rx="3"/>
+<rect class="mark m-red" x="0" y="162" width="21.20%" height="12" rx="3"><title>Personal data readable by the wrong people: 106</title></rect>
+<text x="0" y="200">…by anyone with the public key</text>
+<text class="t-val red" x="100%" y="200" text-anchor="end">70</text>
+<rect class="m-track" x="0" y="208" width="100%" height="12" rx="3"/>
+<rect class="mark m-red" x="0" y="208" width="14.00%" height="12" rx="3"><title>…by anyone with the public key: 70</title></rect>
+<text x="0" y="246">…only by people who sign up</text>
+<text class="t-val red" x="100%" y="246" text-anchor="end">36</text>
+<rect class="m-track" x="0" y="254" width="100%" height="12" rx="3"/>
+<rect class="mark m-redsoft" style="fill:url(#hatch-funnel)" x="0" y="254" width="7.20%" height="12" rx="3"><title>…only by people who sign up: 36</title></rect>
+</svg>
+        <ul class="legend"><li><i class="faint"></i>Sampled and run</li><li><i class="ink"></i>Rebuilt (the denominator)</li><li><i class="red"></i>Readable by anyone</li><li><i class="hatch"></i>Readable after signing up</li></ul>
+        <details><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table class="table compact">
+            <thead><tr><th scope="col">Stage</th><th scope="col" class="num">Repos</th><th scope="col" class="num">Share of 318</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Sampled</th><td class="num">500</td><td class="num">–</td></tr>
+              <tr><th scope="row">Run through the lab</th><td class="num">436</td><td class="num">–</td></tr>
+              <tr><th scope="row">Built a working database</th><td class="num">318</td><td class="num">100%</td></tr>
+              <tr><th scope="row">Personal data readable by the wrong people</th><td class="num">106</td><td class="num">33%</td></tr>
+              <tr><th scope="row">…by anyone with the public key</th><td class="num">70</td><td class="num">22%</td></tr>
+              <tr><th scope="row">…only by people who sign up</th><td class="num">36</td><td class="num">11%</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+      </figure>
+      <p class="mt-3">Not every hit is a person’s private data. When fix agents examined 24 flagged apps closely, 4 (about 1 in 6) were a business’s own public contact details, such as a shop’s phone number on its own listing. Applied to the 106, that leaves about 88 apps, or 28%. We quote <strong>25–28%</strong> rather than one figure because the false-alarm rate comes from a small sample. Either way it rounds to about 1 in 4.</p>
+    </section>
+
+    <section id="who" aria-labelledby="who-h">
+      <p class="lab red">03 · Who could read it</p>
+      <h2 id="who-h">Two thirds leaked to anyone. One third leaked to anyone who signs up.</h2>
+      <p>Every Supabase app ships a public key inside its pages; access rules decide what that key can read. We tested each rebuilt database as two outsiders: an <strong>anonymous visitor</strong> holding only that key, and a <strong>signed-in stranger</strong>, a second test user who owns none of the rows.</p>
+      <figure class="chart">
+        <p class="lab">Figure 2 · n=318 rebuilt apps</p>
+        <h3>Who could read personal data</h3>
+        <p class="sub">Each app counted once, by the widest audience that could read its personal data.</p>
+        <svg role="img" aria-labelledby="who-t who-d" width="100%" height="44" xmlns="http://www.w3.org/2000/svg">
+<title id="who-t">Who could read personal data, 318 rebuilt apps</title><desc id="who-d">70 apps (22%) to anyone with the public key, 36 (11%) only to signed-in users, 212 (67%) neither.</desc>
+<defs><pattern id="hatch-who" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+<svg x="0.000%" y="0" width="22.013%" height="44" overflow="visible"><rect class="mark m-red" x="0" y="4" width="100%" height="36" rx="4"><title>Anyone with the public key: 70 of 318</title></rect></svg>
+<svg x="22.013%" y="0" width="11.321%" height="44" overflow="visible"><rect class="mark m-redsoft" style="fill:url(#hatch-who)" x="0" y="4" width="100%" height="36" rx="4"><title>Anyone who signs up: 36 of 318</title></rect></svg>
+<svg x="33.333%" y="0" width="66.667%" height="44" overflow="visible"><rect class="mark m-faint" x="0" y="4" width="100%" height="36" rx="4"><title>No personal data readable by the wrong people: 212 of 318</title></rect></svg>
+<line x1="22.013%" x2="22.013%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="33.333%" x2="33.333%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+</svg>
+        <ul class="legend"><li><i class="red"></i>Anyone with the public key · 70 (22%)</li><li><i class="hatch"></i>Only after signing up · 36 (11%)</li><li><i class="faint"></i>Neither · 212 (67%)</li></ul>
+        <details><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table class="table compact">
+            <thead><tr><th scope="col">Who could read personal data</th><th scope="col" class="num">Apps</th><th scope="col" class="num">Share</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Anyone on the internet, with the public key</th><td class="num">70</td><td class="num">22%</td></tr>
+              <tr><th scope="row">Anyone who signs up (and not anonymous visitors)</th><td class="num">36</td><td class="num">11%</td></tr>
+              <tr><th scope="row">Neither</th><td class="num">212</td><td class="num">67%</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+      </figure>
+      <div class="callout note mt-3"><p><strong>Why the signed-in group matters.</strong> If an app lets anyone create an account, “signed in” is not a security boundary: a stranger signs up with a throwaway email and reads everything. These 36 apps look closed from the outside. They are only visible to a test that actually signs in as a second user. See <a href="/findings/pl-002">PL-002</a>.</p></div>
+    </section>
+
+    <section id="what" aria-labelledby="what-h">
+      <p class="lab red">04 · What leaked</p>
+      <h2 id="what-h">Profiles, other people’s records and private messages.</h2>
+      <p>We counted a table as leaking when an outsider could read at least one seeded row with a personal column: email, phone, address or date of birth (and similar names such as <code>dob</code>, <code>ssn</code> or <code>passport</code>). For the 20 apps in the autonomous run we can say what kind of table leaked. They had 37 leaking tables between them.</p>
+      <figure class="chart">
+        <p class="lab">Figure 3 · n=37 tables in 20 apps, 9 Nov 2026</p>
+        <h3>What the leaking tables held</h3>
+        <p class="sub">Grouped by what each table was for. Table names are not published.</p>
+        <svg role="img" aria-labelledby="tables-t tables-d" width="100%" height="326" xmlns="http://www.w3.org/2000/svg">
+<title id="tables-t">What the 37 leaking tables held, by kind</title><desc id="tables-d">Of 37 leaking tables in 20 apps: 9 held other people's records, 8 user profiles, 6 messages or notifications, 5 leads or sign-ups, 3 orders or bookings, 3 settings, 3 listings or places.</desc>
+<defs><pattern id="hatch-tables" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+<text x="0" y="16">Other people’s records (staff, sellers, suppliers, players)</text>
+<text class="t-val" x="100%" y="16" text-anchor="end">9</text>
+<rect class="m-track" x="0" y="24" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="24" width="100.00%" height="12" rx="3"><title>Other people’s records (staff, sellers, suppliers, players): 9</title></rect>
+<text x="0" y="62">User profiles and accounts</text>
+<text class="t-val" x="100%" y="62" text-anchor="end">8</text>
+<rect class="m-track" x="0" y="70" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="70" width="88.89%" height="12" rx="3"><title>User profiles and accounts: 8</title></rect>
+<text x="0" y="108">Messages, chat logs and notifications</text>
+<text class="t-val" x="100%" y="108" text-anchor="end">6</text>
+<rect class="m-track" x="0" y="116" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="116" width="66.67%" height="12" rx="3"><title>Messages, chat logs and notifications: 6</title></rect>
+<text x="0" y="154">Leads, sign-ups, waitlists and requests</text>
+<text class="t-val" x="100%" y="154" text-anchor="end">5</text>
+<rect class="m-track" x="0" y="162" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="162" width="55.56%" height="12" rx="3"><title>Leads, sign-ups, waitlists and requests: 5</title></rect>
+<text x="0" y="200">Orders, bookings, sessions and events</text>
+<text class="t-val" x="100%" y="200" text-anchor="end">3</text>
+<rect class="m-track" x="0" y="208" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="208" width="33.33%" height="12" rx="3"><title>Orders, bookings, sessions and events: 3</title></rect>
+<text x="0" y="246">Settings and contact configuration</text>
+<text class="t-val" x="100%" y="246" text-anchor="end">3</text>
+<rect class="m-track" x="0" y="254" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="254" width="33.33%" height="12" rx="3"><title>Settings and contact configuration: 3</title></rect>
+<text x="0" y="292">Listings, places and stores</text>
+<text class="t-val" x="100%" y="292" text-anchor="end">3</text>
+<rect class="m-track" x="0" y="300" width="100%" height="12" rx="3"/>
+<rect class="mark m-ink" x="0" y="300" width="33.33%" height="12" rx="3"><title>Listings, places and stores: 3</title></rect>
+</svg>
+        <details><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table class="table compact">
+            <thead><tr><th scope="col">Kind of table</th><th scope="col" class="num">Tables</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Other people’s records (staff, sellers, suppliers, players)</th><td class="num">9</td></tr>
+              <tr><th scope="row">User profiles and accounts</th><td class="num">8</td></tr>
+              <tr><th scope="row">Messages, chat logs and notifications</th><td class="num">6</td></tr>
+              <tr><th scope="row">Leads, sign-ups, waitlists and requests</th><td class="num">5</td></tr>
+              <tr><th scope="row">Orders, bookings, sessions and events</th><td class="num">3</td></tr>
+              <tr><th scope="row">Settings and contact configuration</th><td class="num">3</td></tr>
+              <tr><th scope="row">Listings, places and stores</th><td class="num">3</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+      </figure>
+      <p class="mt-3">The pattern is consistent: the table everyone thinks of (users) is only part of it. Apps also expose the people their users deal with: suppliers, staff rosters, sellers’ contact details, and logs of private conversations.</p>
+    </section>
+
+    <section id="why" aria-labelledby="why-h">
+      <p class="lab">05 · Why it happens</p>
+      <h2 id="why-h">Four patterns behind the leaks.</h2>
+      <p>AI builders write access rules quickly and make the app work first. The rules that make a permissions error disappear are the same rules that open the table. These are the patterns we see, each with a page showing the vulnerable SQL, a self-check and the fix.</p>
+      <div class="patterns">
+        <div class="pattern"><a class="id" href="/findings/pl-008">PL-008</a><h3>Row level security never switched on</h3><p>No rules at all. With API access granted, the public key reads and writes everything.</p><pre>create table public.leads (…);
+-- no "enable row level security"</pre></div>
+        <div class="pattern"><a class="id" href="/findings/pl-001">PL-001 · PL-005</a><h3>A read rule that says yes to everyone</h3><p>Usually added to fix an error. With no <code>to</code> clause it covers logged-out visitors too.</p><pre>create policy "Viewable by everyone"
+  on public.profiles for select
+  using (true);</pre></div>
+        <div class="pattern"><a class="id" href="/findings/pl-002">PL-002</a><h3>A read rule that only checks “signed in”</h3><p>Looks careful, isn’t: anyone can sign up.</p><pre>create policy "Logged in users can view"
+  on public.bookings for select
+  using (auth.uid() is not null);</pre></div>
+        <div class="pattern"><a class="id" href="/findings/pl-001">PL-001</a><h3>A public table carrying private columns</h3><p>The rows are meant to be public (a directory, a listing), but the same table holds emails and phone numbers.</p><pre>-- public by design: name, city, photo
+-- leaking: email, phone</pre></div>
+      </div>
+      <p class="mt-3">Supabase’s own linter deliberately does not flag public read rules, because they are often intended. That is a reasonable choice for a linter, and it is exactly why these leaks survive: only knowing what the table holds, and who should see it, tells you whether <code>using (true)</code> is a feature or a leak. <a class="link-arrow" href="/findings">All findings</a></p>
+    </section>
+
+    <section id="intent" aria-labelledby="intent-h">
+      <p class="lab">06 · Mistake or intended?</p>
+      <h2 id="intent-h">Most leaks were mistakes. Some were public tables leaking private columns.</h2>
+      <p>Before writing a fix, the agent reads the app’s code to judge intent: which pages read the table, whether they are logged-out pages, and which columns they use. Across the 37 tables in the autonomous run, it reached these verdicts:</p>
+      <figure class="chart">
+        <p class="lab">Figure 4 · n=37 tables, 9 Nov 2026</p>
+        <h3>Agent verdicts on leaking tables</h3>
+        <p class="sub">The verdict decides the shape of the fix.</p>
+        <svg role="img" aria-labelledby="verdict-t verdict-d" width="100%" height="44" xmlns="http://www.w3.org/2000/svg">
+<title id="verdict-t">Agent verdicts on 37 leaking tables</title><desc id="verdict-d">28 real bugs, 7 public by design but leaking personal columns, 2 false alarms.</desc>
+<defs><pattern id="hatch-verdict" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+<svg x="0.000%" y="0" width="75.676%" height="44" overflow="visible"><rect class="mark m-red" x="0" y="4" width="100%" height="36" rx="4"><title>Real bug: 28 of 37</title></rect></svg>
+<svg x="75.676%" y="0" width="18.919%" height="44" overflow="visible"><rect class="mark m-redsoft" style="fill:url(#hatch-verdict)" x="0" y="4" width="100%" height="36" rx="4"><title>Public by design, but leaking personal columns: 7 of 37</title></rect></svg>
+<svg x="94.595%" y="0" width="5.405%" height="44" overflow="visible"><rect class="mark m-faint" x="0" y="4" width="100%" height="36" rx="4"><title>False alarm: 2 of 37</title></rect></svg>
+<line x1="75.676%" x2="75.676%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="94.595%" x2="94.595%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+</svg>
+        <ul class="legend"><li><i class="red"></i>Real bug · 28</li><li><i class="hatch"></i>Public by design, leaking personal columns · 7</li><li><i class="faint"></i>False alarm · 2</li></ul>
+        <details><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table class="table compact">
+            <thead><tr><th scope="col">Verdict</th><th scope="col" class="num">Tables</th><th scope="col">What the fix does</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Real bug</th><td class="num">28</td><td>Close the table to everyone but the owner (or staff)</td></tr>
+              <tr><th scope="row">Public by design, leaking personal columns</th><td class="num">7</td><td>Keep the rows public, withhold the personal columns</td></tr>
+              <tr><th scope="row">False alarm</th><td class="num">2</td><td>Leave it open, and ask the owner to confirm</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+      </figure>
+      <p class="mt-3">In the earlier fix study the agents caught 4 false alarms in 24 apps on their own, all of them a business’s own public contact details (5 Nov 2026, n=24). A pure rules-based scanner can’t make that call. It either flags every public read, and drowns you in noise, or flags none, and misses the leaks above.</p>
+    </section>
+
+    <section id="fixes" aria-labelledby="fixes-h">
+      <p class="lab green">07 · The fixes</p>
+      <h2 id="fixes-h">18 of 20 fixes passed a strict lab proof with no human involved.</h2>
+      <p>On 9 Nov 2026 we gave the pipeline 20 leaking apps from the study that had never been through a fix agent (14 readable by anyone, 6 by any signed-up user). It rebuilt each database, wrote a fix with the smallest Claude model, and ran an independent proof. A fix passes only if the anonymous visitor and the signed-in stranger can read neither the private rows nor the personal columns, <em>and</em> the owner still reads their own row and its personal columns. If the proof fails, the attempt is discarded and the next model tries.</p>
+      <figure class="chart">
+        <p class="lab">Figure 5 · n=20 apps, 9 Nov 2026</p>
+        <h3>Which model produced the passing fix</h3>
+        <p class="sub">Cheapest first: Haiku, then Sonnet, then Opus, escalating only when the proof fails.</p>
+        <svg role="img" aria-labelledby="models-t models-d" width="100%" height="44" xmlns="http://www.w3.org/2000/svg">
+<title id="models-t">Which model produced the passing fix, 20 apps</title><desc id="models-d">15 passed with the smallest model, 2 needed Sonnet, 1 needed Opus, 2 failed on all three and went to a person.</desc>
+<defs><pattern id="hatch-models" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+<svg x="0.000%" y="0" width="75.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Smallest model (Haiku), first try: 15 of 20</title></rect></svg>
+<svg x="75.000%" y="0" width="10.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Escalated to Sonnet: 2 of 20</title></rect></svg>
+<svg x="85.000%" y="0" width="5.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Escalated to Opus: 1 of 20</title></rect></svg>
+<svg x="90.000%" y="0" width="10.000%" height="44" overflow="visible"><rect class="mark m-amber" x="0" y="4" width="100%" height="36" rx="4"><title>Needs a person: 2 of 20</title></rect></svg>
+<line x1="75.000%" x2="75.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="85.000%" x2="85.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="90.000%" x2="90.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+</svg>
+        <ul class="legend"><li><i class="green"></i>Proven: 15 on the smallest model, 2 on Sonnet, 1 on Opus</li><li><i class="amber"></i>Needs a person · 2</li></ul>
+        <details><summary>Show the numbers as a table</summary>
+          <div class="table-wrap"><table class="table compact">
+            <thead><tr><th scope="col">Outcome</th><th scope="col" class="num">Apps</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Passed on the smallest model (Haiku), first try</th><td class="num">15</td></tr>
+              <tr><th scope="row">Escalated to Sonnet, passed</th><td class="num">2</td></tr>
+              <tr><th scope="row">Escalated to Opus, passed</th><td class="num">1</td></tr>
+              <tr><th scope="row">Failed on all three, sent to a person</th><td class="num">2</td></tr>
+            </tbody>
+          </table></div>
+        </details>
+      </figure>
+      <h3>What the fixes looked like</h3>
+      <p>Three shapes, matching the verdicts. These are synthetic examples of each shape, not code from any studied app.</p>
+      <div class="code">
+        <div class="code-bar"><span class="name">shape 1 · real bug → owner-only</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Profiles are viewable by everyone" on public.profiles;</span>
+<span class="add">create policy "Users can view own profile" on public.profiles</span>
+<span class="add">  for select to authenticated using ((select auth.uid()) = id);</span></code></pre>
+      </div>
+      <div class="code">
+        <div class="code-bar"><span class="name">shape 2 · public by design → withhold personal columns</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- The directory stays public; contact details don't.</span>
+<span class="add">revoke select on public.sellers from anon;</span>
+<span class="add">grant select (id, shop_name, city, avatar_url) on public.sellers to anon;</span></code></pre>
+      </div>
+      <div class="code">
+        <div class="code-bar"><span class="name">shape 3 · false alarm → no change, one question</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- No SQL. The flagged column is the business's own public phone number.</span>
+<span class="c">-- Question for the owner: keep it visible on the listing page? Recommended: yes.</span></code></pre>
+      </div>
+      <p>The agent also judged the risk that each fix changes how the site behaves: low for 18 of the 20 apps, medium for 2. It wrote 18 plain-English questions for owners across the 20 apps, each with options and a recommended answer, for the decisions code can’t make.</p>
+      <p>A separate study on 5 Nov 2026 had already re-run every agent fix by hand: 19 of 20 real fixes worked first time and applied cleanly (n=20).</p>
+    </section>
+
+    <section id="cost" aria-labelledby="cost-h">
+      <p class="lab">08 · Cost and time</p>
+      <h2 id="cost-h">Median $0.46 and 3.5 minutes per app. Here is the whole spread.</h2>
+      <p>Medians hide tails, so here is every app. Cost is the model spend reported for each fix attempt, summed per app. Time is the agents’ working time, summed across attempts; rebuilding the database and each re-verification added seconds on top (a median of 2 and 3 seconds in this run).</p>
+      <div class="bignums" style="--cols:4">
+        <div class="bignum"><b>$0.46</b><span>median model cost per app</span></div>
+        <div class="bignum"><b>$1.75</b><span>mean, pulled up by one app</span></div>
+        <div class="bignum"><b>3.5<small>min</small></b><span>median agent time per app</span></div>
+        <div class="bignum"><b>9.2<small>min</small></b><span>mean, pulled up by escalations</span></div>
+      </div>
+      <figure class="chart">
+        <p class="lab">Figure 6 · n=20 apps, 9 Nov 2026</p>
+        <h3>Model cost per app</h3>
+        <p class="sub">Log scale, from $0.12 to $15.65. Green: proven. Amber: sent to a person.</p>
+        <svg class="strip" role="img" aria-labelledby="cost-t cost-d" height="132" width="100%" xmlns="http://www.w3.org/2000/svg">
+<title id="cost-t">Model cost per app, all 20 apps</title>
+<desc id="cost-d">Each dot is one app on a logarithmic scale. Median $0.46. Range $0.12 to $16. Data table below.</desc>
+<g class="grid">
+<line x1="0.00%" x2="0.00%" y1="18" y2="96"/>
+<line x1="17.29%" x2="17.29%" y1="18" y2="96"/>
+<line x1="30.38%" x2="30.38%" y1="18" y2="96"/>
+<line x1="43.46%" x2="43.46%" y1="18" y2="96"/>
+<line x1="60.75%" x2="60.75%" y1="18" y2="96"/>
+<line x1="73.84%" x2="73.84%" y1="18" y2="96"/>
+<line x1="86.92%" x2="86.92%" y1="18" y2="96"/>
+<line x1="100.00%" x2="100.00%" y1="18" y2="96"/>
+</g>
+<line class="axis" x1="0" x2="100%" y1="96" y2="96"/>
+<text class="t-mono" x="0.00%" y="116" text-anchor="start">$0.10</text>
+<text class="t-mono hide-phone" x="17.29%" y="116" text-anchor="middle">$0.25</text>
+<text class="t-mono" x="30.38%" y="116" text-anchor="middle">$0.50</text>
+<text class="t-mono hide-phone" x="43.46%" y="116" text-anchor="middle">$1</text>
+<text class="t-mono" x="60.75%" y="116" text-anchor="middle">$2.50</text>
+<text class="t-mono hide-phone" x="73.84%" y="116" text-anchor="middle">$5</text>
+<text class="t-mono" x="86.92%" y="116" text-anchor="middle">$10</text>
+<text class="t-mono hide-phone" x="100.00%" y="116" text-anchor="end">$20</text>
+<line class="ref" x1="28.98%" x2="28.98%" y1="10" y2="96"/>
+<text class="t-mono" x="28.98%" y="8" dx="6" dy="4">median $0.46</text>
+<circle class="dot mark m-green" cx="3.86%" cy="78" r="6"><title>$0.12, proven</title></circle>
+<circle class="dot mark m-green" cx="7.77%" cy="78" r="6"><title>$0.15, proven</title></circle>
+<circle class="dot mark m-green" cx="17.62%" cy="78" r="6"><title>$0.25, proven</title></circle>
+<circle class="dot mark m-green" cx="19.32%" cy="78" r="6"><title>$0.28, proven</title></circle>
+<circle class="dot mark m-green" cx="22.56%" cy="78" r="6"><title>$0.33, proven</title></circle>
+<circle class="dot mark m-green" cx="22.82%" cy="65" r="6"><title>$0.34, proven</title></circle>
+<circle class="dot mark m-green" cx="24.64%" cy="78" r="6"><title>$0.37, proven</title></circle>
+<circle class="dot mark m-green" cx="26.46%" cy="78" r="6"><title>$0.41, proven</title></circle>
+<circle class="dot mark m-green" cx="27.30%" cy="65" r="6"><title>$0.42, proven</title></circle>
+<circle class="dot mark m-green" cx="28.76%" cy="78" r="6"><title>$0.46, proven</title></circle>
+<circle class="dot mark m-green" cx="29.19%" cy="65" r="6"><title>$0.47, proven</title></circle>
+<circle class="dot mark m-green" cx="29.50%" cy="52" r="6"><title>$0.48, proven</title></circle>
+<circle class="dot mark m-green" cx="29.63%" cy="39" r="6"><title>$0.48, proven</title></circle>
+<circle class="dot mark m-green" cx="29.74%" cy="26" r="6"><title>$0.48, proven</title></circle>
+<circle class="dot mark m-green" cx="38.30%" cy="78" r="6"><title>$0.76, proven</title></circle>
+<circle class="dot mark m-green" cx="52.17%" cy="78" r="6"><title>$1.59, proven</title></circle>
+<circle class="dot mark m-green" cx="57.70%" cy="78" r="6"><title>$2.13, proven</title></circle>
+<circle class="dot mark m-amber" cx="63.24%" cy="78" r="6"><title>$2.85, needs a person</title></circle>
+<circle class="dot mark m-amber" cx="80.11%" cy="78" r="6"><title>$6.97, needs a person</title></circle>
+<circle class="dot mark m-green" cx="95.37%" cy="78" r="6"><title>$16, proven</title></circle>
+</svg>
+        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="amber"></i>Needs a person</li></ul>
+        <details><summary>Show the numbers as a table</summary><div class="table-wrap"><table class="table compact"><thead><tr><th scope="col">Model cost</th><th scope="col" class="num">Apps</th></tr></thead><tbody><tr><th scope="row">under $0.50</th><td class="num">14</td></tr><tr><th scope="row">$0.50 to $1</th><td class="num">1</td></tr><tr><th scope="row">$1 to $3</th><td class="num">3</td></tr><tr><th scope="row">$3 to $10</th><td class="num">1</td></tr><tr><th scope="row">over $10</th><td class="num">1</td></tr></tbody></table></div></details>
+      </figure>
+      <figure class="chart">
+        <p class="lab">Figure 7 · n=20 apps, 9 Nov 2026</p>
+        <h3>Agent working time per app</h3>
+        <p class="sub">Log scale, from 0.8 to 66.7 minutes.</p>
+        <svg class="strip" role="img" aria-labelledby="time-t time-d" height="132" width="100%" xmlns="http://www.w3.org/2000/svg">
+<title id="time-t">Agent working time per app, all 20 apps</title>
+<desc id="time-d">Each dot is one app on a logarithmic scale. Median 3.5 min. Range 0.8 min to 66.7 min. Data table below.</desc>
+<g class="grid">
+<line x1="0.00%" x2="0.00%" y1="18" y2="96"/>
+<line x1="13.08%" x2="13.08%" y1="18" y2="96"/>
+<line x1="26.16%" x2="26.16%" y1="18" y2="96"/>
+<line x1="43.46%" x2="43.46%" y1="18" y2="96"/>
+<line x1="56.54%" x2="56.54%" y1="18" y2="96"/>
+<line x1="77.28%" x2="77.28%" y1="18" y2="96"/>
+<line x1="90.36%" x2="90.36%" y1="18" y2="96"/>
+<line x1="100.00%" x2="100.00%" y1="18" y2="96"/>
+</g>
+<line class="axis" x1="0" x2="100%" y1="96" y2="96"/>
+<text class="t-mono hide-phone" x="0.00%" y="116" text-anchor="start">0.5 min</text>
+<text class="t-mono" x="13.08%" y="116" text-anchor="middle">1 min</text>
+<text class="t-mono hide-phone" x="26.16%" y="116" text-anchor="middle">2 min</text>
+<text class="t-mono" x="43.46%" y="116" text-anchor="middle">5 min</text>
+<text class="t-mono hide-phone" x="56.54%" y="116" text-anchor="middle">10 min</text>
+<text class="t-mono" x="77.28%" y="116" text-anchor="middle">30 min</text>
+<text class="t-mono hide-phone" x="90.36%" y="116" text-anchor="middle">60 min</text>
+<text class="t-mono" x="100.00%" y="116" text-anchor="end">100 min</text>
+<line class="ref" x1="36.73%" x2="36.73%" y1="10" y2="96"/>
+<text class="t-mono" x="36.73%" y="8" dx="6" dy="4">median 3.5 min</text>
+<circle class="dot mark m-green" cx="8.47%" cy="78" r="6"><title>0.8 min, proven</title></circle>
+<circle class="dot mark m-green" cx="14.88%" cy="78" r="6"><title>1.1 min, proven</title></circle>
+<circle class="dot mark m-green" cx="22.53%" cy="78" r="6"><title>1.6 min, proven</title></circle>
+<circle class="dot mark m-green" cx="25.20%" cy="78" r="6"><title>1.9 min, proven</title></circle>
+<circle class="dot mark m-green" cx="28.67%" cy="78" r="6"><title>2.3 min, proven</title></circle>
+<circle class="dot mark m-green" cx="30.75%" cy="78" r="6"><title>2.5 min, proven</title></circle>
+<circle class="dot mark m-green" cx="32.63%" cy="78" r="6"><title>2.8 min, proven</title></circle>
+<circle class="dot mark m-green" cx="32.96%" cy="65" r="6"><title>2.9 min, proven</title></circle>
+<circle class="dot mark m-green" cx="36.36%" cy="78" r="6"><title>3.4 min, proven</title></circle>
+<circle class="dot mark m-green" cx="36.64%" cy="65" r="6"><title>3.5 min, proven</title></circle>
+<circle class="dot mark m-green" cx="36.82%" cy="52" r="6"><title>3.5 min, proven</title></circle>
+<circle class="dot mark m-green" cx="38.36%" cy="78" r="6"><title>3.8 min, proven</title></circle>
+<circle class="dot mark m-green" cx="40.02%" cy="78" r="6"><title>4.2 min, proven</title></circle>
+<circle class="dot mark m-green" cx="43.83%" cy="78" r="6"><title>5.1 min, proven</title></circle>
+<circle class="dot mark m-green" cx="56.38%" cy="78" r="6"><title>9.9 min, proven</title></circle>
+<circle class="dot mark m-amber" cx="60.01%" cy="78" r="6"><title>12.0 min, needs a person</title></circle>
+<circle class="dot mark m-green" cx="61.00%" cy="65" r="6"><title>12.7 min, proven</title></circle>
+<circle class="dot mark m-green" cx="62.71%" cy="78" r="6"><title>13.9 min, proven</title></circle>
+<circle class="dot mark m-amber" cx="76.90%" cy="78" r="6"><title>29.4 min, needs a person</title></circle>
+<circle class="dot mark m-green" cx="92.34%" cy="78" r="6"><title>66.7 min, proven</title></circle>
+</svg>
+        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="amber"></i>Needs a person</li></ul>
+        <details><summary>Show the numbers as a table</summary><div class="table-wrap"><table class="table compact"><thead><tr><th scope="col">Agent time</th><th scope="col" class="num">Apps</th></tr></thead><tbody><tr><th scope="row">under 2 min</th><td class="num">4</td></tr><tr><th scope="row">2 to 4 min</th><td class="num">8</td></tr><tr><th scope="row">4 to 10 min</th><td class="num">3</td></tr><tr><th scope="row">10 to 30 min</th><td class="num">4</td></tr><tr><th scope="row">over 30 min</th><td class="num">1</td></tr></tbody></table></div></details>
+      </figure>
+      <p class="mt-3">14 of 20 apps cost under $0.50. The 15 apps fixed by the smallest model had a median cost of $0.41 and never exceeded $0.76. The tail comes from escalation: the most expensive app went through all three models and cost $15.65 over 67 minutes. That is why every check now has a spend cap: a free check can’t run away.</p>
+      <p>Why smallest first? In a trial on 3 apps the same fixes cost an average of $2.26 per app on Opus, $0.83 on Sonnet and $0.25 on Haiku (9 Nov 2026, n=3). In that trial Haiku’s first attempts failed 2 of 3 until the verifier’s verdict was made explicit, which is the point: a cheap model is only safe behind an independent proof that refuses to pass a fix that locks the owner out or leaves strangers a way in.</p>
+      <h3>Every run</h3>
+      <p>Ordered by cost. No table names, repos or owners.</p>
+      <div class="table-wrap">
+        <table class="table compact runs">
+          <caption class="sr-only">All 20 runs of the autonomous pipeline, 9 Nov 2026, ordered by model cost</caption>
+          <thead><tr><th scope="col">Run</th><th scope="col">Who could read</th><th scope="col" class="num">Tables</th><th scope="col">Models tried</th><th scope="col">Result</th><th scope="col" class="num">Cost</th><th scope="col" class="num">Minutes</th><th scope="col" class="num">Questions</th><th scope="col">Break risk</th></tr></thead>
+          <tbody>
+<tr><th scope="row">01</th><td>anyone</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.12</td><td class="num">0.8</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">02</th><td>signed-in</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.15</td><td class="num">1.1</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">03</th><td>anyone</td><td class="num">3</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.25</td><td class="num">1.9</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">04</th><td>anyone</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.28</td><td class="num">2.9</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">05</th><td>anyone</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.33</td><td class="num">1.6</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">06</th><td>signed-in</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.34</td><td class="num">2.3</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">07</th><td>anyone</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.37</td><td class="num">2.5</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">08</th><td>anyone</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.41</td><td class="num">3.4</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">09</th><td>anyone</td><td class="num">3</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.42</td><td class="num">2.8</td><td class="num">3</td><td>low</td></tr>
+<tr><th scope="row">10</th><td>anyone</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.46</td><td class="num">9.9</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">11</th><td>signed-in</td><td class="num">7</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.47</td><td class="num">3.8</td><td class="num">2</td><td>low</td></tr>
+<tr><th scope="row">12</th><td>anyone</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.48</td><td class="num">4.2</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">13</th><td>signed-in</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.48</td><td class="num">3.5</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">14</th><td>signed-in</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.48</td><td class="num">3.5</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">15</th><td>signed-in</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.76</td><td class="num">5.1</td><td class="num">0</td><td>low</td></tr>
+<tr><th scope="row">16</th><td>anyone</td><td class="num">2</td><td><span class="models"><s>haiku</s> → <b>sonnet ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$1.59</td><td class="num">12.7</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">17</th><td>anyone</td><td class="num">1</td><td><span class="models"><s>haiku</s> → <b>sonnet ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$2.13</td><td class="num">13.9</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">18</th><td>anyone</td><td class="num">1</td><td><span class="models"><s>haiku</s> → <s>sonnet</s> → <s>opus</s></span></td><td><span class="pill pending">needs a person</span></td><td class="num">$2.85</td><td class="num">12.0</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">19</th><td>anyone</td><td class="num">1</td><td><span class="models"><s>haiku</s> → <s>sonnet</s> → <s>opus</s></span></td><td><span class="pill pending">needs a person</span></td><td class="num">$6.97</td><td class="num">29.4</td><td class="num">2</td><td>medium</td></tr>
+<tr><th scope="row">20</th><td>anyone</td><td class="num">2</td><td><span class="models"><s>haiku</s> → <s>sonnet</s> → <b>opus ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$15.65</td><td class="num">66.7</td><td class="num">4</td><td>medium</td></tr>
+          </tbody>
+          <tfoot><tr><th scope="row">All</th><td>14 anyone · 6 signed-in</td><td class="num">37</td><td>15 · 2 · 1 · 2 failed</td><td>18 proven</td><td class="num">$0.46 med.</td><td class="num">3.5 med.</td><td class="num">18</td><td>18 low · 2 med.</td></tr></tfoot>
+        </table>
+      </div>
+      <p class="small muted mt-2">Cost is model spend only. It excludes the lab machine and any human time. Prices are those in effect in November 2026.</p>
+    </section>
+
+    <section id="failures" aria-labelledby="failures-h">
+      <p class="lab">09 · The two failures</p>
+      <h2 id="failures-h">Two apps went to a person. Both for good reasons.</h2>
+      <p>In both cases no model produced a fix that passed the proof, so the pipeline made no fix branch and the report said “needs a person”. That is the behaviour we want: a fix that can’t be proven isn’t presented as one.</p>
+      <div class="fails">
+        <div class="fail">
+          <span class="pill pending">needs a person</span>
+          <h3>A public place, not a private person</h3>
+          <p>The only flagged column was the street address of public sports venues on a map. The agent judged it a false alarm: nothing personal. But the only change that would satisfy the proof was to hide the addresses, which would break the map. So it changed nothing and asked the owner one question, with a recommendation to leave the map as it is.</p>
+          <dl><dt>Verdict</dt><dd>False alarm</dd><dt>Models</dt><dd>Haiku → Sonnet → Opus</dd><dt>Cost</dt><dd>$2.85, 12 minutes</dd><dt>Lesson</dt><dd>A strict proof needs an “intended” path. Owners can now mark a table as meant to be public.</dd></dl>
+        </div>
+        <div class="fail">
+          <span class="pill pending">needs a person</span>
+          <h3>Guest orders with no owner</h3>
+          <p>Anyone could read every order, with delivery details. Closing it was easy, but guests could check out without an account, so their orders had no owner to keep access, and the confirmation page re-read the order from the database. A safe fix needed a frontend change plus a business decision: should guests be able to look up an order later?</p>
+          <dl><dt>Verdict</dt><dd>Real bug</dd><dt>Models</dt><dd>Haiku → Sonnet → Opus</dd><dt>Cost</dt><dd>$6.97, 29 minutes</dd><dt>Lesson</dt><dd>Some fixes are SQL plus code plus a decision. The report now asks the question and lists the code change.</dd></dl>
+        </div>
+      </div>
+    </section>
+
+    <section id="people" aria-labelledby="people-h">
+      <p class="lab">10 · Where people are still needed</p>
+      <h2 id="people-h">A proven fix still needs an engineer’s yes.</h2>
+      <p>Passing the lab proof means the leak is closed and the owner keeps access, on the database the migrations build. It does not mean the change is safe to deploy with nobody looking. In the 5 Nov study (n=20 real fixes), only <strong>4 of 20 (20%)</strong> were safe to apply with no human review. The reasons were rarely the agent’s skill:</p>
+      <div class="grid g2 top mt-3">
+        <div class="card sunk"><h3>Closing the hole breaks a page</h3><p>A booking form re-reads its own insert; an admin page runs without a real login. The SQL must ship with a small code change.</p></div>
+        <div class="card sunk"><h3>It’s a business decision</h3><p>Should sellers’ emails be visible to every buyer? Should new sign-ups see the staff list before approval? Only the owner can answer.</p></div>
+        <div class="card sunk"><h3>The login is fake</h3><p>5 of 20 apps checked passwords in the browser (hard-coded users, a PIN in the page). Fixing that properly means adding real sign-in, a small project rather than a patch.</p></div>
+        <div class="card sunk"><h3>The repo doesn’t match production</h3><p>Missing migrations or missing frontend code mean someone has to confirm what is actually live.</p></div>
+      </div>
+      <p class="mt-3">Most of these are questions for the app’s owner, not engineering work. So PatchLabs writes them as plain-English questions with a recommended answer, and the owner’s engineer approves the final change. Nothing reaches the live app until they do.</p>
+    </section>
+
+    <section id="others" aria-labelledby="others-h">
+      <p class="lab">11 · Other studies</p>
+      <h2 id="others-h">Why our number is higher than outside scans.</h2>
+      <p>Other public studies of AI-built apps probe live sites from the outside, as a logged-out visitor. That is a useful, different measurement. Ours rebuilds the database and reads it as each kind of user, so it sees two things outside scans can’t: read rules that are open by design (<code>using (true)</code>) and leaks that need a sign-up.</p>
+      <div class="table-wrap mt-3">
+        <table class="table">
+          <thead><tr><th scope="col">Study</th><th scope="col">Method</th><th scope="col">Tests as</th><th scope="col">Result</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">This report<span class="cell-note">PatchLabs, Nov 2026</span></th><td>318 public repos rebuilt from migrations, fake rows</td><td>Anonymous visitor and signed-in stranger</td><td>106 of 318 (33%); about 25–28% real personal data</td></tr>
+            <tr><th scope="row">Our earlier text scan<span class="cell-note">PatchLabs, 4 Nov 2026</span></th><td>Static reading of migration files</td><td>n/a (no database)</td><td>51 of 493 repos (10.3%)</td></tr>
+            <tr><th scope="row">securityscanner.dev<span class="cell-note">Apr 2026</span></th><td>Live apps found via certificate logs; 476 Lovable apps among others</td><td>Anonymous visitor only</td><td>7.1% of Lovable apps with RLS off on user-data tables</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted mt-2">Third-party figures as published by their authors, checked Nov 2026 (<a href="https://securityscanner.dev/blog/lovable-vs-bolt-vs-replit-rls" rel="nofollow noopener">source</a>). The studies use different samples and definitions, so the figures are not directly comparable. Our own text scan undercounted for the same reason outside scans do: it reads rules as written, not what the final database allows.</p>
+    </section>
+
+    <section id="limits" aria-labelledby="limits-h">
+      <p class="lab">12 · Limitations</p>
+      <h2 id="limits-h">What this study can’t tell you.</h2>
+      <div class="callout limit"><p><strong>Read these before quoting the numbers.</strong></p></div>
+      <ul class="ticks measure">
+        <li class="dash"><span><strong>Public repos only.</strong> The sample is public GitHub repos with a Lovable/Supabase layout. Private and commercial apps may be better or worse.</span></li>
+        <li class="dash"><span><strong>The lab is only as complete as the migrations.</strong> 118 of 436 repos didn’t build and are excluded. Changes made in a dashboard but never saved as a migration are invisible to us, so a repo can differ from the live app in either direction.</span></li>
+        <li class="dash"><span><strong>Personal data is detected by column name</strong> (email, phone, address, date of birth and similar). Oddly named columns can be missed; public business contacts can be counted, which is why we adjust.</span></li>
+        <li class="dash"><span><strong>The 25–28% adjustment comes from a small sample</strong> (4 false alarms in 24 apps). Treat it as an estimate.</span></li>
+        <li class="dash"><span><strong>Fix results are small samples:</strong> n=20 on 5 Nov and n=20 on 9 Nov, one run each. Costs depend on model prices at the time.</span></li>
+        <li class="dash"><span><strong>The proof covers reads</strong> by three identities. Write rules, functions and storage were checked statically, not proven in the lab.</span></li>
+        <li class="dash"><span><strong>Readable is not the same as read.</strong> We never touched live apps, so we can’t say whether anyone actually took this data.</span></li>
+        <li class="dash"><span><strong>We sell a product that fixes this.</strong> The study was designed and run by PatchLabs and has not been peer reviewed. That is why the method and the aggregate data are public.</span></li>
+      </ul>
+    </section>
+
+    <section id="disclosure" aria-labelledby="disclosure-h">
+      <p class="lab">13 · Disclosure</p>
+      <h2 id="disclosure-h">How we handled other people’s apps.</h2>
+      <div class="measure">
+        <p><strong>Code only, never live systems.</strong> Every test ran on a copy of the database rebuilt from the repo’s migrations, seeded with fake rows. We never connected to any app’s live site or database, and never saw a real user’s data.</p>
+        <p><strong>Keys untouched.</strong> Where the key scan found secrets in code or history, we recorded only that they existed. We never used, tested or stored a working key.</p>
+        <p><strong>No app is named.</strong> This report and the CSV contain aggregate numbers and anonymised runs only: no repo, owner, app name or table name that could identify an app. We won’t publish a list of affected apps.</p>
+        <p><strong>If you think your app was in the sample,</strong> run a free check on your repo: it repeats the same test and gives you the fix and the proof. To report an error in this research, or to ask that your public repo be left out of future studies, email <a href="mailto:manraj@patchlabs.dev?subject=Research">manraj@patchlabs.dev</a> with the subject “Research”.</p>
+      </div>
+    </section>
+
+    <section id="data" aria-labelledby="data-h">
+      <p class="lab">14 · Data and citation</p>
+      <h2 id="data-h">Take the data. Check our working.</h2>
+      <div class="dl">
+        <span class="file">1-in-4-aggregate.csv</span>
+        <span class="meta">233 rows, about 25 KB. Every number in this report, plus the 20 anonymised runs. Long format: study, date, group, metric, value, denominator, unit, notes.</span>
+        <a class="btn secondary" href="/research/1-in-4-aggregate.csv" download>Download CSV</a>
+      </div>
+      <h3>Cite this report</h3>
+      <div class="cite">
+        <div class="cite-head"><span>Citation</span><button class="copy" type="button" data-copy="#cite-text">Copy</button></div>
+        <blockquote id="cite-text">Dhillon, M. S. (2026). The 1-in-4 Report: personal-data exposure in AI-built apps. PatchLabs, 10 November 2026. https://patchlabs.dev/research/1-in-4</blockquote>
+        <div class="cite-head"><span>BibTeX</span><button class="copy" type="button" data-copy="#cite-bib">Copy</button></div>
+        <pre id="cite-bib">@techreport{patchlabs2026onein4,
+  author      = {Dhillon, Manraj Singh},
+  title       = {The 1-in-4 Report: personal-data exposure in AI-built apps},
+  institution = {PatchLabs},
+  year        = {2026},
+  month       = nov,
+  url         = {https://patchlabs.dev/research/1-in-4}
+}</pre>
+      </div>
+      <p class="small muted mt-3">Quoting a number? Please keep its sample size: “about 1 in 4 of 318 rebuilt public apps (PatchLabs, Nov 2026)”. Journalists and researchers can reach the author at <a href="mailto:manraj@patchlabs.dev?subject=Research">manraj@patchlabs.dev</a>.</p>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2>Is your app one of the 1 in 4?</h2>
+      <p class="lede">Paste your public repo. We run the same test as this study, then write the fix and prove it.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <label class="sr-only" for="repo-r1">Public GitHub repo</label>
+          <input id="repo-r1" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <label class="sr-only" for="email-r1">Your email</label>
+          <input id="email-r1" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/findings">Browse the finding index</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>

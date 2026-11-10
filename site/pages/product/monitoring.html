@@ -1,0 +1,223 @@
+<!--
+title: Monitoring: scheduled re-checks and new-leak alerts | PatchLabs
+description: PatchLabs re-checks your app on a schedule, compares each run with the last, and alerts your team only when a new leak appears. Email, Slack-ready webhooks and CI.
+layout: marketing
+nav: monitoring
+head: <link rel="stylesheet" href="/assets/pages/A-product.css">
+-->
+<main id="main">
+
+<section class="hero p-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/how-it-works">Product</a></li><li aria-current="page">Monitoring</li></ol></nav>
+      <p class="lab">Monitoring</p>
+      <h1>The next prompt can reopen the leak. Re-checks catch it.</h1>
+      <p class="lede">AI builders change your database every time you ask for a feature. PatchLabs re-checks each app on a schedule, compares the result with the last run, and tells your team only when something new can be read.</p>
+      <div class="row cta"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/app/login">Sign in to monitor</a></div>
+      <p class="meta-line">Monthly on Free · weekly or monthly on paid plans</p>
+    </div>
+    <figure class="figure">
+      <div class="mock">
+        <div class="mock-bar"><span>app · <b>you/your-app</b></span><span class="pill proven">no leaks found</span></div>
+        <div class="mock-body">
+          <p class="lab mb-2">Since the last check</p>
+          <div class="diff3">
+            <div><span class="k">New leaks</span><span class="v">none</span></div>
+            <div class="fixed"><span class="k">Fixed</span><span class="v">profiles</span></div>
+            <div><span class="k">Still leaking</span><span class="v">none</span></div>
+          </div>
+          <p class="lab mt-3 mb-1">History</p>
+          <ul class="tl">
+            <li><span class="d">re-check</span><span class="t">Scheduled<small>weekly</small></span><span class="pill proven">no leaks found</span></li>
+            <li><span class="d">run now</span><span class="t">Manual, after the fix was merged<small>you</small></span><span class="pill proven">no leaks found</span></li>
+            <li><span class="d">first check</span><span class="t">Leak in <code>profiles</code>, fix proven<small>after verification</small></span><span class="pill leak">leak found</span></li>
+          </ul>
+        </div>
+        <div class="mock-foot">Example app page · illustrative, not a real customer</div>
+      </div>
+      <figcaption>What the app page shows: the diff between the last two checks and the run history, each linking to its report and signed receipt.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- Schedule -->
+<section class="sec band" aria-labelledby="sch-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Schedule</p>
+      <h2 id="sch-h">Re-checks run on their own. Run one any time.</h2>
+      <p>Every verified app gets a schedule. Due checks are queued automatically, and “Run now” queues one immediately, for example right after you merge a fix.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <caption class="sr-only">Re-check schedules and limits by plan</caption>
+        <thead><tr><th scope="col">Plan</th><th scope="col">Apps</th><th scope="col">Re-check schedule</th><th scope="col" class="num">Manual and API runs a month</th><th scope="col">Price</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Free</th><td>1</td><td>Monthly</td><td class="num">4</td><td>£0</td></tr>
+          <tr><th scope="row">Maker</th><td>3</td><td>Weekly or monthly</td><td class="num">30</td><td>£19 / month</td></tr>
+          <tr><th scope="row">Agency</th><td>10<span class="cell-note">+£8 per extra app</span></td><td>Weekly or monthly</td><td class="num">200</td><td>£99 / month</td></tr>
+          <tr><th scope="row">Enterprise</th><td colspan="3">Set with you</td><td>Custom</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Weekly means every 7 days from the last scheduled run, monthly every 30. Scheduled re-checks don’t count towards the run limit and keep running if you reach it; manual and CI runs do count. Paid plans: request access and we reply within a day; card payments aren’t live yet. <a href="/pricing">Pricing</a>.</p>
+  </div>
+</section>
+
+<!-- Diff & alerts -->
+<section class="sec" aria-labelledby="diff-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab red">Alerts</p>
+      <h2 id="diff-h">An alert means something new. Not the same leak again.</h2>
+      <p class="lede">Each finished check is compared with the previous one, table by table. Your team hears about new leaks loudly and everything else quietly.</p>
+      <dl class="kv mt-4">
+        <dt><span class="pill leak">new</span></dt><dd>Readable now, not readable last time. The email subject says “New leak found”.</dd>
+        <dt><span class="pill proven">fixed</span></dt><dd>Readable last time, closed now.</dd>
+        <dt><span class="pill plain">still</span></dt><dd>Still readable. Listed, without a new-leak alert.</dd>
+        <dt><span class="pill neutral">intended</span></dt><dd>Your team marked these tables as meant to be readable. Never alerted on.</dd>
+      </dl>
+      <div class="callout note mt-3"><p><strong>Dismissals stick.</strong> Marking a table as intended is remembered for the app until someone approves the fix for it again. The decision, and who made it, goes into the signed receipt.</p></div>
+    </div>
+    <div class="stack">
+      <div class="code">
+        <div class="code-bar"><span class="name">email to every workspace member</span></div>
+<pre class="wrap-lines"><code><span class="kw">Subject:</span> New leak found in you/your-app (Client A)
+
+Your PatchLabs check of you/your-app (Client A) has finished:
+leaks found and a tested fix is ready.
+
+New leaks since the last check: bookings
+Fixed since the last check: profiles
+Marked as intended by your team (no alert): listings
+
+See the report and the fix:
+https://patchlabs.dev/check?id=…</code></pre>
+      </div>
+      <p class="small muted mb-0">Wording as the API sends it. Repo, client label and tables are examples.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Webhooks -->
+<section class="sec band" aria-labelledby="wh-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Webhooks</p>
+      <h2 id="wh-h">Straight into Slack, or anything that takes a POST.</h2>
+      <p class="lede">Paste one https URL in workspace settings. Every finished check sends a JSON event with a <code>text</code> line, so a Slack incoming webhook works with no code at all.</p>
+      <ul class="ticks mt-3">
+        <li><span>A “Send test event” button in settings shows the status code you got back</span></li>
+        <li><span>Private and loopback addresses are refused</span></li>
+        <li><span>A broken webhook never loses the check: the email still goes out</span></li>
+      </ul>
+    </div>
+    <div class="code">
+      <div class="code-bar"><span class="name">POST your-webhook-url · check.finished</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="scroll"><code>{
+  <span class="s">"event"</span>: <span class="s">"check.finished"</span>,
+  <span class="s">"text"</span>: <span class="s">"PatchLabs: you/your-app (Client A): leaks found and a tested fix is ready. https://patchlabs.dev/check?id=…"</span>,
+  <span class="s">"check"</span>: {
+    <span class="s">"id"</span>: <span class="s">"…"</span>,
+    <span class="s">"app_id"</span>: <span class="s">"…"</span>,
+    <span class="s">"repo"</span>: <span class="s">"you/your-app"</span>,
+    <span class="s">"status"</span>: <span class="s">"done"</span>,
+    <span class="s">"tables_leaking"</span>: [<span class="s">"bookings"</span>],
+    <span class="s">"new_leaks"</span>: [<span class="s">"bookings"</span>],
+    <span class="s">"fixed"</span>: [<span class="s">"profiles"</span>],
+    <span class="s">"suppressed"</span>: [<span class="s">"listings"</span>],
+    <span class="s">"url"</span>: <span class="s">"https://patchlabs.dev/check?id=…"</span>
+  }
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- CI -->
+<section class="sec" aria-labelledby="ci-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">CI</p>
+      <h2 id="ci-h">Re-check every time a migration lands on main.</h2>
+      <p class="lede">Create an API key in workspace settings and add this workflow. It queues a check when a migration is merged, waits for the result and fails the build if anything is leaking.</p>
+      <div class="callout limit mt-3"><p>Checks read your default branch, so this runs after the merge, not on the pull request. Re-proving every pull request before merge needs our GitHub App, which is coming.</p></div>
+      <p class="small muted">API keys, webhooks and CI work on every plan, including Free. Each CI run counts as one of your monthly runs. <a href="/docs/api">API reference</a>.</p>
+    </div>
+    <div class="code">
+      <div class="code-bar"><span class="name">.github/workflows/patchlabs.yml</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="scroll"><code><span class="kw">name:</span> PatchLabs re-check
+<span class="kw">on:</span>
+  <span class="kw">push:</span>
+    <span class="kw">branches:</span> [main]
+    <span class="kw">paths:</span> [<span class="s">'supabase/migrations/**'</span>]
+<span class="kw">jobs:</span>
+  <span class="kw">recheck:</span>
+    <span class="kw">runs-on:</span> ubuntu-latest
+    <span class="kw">steps:</span>
+      - <span class="kw">name:</span> Queue a check and wait for it
+        <span class="kw">env:</span>
+          <span class="kw">PL_KEY:</span> $&#123;&#123; secrets.PATCHLABS_API_KEY &#125;&#125;
+          <span class="kw">PL_APP:</span> $&#123;&#123; vars.PATCHLABS_APP_ID &#125;&#125;
+          <span class="kw">API:</span> https://api.patchlabs.dev
+        <span class="kw">run:</span> |
+          <span class="c"># a few seconds so GitHub serves the new commit</span>
+          sleep 15
+          cid=$(curl -sf -X POST -H "X-API-Key: $PL_KEY" \
+            "$API/v1/apps/$PL_APP/checks" | jq -r .check_id)
+          for i in $(seq 1 60); do
+            sleep 30
+            r=$(curl -sf -H "X-API-Key: $PL_KEY" "$API/v1/checks/$cid")
+            [ "$(echo "$r" | jq -r .finished)" = "true" ] &amp;&amp; break
+          done
+          echo "$r" | jq '{status, tables_leaking, url}'
+          [ "$(echo "$r" | jq -r .leaks_found)" = "false" ]</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- History, badge -->
+<section class="sec band" aria-labelledby="hi-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab green">Evidence over time</p>
+      <h2 id="hi-h">A history you can show someone.</h2>
+    </div>
+    <div class="grid g3" data-reveal>
+      <div class="card"><span class="n-big">HISTORY</span><h3>The last 50 checks</h3><p class="small muted">Each with its trigger (scheduled, manual or API), result, and report link.</p></div>
+      <div class="card"><span class="n-big">RECEIPTS</span><h3>Signed, per check</h3><p class="small muted">Ed25519 receipts anyone can verify, including your team’s decisions and answers. <a href="/how-it-works#approval">How to verify</a>.</p></div>
+      <a class="card link" href="/product/badge"><span class="n-big">BADGE</span><h3>A public, dated status</h3><p class="small muted">Opt in to a badge for your README or site that shows the last check’s result and date.</p><div class="card-foot"><span class="link-arrow">Badge &amp; proof page</span></div></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div><p class="lab">Questions</p><h2 id="faq-h">Monitoring FAQ.</h2></div>
+    <div>
+      <details class="acc"><summary>How do I start monitoring an app?</summary><div class="acc-body"><p><a href="/app/login">Sign in</a> with your email (no password), add the repo, and commit the <code>patchlabs-verify.txt</code> file the dashboard gives you. Once verified, the first check runs and the schedule starts.</p></div></details>
+      <details class="acc"><summary>What happens if a check is already running?</summary><div class="acc-body"><p>A second one isn’t queued; you’ll see a message saying one is in progress. Scheduled checks wait for the open one to finish.</p></div></details>
+      <details class="acc"><summary>Who gets the alerts?</summary><div class="acc-body"><p>Every member of the workspace, by email, plus the workspace webhook if you set one.</p></div></details>
+      <details class="acc"><summary>Can I turn re-checks off?</summary><div class="acc-body"><p>Yes. Set the app’s schedule to off and run checks only when you choose.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Start with one check. Keep it closed with re-checks.</h2>
+      <p class="lede">Your first app is free, with a monthly re-check and email alerts.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in"><label class="sr-only" for="repo-mon">Public GitHub repo</label><input id="repo-mon" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
+        <div class="in"><label class="sr-only" for="email-mon">Your email</label><input id="email-mon" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+        <button class="btn primary" type="submit">Check my app free</button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span>Already checked an app? <a href="/app/login">Sign in to monitor it</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>

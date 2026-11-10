@@ -1,0 +1,149 @@
+<!--
+title: PL-003 RLS enabled but no policies (owner locked out) | PatchLabs findings
+description: PL-003: row level security is on but the table has no policies, so the app's own users are locked out. Why it matters, how to check, the fix and the proof.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-003: RLS enabled but no policies (owner locked out)","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Data access</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003" aria-current="page"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Keys</h2>
+      <ul>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-003</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-003</span><span class="pill sev-low">low</span></div>
+        <h1>RLS enabled but no policies (owner locked out)</h1>
+        <p class="lede">Not a leak, yet. The table is locked to everyone, and the quick fix people reach for is the leak.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Low</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Nobody, yet</dd></div>
+          <div><dt>Found by</dt><dd>Free RLS check (static) and the full lab check</dd></div>
+          <div><dt>Lab proof</dt><dd>Automatic: the owner-still-reads check</dd></div>
+        </dl>
+      </header>
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>With RLS switched on and no policies at all, Postgres denies every read and write through the API. Nothing leaks. But the app's own users can't see their data either, so a feature is broken.</p>
+<p>It matters because of what usually happens next. Someone asks their AI tool to "make it work", and the fastest change that makes the error go away is <code>using (true)</code>, which turns a broken table into <a href="/findings/pl-001">PL-001</a>. The other common workaround is putting the service role key into the frontend, which is <a href="/findings/pl-010">PL-010</a>.</p>
+      
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_create_notes.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create table public.notes (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  body text
+);
+alter table public.notes enable row level security;
+<span class="c">-- ...and no create policy statements for public.notes anywhere</span></code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-003.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Tables with RLS on and no policies at all</span>
+select c.relname as table_name
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relkind = 'r'
+  and c.relrowsecurity
+  and not exists (
+    select 1 from pg_policies p
+    where p.schemaname = 'public' and p.tablename = c.relname
+  );</code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix PatchLabs writes</h2>
+      <p>PatchLabs writes the four owner policies the table was missing, so users get their own rows back and nobody else gets anything.</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_patchlabs_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="add">create policy "Owners read own notes" on public.notes</span>
+<span class="add">  for select to authenticated using ((select auth.uid()) = user_id);</span>
+<span class="add">create policy "Owners add own notes" on public.notes</span>
+<span class="add">  for insert to authenticated with check ((select auth.uid()) = user_id);</span>
+<span class="add">create policy "Owners edit own notes" on public.notes</span>
+<span class="add">  for update to authenticated</span>
+<span class="add">  using ((select auth.uid()) = user_id)</span>
+<span class="add">  with check ((select auth.uid()) = user_id);</span>
+<span class="add">create policy "Owners delete own notes" on public.notes</span>
+<span class="add">  for delete to authenticated using ((select auth.uid()) = user_id);</span></code></pre>
+</div>
+      <p class="small muted">Every fix arrives as a migration file (plus any code change it needs, noted in the report) for your engineer to approve. Download it, or commit it on GitHub in one click from the report page. Automatic pull requests need our GitHub App, which is coming.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>The proof it runs</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab proof · public.notes</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[BEFORE]</span>  <span class="k">owner</span>     → 0 rows   (locked out)</span>
+<span class="ln"><span class="step">[FIX]</span>     add owner policies</span>
+<span class="ln"><span class="step">[PROVE]</span>   <span class="k">anon</span>      → 0 rows        <span class="deny">DENIED</span></span>
+<span class="ln">          <span class="k">stranger</span>  → 0 rows        <span class="deny">DENIED</span></span>
+<span class="ln">          <span class="k">owner</span>     → 1 row, own    <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[DONE]</span>    <span class="done">lab proof passed</span></span>
+</pre>
+  <div class="window-foot"><span class="pill proven">proven</span><span>Illustrative output for the example above · fake rows</span></div>
+</div>
+      <p>The owner check is the part of the proof that catches this. A fix that leaves the owner with 0 rows fails, which is also how the lab catches fixes that close a leak by locking everyone out.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>RLS on with no policies is the correct setup for a table only your server touches: an audit log, a job queue, or data written by an Edge Function using the service role key. The service role bypasses RLS, and the API roles get nothing, which is what you want.</p>
+<p>If your frontend never reads the table, there is nothing to fix. The free RLS check reports it as low severity for that reason.</p>
+
+      <h2 id="lint"><span class="lab" aria-hidden="true">Map</span>Supabase linter</h2>
+<dl class="lint"><dt>0008 rls_enabled_no_policy</dt><dd>Flags the same pattern. Supabase's linter reports it; PatchLabs adds the owner policies and proves the owner can read again.</dd></dl>
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3><p class="small">Anyone with your app's public key can read emails, phone numbers or addresses.</p></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3><p class="small">The key that ignores every access rule, shipped to every visitor's browser.</p></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3><p class="small">No rules at all. With API access granted, anyone with the public key can read and change every row.</p></a></div>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your app have PL-003?</h2>
+        <p>Paste your public repo. We rebuild the database from your migrations, test it as a visitor, a stranger and the owner, and hand you the proven fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f003">Public GitHub repo</label>
+            <input id="repo-f003" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f003">Your email</label>
+            <input id="email-f003" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-003">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-002"><span>Previous · PL-002</span>Any signed-in user can read every row</a><a class="next" href="/findings/pl-004"><span>Next · PL-004</span>UPDATE policy missing WITH CHECK</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix we write</a></li><li><a href="#proof">The proof</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#lint">Supabase linter</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

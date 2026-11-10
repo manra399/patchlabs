@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finding index: every Supabase leak PatchLabs tests for | PatchLabs</title>
+<meta name="description" content="Stable IDs for the data-access and key leaks PatchLabs finds in AI-built Supabase apps, each with example SQL, a self-check, the fix we write and the proof.">
+<link rel="canonical" href="https://patchlabs.dev/findings/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Finding index: every Supabase leak PatchLabs tests for | PatchLabs">
+<meta property="og:description" content="Stable IDs for the data-access and key leaks PatchLabs finds in AI-built Supabase apps, each with example SQL, a self-check, the fix we write and the proof.">
+<meta property="og:url" content="https://patchlabs.dev/findings/">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Finding index: every Supabase leak PatchLabs tests for | PatchLabs">
+<meta name="twitter:description" content="Stable IDs for the data-access and key leaks PatchLabs finds in AI-built Supabase apps, each with example SQL, a self-check, the fix we write and the proof.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/B-research.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd">
+        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel">
+          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
+          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
+          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
+          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
+          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
+          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
+          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
+          <a href="/findings" aria-current="page"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
+          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+        </div>
+      </details>
+      <a href="/how-it-works">How it works</a>
+      <a href="/research/1-in-4">Research</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="urgent" href="/leaking-now">Leaking right now?</a>
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="sec tight">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
+      <p class="lab">Finding index</p>
+      <h1>Every leak we test for, with the fix and the proof.</h1>
+      <p class="lede">Ten stable IDs for the ways AI-built Supabase apps expose data and keys. Each page shows the vulnerable SQL, a query to check your own project, the fix PatchLabs writes and the test that proves it.</p>
+      <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/tools/rls-check">Free static RLS check</a></div>
+    </div>
+  </section>
+
+  <section class="sec tight" aria-labelledby="list-h">
+    <div class="wrap">
+      <h2 id="list-h" class="sr-only">All findings</h2>
+      <div class="f-group">
+        <p class="lab red">Data access · who can read what</p>
+        <div class="f-index">
+      <a class="f-row" href="/findings/pl-001"><span class="fid">PL-001</span><div><h3>Anonymous visitor can read personal data</h3><p>Anyone with your app's public key can read emails, phone numbers or addresses.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-002"><span class="fid">PL-002</span><div><h3>Any signed-in user can read every row</h3><p>Signing up unlocks other people's rows. If sign-up is open, that means anyone.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-003"><span class="fid">PL-003</span><div><h3>RLS enabled but no policies (owner locked out)</h3><p>Not a leak, yet. The table is locked to everyone, and the quick fix people reach for is the leak.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-004"><span class="fid">PL-004</span><div><h3>UPDATE policy missing WITH CHECK</h3><p>Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-005"><span class="fid">PL-005</span><div><h3>Always-true policy</h3><p>A policy that says yes to everyone. On writes, anyone can change or delete your data.</p></div><span class="sevcell"><span class="pill sev-high">high to low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-006"><span class="fid">PL-006</span><div><h3>SECURITY DEFINER function exposed</h3><p>A function that runs with the owner's powers, callable by anyone through the API.</p></div><span class="sevcell"><span class="pill sev-high">high or medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-007"><span class="fid">PL-007</span><div><h3>Public storage bucket</h3><p>Files in this bucket are served to anyone with the link. ID scans and invoices don't belong there.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-008"><span class="fid">PL-008</span><div><h3>Row level security not enabled</h3><p>No rules at all. With API access granted, anyone with the public key can read and change every row.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="f-group">
+        <p class="lab">Keys · code and git history</p>
+        <div class="f-index">
+      <a class="f-row" href="/findings/pl-010"><span class="fid">PL-010</span><div><h3>Service role key in client code</h3><p>The key that ignores every access rule, shipped to every visitor's browser.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Key scan · code</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-011"><span class="fid">PL-011</span><div><h3>Key still in git history</h3><p>You deleted the key. Every old commit still has it, and so does every clone and fork.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Key scan · history</span><span class="go" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <p class="small muted mt-3">IDs never change meaning and are never reused, so you can link to them from tickets and docs. Gaps (such as PL-009) are reserved. Last reviewed 10 Nov 2026.</p>
+    </div>
+  </section>
+
+  <section class="sec band" aria-labelledby="sev-h">
+    <div class="wrap split top">
+      <div>
+        <p class="lab">Severity</p>
+        <h2 id="sev-h">Ranked by who can reach the data.</h2>
+        <p class="lede">Severity follows one question: who, outside the people meant to see it, can read or change the data? The same rules drive the free RLS check and every full report.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Level</th><th scope="col">Meaning</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="pill sev-critical">critical</span></th><td>Anyone on the internet can read personal data, or read and change a whole table.</td></tr>
+            <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, anyone can change rows, or a privileged function is open to anonymous callers.</td></tr>
+            <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter, such as an UPDATE rule without WITH CHECK or a public bucket.</td></tr>
+            <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed, but the app is likely broken, or the rule only opens non-personal data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lab">Static vs proven</p>
+        <h2 id="how-h">A rule that looks wrong, or data you watched leak.</h2>
+        <p>Two ways a finding reaches you. Both use these IDs.</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <span class="n-big">FREE · NO SIGN-UP</span>
+          <h3>Static RLS check</h3>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. Fast, and honest about its limit: it can't tell whether a public read is intended, or what the database really allows once every migration has run.</p>
+          <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
+        </div>
+        <div class="card green-edge">
+          <span class="n-big">FULL CHECK · FREE FOR ONE APP</span>
+          <h3>Lab proof</h3>
+          <p>Rebuilds the database from your migrations in a disposable Postgres with Supabase's roles and grants, seeds fake rows, and reads every table as an anonymous visitor, a signed-in stranger and the owner. Then writes the fix and proves it the same way. Also scans code and full git history for keys (PL-010, PL-011).</p>
+          <div class="card-foot"><a class="link-arrow" href="/#check">Check my app free</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec band" aria-labelledby="lint-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lab">Map</p>
+        <h2 id="lint-h">How our IDs line up with Supabase’s linter.</h2>
+        <p>Use Supabase's Security Advisor as well: it covers health and performance checks we don't. The difference is in the rows marked "none": public reads, which the linter skips on purpose because only the app's intent can say whether they are a leak.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">PatchLabs ID</th><th scope="col">Finding</th><th scope="col">Related Supabase lint</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="/findings/pl-001">PL-001</a></th><td>Anonymous visitor can read personal data</td><td class="mono">none (0024 skips SELECT)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-002">PL-002</a></th><td>Any signed-in user can read every row</td><td class="mono">none (0024 skips SELECT)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-003">PL-003</a></th><td>RLS enabled but no policies (owner locked out)</td><td class="mono">0008</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-004">PL-004</a></th><td>UPDATE policy missing WITH CHECK</td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-005">PL-005</a></th><td>Always-true policy</td><td class="mono">0024 (writes only)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-006">PL-006</a></th><td>SECURITY DEFINER function exposed</td><td class="mono">0011, 0028, 0029</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-007">PL-007</a></th><td>Public storage bucket</td><td class="mono">0025</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-008">PL-008</a></th><td>Row level security not enabled</td><td class="mono">0013, 0007</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-010">PL-010</a></th><td>Service role key in client code</td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-011">PL-011</a></th><td>Key still in git history</td><td class="mono">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted mt-2">Lint numbers from Supabase's database linter (splinter), checked against its source in Nov 2026. Independent: PatchLabs is not affiliated with Supabase.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="cta-panel">
+        <p class="lab">Free check</p>
+        <h2>Which of these does your app have?</h2>
+        <p class="lede">Paste your public repo. You get every finding, the fix and the proof on one page.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-fi">Public GitHub repo</label>
+            <input id="repo-fi" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-fi">Your email</label>
+            <input id="email-fi" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
+        <li><a href="/product/leak-lab">Leak lab</a></li>
+        <li><a href="/product/key-scan">Key scan</a></li>
+        <li><a href="/product/monitoring">Monitoring</a></li>
+        <li><a href="/product/badge">Badge &amp; proof page</a></li>
+        <li><a href="/agencies">Agencies</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Finding index</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

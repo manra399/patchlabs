@@ -1,0 +1,82 @@
+<!--
+title: Acceptable use policy | PatchLabs
+description: Only check repos you own or are authorised to test. What you may and may not do with PatchLabs, its API, MCP server, free tools and badges.
+layout: marketing
+nav: legal
+head: <link rel="stylesheet" href="/assets/pages/D-trust.css">
+-->
+<main id="main">
+  <div class="wrap wide docs legal">
+    <nav class="docs-nav" aria-label="Legal">
+      <details open><summary>Legal pages</summary>
+      <h2>Legal</h2>
+      <ul>
+        <li><a href="/legal/terms">Terms of service</a></li>
+        <li><a href="/legal/privacy">Privacy policy</a></li>
+        <li><a href="/legal/acceptable-use" aria-current="page">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies</a></li>
+      </ul>
+      <h2>Trust</h2>
+      <ul><li><a href="/security">Security</a></li><li><a href="/status">Status</a></li></ul>
+      </details>
+    </nav>
+    <article class="docs-main">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/legal/terms">Legal</a></li><li aria-current="page">Acceptable use</li></ol></nav>
+      <p class="draft-note">Draft for review, last updated 10 November 2026</p>
+      <h1>Acceptable use policy</h1>
+      <p class="lede">PatchLabs finds ways strangers can read personal data. That knowledge must only be used to protect apps, never to get into them.</p>
+
+      <div class="summary">
+        <h2>The one rule that matters most</h2>
+        <p class="mb-0">Only check repositories <strong>you own</strong>, or that you have <strong>written permission</strong> to test. A full check won’t start until <code>patchlabs-verify.txt</code> with your one-time code is on the repo’s default branch.</p>
+      </div>
+
+      <div class="prose">
+        <h2 id="allowed"><span class="n">01</span>What you may do</h2>
+        <ul>
+          <li>Check apps you built or own, as often as your plan allows.</li>
+          <li>Check client or employer apps when you have their written permission. Agencies: keep a record of that permission for each client app.</li>
+          <li>Use the API, webhooks and MCP server to run checks from your own tools, CI and AI agents.</li>
+          <li>Share your own reports, receipts, badge and proof page.</li>
+          <li>Use the free RLS check on public repositories to learn and to protect your own work.</li>
+        </ul>
+
+        <h2 id="forbidden"><span class="n">02</span>What you must not do</h2>
+        <ul>
+          <li>Submit a repository you don’t own or aren’t authorised to test, or try to get around the ownership check.</li>
+          <li>Use anything you learn from PatchLabs to read, copy, change or delete data in an app you don’t own.</li>
+          <li>Use the free tools, the API or the MCP server to mass-scan other people’s repositories, or to build lists of vulnerable apps.</li>
+          <li>Get around rate limits, plan limits or spend caps, for example with many accounts or emails.</li>
+          <li>Submit code designed to attack our lab, our worker or our fix agent: malware, instructions aimed at the agent, attempts to escape the lab, or anything meant to reach other customers’ data.</li>
+          <li>Interfere with the service: overload it, probe it beyond our <a href="/legal/disclosure-policy">disclosure policy</a>, or access accounts and reports that aren’t yours.</li>
+          <li>Show a PatchLabs badge or proof page that is altered, out of date on purpose, or for an app it wasn’t issued to, or describe it as a certification.</li>
+          <li>Resell or white-label PatchLabs without a written agreement with us.</li>
+          <li>Break the law, including data protection and computer misuse laws, or help anyone else to.</li>
+        </ul>
+
+        <h2 id="others"><span class="n">03</span>If you find a leak in someone else’s app</h2>
+        <p>Don’t access the data. Tell the owner privately, give them reasonable time to fix it, and don’t publish details that would let others exploit it. PatchLabs will not run a full check on an app for anyone who can’t prove they control its repo.</p>
+
+        <h2 id="optout"><span class="n">04</span>Opt-out for public repo owners</h2>
+        <p>If you own a public repository and don’t want it included in PatchLabs research samples or free-tool results, email <a href="mailto:manraj@patchlabs.dev?subject=Opt%20out">manraj@patchlabs.dev</a> with the subject “Opt out” and the repo URL. We’ll confirm within two working days and delete anything we hold about it.</p>
+
+        <h2 id="enforcement"><span class="n">05</span>What happens if this policy is broken</h2>
+        <p>We may stop a check, revoke API keys, suspend or close the account, delete the related reports, and, where the law requires or the risk to others is serious, report the activity to the relevant authorities or the affected app’s owner. Where we can, we’ll explain what we saw and give you a chance to respond.</p>
+
+        <h2 id="report"><span class="n">06</span>Reporting misuse</h2>
+        <p>If you think someone is using PatchLabs against your app, email <a href="mailto:manraj@patchlabs.dev?subject=Misuse">manraj@patchlabs.dev</a> with the subject “Misuse”. For security problems in PatchLabs itself, see the <a href="/legal/disclosure-policy">disclosure policy</a>.</p>
+      </div>
+      <p class="legal-foot">This policy forms part of our <a href="/legal/terms">terms of service</a>. Draft awaiting legal review.</p>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul>
+        <li><a href="#allowed">What you may do</a></li><li><a href="#forbidden">What you must not do</a></li>
+        <li><a href="#others">Someone else’s app</a></li><li><a href="#optout">Opt-out</a></li>
+        <li><a href="#enforcement">Enforcement</a></li><li><a href="#report">Reporting misuse</a></li>
+      </ul>
+    </aside>
+  </div>
+</main>
