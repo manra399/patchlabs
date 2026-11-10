@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "dev.patchlabs/patchlabs",
+  "title": "PatchLabs",
+  "description": "Security checks for AI-built apps (Lovable, Supabase, Bolt): RLS, headers, monitoring, fixes.",
+  "repository": {
+    "url": "https://github.com/manra399/patchlabs",
+    "source": "github"
+  },
+  "version": "3.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.patchlabs.dev/mcp",
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "description": "Optional PatchLabs API key (pl_live_...) for the app tools. The free rls_check and headers_check tools work without one.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
