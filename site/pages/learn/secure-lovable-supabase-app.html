@@ -1,0 +1,153 @@
+<!--
+title: How to secure a Lovable app's Supabase database | PatchLabs
+description: Step by step: find tables anyone can read in a Lovable app's Supabase database, fix the policies with a migration, test as a stranger, and check keys, storage and functions.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to secure a Lovable app’s Supabase database","description":"Step by step: find tables anyone can read in a Lovable app's Supabase database, fix the policies with a migration, test as a stranger, and check keys, storage and functions.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/secure-lovable-supabase-app"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to secure a Lovable app’s Supabase database","item":"https://patchlabs.dev/learn/secure-lovable-supabase-app"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app" aria-current="page">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Secure a Lovable app’s database</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>How to secure a Lovable app’s Supabase database</h1>
+      <p class="lede">To secure a Lovable app’s Supabase database, make sure every table has row level security on, replace any policy that lets everyone read (<code>using (true)</code>) with one that checks the row’s owner, then test each table as a logged-out visitor and as a second signed-up user. This guide walks through each step with SQL you can run, plus the keys, storage and functions that sit around the database.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>The Supabase key in your Lovable app’s frontend is public. Policies decide what it can read, so the policies are your security.</li><li>Run two queries: tables with RLS off, and read policies that never mention <code>auth.uid()</code>. Those are your leak candidates.</li><li>Fix with owner-only policies in a new migration, then test as anon, a stranger and the owner.</li><li>Then check the rest: no service role key in the code, private files in private buckets, Edge Functions that check who is calling.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#how-it-fits">How a Lovable app talks to Supabase</a></li><li><a href="#step-1">Step 1: find tables with RLS switched off</a></li><li><a href="#step-2">Step 2: find policies that let everyone read</a></li><li><a href="#step-3">Step 3: replace them with owner-only policies</a></li><li><a href="#step-4">Step 4: test as a visitor, a stranger and the owner</a></li><li><a href="#step-5">Step 5: check the keys in your code</a></li><li><a href="#step-6">Step 6: storage, functions and sign-up</a></li><li><a href="#step-7">Step 7: keep it fixed</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="how-it-fits">How a Lovable app talks to Supabase</h2>
+<p>An app built with Lovable is usually a React and Vite frontend with Supabase as the backend. The frontend creates a Supabase client with your project URL and the public anon (or publishable) key, typically in a generated file such as <code>src/integrations/supabase/client.ts</code>, and queries tables straight from the browser.</p>
+<p>That key ships to every visitor, and it is meant to: Supabase is designed for it. What keeps data private is row level security, the per-table rules Postgres applies to every query. If a table holding emails or phone numbers has no rule, or a rule that says yes to everyone, anyone can copy the key from your site and read the whole table. Nobody has to break in.</p>
+<p>If your Lovable project is connected to GitHub, the database changes it made are usually saved as SQL files in <code>supabase/migrations</code>. That folder is the record of your rules, and it is what you’ll add the fix to.</p>
+
+<h2 id="step-1">Step 1: find tables with RLS switched off</h2>
+<p>Open your project’s SQL editor in the Supabase dashboard and run:</p>
+<div class="code"><div class="code-bar"><span class="name">find-rls-off.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Tables in public with row level security switched off</span>
+select c.relname as table_name
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;</code></pre></div>
+<p>Every table listed here has no row rules at all. If the API roles have been granted access (older projects grant it by default), anyone with your key can read and change every row. Switch RLS on for each one; Step 3 adds back what the app needs.</p>
+
+<h2 id="step-2">Step 2: find policies that let everyone read</h2>
+<div class="code"><div class="code-bar"><span class="name">find-open-policies.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Read policies that don't check who is asking</span>
+select tablename, policyname, roles, qual
+from pg_policies
+where schemaname = 'public'
+  and cmd in ('SELECT', 'ALL')
+  and coalesce(qual, '') not ilike '%auth.uid()%';</code></pre></div>
+<p>Look at the <code>roles</code> column. <code>{public}</code> or <code>{anon}</code> means logged-out visitors are included. <code>{authenticated}</code> with <code>qual</code> = <code>true</code> means anyone who signs up, which for an app with open sign-up is the same thing. Some of these will be fine: a product list or blog posts are meant to be public. The ones that matter are tables with personal data: profiles, users, customers, orders, bookings, messages, leads.</p>
+
+<h2 id="step-3">Step 3: replace them with owner-only policies</h2>
+<p>For a table where each row belongs to a user (a <code>user_id</code> or <code>id</code> column that matches the user’s id), the fix is a policy that compares that column with the signed-in user. Add it as a new migration file so it is versioned with the rest of your schema, for example <code>supabase/migrations/20261110120000_lock_profiles.sql</code>:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_lock_profiles.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alter table public.profiles enable row level security;
+
+<span class="del">drop policy if exists "Profiles are viewable by everyone" on public.profiles;</span>
+<span class="add">create policy "Users read own profile" on public.profiles</span>
+<span class="add">  for select to authenticated</span>
+<span class="add">  using ((select auth.uid()) = id);</span>
+<span class="add">create policy "Users update own profile" on public.profiles</span>
+<span class="add">  for update to authenticated</span>
+<span class="add">  using ((select auth.uid()) = id)</span>
+<span class="add">  with check ((select auth.uid()) = id);</span></code></pre></div>
+<p>Use the real policy name from Step 2 in the <code>drop policy</code> line. If part of the table genuinely needs to be public (a seller’s display name on a listing), keep rows readable and withhold the private columns instead; the <a href="/learn/rls-policies-explained#public-read">RLS guide</a> shows how.</p>
+<div class="callout note"><p><strong>Asking the AI to fix it?</strong> Be specific: “Add a migration so users can only read and update their own row in <code>profiles</code>, using <code>auth.uid() = id</code>. Do not use <code>USING (true)</code> and do not use the service role key in the frontend.” Then test the result yourself (Step 4). A vague “fix the security” can produce a policy that hides the error without closing the leak.</p></div>
+
+<h2 id="step-4">Step 4: test as a visitor, a stranger and the owner</h2>
+<p>Don’t trust the policy text: run the queries as each kind of user. The three-identity script in the <a href="/learn/rls-policies-explained#test-sql">RLS guide</a> does this for any table, inside transactions that change nothing. For each table with personal data you want:</p>
+<ul class="ticks">
+  <li>logged-out visitor: 0 rows</li>
+  <li>a signed-in stranger who owns nothing: 0 rows</li>
+  <li>the owner: their own rows, and nothing else</li>
+</ul>
+<p>Then click through the app as a normal user. If a page breaks, the frontend was relying on the open access, which usually means it was showing users data that wasn’t theirs. Fix the query rather than reopening the table.</p>
+
+<h2 id="step-5">Step 5: check the keys in your code</h2>
+<p>A Supabase project has a second key, the service role key, which ignores every policy. It belongs only on servers. Search the repo for it:</p>
+<div class="code"><div class="code-bar"><span class="name">check-keys.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rnE "service_role|SERVICE_ROLE|sb_secret_" --exclude-dir=node_modules .
+<span class="c"># Any hit in src/ or in a VITE_ variable means it ships to the browser</span></code></pre></div>
+<p>If you find it, rotate it in the Supabase dashboard first, then move whatever needed it into an Edge Function. The same goes for AI and payment keys pasted into frontend code. <a href="/learn/rotate-leaked-key-git-history">How to rotate a leaked key and clean git history</a>.</p>
+
+<h2 id="step-6">Step 6: storage, functions and sign-up</h2>
+<ul>
+  <li><strong>Storage.</strong> Avatars can live in a public bucket. ID documents, invoices and anything personal belong in a private bucket with per-user folder policies. <a href="/learn/supabase-storage-policies">Storage bucket policies</a>.</li>
+  <li><strong>Edge Functions.</strong> Any function using the service role key must check who is calling, and take the user’s id from their token, not the request body. <a href="/learn/secure-supabase-edge-functions">Securing Edge Functions</a>.</li>
+  <li><strong>Sign-up.</strong> Keep “Confirm email” on in your project’s authentication settings, and never decide access from an email address or from <code>user_metadata</code>. <a href="/learn/user-metadata-vs-app-metadata">Where to store roles</a>.</li>
+  <li><strong>Views.</strong> A view over a locked table can skip its policies. <a href="/learn/supabase-views-security-invoker">Views and security_invoker</a>.</li>
+</ul>
+
+<h2 id="step-7">Step 7: keep it fixed</h2>
+<p>Every time the AI changes the database, it can change a policy. Two habits keep you safe:</p>
+<ol>
+  <li><strong>Run Supabase’s Security Advisor</strong> in the dashboard after each round of changes. It catches RLS switched off, functions without a fixed search path, and more. It deliberately doesn’t judge public reads, because only you know whether a table is meant to be public.</li>
+  <li><strong>Re-test the tables with personal data</strong> as a stranger after each change, or have it done automatically on a schedule.</li>
+</ol>
+<p>Before launch, work through the <a href="/learn/vibe-coded-app-security-checklist">pre-launch checklist</a>.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: Row Level Security</a></li>
+  <li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase: understanding API keys</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors</a></li>
+</ul>
+<p class="small muted">PatchLabs is independent and not affiliated with Lovable or Supabase. This guide describes apps built on them.</p>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3></a><a class="card link" href="/findings/pl-007"><span class="n-big">PL-007</span><h3>Public storage bucket</h3></a><a class="card link" href="/findings/pl-017"><span class="n-big">PL-017</span><h3>Edge function open without sign-in while using the service key</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-secure-lovable-sup">Public GitHub repo</label>
+            <input id="repo-l-secure-lovable-sup" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-secure-lovable-sup">Your email</label>
+            <input id="email-l-secure-lovable-sup" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20secure-lovable-supabase-app">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn"><span>Back to</span>All guides</a><a class="next" href="/learn/rls-policies-explained" rel="next"><span>Next guide</span>Supabase RLS policies explained, with owner and stranger tests</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#how-it-fits">How a Lovable app talks to Supabase</a></li><li><a href="#step-1">Step 1: find tables with RLS switched off</a></li><li><a href="#step-2">Step 2: find policies that let everyone read</a></li><li><a href="#step-3">Step 3: replace them with owner-only policies</a></li><li><a href="#step-4">Step 4: test as a visitor, a stranger and the owner</a></li><li><a href="#step-5">Step 5: check the keys in your code</a></li><li><a href="#step-6">Step 6: storage, functions and sign-up</a></li><li><a href="#step-7">Step 7: keep it fixed</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

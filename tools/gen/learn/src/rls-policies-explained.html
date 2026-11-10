@@ -1,0 +1,160 @@
+title: Supabase RLS policies explained, with owner and stranger tests
+description: How Supabase row level security policies work, the four commands, USING vs WITH CHECK, and SQL to test each table as a visitor, a stranger and the owner.
+h1: Supabase RLS policies explained, with owner and stranger tests
+navtitle: RLS policies explained
+topic: supabase
+order: 2
+short: USING vs WITH CHECK, the four commands, and SQL that tests each table as a visitor, a stranger and the owner.
+lede: A row level security (RLS) policy is a rule Postgres attaches to a table that decides, row by row, who may read, add, change or delete data. In a Supabase app it is the only thing between your public key and your users’ rows, so the way to know it works is to test it as three people: a logged-out visitor, a signed-in stranger and the owner.
+tldr: Your anon key is public by design. RLS policies, not the key, decide what it can read. || A policy has a command (<code>select</code>, <code>insert</code>, <code>update</code>, <code>delete</code>), the roles it applies to (its <code>to</code> clause) and conditions: <code>USING</code> for existing rows, <code>WITH CHECK</code> for new ones. || With RLS on and no policy, nobody gets anything. With RLS off, every role with table grants gets everything. || Test every table as anon, a stranger and the owner. The stranger test catches the leak most people miss: <code>to authenticated using (true)</code>.
+findings: PL-001, PL-002, PL-003, PL-004, PL-005, PL-008
+---
+<h2 id="why">Why a Supabase app depends on RLS</h2>
+<p>A Supabase frontend talks to the database directly. The browser sends queries to the project’s REST API with the project’s anon key (or, on newer projects, a <code>sb_publishable_…</code> key), and the API runs them as one of two Postgres roles: <code>anon</code> for logged-out visitors and <code>authenticated</code> for signed-in users. The key is in your JavaScript bundle, so anyone can copy it and send their own queries.</p>
+<p>That is fine, and intended, as long as row level security decides what those roles can see. Postgres evaluates your policies on every query, adding their conditions to it, so a visitor asking for <code>select * from profiles</code> gets back only the rows a policy allows. The server-side service role key skips RLS entirely, which is why it must never reach the browser (see <a href="/findings/pl-010">PL-010</a>).</p>
+
+<h2 id="anatomy">Anatomy of a policy</h2>
+[[CODE a policy, annotated]]
+create policy "Users read own notes"   -- a name, for humans
+  on public.notes                      -- the table
+  for select                           -- the command it covers
+  to authenticated                     -- the roles it applies to
+  using ((select auth.uid()) = user_id); -- which rows pass
+[[/CODE]]
+<p>Each part matters:</p>
+<ul>
+  <li><strong>Command.</strong> <code>select</code>, <code>insert</code>, <code>update</code>, <code>delete</code> or <code>all</code>. A table needs a policy for each thing your app does with it.</li>
+  <li><strong>Roles.</strong> Leave out <code>to</code> and the policy applies to every role, including <code>anon</code>. This is the most common cause of leaks to logged-out visitors.</li>
+  <li><strong>USING</strong> filters <em>existing</em> rows: the ones a user can read, or pick to update or delete.</li>
+  <li><strong>WITH CHECK</strong> validates <em>new</em> rows: what an insert adds, or what a row looks like after an update.</li>
+</ul>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Command</th><th scope="col">USING</th><th scope="col">WITH CHECK</th><th scope="col">Typical owner rule</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">select</th><td>yes</td><td>no</td><td><code>using ((select auth.uid()) = user_id)</code></td></tr>
+    <tr><th scope="row">insert</th><td>no</td><td>yes</td><td><code>with check ((select auth.uid()) = user_id)</code></td></tr>
+    <tr><th scope="row">update</th><td>yes</td><td>yes</td><td>both, the same condition</td></tr>
+    <tr><th scope="row">delete</th><td>yes</td><td>no</td><td><code>using ((select auth.uid()) = user_id)</code></td></tr>
+  </tbody>
+</table></div>
+<p>Three rules explain most surprises:</p>
+<ol>
+  <li><strong>Policies add up.</strong> Ordinary (permissive) policies are combined with OR: if any policy for the command lets a row through, it’s through. One loose policy undoes five careful ones. Restrictive policies (<code>as restrictive</code>) are combined with AND and narrow what the permissive ones allow.</li>
+  <li><strong>RLS on, no policy: nothing.</strong> Postgres denies everything through the API. Safe, but your app breaks (<a href="/findings/pl-003">PL-003</a>), and the quick fix people reach for is usually a leak.</li>
+  <li><strong>RLS off: grants decide.</strong> If <code>anon</code> or <code>authenticated</code> have been granted access to a table without RLS, they can read and change every row (<a href="/findings/pl-008">PL-008</a>).</li>
+</ol>
+<p>An update with a filter also needs the row to pass your <code>select</code> policies, because Postgres has to read the row to find it. That is why “I added an update policy and it still updates 0 rows” usually means the select policy is missing.</p>
+
+<h2 id="identities">The three identities to test</h2>
+<p>Reading a policy tells you what it says. Running a query as a real role tells you what it does, across every policy on the table at once. Test each table holding personal data as three people:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Identity</th><th scope="col">Who it stands for</th><th scope="col">Should see</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">anon</th><td>Anyone with your public key, no account</td><td>Only data you meant to publish</td></tr>
+    <tr><th scope="row">stranger</th><td>A signed-in user who owns nothing. If sign-up is open, that means anyone.</td><td>Nobody else’s private rows</td></tr>
+    <tr><th scope="row">owner</th><td>A signed-in user who owns some rows</td><td>Their own rows, still</td></tr>
+  </tbody>
+</table></div>
+<p>The owner test matters as much as the other two. A “fix” that locks everyone out closes the leak and breaks the app, which is how you end up back at <code>using (true)</code> next week.</p>
+
+<h2 id="test-sql">How to test a table as each identity</h2>
+<p>The safest place to test is a local copy of your database built from your migrations: run <code>supabase start</code>, then connect with <code>psql postgresql://postgres:postgres@127.0.0.1:54322/postgres</code> (the CLI’s default local database). You can also use your project’s SQL editor; it shows one result per run, so run one block at a time. Every block is a transaction that is rolled back, so nothing changes.</p>
+<p>Supabase’s <code>auth.uid()</code> reads the user id from the request’s JWT claims, so you can act as any user by setting those claims for the transaction.</p>
+[[CODE test-identities.sql]]
+-- 0. Pick an owner: someone who has rows in the table
+select user_id from public.notes limit 1;
+
+-- 1. Anonymous visitor
+begin;
+set local role anon;
+select count(*) as anon_rows from public.notes;
+rollback;
+
+-- 2. Signed-in stranger: a random id that owns nothing
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  json_build_object('sub', gen_random_uuid(), 'role', 'authenticated')::text, true);
+select count(*) as stranger_rows from public.notes;
+rollback;
+
+-- 3. The owner: should see their rows, and only theirs
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  json_build_object('sub', '<owner id from step 0>', 'role', 'authenticated')::text, true);
+select count(*) as owner_rows,
+       count(*) filter (where user_id <> '<owner id from step 0>') as not_theirs
+from public.notes;
+rollback;
+[[/CODE]]
+<p>The result you want: <code>anon_rows = 0</code>, <code>stranger_rows = 0</code>, <code>owner_rows</code> above 0 and <code>not_theirs = 0</code>. If the table is meant to be public (a product list), anon and the stranger seeing rows is correct; what matters is that personal columns aren’t among them.</p>
+<p>Writes are tested the same way. As the stranger, try <code>update public.notes set body = body where user_id &lt;&gt; '&lt;owner id&gt;' returning id;</code> inside the transaction. Any id returned is a row a stranger can change (<a href="/findings/pl-012">PL-012</a>).</p>
+
+<h2 id="patterns">Policies for the common cases</h2>
+<h3 id="owner-only">Rows that belong to one user</h3>
+[[CODE owner-only.sql]]
+alter table public.notes enable row level security;
+
+create policy "Owners read own notes" on public.notes
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Owners add own notes" on public.notes
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Owners edit own notes" on public.notes
+  for update to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy "Owners delete own notes" on public.notes
+  for delete to authenticated using ((select auth.uid()) = user_id);
+[[/CODE]]
+<h3 id="team">Rows shared by a team</h3>
+[[CODE team-scoped.sql]]
+create policy "Members read their team's projects" on public.projects
+  for select to authenticated
+  using (team_id in (
+    select team_id from public.team_members
+    where user_id = (select auth.uid())
+  ));
+[[/CODE]]
+<p>The membership table needs its own policies too, or a member could add themselves to any team.</p>
+<h3 id="public-read">Public to read, owner to write</h3>
+[[CODE public-read.sql]]
+create policy "Anyone can read published posts" on public.posts
+  for select to anon, authenticated using (published);
+create policy "Authors write own posts" on public.posts
+  for update to authenticated
+  using ((select auth.uid()) = author_id)
+  with check ((select auth.uid()) = author_id);
+[[/CODE]]
+<p>If a public table also holds a private column (an author’s email), withhold the column rather than the rows: <code>revoke select on public.posts from anon; grant select (id, title, body, published) on public.posts to anon;</code>. The app then has to name its columns instead of using <code>select('*')</code>.</p>
+
+<h2 id="mistakes">Mistakes that leak</h2>
+<ul>
+  <li><strong><code>using (true)</code> with no <code>to</code> clause</strong> on a table with personal data: anyone with the key reads it (<a href="/findings/pl-001">PL-001</a>).</li>
+  <li><strong><code>to authenticated using (true)</code></strong>, or <code>auth.uid() is not null</code>: looks restricted, but anyone who signs up reads everything (<a href="/findings/pl-002">PL-002</a>).</li>
+  <li><strong>An update policy without <code>WITH CHECK</code></strong> on a row with a role, plan or credits column: users edit their way to admin (<a href="/findings/pl-004">PL-004</a>, <a href="/findings/pl-013">PL-013</a>).</li>
+  <li><strong>“Enable all for all users”</strong> on writes: anyone can change or delete every row (<a href="/findings/pl-005">PL-005</a>).</li>
+  <li><strong>Roles read from <code>user_metadata</code></strong>, which users can edit (<a href="/findings/pl-019">PL-019</a>). See <a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a>.</li>
+  <li><strong>A view over a protected table</strong>, which runs as its owner and skips the policies (<a href="/findings/pl-014">PL-014</a>). See <a href="/learn/supabase-views-security-invoker">views and security_invoker</a>.</li>
+</ul>
+
+<h2 id="performance">Keep policies fast</h2>
+<p>Write <code>(select auth.uid())</code> rather than <code>auth.uid()</code>. Wrapped in a sub-select, Postgres evaluates it once per query instead of once per row, which matters on large tables. Index the column you compare against: <code>create index on public.notes (user_id);</code>. Supabase’s performance advisor flags the unwrapped form.</p>
+
+<h2 id="checklist">A short checklist</h2>
+<ul class="ticks">
+  <li>Every table in <code>public</code> has RLS enabled.</li>
+  <li>Every policy has a <code>to</code> clause.</li>
+  <li>No policy on a table with personal data is <code>using (true)</code> for <code>anon</code> or <code>authenticated</code>, unless the table is meant to be public.</li>
+  <li>Every update policy has <code>WITH CHECK</code>, and columns users mustn’t set are not granted to them.</li>
+  <li>Each table passes the three-identity test above.</li>
+  <li>All of it lives in <code>supabase/migrations</code>, not only in the dashboard, so it can be rebuilt and re-tested.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: Row Level Security</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">PostgreSQL: Row Security Policies</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/sql-createpolicy.html">PostgreSQL: CREATE POLICY</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors (security and performance lints)</a></li>
+</ul>

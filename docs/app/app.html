@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>App | PatchLabs</title>
-<meta name="description" content="A monitored app: status, changes since the last check, history, schedule and badge.">
+<meta name="description" content="A monitored app: findings, changes since the last check, history, schedule and badge.">
 <link rel="canonical" href="https://patchlabs.dev/app/app">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
 <meta property="og:title" content="App | PatchLabs">
-<meta property="og:description" content="A monitored app: status, changes since the last check, history, schedule and badge.">
+<meta property="og:description" content="A monitored app: findings, changes since the last check, history, schedule and badge.">
 <meta property="og:url" content="https://patchlabs.dev/app/app">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -17,7 +17,7 @@
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="App | PatchLabs">
-<meta name="twitter:description" content="A monitored app: status, changes since the last check, history, schedule and badge.">
+<meta name="twitter:description" content="A monitored app: findings, changes since the last check, history, schedule and badge.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
-<meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script>
+<meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script><script src="/assets/app-pages.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -43,6 +43,7 @@
     <nav aria-label="App">
       <a href="/app/" aria-current="page">Apps</a>
       <a href="/app/settings">Settings</a>
+      <a href="/app/support">Support</a>
       <a href="/docs" class="hide-sm">Docs</a>
     </nav>
     <div class="right">
@@ -53,201 +54,11 @@
 </header>
 
 <main id="main" class="app-main">
-  <div class="wrap wide">
-    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/app/">Apps</a></li><li aria-current="page" id="crumb">App</li></ol></nav>
-    <div id="top" aria-live="polite">
-      <div class="app-head"><div><p class="lab">App</p><div class="skeleton" style="height:34px;width:min(420px,80vw)"></div><div class="skeleton mt-2" style="height:14px;width:240px"></div></div></div>
-      <div class="skeleton sk-block"></div>
-    </div>
-    <div id="runmsg"></div>
-    <div class="app-layout" id="layout" hidden>
-      <div>
-        <section aria-labelledby="diff-h"><h2 class="sec-title" id="diff-h">Since the last check</h2><div id="diff"></div></section>
-        <section class="block" aria-labelledby="hist-h"><h2 class="sec-title" id="hist-h">Check history</h2><p class="sec-sub">Every check of this app, newest first. Each report stays available by its link.</p><div id="history"></div></section>
-      </div>
-      <aside class="side" id="side" aria-label="App settings"></aside>
-    </div>
+  <div class="wrap wide" id="view">
+    <noscript><div class="callout limit"><p>The PatchLabs app needs JavaScript. Your reports are also on their public links, and you can email <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a> for help.</p></div></noscript>
   </div>
 </main>
-<script>
-(function () {
-  var esc = PL.esc, $ = PL.$;
-  var id = PL.qs('id'), S = { app: null, ws: null, live: null };
-  var PROD_API = 'https://api.patchlabs.dev', PROD_SITE = 'https://patchlabs.dev';
-
-  if (!id) { PL.wireSignout(); $('top').innerHTML = '<div class="empty"><h2>No app selected</h2><p>Open an app from your <a href="/app/">apps list</a>.</p></div>'; return; }
-
-  PL.boot({ onWorkspace: function () { location.href = '/app/'; } }).then(load)
-    .catch(function (e) { PL.errorBox($('top'), e, function () { location.reload(); }); });
-
-  async function load() {
-    try {
-      var a = await PL.call('/apps/' + encodeURIComponent(id));
-      var w = await PL.call('/workspaces/' + a.workspace_id);
-      S.app = a; S.ws = w;
-      // keep the switcher on the app's workspace
-      if (PL.store.get('pl_ws') !== a.workspace_id) { PL.store.set('pl_ws', a.workspace_id); var sel = $('ws-select'); if (sel) sel.value = a.workspace_id; }
-      renderTop(); renderSide(); live();
-    } catch (e) {
-      if (e.redirecting) return;
-      if (e.status === 404) { $('top').innerHTML = '<div class="empty"><h2>App not found</h2><p>It may have been deleted, or it belongs to a workspace you’re not in. <a href="/app/">Back to your apps</a>.</p></div>'; $('layout').hidden = true; return; }
-      PL.errorBox($('top'), e, load);
-    }
-  }
-
-  async function refresh() {
-    S.app = await PL.call('/apps/' + encodeURIComponent(id));
-    renderTop(); live();
-    var nx = $('next-at'); if (nx) nx.innerHTML = nextText();
-  }
-
-  function live() {
-    if (S.app.open_check_id && !S.live) S.live = PL.every(refresh, 15000);
-    if (!S.app.open_check_id && S.live) { S.live.stop(); S.live = null; }
-  }
-
-  function nextText() {
-    var a = S.app;
-    if (!a.verified) return 'Starts once the repo is verified.';
-    if (a.schedule === 'off') return 'No scheduled re-checks. Run one by hand any time.';
-    return 'Next re-check ' + esc(PL.rel(a.next_check_at)) + ' (' + esc(PL.dateTime(a.next_check_at)) + ').';
-  }
-
-  /* ---- head, status, diff, history (re-rendered on refresh) ---- */
-  function renderTop() {
-    var a = S.app, st = PL.status(a), checks = a.checks || [];
-    document.title = a.repo + ' | PatchLabs';
-    $('crumb').textContent = a.repo;
-    var latest = checks.filter(function (c) { return ['done', 'no_leaks', 'needs_review', 'failed'].indexOf(c.status) >= 0; })[0];
-    var h = '<div class="app-head"><div><p class="lab">App</p><h1 class="app-title mono" style="font-size:clamp(22px,2.6vw,30px)">' + esc(a.repo) + '</h1>' +
-      '<p class="app-sub">' + PL.pill(st) + ' <span style="margin-left:6px">' + esc(st.note) + '</span></p>' +
-      '<p class="app-sub small">' + (a.client_label ? 'Client: <b class="ink">' + esc(a.client_label) + '</b> · ' : '') + (a.branch ? 'Branch <code>' + esc(a.branch) + '</code> · ' : '') + 'Added ' + esc(PL.date(a.created_at)) + '</p></div>' +
-      '<div class="actions">' + (latest ? '<a class="btn secondary" href="/check?id=' + esc(latest.id) + '">Latest report</a>' : '') +
-      (a.verified ? '<button class="btn primary" type="button" id="run"' + (a.open_check_id ? ' disabled' : '') + '>' + (a.open_check_id ? '<span class="spin" aria-hidden="true"></span>Check running' : 'Run check now') + '</button>' : '') + '</div></div>';
-    if (!a.verified) {
-      h += '<div class="panel" id="vpanel"><p class="lab">Verify</p><h2>Prove the repo is yours</h2>' + PL.verifyHtml(a.repo, a.verify) + '</div>';
-    } else if (a.open_check_id) {
-      h += '<div class="callout note"><p><span class="spin" aria-hidden="true"></span><strong>A check is running.</strong> It usually takes 5 to 15 minutes; this page refreshes every 15 seconds. <a href="/check?id=' + esc(a.open_check_id) + '">Watch it live</a>.</p></div>';
-    }
-    $('top').innerHTML = h;
-    if ($('vpanel')) PL.wireVerify($('vpanel'), a.id, function () { PL.toast('Verified. The first check is queued.', 'ok'); load(); });
-    if ($('run')) $('run').onclick = runNow;
-    $('layout').hidden = false;
-    renderDiff(); renderHistory();
-  }
-
-  function renderDiff() {
-    var d = S.app.diff || {}, checks = S.app.checks || [];
-    if (!d.to_check_id) {
-      $('diff').innerHTML = '<div class="empty small"><p>' + (S.app.verified ? 'The comparison appears when the first check finishes.' : 'Verify the repo to start the first check.') + '</p></div>';
-      return;
-    }
-    var at = function (cid) { var c = checks.filter(function (x) { return x.id === cid; })[0]; return c ? PL.date(c.finished_at) : ''; };
-    var card = function (cls, k, list, empty) {
-      return '<div class="diff-card ' + cls + '"><div class="k">' + k + '</div><div class="n">' + list.length + '</div><div class="t">' + (list.length ? PL.tables(list) : esc(empty)) + '</div></div>';
-    };
-    $('diff').innerHTML = '<p class="sec-sub">' + (d.from_check_id
-        ? 'Comparing the check of <a href="/check?id=' + esc(d.to_check_id) + '">' + esc(at(d.to_check_id)) + '</a> with the one before it (<a href="/check?id=' + esc(d.from_check_id) + '">' + esc(at(d.from_check_id)) + '</a>).'
-        : 'First finished check (<a href="/check?id=' + esc(d.to_check_id) + '">' + esc(at(d.to_check_id)) + '</a>): everything it found counts as new.') + '</p>' +
-      '<div class="diff-grid">' + card('red', 'New leaks', d.new_leaks || [], 'None') + card('green', 'Fixed', d.fixed || [], 'Nothing to fix') +
-      card('red', 'Still leaking', d.still_leaking || [], 'None') + card('grey', 'Marked as intended', d.suppressed || [], 'None') + '</div>' +
-      ((d.suppressed || []).length ? '<p class="small muted mt-2 mb-0">Your team marked these tables as meant to be readable, so they don’t raise alerts. Approve the fix on a report to start alerting on them again.</p>' : '');
-  }
-
-  function renderHistory() {
-    var checks = S.app.checks || [];
-    if (!checks.length) { $('history').innerHTML = '<div class="empty small"><p>No checks yet.</p></div>'; return; }
-    var dot = { done: 'red', needs_review: 'amber', no_leaks: 'green', queued: 'amber', running: 'amber' };
-    $('history').innerHTML = '<ol class="timeline">' + checks.map(function (c) {
-      var open = c.status === 'queued' || c.status === 'running';
-      var t = c.tables_leaking || [];
-      var detail = open ? 'Started ' + esc(PL.rel(c.created_at))
-        : c.status === 'failed' ? 'Couldn’t finish automatically'
-        : t.length ? PL.plural(t.length, 'table') + ' leaking: ' + t.map(function (x) { return '<code>' + esc(x) + '</code>'; }).join(' ') + (c.lab_proof_passed ? ' · lab proof passed' : c.status === 'needs_review' ? ' · fix in review' : '')
-        : 'No personal data readable by the wrong people';
-      return '<li><span class="dot ' + (dot[c.status] || '') + '" aria-hidden="true"></span><div class="what"><b>' + esc(PL.TRIGGERS[c.trigger] || 'Check') + '</b> ' + PL.checkPill(c.status) +
-        '<div class="small muted mt-1">' + detail + '</div><div class="meta">' + esc(PL.dateTime(c.finished_at || c.created_at)) + '</div></div>' +
-        '<a class="btn small ' + (open ? 'secondary' : 'ghost') + ' go" href="/check?id=' + esc(c.id) + '">' + (open ? 'Watch' : 'Report') + '</a></li>';
-    }).join('') + '</ol>' + (checks.length >= 50 ? '<p class="small muted mt-2">Showing the latest 50 checks.</p>' : '');
-  }
-
-  async function runNow() {
-    var b = $('run'), restore = PL.busy(b, 'Queueing…'); $('runmsg').innerHTML = '';
-    try {
-      var r = await PL.call('/apps/' + encodeURIComponent(id) + '/checks', { method: 'POST' });
-      PL.toast('Check queued', 'ok');
-      await refresh();
-    } catch (e) {
-      restore();
-      if (e.status === 429) $('runmsg').innerHTML = '<div class="callout limit"><p>' + esc(e.message) + '</p><p><a class="link-arrow" href="/app/settings#plan">Request an upgrade</a></p></div>';
-      else if (e.status === 409) { $('runmsg').innerHTML = '<div class="callout note"><p>' + esc(e.message) + ' This page updates by itself when it finishes.</p></div>'; refresh(); }
-      else $('runmsg').innerHTML = '<p class="err" role="alert">' + esc(e.message) + '</p>';
-    }
-  }
-
-  /* ---- side panels: schedule, client label, badge, delete (rendered once) ---- */
-  function renderSide() {
-    var a = S.app, l = S.ws.limits;
-    var md = '[![PatchLabs status](' + PROD_API + '/badge/' + a.id + '.svg)](' + PROD_SITE + '/proof?app=' + a.id + ')';
-    var html = '<a href="' + PROD_SITE + '/proof?app=' + a.id + '"><img src="' + PROD_API + '/badge/' + a.id + '.svg" alt="PatchLabs status" height="20"></a>';
-    $('side').innerHTML =
-      '<div class="panel"><h2>Re-check schedule</h2><p class="sec-sub">Scheduled re-checks don’t count towards your manual runs.</p>' +
-        '<label class="sr-only" for="sched">Re-check schedule</label><select class="input" id="sched">' + ['weekly', 'monthly', 'off'].map(function (s) {
-          var ok = l.schedules.indexOf(s) >= 0;
-          return '<option value="' + s + '"' + (s === a.schedule ? ' selected' : '') + (ok ? '' : ' disabled') + '>' + esc(PL.SCHEDULES[s]) + (ok ? '' : ' (upgrade to use)') + '</option>';
-        }).join('') + '</select><p class="small muted mt-1 mb-0" id="next-at">' + nextText() + '</p><p class="err" role="alert" id="sched-err"></p>' +
-        (l.schedules.indexOf('weekly') < 0 ? '<p class="small mt-1 mb-0"><a href="/app/settings#plan">Weekly re-checks come with Maker and up</a></p>' : '') + '</div>' +
-      '<div class="panel"><h2>Client label</h2><p class="sec-sub">Shown in your apps list and alert emails.</p><form id="lf" class="form-row"><div class="field"><label class="sr-only" for="label">Client label</label><input id="label" maxlength="100" placeholder="e.g. Acme Ltd" value="' + esc(a.client_label || '') + '"></div><button class="btn secondary" type="submit" id="label-save">Save</button></form><p class="err" role="alert" id="label-err"></p></div>' +
-      '<div class="panel"><h2>Public badge</h2><p class="sec-sub">Show visitors the date of your last check and its result, linked to a public proof page. It never shows table names or the report.</p>' +
-        '<label class="switch"><input type="checkbox" id="badge"' + (a.badge_public ? ' checked' : '') + '> <span id="badge-l">' + (a.badge_public ? 'Badge is public' : 'Badge is private') + '</span></label>' +
-        '<div class="badge-preview"><img id="badge-img" alt="Badge preview" src="' + API + '/badge/' + esc(a.id) + '.svg?v=' + Date.now() + '"></div>' +
-        '<p class="small muted" id="badge-note">' + badgeNote(a.badge_public) + '</p>' +
-        '<div class="code snip"><div class="code-bar"><span class="name">Markdown (README)</span><button class="copy" type="button" data-copy="#snip-md">Copy</button></div><pre id="snip-md">' + esc(md) + '</pre></div>' +
-        '<div class="code snip"><div class="code-bar"><span class="name">HTML</span><button class="copy" type="button" data-copy="#snip-html">Copy</button></div><pre id="snip-html">' + esc(html) + '</pre></div></div>' +
-      '<div class="panel danger-zone"><h2>Delete app</h2><p class="sec-sub">Removes the app and every check and report for it from PatchLabs. Your repo isn’t touched.</p><button class="btn danger" type="button" id="del">Delete app</button></div>';
-
-    $('sched').addEventListener('change', async function () {
-      var sel = this, prev = S.app.schedule; sel.disabled = true; $('sched-err').textContent = '';
-      try { S.app = Object.assign(S.app, await PL.call('/apps/' + a.id, { method: 'PATCH', body: { schedule: sel.value } })); $('next-at').innerHTML = nextText(); PL.toast('Schedule saved', 'ok'); }
-      catch (e) { sel.value = prev; $('sched-err').textContent = e.message; }
-      sel.disabled = false;
-    });
-    $('lf').addEventListener('submit', async function (e) {
-      e.preventDefault(); var restore = PL.busy($('label-save'), 'Saving…'); $('label-err').textContent = '';
-      try { S.app = Object.assign(S.app, await PL.call('/apps/' + a.id, { method: 'PATCH', body: { client_label: $('label').value.trim() } })); restore(); PL.toast('Client label saved', 'ok'); renderTop(); }
-      catch (x) { restore(); $('label-err').textContent = x.message; }
-    });
-    $('badge').addEventListener('change', async function () {
-      var cb = this, on = cb.checked; cb.disabled = true;
-      try {
-        S.app = Object.assign(S.app, await PL.call('/apps/' + a.id, { method: 'PATCH', body: { badge_public: on } }));
-        $('badge-l').textContent = on ? 'Badge is public' : 'Badge is private';
-        $('badge-note').innerHTML = badgeNote(on);
-        $('badge-img').src = API + '/badge/' + a.id + '.svg?v=' + Date.now();
-        PL.toast(on ? 'Badge is now public' : 'Badge is now private', 'ok');
-      } catch (e) { cb.checked = !on; PL.toast(e.message, 'err'); }
-      cb.disabled = false;
-    });
-    $('del').addEventListener('click', async function () {
-      var n = (S.app.checks || []).length;
-      var ok = await PL.confirm({ title: 'Delete ' + a.repo + '?', danger: true, confirm: 'Delete app', type: a.repo,
-        text: '<p>This deletes the app, its ' + PL.plural(n, 'check') + ' and their reports from PatchLabs, and stops scheduled re-checks. Public badges for it will read “private”. It can’t be undone.</p>' });
-      if (!ok) return;
-      var restore = PL.busy($('del'), 'Deleting…');
-      try {
-        await PL.call('/apps/' + a.id, { method: 'DELETE' });
-        try { sessionStorage.setItem('pl_flash', JSON.stringify({ text: 'Deleted ' + a.repo + '.', kind: 'ok' })); } catch (e) {}
-        location.href = '/app/';
-      } catch (e) { restore(); PL.toast(e.message, 'err'); }
-    });
-  }
-
-  function badgeNote(on) {
-    return on ? 'Public: anyone with the link sees the badge and the <a href="/proof?app=' + esc(id) + '">proof page</a>. The image is cached for up to an hour.'
-      : 'Private: the badge reads “private” and the proof page shows nothing. The snippets work as soon as you make it public.';
-  }
-})();
-</script>
+<script>PL.views.app(document.getElementById('view'));</script>
 
 </body>
 </html>

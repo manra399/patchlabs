@@ -1,0 +1,138 @@
+title: Supabase storage bucket policies: public, private and per-user folders
+description: How Supabase Storage access works, public vs private buckets, and copy-paste storage.objects policies that give each user their own folder, with signed URLs.
+h1: Supabase storage bucket policies: public, private and per-user folders
+navtitle: Storage bucket policies
+topic: supabase
+order: 4
+short: Public vs private buckets, and storage.objects policies that give each user their own folder.
+lede: Supabase Storage decides who can download, upload, replace and delete files with row level security policies on the <code>storage.objects</code> table, plus one switch per bucket: a public bucket serves every file to anyone with its URL. For personal files, use a private bucket, put each user’s files in a folder named after their user id, and write policies that only allow that folder.
+tldr: Public bucket: anyone with a file’s URL can download it, no sign-in. Fine for avatars, wrong for ID scans and invoices. || Private bucket: every operation goes through your <code>storage.objects</code> policies. A policy that checks only <code>bucket_id</code> covers every file, for everyone it applies to. || Per-user folders: upload to <code>&lt;user id&gt;/file</code> and compare <code>(storage.foldername(name))[1]</code> with <code>auth.uid()</code>. || Show private files with short-lived signed URLs, not public URLs.
+findings: PL-007, PL-015
+---
+<h2 id="how">How Storage access works</h2>
+<p>Each file in Supabase Storage has a row in <code>storage.objects</code>, with its <code>bucket_id</code> and its path in <code>name</code> (for example <code>3f2c…/passport.jpg</code>). Buckets are rows in <code>storage.buckets</code>. When your app calls <code>supabase.storage.from('documents').upload(…)</code> or <code>.download(…)</code>, the Storage API checks your row level security policies on <code>storage.objects</code> for the signed-in user, the same way the database API checks policies on your tables:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Operation</th><th scope="col">Policy needed on storage.objects</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Download, list, create a signed URL</th><td><code>select</code></td></tr>
+    <tr><th scope="row">Upload</th><td><code>insert</code></td></tr>
+    <tr><th scope="row">Replace (upload with <code>upsert: true</code>)</th><td><code>select</code>, <code>insert</code> and <code>update</code></td></tr>
+    <tr><th scope="row">Delete</th><td><code>delete</code></td></tr>
+  </tbody>
+</table></div>
+<p>With no policies, nothing is allowed through the API. That’s safe, and it is also why people reach for a broad policy the first time an upload fails.</p>
+
+<h2 id="public-private">Public vs private buckets</h2>
+<p>A bucket’s <code>public</code> flag changes one thing: files can be downloaded through their public URL by anyone, with no sign-in and no policy check. Uploading, replacing, deleting and listing still go through your policies.</p>
+<ul>
+  <li><strong>Public</strong> is right for files meant for everyone: avatars, product images, logos, blog images. Use <code>getPublicUrl()</code>.</li>
+  <li><strong>Private</strong> is right for anything personal: ID documents, CVs, invoices, contracts, medical letters, private photos. Use <code>createSignedUrl()</code>, which issues a link that expires.</li>
+</ul>
+<p>Don’t mix the two in one bucket. Make a public bucket for public assets and a private one for everything else.</p>
+[[CODE find-public-buckets.sql]]
+select id, name, public from storage.buckets order by public desc;
+[[/CODE]]
+
+<h2 id="broad">The broad policy that leaks</h2>
+<p>This is the most common shape in AI-built apps. The bucket is private, so it looks safe, but each policy names only the bucket and has no <code>to</code> clause:</p>
+[[CODE supabase/migrations/…_storage.sql (vulnerable)]]
+create policy "Allow uploads" on storage.objects
+  for insert with check (bucket_id = 'documents');
+create policy "Allow reads" on storage.objects
+  for select using (bucket_id = 'documents');
+create policy "Allow deletes" on storage.objects
+  for delete using (bucket_id = 'documents');
+[[/CODE]]
+<p>Anyone with your public key, signed in or not, can list every file in the bucket, download them, upload their own files into it and delete other people’s. List your storage policies to see whether you have this:</p>
+[[CODE list-storage-policies.sql]]
+select policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'storage' and tablename = 'objects'
+order by (coalesce(qual, '') || coalesce(with_check, '')) ilike '%auth.uid()%', cmd;
+[[/CODE]]
+<p>Policies at the top of the result never mention the user. If they cover a bucket with personal files, they need replacing.</p>
+
+<h2 id="per-user">Per-user folders: the policies</h2>
+<p>Give each user a folder named after their user id, and allow each operation only inside it. <code>storage.foldername(name)</code> splits a path into its folders, so <code>(storage.foldername(name))[1]</code> is the first folder.</p>
+[[CODE supabase/migrations/…_documents_policies.sql]]
+insert into storage.buckets (id, name, public)
+values ('documents', 'documents', false)
+on conflict (id) do update set public = false;
+
+create policy "Users read own documents" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'documents'
+         and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+create policy "Users upload own documents" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'documents'
+              and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+create policy "Users replace own documents" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'documents'
+         and (storage.foldername(name))[1] = (select auth.uid())::text)
+  with check (bucket_id = 'documents'
+              and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+create policy "Users delete own documents" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'documents'
+         and (storage.foldername(name))[1] = (select auth.uid())::text);
+[[/CODE]]
+<p>Drop the old broad policies in the same migration (<code>drop policy "Allow reads" on storage.objects;</code> and so on).</p>
+
+<h2 id="app-code">The app code that goes with it</h2>
+[[CODE src/lib/documents.ts]]
+import { supabase } from '@/integrations/supabase/client';
+
+export async function uploadDocument(file: File) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Sign in first');
+  // The first folder must be the user's id, or the policy refuses it
+  const path = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+  const { error } = await supabase.storage.from('documents').upload(path, file);
+  if (error) throw error;
+  return path;
+}
+
+export async function documentLink(path: string) {
+  // A link that works for 60 seconds, instead of a permanent public URL
+  const { data, error } = await supabase.storage
+    .from('documents')
+    .createSignedUrl(path, 60);
+  if (error) throw error;
+  return data.signedUrl;
+}
+[[/CODE]]
+<p>If the app used <code>getPublicUrl()</code> for these files before, replace each call. A public URL for a file in a private bucket doesn’t work, which is what you want.</p>
+
+<h2 id="test">Test it as a visitor and a stranger</h2>
+<p>File rows can be tested like any table, inside a transaction that changes nothing:</p>
+[[CODE test-storage.sql]]
+-- A logged-out visitor should see no file names
+begin;
+set local role anon;
+select count(*) from storage.objects where bucket_id = 'documents';
+rollback;
+
+-- A signed-in stranger should see none either
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  json_build_object('sub', gen_random_uuid(), 'role', 'authenticated')::text, true);
+select count(*) from storage.objects where bucket_id = 'documents';
+rollback;
+[[/CODE]]
+<p>Then, as a real test user in the app, upload a file, open it through the signed link, and confirm a second test user can’t download it by path.</p>
+
+<h2 id="limits">Upload limits for public forms</h2>
+<p>If a form must accept files from logged-out visitors (a job application, say), keep that bucket private, allow <code>insert</code> to <code>anon</code> only for that bucket, never allow <code>select</code> to <code>anon</code>, and set the bucket’s file size limit and allowed file types in its settings so it can’t become free hosting for anything at all.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/storage/security/access-control">Supabase: Storage access control</a></li>
+  <li><a href="https://supabase.com/docs/guides/storage/buckets/fundamentals">Supabase: Storage buckets</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: Row Level Security</a></li>
+</ul>

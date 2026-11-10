@@ -1,0 +1,150 @@
+<!--
+title: PatchLabs Lab: rebuild your database and reproduce every leak | PatchLabs
+description: PatchLabs Lab rebuilds your Supabase database from its migrations and reproduces each leak as an anonymous visitor, a signed-in stranger and the owner.
+layout: marketing
+nav: lab
+head: <link rel="stylesheet" href="/assets/pages/platform.css">
+-->
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/#platform">Products</a></li><li aria-current="page">Lab</li></ol></nav>
+      <div class="p2-kicker"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span><span>Product line</span><b>PatchLabs Lab</b></span></div>
+      <h1>Not a warning about your rules. A test of who can read your data.</h1>
+      <p class="lede">Lint tools tell you a policy looks permissive. PatchLabs Lab rebuilds your database from its own migrations, queries it as an anonymous visitor, a signed-in stranger and the owner, and shows you the rows each one got.</p>
+      <div class="row"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/demo">Try the demo</a></div>
+      <p class="meta-line">Reads your public repo only · never connects to your live app or database</p>
+    </div>
+    <figure class="figure">
+      <div class="stack-ui"><div class="ui" role="img" aria-label="Probe matrix for the demo app: before the fix the anonymous visitor and a signed-in stranger read 2 rows of public.profiles; after the fix they read 0 and the owner reads their own row.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/demo · lab</span><span class="ui-tag">Real run · 9 Nov 2026</span></div>
+  <div class="matrix-wrap"><table class="matrix">
+    <thead><tr><th scope="col">public.profiles · select</th><th scope="col">anon</th><th scope="col">stranger</th><th scope="col">owner</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Before<small>as your migrations built it</small></th><td><span class="cell">2 rows<span class="tok leak">LEAK</span></span></td><td><span class="cell">2 rows<span class="tok leak">LEAK</span></span></td><td><span class="cell">own row<span class="tok ok">OK</span></span></td></tr>
+      <tr class="after"><th scope="row">After<small>with the fix applied</small></th><td><span class="cell">0 rows<span class="tok ok">DENIED</span></span></td><td><span class="cell">0 rows<span class="tok ok">DENIED</span></span></td><td><span class="cell">1 row<span class="tok ok">OK</span></span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="ui-foot"><span>1 migration rebuilt</span><span>Supabase roles, auth, grants</span><span>2 seeded users, fake rows</span></div>
+</div><div class="code dark mb-0">
+  <div class="code-bar"><span class="name">lab: three-identity probe, simplified</span></div>
+<pre><code><span class="c">-- 1. anonymous visitor, with your public key</span>
+set local role anon;
+select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span>
+<span class="c">-- 2. signed-in stranger</span>
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"&lt;stranger&gt;"}', true);
+select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code></pre>
+</div></div>
+      <figcaption>The probe matrix from the real check of our demo app, 9 Nov 2026. Fake data. <a href="/check?id=sample">Open the full report</a>.</figcaption>
+    </figure>
+  </div>
+</section>
+<section class="sec tight" aria-label="Product lines" style="padding-top:0">
+  <div class="wrap"><nav class="lines-strip" aria-label="Product lines"><a href="/product/lab" aria-current="page"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><b>PatchLabs Lab</b><span class="d">Rebuilds the database and reproduces each leak.</span></a><a href="/product/code"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><b>PatchLabs Code</b><span class="d">Keys, dependencies and risky AI-written code.</span></a><a href="/product/fix"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><b>PatchLabs Fix</b><span class="d">A migration proven as three identities.</span></a><a href="/product/watch"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><b>PatchLabs Watch</b><span class="d">Re-checks, alerts, badge and receipts.</span></a></nav></div>
+</section>
+<section class="sec" aria-labelledby="how-h">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">How it works</p><h2 id="how-h">From migrations to a reproduced leak, in a lab we throw away.</h2><p>Every Lab finding is something we made happen, not something we guessed from reading SQL.</p></div><ol class="flow" style="--n:4" data-reveal><li><h3>Rebuild</h3><p>Your <code>supabase/migrations</code> run in a disposable Postgres with Supabase’s roles, auth functions and default grants.</p><div class="art">migrations applied
+roles: anon, authenticated</div></li><li><h3>Seed</h3><p>Fake rows for two test users in every table, so there is something to read and something to protect.</p><div class="art">2 users · fake rows
+no real data</div></li><li><h3>Probe</h3><p>Query each table as an anonymous visitor (your public key), a signed-in stranger and the owner.</p><div class="art">anon     → 2 <span class="leak">LEAK</span>
+stranger → 2 <span class="leak">LEAK</span>
+owner    → 1 <span class="ok">OK</span></div></li><li><h3>Report</h3><p>Each leak becomes a finding with an ID, the columns exposed, who can read them and the evidence.</p><div class="art">PL-001 · critical
+public.profiles</div></li></ol>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="caps-h">
+  <div class="wrap">
+<div class="sec-head split "><div><p class="lab">Capabilities</p><h2 id="caps-h">8 Lab checks live today.</h2><p>Each links to its finding page: the vulnerable pattern, how to check it yourself and the fix we write.</p></div><a class="link-arrow" href="/findings">Findings library</a></div><div class="cap-list"><div class="cap-head" aria-hidden="true"><span>ID</span><span>Check</span><span>Who can exploit</span><span>Severity</span></div><a class="cap-row" href="/findings/pl-001"><span class="fid">PL-001</span><div><h3>Anonymous visitor can read personal data</h3><p>A read policy for anon or public on a table with emails, phones or addresses, not scoped to the user.</p></div><span class="who">anyone on the internet</span><span class="st"><span class="pill sev-critical">critical</span></span></a><a class="cap-row" href="/findings/pl-002"><span class="fid">PL-002</span><div><h3>Any signed-in user can read every row</h3><p>Signing up unlocks other people’s rows because the policy checks only that someone is signed in.</p></div><span class="who">anyone who signs up</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-003"><span class="fid">PL-003</span><div><h3>RLS enabled but no policies (owner locked out)</h3><p>Row level security is on with no policies, so nobody, including the owner, can read the table.</p></div><span class="who">nobody, yet</span><span class="st"><span class="pill sev-low">low</span></span></a><a class="cap-row" href="/findings/pl-004"><span class="fid">PL-004</span><div><h3>UPDATE policy missing WITH CHECK</h3><p>Users can edit a row they own into a row they shouldn’t, such as handing it to someone else.</p></div><span class="who">signed-in users</span><span class="st"><span class="pill sev-medium">medium</span></span></a><a class="cap-row" href="/findings/pl-005"><span class="fid">PL-005</span><div><h3>Always-true policy</h3><p>A policy written as using (true) or with check (true) that applies to everyone it names.</p></div><span class="who">anyone it applies to</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-006"><span class="fid">PL-006</span><div><h3>SECURITY DEFINER function exposed</h3><p>A function that runs with its creator’s rights is callable by anon or public, or has no search_path.</p></div><span class="who">anyone who can call it</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-007"><span class="fid">PL-007</span><div><h3>Public storage bucket</h3><p>A bucket created with public = true, so anyone with a file link can download it.</p></div><span class="who">anyone with a link</span><span class="st"><span class="pill sev-medium">medium</span></span></a><a class="cap-row" href="/findings/pl-008"><span class="fid">PL-008</span><div><h3>Row level security not enabled</h3><p>A table in the public schema with RLS never switched on: the public key reads and writes it.</p></div><span class="who">anyone on the internet</span><span class="st"><span class="pill sev-critical">critical</span></span></a></div><h3 class="mt-5 mb-2">Coming to Lab</h3><p class="muted mb-3">Announced, not live. Each will appear in reports only once it ships and is tested. Until then they are not counted.</p><div class="cap-list"><div class="cap-head" aria-hidden="true"><span>ID</span><span>Check</span><span>Who can exploit</span><span>Severity</span></div><a class="cap-row soon" href="/findings/pl-012"><span class="fid">PL-012</span><div><h3>Strangers can change or delete other people’s rows</h3><p>Write access reproduced as a signed-in stranger: their UPDATE or DELETE lands on someone else’s row.</p></div><span class="who">anyone who signs up</span><span class="st"><span class="pill pending">coming</span></span></a><a class="cap-row soon" href="/findings/pl-013"><span class="fid">PL-013</span><div><h3>Users can make themselves admin</h3><p>A role or is_admin column the user can update on their own profile.</p></div><span class="who">anyone who signs up</span><span class="st"><span class="pill pending">coming</span></span></a><a class="cap-row soon" href="/findings/pl-014"><span class="fid">PL-014</span><div><h3>View skips row level security</h3><p>A view that runs with its owner’s rights, so the table’s policies never apply.</p></div><span class="who">anyone who can query it</span><span class="st"><span class="pill pending">coming</span></span></a><a class="cap-row soon" href="/findings/pl-015"><span class="fid">PL-015</span><div><h3>Stored files readable or writable by anyone</h3><p>Policies on storage.objects that let strangers list, download or overwrite files.</p></div><span class="who">anyone with the public key</span><span class="st"><span class="pill pending">coming</span></span></a><a class="cap-row soon" href="/findings/pl-016"><span class="fid">PL-016</span><div><h3>Realtime sends private rows to subscribers</h3><p>A table published to realtime whose changes reach subscribers who can’t read it.</p></div><span class="who">any subscriber</span><span class="st"><span class="pill pending">coming</span></span></a></div><p class="small muted mt-3">PL-019 (access decided by <code>user_metadata</code>) is live today as a Code check, which reads it from your code and SQL. Reproducing it in the lab comes later.</p>
+  </div>
+</section>
+<section class="sec" aria-labelledby="sample-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Sample output</p>
+        <h2 id="sample-h">What a Lab finding looks like.</h2>
+        <p class="lede">The transcript from our demo app, then the finding it produced. Personal values are redacted before anything is stored.</p>
+        <dl class="kv mt-3">
+          <dt>Finding</dt><dd><a href="/findings/pl-001">PL-001</a> · Anonymous visitor can read personal data</dd>
+          <dt>Object</dt><dd><code>public.profiles</code> · <code>email</code>, <code>phone</code></dd>
+          <dt>Proof</dt><dd>anon read 2 rows, signed-in stranger read 2 rows</dd>
+          <dt>Severity</dt><dd><span class="pill sev-critical">critical</span></dd>
+          <dt>Next</dt><dd><a href="/product/fix">PatchLabs Fix</a> writes and proves the migration</dd>
+        </dl>
+      </div>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab run · manra399/patchlabs-demo-app</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="transcript lines" aria-label="Lab transcript from the demo app">
+<span class="ln"><span class="step">[REBUILD]</span> 1 migration → lab Postgres       <span class="ok">OK</span></span>
+<span class="ln"><span class="dim">          Supabase roles, auth, default grants</span></span>
+<span class="ln"><span class="step">[SEED]</span>    2 test users, fake rows          <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[PROBE]</span>   as <span class="k">anon</span> (your public key)</span>
+<span class="ln"><span class="dim">          </span>select * from public.profiles;</span>
+<span class="ln"><span class="dim">          →</span> 2 rows readable              <span class="leak">LEAK</span></span>
+<span class="ln"><span class="dim">            email</span> <span class="redact">•••••@•••••</span> <span class="dim">phone</span> <span class="redact">+•• •••• ••••</span></span>
+<span class="ln"><span class="step">[PROBE]</span>   as <span class="k">stranger</span> → 2 rows         <span class="leak">LEAK</span></span>
+<span class="ln"><span class="step">[PROBE]</span>   as <span class="k">owner</span>    → own row        <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[FINDING]</span> PL-001 · critical · public.profiles</span>
+</pre>
+  <div class="window-foot"><span class="pill leak">leak found</span><span>Real run, 9 Nov 2026 · demo app, fake data</span></div>
+</div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="why-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Why behaviour, not lint</p><h2 id="why-h">A rule can look fine and still leak.</h2></div>
+      <div>
+        <ul class="ticks">
+          <li><strong>Read-only public tables show as intended, not as noise.</strong> If anyone may read your shop listings, mark them once and later checks remember.</li>
+          <li><strong>Policies combine.</strong> Two harmless-looking policies can add up to “anyone can read”. The lab sees the result, not the parts.</li>
+          <li><strong>Grants matter.</strong> We rebuild with Supabase’s default grants, so a table without RLS behaves exactly as it would in your project.</li>
+          <li><strong>Owners must still work.</strong> Every probe includes the owner, so a “fix” that locks real users out is caught.</li>
+        </ul>
+      </div>
+    </div><div class="callout limit mt-4"><p><strong>What the lab can’t see.</strong> It is only as complete as the migrations in your repo. Changes made by hand in the Supabase dashboard, or a backend other than Supabase/Postgres, are outside it, and the report says what couldn’t be rebuilt. It is not a pentest or a compliance certification.</p></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Questions about this product line.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>Do you connect to my Supabase project?</summary><div class="acc-body"><p>No. We never need your database password or service key. The lab is a local Postgres rebuilt from the migrations in your public GitHub repo, seeded with fake rows and deleted after the run.</p></div></details>
+<details class="acc"><summary>What if my migrations don’t build?</summary><div class="acc-body"><p>The report says which migration failed and what we couldn’t test. In our study, 318 of 436 repos rebuilt to a working database; the rest were mostly missing or out-of-order migrations.</p></div></details>
+<details class="acc"><summary>How is this different from Supabase’s Security Advisor?</summary><div class="acc-body"><p>The advisor lints your live project’s settings, and it’s worth running. The lab tests behaviour: it signs in as each identity and counts the rows they get. <a href="/compare/supabase-security-advisor">Full comparison</a>.</p></div></details>
+<details class="acc"><summary>Are the five coming checks in my report?</summary><div class="acc-body"><p>No. PL-012 to PL-016 are announced so you know what’s next. They’ll appear in reports once they ship and are tested, and the <a href="/changelog">changelog</a> will say so.</p></div></details></div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Can a stranger read your users table? Find out in minutes.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo3">Public GitHub repo</label>
+          <input id="repo3" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email3">Your email</label>
+          <input id="email3" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/demo">Try the demo</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>

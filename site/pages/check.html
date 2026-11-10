@@ -45,9 +45,13 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
     if (s.readable_by_signed_in) h += '<dt>Readable by anyone who signs up</dt><dd>' + list(s.readable_by_signed_in) + '</dd>';
     if (s.lab_proof_passed != null && leaking.length) h += '<dt>Lab proof</dt><dd>' + (s.lab_proof_passed ? '<span class="pill proven">passed: anon denied, stranger denied, owner OK</span>' : '<span class="pill pending">not passed: a person is reviewing</span>') + '</dd>';
     if (s.break_risk) h += '<dt>Risk of a visible change</dt><dd>' + esc(s.break_risk) + '</dd>';
+    if (Array.isArray(s.findings)) {
+      var F = PL.findings(s).list, cnt = PL.countsOf(s, F), lab = F.filter(function (f) { return f.line === 'lab'; }).length;
+      h += '<dt>Findings</dt><dd>' + (PL.total(cnt) ? PL.sevLegend(cnt) + '<span class="small muted">' + lab + ' in the lab, ' + (F.length - lab) + ' in the code. <a href="#findings">See each one</a>.</span>' : '<span class="pill proven">none</span>') + '</dd>';
+    }
     h += '</dl>';
     var q = s.questions_for_owner || [];
-    if (q.length) h += '<div class="callout note mt-3" id="qcallout"><p><strong>Questions for you</strong></p><ul class="mb-0">' + q.map(function (x) { return '<li>' + esc(typeof x === 'string' ? x : (x.question || JSON.stringify(x))) + '</li>'; }).join('') + '</ul></div>';
+    if (q.length) h += '<div class="callout question mt-3" id="qcallout"><p><strong>Questions for you</strong></p><ul class="mb-0">' + q.map(function (x) { return '<li>' + esc(typeof x === 'string' ? x : (x.question || JSON.stringify(x))) + '</li>'; }).join('') + '</ul></div>';
     return h;
   }
 
@@ -82,7 +86,9 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
     var pill = { done: '<span class="pill proven">fix proven</span>', needs_review: '<span class="pill pending">in review</span>', no_leaks: '<span class="pill proven">no leaks found</span>' }[c.status] || '';
     var name = (c.finished_at || '').replace(/\D/g, '').slice(0, 14) + '_patchlabs_leak_fix.sql';
     var gh = c.fix_sql ? 'https://github.com/' + c.repo + '/new/' + encodeURIComponent(c.branch || 'main') + '?filename=' + encodeURIComponent('supabase/migrations/' + name) + '&value=' + encodeURIComponent(c.fix_sql) : '';
-    var html = '<div class="panel"><div class="row between"><p class="lab mb-0">Result</p>' + pill + '</div><h2 class="mt-2">' + esc(head) + '</h2>' + summaryBlock(c);
+    var hasFindings = Array.isArray((c.summary || {}).findings) && c.summary.findings.length;
+    var html = '<div class="panel"><div class="row between"><p class="lab mb-0">Result</p><span class="row">' + pill + PL.printButton('btn small ghost') + '</span></div><h2 class="mt-2">' + esc(head) + '</h2>' +
+      (c.status === 'no_leaks' && hasFindings ? '<p class="muted mb-0">No personal data is readable by the wrong people. The scan still found ' + PL.plural(c.summary.findings.length, 'thing') + ' to fix, listed below.</p>' : '') + summaryBlock(c);
     if (c.fix_sql && c.status === 'done') {
       html += '<div class="row mt-3">' +
         (gh && gh.length < 7000 ? '<a class="btn primary" id="gh" target="_blank" rel="noopener" href="' + esc(gh) + '">Commit the fix on GitHub <span aria-hidden="true">↗</span></a>' : '') +
@@ -93,7 +99,8 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
         '<li>Make any code changes listed in the report below.</li>' +
         '<li>Merge and deploy as usual. In Lovable or Supabase, the migration applies on your next database push.</li></ol>';
     }
-    html += '</div><div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || '')) + '</article>';
+    html += '</div>' + (hasFindings ? '<section class="check-findings" id="findings" aria-labelledby="fh"><h2 id="fh">Every finding</h2><p class="sec-sub">Grouped by where we found it: the lab rebuild of your database, and your code with its git history.</p><div id="findings-body">' + PL.skeleton(4) + '</div></section>' : '') +
+      '<div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || '')) + '</article>';
     if (c.fix_sql) html += '<div class="code"><div class="code-bar"><span class="name">supabase/migrations/' + esc(name) + '</span><button class="copy" type="button" data-copy="#fixsql">Copy</button></div><pre class="scroll wrap-lines" id="fixsql">' + esc(c.fix_sql) + '</pre></div>';
     html += '<div id="record"></div><div id="receipt"></div>';
     html += '<p class="small muted mt-3">Questions about this report? Reply to the email we sent, or write to <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a>. <a href="/#check">Start another check</a>.</p>';
@@ -102,6 +109,7 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
       var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c.fix_sql], { type: 'text/sql' })); a.download = name; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
     };
+    if (hasFindings) PL.taxonomy().then(function (tx) { PL.report($('findings-body'), c, { bare: true, taxonomy: tx, appId: c.app_id, noTicket: !session.get() }); });
     if (id !== 'sample') extras(c);
   }
 
@@ -117,7 +125,9 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
   }
   function questionsOf(c) {
     return ((c.summary || {}).questions_for_owner || []).map(function (q) {
-      return typeof q === 'string' ? { question: q } : { question: String(q.question || ''), recommended: q.recommended || q.recommendation || q.recommended_answer };
+      if (typeof q === 'string') return { question: q, options: [] };
+      var opts = (Array.isArray(q.options) ? q.options : []).map(function (o) { return typeof o === 'string' ? o : String(o && (o.label || o.value || o.text) || ''); }).filter(Boolean);
+      return { question: String(q.question || ''), recommended: q.recommended || q.recommendation || q.recommended_answer, options: opts };
     }).filter(function (q) { return q.question; });
   }
   function renderRecord(c, member) {
@@ -150,8 +160,15 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
     } else h += '<p class="muted mb-0">This check found nothing to approve.</p>';
     if (qs.length) {
       h += '<h3 class="h4 mt-4 mb-1">Questions for you</h3><p class="small muted">Plain-English business questions from the check. Your answers help the next fix.</p><form id="qf">' + qs.map(function (q, i) {
-        return '<div class="q-item"><p class="q" id="q' + i + '">' + esc(q.question) + '</p>' + (q.recommended ? '<p class="rec">Recommended answer: <b class="ink">' + esc(q.recommended) + '</b></p>' : '') +
-          '<label class="sr-only" for="qa' + i + '">Your answer</label><textarea class="input" id="qa' + i + '" data-q="' + i + '" maxlength="4000" aria-describedby="q' + i + '" placeholder="Your answer">' + esc(ans[q.question] || '') + '</textarea></div>';
+        var prev = ans[q.question] || '', chosen = q.options.filter(function (o) { return prev === o || prev.indexOf(o + ' — ') === 0; })[0] || '';
+        var rest = chosen ? prev.slice(chosen.length).replace(/^ — /, '') : prev;
+        var opts = q.options.length ? '<fieldset class="q-opts" aria-labelledby="q' + i + '">' + q.options.map(function (o, j) {
+          var rec = q.recommended && String(q.recommended).toLowerCase() === o.toLowerCase();
+          return '<label class="q-opt"><input type="radio" name="qo' + i + '" value="' + esc(o) + '"' + (o === chosen ? ' checked' : '') + '><span>' + esc(o) + (rec ? '<span class="rec-tag">recommended</span>' : '') + '</span></label>';
+        }).join('') + '</fieldset>' : '';
+        var recLine = q.recommended && !q.options.some(function (o) { return String(q.recommended).toLowerCase() === o.toLowerCase(); }) ? '<p class="rec">Recommended answer: <b class="ink">' + esc(q.recommended) + '</b></p>' : '';
+        return '<div class="q-item"><p class="q" id="q' + i + '">' + esc(q.question) + '</p>' + recLine + opts +
+          '<label class="' + (q.options.length ? 'small muted' : 'sr-only') + '" for="qa' + i + '">' + (q.options.length ? 'Anything to add? (optional)' : 'Your answer') + '</label><textarea class="input" id="qa' + i + '" data-q="' + i + '" maxlength="4000" aria-describedby="q' + i + '" placeholder="' + (q.options.length ? 'Optional note' : 'Your answer') + '">' + esc(rest) + '</textarea></div>';
       }).join('') + '<button class="btn secondary mt-2" type="submit" id="qa-go">Save answers</button><p class="err" role="alert" id="qa-err"></p></form>';
     }
     h += '<div id="own-rec">' + (recordHtml(c) ? '<h3 class="h4 mt-4 mb-2">Recorded so far</h3>' + recordHtml(c) : '') + '</div></section>';
@@ -186,8 +203,11 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
     }
     if ($('qf')) $('qf').addEventListener('submit', async function (e) {
       e.preventDefault(); $('qa-err').textContent = '';
-      var out = qs.map(function (q, i) { return { question: q.question, answer: $('qa' + i).value.trim() }; }).filter(function (a) { return a.answer; });
-      if (!out.length) { $('qa-err').textContent = 'Write at least one answer.'; return; }
+      var out = qs.map(function (q, i) {
+        var pick = document.querySelector('input[name="qo' + i + '"]:checked'), note = $('qa' + i).value.trim();
+        return { question: q.question, answer: [pick ? pick.value : '', note].filter(Boolean).join(' — ') };
+      }).filter(function (a) { return a.answer; });
+      if (!out.length) { $('qa-err').textContent = 'Pick or write at least one answer.'; return; }
       var restore = PL.busy($('qa-go'), 'Saving…');
       try { var r = await api('/checks/' + encodeURIComponent(id) + '/answers', { method: 'POST', body: { answers: out } }); restore(); updated('answers', r.answers, 'Answers saved'); }
       catch (x) { restore(); $('qa-err').textContent = x.message; }

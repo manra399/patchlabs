@@ -1,10 +1,10 @@
 # PatchLabs: full description for language models
 
-Last updated 10 November 2026. Short index: https://patchlabs.dev/llms.txt
+Last updated 10 November 2026 (v3). Short index: https://patchlabs.dev/llms.txt
 
 ## What PatchLabs is
 
-PatchLabs finds personal-data leaks in apps built with AI tools such as Lovable, Supabase, Bolt, Replit and Cursor, and proves the fix before anyone ships it. Positioning: "Find the leak. Prove the fix." Lab-proven fixes for apps built with AI.
+PatchLabs is a security platform for apps built with AI tools such as Lovable, Supabase, Bolt, Replit and Cursor, in four product lines (Lab, Code, Fix, Watch; see below). It finds personal-data leaks, exposed keys and risky AI-written code, and proves database fixes before anyone ships them. Positioning: "Find the leak. Prove the fix." Lab-proven fixes for apps built with AI.
 
 A scanner gives you a list of findings. PatchLabs gives you a fix you have watched work: every fix is tested in a lab against three identities.
 
@@ -17,7 +17,7 @@ PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Rep
 3. A worker clones the repo and removes repo-supplied agent configuration (`.claude/`, `CLAUDE.md`, `AGENTS.md`).
 4. It rebuilds the database from the repo's `supabase/migrations` in a disposable local Postgres that copies Supabase's roles, auth functions and default grants, and seeds fake test rows.
 5. It tests what three identities can read on every table holding personal data (email, phone, address, date of birth and similar): an anonymous visitor (the anon role your public key maps to), a signed-in stranger, and the owner.
-6. It scans the code and the full git history for exposed AI, payment and database keys (values are masked).
+6. PatchLabs Code scans the code and the full git history for exposed AI, payment and database keys (values are masked), and reads the repo for the code findings listed below, including npm dependency versions checked against OSV.
 7. If something leaks, a fix agent writes a SQL migration (plus any code change it notes). The smallest Claude model goes first; a larger one is tried only if the lab proof fails, within a spend cap per check. The agent has no web access, can edit only the fix folder and the working copy, and can run only the lab verifier.
 8. An independent verifier rebuilds a fresh lab with the fix applied and re-tests: anonymous visitor denied, stranger denied, owner still reads their own rows. If that fails on every model, a person reviews it.
 9. The lab database is dropped. You get a report page with the fix as a downloadable migration and a one-click "commit this file on GitHub" link, plus a signed receipt.
@@ -31,12 +31,43 @@ What is not available yet (say so honestly): private repos and automatic pull re
 - 436 public Lovable/Supabase repos run (from a random sample of 500); in 318 the migrations built a working database in the lab.
 - 106 of 318 (33%) let the wrong people read personal data: 70 (22%) to anyone on the internet with the public key, 36 more (11%) to anyone who signs up. After removing businesses' own public contact details, the rate is about 1 in 4 (25-28%).
 - Fix agents, re-verified: 19 of 20 real fixes worked first time and applied cleanly (5 Nov 2026, n=20).
-- Autonomous pipeline on 20 new apps (9 Nov 2026, n=20): 18 of 20 fixes passed the strict lab proof with no human; 15 needed only the smallest model; median model cost $0.46 and median 3.5 minutes per app; the other 2 went to a person.
+- Autonomous pipeline on 20 new apps (9 Nov 2026, n=20): 18 of 20 fixes passed the strict lab proof with no human; 15 needed only the smallest model; median 3.5 minutes per app; the other 2 went to a person.
 - The study is published as aggregate counts only. No app from the study is named.
+
+## Product lines (v3, 10 Nov 2026)
+
+- PatchLabs Lab (https://patchlabs.dev/product/lab): rebuilds the database from the repo's migrations in a disposable Postgres and reproduces each leak as an anonymous visitor, a signed-in stranger and the owner. Findings are marked proven.
+- PatchLabs Code (https://patchlabs.dev/product/code): reads the repo without running its code or installing packages: keys in the current code and full git history, Supabase Edge Functions and supabase/config.toml, payment webhooks (Stripe, Lemon Squeezy, Paddle), CORS headers, browser-only admin checks, roles read from user_metadata, raw HTML rendering, Firebase rules files, and npm dependency versions from lockfiles checked against the OSV database (only package names and versions are sent to OSV; reported as skipped when offline). Findings carry a file and line and are not lab-proven.
+- PatchLabs Fix (https://patchlabs.dev/product/fix): writes the migration, proves it in a fresh lab as the three identities, asks the owner's business questions, and waits for the engineer to approve. One-click commit on GitHub, MCP and CI. Automatic pull requests: coming with the GitHub App.
+- PatchLabs Watch (https://patchlabs.dev/product/watch): scheduled re-checks, diffs, alerts, badge, signed receipts, public proof page, teams.
+
+## Finding format
+
+Every finding: {"id": "PL-001", "line": "lab|code", "severity": "critical|high|medium|low|info", "title", "object", "file", "line_no", "evidence" (short, redacted), "proven" (true only when the lab reproduced it), "proof", "fix" (one line), "fixed_in_lab", "advisory" (PL-023 only)}. A finished check's API summary carries "findings" (up to 200) and "counts" by severity. Docs: https://patchlabs.dev/docs/findings
 
 ## Finding IDs
 
-PL-001 anonymous visitor can read personal data; PL-002 any signed-in user can read every row; PL-003 RLS enabled but no policies; PL-004 UPDATE policy missing WITH CHECK; PL-005 always-true policy; PL-006 SECURITY DEFINER function exposed; PL-007 public storage bucket; PL-008 row level security not enabled; PL-010 service role key in client code; PL-011 key still in git history. Pages: https://patchlabs.dev/findings
+Live, Lab: PL-001 anonymous visitor can read personal data; PL-002 any signed-in user can read every row; PL-003 rLS enabled but no policies (owner locked out); PL-004 uPDATE policy missing WITH CHECK; PL-005 always-true policy; PL-006 sECURITY DEFINER function exposed; PL-007 public storage bucket; PL-008 row level security not enabled.
+Live, Code: PL-009 aI, payment or database key in the code; PL-010 service role key in client code; PL-011 key still in git history; PL-017 edge function open without sign-in while using the service key; PL-018 sign-ups need no email confirmation; PL-019 access decided by user_metadata, which users can edit; PL-020 admin check only in the browser; PL-021 payment webhook doesn't verify its signature; PL-022 edge function trusts a user id sent in the request; PL-023 dependency with a known vulnerability; PL-024 user content rendered as raw HTML; PL-025 firebase rules allow anyone; PL-026 any website can call a signed-in function.
+Coming (documented, not tested yet, never in reports): PL-012 strangers can change or delete other people's rows; PL-013 users can make themselves admin; PL-014 view skips row level security; PL-015 stored files readable or writable by anyone; PL-016 realtime sends private rows to subscribers.
+Each ID has a page at https://patchlabs.dev/findings/pl-0NN with vulnerable example code, a self-check, the fix and why it is rated as it is. Index with filters: https://patchlabs.dev/findings
+
+## Learn (guides)
+
+- How to secure a Lovable app’s Supabase database: https://patchlabs.dev/learn/secure-lovable-supabase-app
+- Supabase RLS policies explained, with owner and stranger tests: https://patchlabs.dev/learn/rls-policies-explained
+- Supabase views and security_invoker: stop views bypassing RLS: https://patchlabs.dev/learn/supabase-views-security-invoker
+- Supabase storage bucket policies: public, private and per-user folders: https://patchlabs.dev/learn/supabase-storage-policies
+- Supabase Realtime security: keep private rows out of subscriptions: https://patchlabs.dev/learn/supabase-realtime-security
+- user_metadata vs app_metadata: where to store roles in Supabase: https://patchlabs.dev/learn/user-metadata-vs-app-metadata
+- How to secure Supabase Edge Functions: https://patchlabs.dev/learn/secure-supabase-edge-functions
+- Verify Stripe webhook signatures in a Supabase Edge Function: https://patchlabs.dev/learn/stripe-webhook-supabase-edge-function
+- How to rotate a leaked API key and clean your git history: https://patchlabs.dev/learn/rotate-leaked-key-git-history
+- What to do in the first hour after a leak: https://patchlabs.dev/learn/first-hour-after-a-leak
+- Pre-launch security checklist for vibe-coded apps: https://patchlabs.dev/learn/vibe-coded-app-security-checklist
+- Firebase security rules basics: lock down Firestore and Storage: https://patchlabs.dev/learn/firebase-security-rules-basics
+- How to find and fix vulnerable npm dependencies: https://patchlabs.dev/learn/npm-dependency-vulnerabilities
+Hub: https://patchlabs.dev/learn
 
 ## Plans (limits enforced by the API)
 
@@ -75,7 +106,7 @@ Every finished check has a receipt signed with Ed25519: GET https://api.patchlab
 
 ## Limits
 
-PatchLabs tests database access rules (Supabase/Postgres) and exposed keys. It is not a penetration test and does not test business logic or dependencies. The lab is only as complete as the migrations in the repo: changes made only in the Supabase dashboard are invisible. A passing proof covers the tables tested, not the whole app. Public repos only for now. Checks run one at a time on one worker.
+PatchLabs Lab tests database read access (Supabase/Postgres); PatchLabs Code checks keys, known risky code patterns and npm dependency versions. Code findings are pattern matches for a person to judge, not proofs. It is not a penetration test and does not test business logic. The lab is only as complete as the migrations in the repo: changes made only in the Supabase dashboard are invisible. A passing proof covers the tables tested, not the whole app. Public repos only for now. Checks run one at a time on one worker.
 
 ## Contact
 
@@ -83,11 +114,12 @@ Founder: Manraj Singh Dhillon, technical founder, London, UK. Email: manraj@patc
 
 ## Every page
 
-Product: / , /how-it-works, /product/leak-lab, /product/key-scan, /product/monitoring, /product/badge, /agencies, /for/lovable, /for/supabase, /for/bolt, /for/replit, /for/cursor, /leaking-now, /sample-report, /pricing
-Research: /research/1-in-4, /research/methodology, /findings, /findings/pl-001 to /findings/pl-008, /findings/pl-010, /findings/pl-011
+Product: / , /how-it-works, /product/lab, /product/code, /product/fix, /product/watch, /demo, /integrations, /solutions/founders, /solutions/agencies, /solutions/engineers, /for/lovable, /for/supabase, /for/bolt, /for/replit, /for/cursor, /leaking-now, /sample-report, /pricing
+Research: /research/1-in-4, /research/methodology, /findings, /findings/pl-001 to /findings/pl-026
+Learn: /learn, /learn/secure-lovable-supabase-app, /learn/rls-policies-explained, /learn/supabase-views-security-invoker, /learn/supabase-storage-policies, /learn/supabase-realtime-security, /learn/user-metadata-vs-app-metadata, /learn/secure-supabase-edge-functions, /learn/stripe-webhook-supabase-edge-function, /learn/rotate-leaked-key-git-history, /learn/first-hour-after-a-leak, /learn/vibe-coded-app-security-checklist, /learn/firebase-security-rules-basics, /learn/npm-dependency-vulnerabilities
 Tools: /tools, /tools/rls-check, /tools/leak-cost
 Compare: /compare, /compare/supabase-security-advisor, /compare/lovable-security-scan, /compare/aikido, /compare/manual-pentest
-Developers: /docs, /docs/api, /docs/mcp, /docs/receipts
+Developers: /docs, /docs/findings, /docs/reading-a-report, /docs/api, /docs/mcp, /docs/receipts, /docs/glossary
 Company and trust: /about, /changelog, /security, /status, /proof, /.well-known/security.txt
 Legal: /legal/terms, /legal/privacy, /legal/acceptable-use, /legal/dpa, /legal/disclosure-policy, /legal/cookies
 All URLs are on https://patchlabs.dev.

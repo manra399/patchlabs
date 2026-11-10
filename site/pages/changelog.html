@@ -1,6 +1,6 @@
 <!--
 title: Changelog: what PatchLabs shipped, and when | PatchLabs
-description: Dated, real entries only: accounts, monitoring, badges, signed receipts, API, MCP and the free RLS check (10 Nov 2026); first public leak checks (9 Nov 2026).
+description: Dated, real entries only: v3 with four product lines and new code checks (10 Nov 2026); accounts, monitoring and signed receipts (v2); first public leak checks (9 Nov 2026).
 layout: marketing
 head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
 -->
@@ -13,6 +13,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     <h1>What we shipped, when, and what it changed.</h1>
     <p class="lede">Dated entries, real only. Nothing appears here until it works, and anything we measured comes with its sample size. What’s coming next is listed separately and labelled as not shipped.</p>
     <nav class="cl-index" aria-label="Jump to an entry">
+      <a href="#v3">v3 · 10 Nov 2026</a>
       <a href="#v2">v2 · 10 Nov 2026</a>
       <a href="#v1">v1 · 9 Nov 2026</a>
       <a href="#study-5-nov">Study · 5 Nov 2026</a>
@@ -26,8 +27,25 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
   <div class="wrap">
     <div class="cl">
 
+      <article class="cl-entry" id="v3" aria-labelledby="v3-h">
+        <div class="cl-date"><time datetime="2026-11-10">10 Nov 2026</time><span class="pill proven ver">v3 · shipped</span></div>
+        <div class="cl-body">
+          <h2 id="v3-h">PatchLabs v3: four product lines, and checks that read your code.</h2>
+          <p>v2 found who could read your database. v3 adds a second engine that reads the rest of your repo, puts every result in one finding format, and organises PatchLabs into four product lines.</p>
+          <ul class="cl-items">
+            <li><span class="tag new">New</span><div><h3>Four product lines</h3><p><strong>Lab</strong> rebuilds your database from its migrations and reproduces each leak as an anonymous visitor, a signed-in stranger and the owner. <strong>Code</strong> reads the repo. <strong>Fix</strong> writes the migration, proves it and waits for your engineer. <strong>Watch</strong> re-checks, diffs, alerts and signs every result. Old product URLs redirect to the new ones.</p><div class="links"><a class="link-arrow" href="/product/lab">Lab</a><a class="link-arrow" href="/product/code">Code</a><a class="link-arrow" href="/product/fix">Fix</a><a class="link-arrow" href="/product/watch">Watch</a></div></div></li>
+            <li><span class="tag new">New</span><div><h3>PatchLabs Code: new checks on every run</h3><p>Reads the repo without running it or installing anything, and reports with a file and line: secret keys in the current code (<code>PL-009</code>), Edge Functions open without sign-in while using the service key (<code>PL-017</code>), sign-ups without email confirmation (<code>PL-018</code>), access decided by <code>user_metadata</code> (<code>PL-019</code>), admin checks only in the browser (<code>PL-020</code>), payment webhooks that don’t verify signatures (<code>PL-021</code>), functions that trust a user id from the request (<code>PL-022</code>), dependencies with known vulnerabilities from OSV (<code>PL-023</code>), user content rendered as raw HTML (<code>PL-024</code>), open Firebase rules (<code>PL-025</code>) and risky CORS (<code>PL-026</code>). The dependency check sends only package names and versions to OSV, and is reported as skipped when OSV can’t be reached.</p><div class="links"><a class="link-arrow" href="/findings">Finding index</a></div></div></li>
+            <li><span class="tag new">New</span><div><h3>One finding format</h3><p>Every finding, from the Lab or Code, has the same fields: ID, line, severity, object, file and line, redacted evidence, whether it was proven, the proof and a one-line fix. The report groups findings by line, and a finished check’s API summary carries the list and counts by severity.</p><div class="links"><a class="link-arrow" href="/docs/findings">The format</a></div></div></li>
+            <li><span class="tag new">New</span><div><h3>Findings library and guides</h3><p>A page for every finding ID from <code>PL-001</code> to <code>PL-026</code>, each with vulnerable code, a self-check and the fix, and filters by line, severity and status. Plus a Learn section of in-depth guides: RLS with stranger tests, roles and <code>user_metadata</code>, Edge Functions, Stripe webhooks, storage, views, Realtime, leaked keys, Firebase rules, dependencies and a pre-launch checklist.</p><div class="links"><a class="link-arrow" href="/learn">Learn</a></div></div></li>
+            <li><span class="tag new">New</span><div><h3>A demo you can click through, and a rebuilt site</h3><p>The real app on a fake demo workspace, clearly labelled, with no sign-in. A rebuilt home page, a products menu, integrations and pages for founders, agencies and the engineers who approve fixes.</p><div class="links"><a class="link-arrow" href="/demo">Try the demo</a><a class="link-arrow" href="/integrations">Integrations</a></div></div></li>
+          </ul>
+          <div class="callout limit cl-effect"><p><strong>Not in v3:</strong> five new Lab checks are written up but not tested yet: strangers changing other people’s rows (<code>PL-012</code>), users making themselves admin (<code>PL-013</code>), views skipping RLS (<code>PL-014</code>), open storage policies (<code>PL-015</code>) and Realtime streams (<code>PL-016</code>). Their pages say so, and they won’t appear in reports until they ship. Automatic pull requests still need the GitHub App, which is coming.</p></div>
+          <div class="callout note cl-effect"><p><strong>Measured effect:</strong> too new to measure. We’ll add numbers here once enough checks have run with the new code checks to report them honestly.</p></div>
+        </div>
+      </article>
+
       <article class="cl-entry" id="v2" aria-labelledby="v2-h">
-        <div class="cl-date"><time datetime="2026-11-10">10 Nov 2026</time><span class="pill proven ver">v2 · shipped</span></div>
+        <div class="cl-date"><time datetime="2026-11-10">10 Nov 2026</time><span class="pill plain ver">v2</span></div>
         <div class="cl-body">
           <h2 id="v2-h">PatchLabs v2: accounts, monitoring and proof anyone can verify.</h2>
           <p>v1 checked an app once. v2 keeps watching it: sign in, add your apps, and we re-check them on a schedule, tell you what changed and sign every result so anyone can verify it.</p>
@@ -59,10 +77,9 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
             <li><span class="tag new">New</span><div><h3>A spend cap on every check</h3><p>The smallest Claude model writes the fix first. A larger model is used only if the lab proof fails, and every check has a hard spend cap.</p></div></li>
             <li><span class="tag study">Study</span><div><h3>18 of 20 fixes proven with no human</h3><p>We ran the autonomous pipeline on 20 new apps. 18 of 20 fixes passed the strict lab proof with no person involved; 15 needed only the smallest model. The other 2 went to a person.</p></div></li>
           </ul>
-          <div class="stats cl-effect" style="--cols:4">
+          <div class="stats cl-effect" style="--cols:3">
             <div class="stat green"><b class="num">18<small>of 20</small></b><span>fixes passed the lab proof, no human<sup class="fn"><a href="#cfn1" aria-label="Footnote 1">1</a></sup></span></div>
             <div class="stat"><b class="num">15<small>of 20</small></b><span>needed only the smallest model<sup class="fn"><a href="#cfn1" aria-label="Footnote 1">1</a></sup></span></div>
-            <div class="stat"><b class="num">$0.46</b><span>median model cost per app<sup class="fn"><a href="#cfn1" aria-label="Footnote 1">1</a></sup></span></div>
             <div class="stat"><b class="num">3.5<small>min</small></b><span>median time to a proven fix<sup class="fn"><a href="#cfn1" aria-label="Footnote 1">1</a></sup></span></div>
           </div>
           <ol class="footnotes"><li id="cfn1">PatchLabs autonomous pipeline, 20 new apps, 9 Nov 2026, n=20. Small sample, published with the 2 misses. <a href="/research/methodology">Methodology</a>.</li></ol>
@@ -87,6 +104,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
           <p>These aren’t live. They move up into a dated entry the day they work, never before.</p>
           <ul class="cl-items">
             <li><span class="tag">Coming</span><div><h3>GitHub App: private repos and automatic pull requests</h3><p>Install our GitHub App to check private repos and get each proven fix as a pull request for your engineer to review. Today: public repos only, and fixes arrive as a download or a one-click commit.</p></div></li>
+            <li><span class="tag">Coming</span><div><h3>Five more Lab checks</h3><p>Reproducing in the lab: strangers changing or deleting other people’s rows (<code>PL-012</code>), users making themselves admin (<code>PL-013</code>), views that skip row level security (<code>PL-014</code>), open storage policies (<code>PL-015</code>) and Realtime streams of private rows (<code>PL-016</code>). Today: each has a finding page with a self-check you can run, but PatchLabs doesn’t test for them.</p><div class="links"><a class="link-arrow" href="/findings">Finding index</a></div></div></li>
             <li><span class="tag">Coming</span><div><h3>Card payments</h3><p>Self-serve checkout for paid plans. Today: request a plan in Settings and we set it and send an invoice.</p></div></li>
           </ul>
         </div>

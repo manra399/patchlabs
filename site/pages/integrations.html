@@ -1,0 +1,78 @@
+<!--
+title: Integrations: GitHub, GitHub Actions, webhooks, MCP and the apps we work with | PatchLabs
+description: How PatchLabs fits your stack: GitHub, GitHub Actions, Slack-compatible webhooks, an MCP server for Claude Code and Cursor, a REST API, and apps built on Lovable, Supabase, Bolt, Replit and Cursor.
+layout: marketing
+nav: integrations
+head: <link rel="stylesheet" href="/assets/pages/platform.css">
+-->
+<main id="main">
+<section class="p2-hero" style="padding-bottom:56px">
+  <div class="wrap" style="display:block">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Integrations</li></ol></nav>
+    <p class="lab">Integrations</p>
+    <h1 style="max-width:16em">Works where your app already lives.</h1>
+    <p class="lede">Each integration below says what it does, how to set it up and whether it is live today. Compatibility only: PatchLabs is independent and not affiliated with any company named here, and we use their names, never their logos.</p>
+    <ul class="jump" aria-label="On this page">
+      <li><a href="#connect">Connect <span>6</span></a></li>
+      <li><a href="#built-on">Apps built on <span>5</span></a></li>
+      <li><a href="#sources">Data sources <span>1</span></a></li>
+      <li><a href="#coming">Coming <span>1</span></a></li>
+    </ul>
+  </div>
+</section>
+<section class="sec" aria-labelledby="connect">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">Connect</p><h2 id="connect">Connect PatchLabs to your workflow.</h2><p>All live today, on every plan.</p></div><div class="int-grid"><article class="int" id="github"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="5.5" r="2"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="8.5" r="2"/><path d="M6.5 7.5v9M17.5 10.5c0 4-5 3-9.5 6"/></svg></span><div><h3>GitHub</h3><span class="k">Source of every check</span></div><span class="pill proven">live</span></div><p>PatchLabs reads public GitHub repos: code, migrations and full git history. You prove a repo is yours by committing a one-time file; we never need write access.</p><ol><li>Paste the repo URL on the home page, or add it as an app in your workspace.</li><li>Commit <code>patchlabs-verify.txt</code> with the one-time code (one-click link to GitHub’s new-file page).</li><li>The check starts. Delete the file once it has.</li></ol><div class="int-foot"><a class="link-arrow" href="/docs/verification">Proving ownership</a></div></article><article class="int" id="github-actions"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10 8.8v6.4l5-3.2z"/></svg></span><div><h3>GitHub Actions</h3><span class="k">CI</span></div><span class="pill proven">live</span></div><p>Re-check your app every time a migration lands on the default branch. The action waits for the lab result, writes it to the job summary and can fail the build while a leak is open.</p><ol><li>Add and verify the app; copy its ID.</li><li>Create a workspace API key; save it as the secret <code>PATCHLABS_API_KEY</code> and the app ID as the variable <code>PATCHLABS_APP_ID</code>.</li><li>Add the workflow below.</li></ol><div class="code"><div class="code-bar"><span class="name">.github/workflows/patchlabs.yml</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+jobs:
+  leak-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: manra399/patchlabs/action@main
+        with:
+          api-key: ${{ secrets.PATCHLABS_API_KEY }}
+          app-id: ${{ vars.PATCHLABS_APP_ID }}
+          fail-on-leak: true</code></pre></div><div class="int-foot"><a class="link-arrow" href="/docs/github-action">GitHub Action docs</a></div></article><article class="int" id="webhooks"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 8.5a3 3 0 1 1 4.6 2.5L16.5 16"/><path d="M6.3 15.5a3 3 0 1 0 4.2 2.7h6"/><path d="M17.6 13.3a3 3 0 1 1-1 5.6"/></svg></span><div><h3>Slack-compatible webhooks</h3><span class="k">Alerts</span></div><span class="pill proven">live</span></div><p>One webhook URL per workspace. Every finished check POSTs a JSON event with a one-line <code>text</code> field, so a Slack incoming webhook works as-is. Requests are HMAC-SHA256 signed.</p><ol><li>In Settings → Webhook, paste an https URL (for Slack: an incoming webhook URL).</li><li>Press “Send test” to check delivery.</li><li>Optional: verify <code>X-PatchLabs-Signature</code> with your workspace secret.</li></ol><div class="int-foot"><a class="link-arrow" href="/docs/webhooks">Webhook docs</a><a class="link-arrow" href="/docs/webhooks#security">Verifying signatures</a></div></article><article class="int" id="mcp"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v4M15 3v4M7 7h10v4a5 5 0 0 1-10 0zM12 16v5"/></svg></span><div><h3>Claude Code, Cursor and other agents via MCP</h3><span class="k">Remote MCP server</span></div><span class="pill proven">live</span></div><p>Ask your coding agent to check an app. Works with Claude Code, Cursor, VS Code, Windsurf and other MCP clients: run the free RLS check, start full checks, read fixes and re-check monitored apps.</p><ol><li>Add the server to your client (Claude Code below; snippets for the others in the docs).</li><li>Optional: add a workspace key as the <code>X-API-Key</code> header for <code>list_apps</code> and <code>run_check</code>.</li><li>Ask: “Check this repo for leaks with PatchLabs.”</li></ol><div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>claude mcp add --transport http patchlabs https://api.patchlabs.dev/mcp</code></pre></div><div class="int-foot"><a class="link-arrow" href="/docs/mcp">MCP docs</a></div></article><article class="int" id="api"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><div><h3>REST API</h3><span class="k">Build on PatchLabs</span></div><span class="pill proven">live</span></div><p>Start checks, read results and findings, and manage apps from your own tools with a workspace API key.</p><ol><li>Create a key in Settings → API keys (shown once).</li><li>Send it as <code>X-API-Key</code>.</li><li><code>POST /v1/apps/{id}/checks</code>, then poll <code>GET /v1/checks/{id}</code>.</li></ol><div class="int-foot"><a class="link-arrow" href="/docs/api">API reference</a></div></article><article class="int" id="email"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 6.5l8 6 8-6"/></svg></span><div><h3>Email alerts</h3><span class="k">Alerts</span></div><span class="pill proven">live</span></div><p>Every member of the workspace gets an email when a check of one of its apps finishes. The subject says “new leak” only when there is one.</p><ol><li>Invite your team in Settings → Team.</li><li>Choose a re-check schedule per app.</li><li>That’s it: alerts follow the schedule.</li></ol><div class="int-foot"><a class="link-arrow" href="/docs/monitoring">Monitoring docs</a></div></article></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="built-on">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">Apps built on</p><h2 id="built-on">Works with apps built on these platforms.</h2><p>Compatibility: we read the code they produce. Independent, not a partnership.</p></div><div class="int-grid"><article class="int" id="lovable"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 9h18M6.5 6.8h.01M9 6.8h.01"/></svg></span><div><h3>Lovable</h3><span class="k">Apps built on Lovable</span></div><span class="pill proven">works with</span></div><p>Lovable projects synced to GitHub usually include <code>supabase/migrations</code>, which is all the Lab needs. Works on the exported code, so it keeps working after you leave the builder.</p><ol><li>Connect your Lovable project to GitHub.</li><li>Paste the repo on the home page.</li></ol><div class="int-foot"><a class="link-arrow" href="/for/lovable">Lovable apps</a></div></article><article class="int" id="supabase"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6M5 12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8"/></svg></span><div><h3>Supabase</h3><span class="k">Database, auth, storage, edge functions</span></div><span class="pill proven">works with</span></div><p>The Lab rebuilds Supabase projects from their migrations with Supabase’s roles, auth functions and default grants. Code checks read edge functions and auth settings.</p><ol><li>Keep your schema in <code>supabase/migrations</code> (<code>supabase db diff</code> or <code>db pull</code>).</li><li>Push to GitHub and paste the repo.</li></ol><div class="int-foot"><a class="link-arrow" href="/for/supabase">Supabase apps</a></div></article><article class="int" id="bolt"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg></span><div><h3>Bolt</h3><span class="k">Apps built on Bolt</span></div><span class="pill proven">works with</span></div><p>Bolt projects that use Supabase and are pushed to GitHub work the same way.</p><ol><li>Export or push the project to GitHub.</li><li>Paste the repo.</li></ol><div class="int-foot"><a class="link-arrow" href="/for/bolt">Bolt apps</a></div></article><article class="int" id="replit"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 10l3 2.5L7 15M12.5 15H17"/></svg></span><div><h3>Replit</h3><span class="k">Apps built on Replit</span></div><span class="pill proven">works with</span></div><p>Replit apps with Supabase migrations in the repo are fully checked. Without migrations, Code checks still run.</p><ol><li>Connect the Repl to GitHub.</li><li>Paste the repo.</li></ol><div class="int-foot"><a class="link-arrow" href="/for/replit">Replit apps</a></div></article><article class="int" id="cursor"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5l13 7-5.6 1.6L10 18z"/><path d="M12.6 12.4L17 17"/></svg></span><div><h3>Cursor</h3><span class="k">Projects written in Cursor</span></div><span class="pill proven">works with</span></div><p>Any repo you write in Cursor works. Add the MCP server to ask for checks from inside the editor.</p><ol><li>Push to GitHub and paste the repo, or</li><li>add the MCP server to <code>.cursor/mcp.json</code>.</li></ol><div class="int-foot"><a class="link-arrow" href="/for/cursor">Cursor projects</a><a class="link-arrow" href="/docs/mcp">MCP setup</a></div></article></div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="sources">
+  <div class="wrap">
+<div class="grid g2 top"><div><div class="sec-head "><p class="lab">Data sources</p><h2 id="sources">Where outside facts come from.</h2></div><article class="int" id="osv"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg></span><div><h3>OSV</h3><span class="k">Open vulnerability database</span></div><span class="pill plain">data source</span></div><p>PL-023 looks up the package versions in your lockfile against OSV’s published advisories. If OSV can’t be reached, the check reports “skipped” instead of guessing.</p><div class="int-foot"><a class="link-arrow" href="/findings/pl-023">PL-023</a></div></article></div><div><div class="sec-head "><p class="lab">Coming</p><h2 id="coming">Not live yet.</h2></div><article class="int" id="github-app"><div class="int-top"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="5.5" r="2"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="8.5" r="2"/><path d="M6.5 7.5v9M17.5 10.5c0 4-5 3-9.5 6"/></svg></span><div><h3>PatchLabs GitHub App</h3><span class="k">Private repos and pull requests</span></div><span class="pill pending">coming</span></div><p>Install-based access for private repositories, and fixes opened as pull requests on your repo. Until it ships: public repos only, and fixes as a downloadable migration or a one-click commit on GitHub.</p><div class="int-foot"><a class="link-arrow" href="/changelog">Watch the changelog</a><a class="link-arrow" href="mailto:manraj@patchlabs.dev?subject=GitHub%20App">Ask to be told</a></div></article></div></div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Start with one repo. Wire up the rest later.</h2>
+      <p class="lede">Every integration works on the free plan, starting with the free check.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo4">Public GitHub repo</label>
+          <input id="repo4" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email4">Your email</label>
+          <input id="email4" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/demo">Try the demo</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>

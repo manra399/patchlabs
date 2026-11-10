@@ -45,7 +45,7 @@ ep("POST", "/checks", "No auth", "Request a full check. We email the requester a
    [("422", "not a GitHub repo, repo not found or not public, or a bad email"), ("429", "3 checks already open for this email, or 10 requests from this network today")])
 ep("GET", "/checks/{id}", "No auth · by link", "The check and, once it has finished, its report. Fields appear as the check moves along.",
    [("verify", "object", "While <code>awaiting_verification</code>: <code>{file, code, add_url}</code>."),
-    ("summary", "object", "When finished: <code>tables_leaking</code>, <code>readable_by_anyone</code>, <code>readable_by_signed_in</code>, <code>lab_proof_passed</code>, <code>break_risk</code>, <code>questions_for_owner</code>, <code>models</code>."),
+    ("summary", "object", "When finished: <code>tables_leaking</code>, <code>readable_by_anyone</code>, <code>readable_by_signed_in</code>, <code>lab_proof_passed</code>, <code>break_risk</code>, <code>questions_for_owner</code>, <code>models</code>, and <code>findings</code>: each finding carries <code>cwe</code> (list), <code>owasp</code> and <code>owasp_name</code> (OWASP Top 10 2021); on an app’s check also <code>first_seen</code>, <code>days_open</code>, <code>fixed_at</code> (null while open), <code>fixed_in_check_id</code> and <code>regressed</code>."),
     ("report_md, fix_sql", "string", "When finished: the report as Markdown and the fix migration (<code>null</code> when there are no leaks)."),
     ("error", "string", "When <code>failed</code>: a plain-English explanation."),
     ("events", "array", "Timeline: <code>[{at, kind}]</code>."),
@@ -65,20 +65,20 @@ ep("POST", "/checks/{id}/verify", "No auth · by link", "Look for <code>patchlab
    None, f"curl -s -X POST {B}/checks/$CHECK_ID/verify", '200 OK\n{"status": "queued"}',
    [("409", "file or code not found on the default branch yet"), ("503", "GitHub unreachable; try again")])
 
-group("decisions", "Decisions and receipts", "Decisions and answers need a session that belongs to the app’s workspace, and a finished check. Receipts are public by link. Guides: <a href=\"/docs/decisions\">decisions</a>, <a href=\"/docs/receipts\">receipts</a>.")
-ep("POST", "/checks/{id}/decision", "Session · member", "Approve a fix, or reject tables as intentionally readable (remembered for the app as suppressions).",
+group("decisions", "Decisions and receipts", "Decisions and answers need an owner, admin or approver session in the app’s workspace, and a finished check. Receipts are public by link. Guides: <a href=\"/docs/decisions\">decisions</a>, <a href=\"/docs/receipts\">receipts</a>.")
+ep("POST", "/checks/{id}/decision", "Session · approver+", "Approve a fix, or reject tables as intentionally readable (remembered for the app as suppressions).",
    [("action", "approve | reject", "Required."), ("tables", "string[], optional", "Defaults to every table the check flagged; must be a subset of them."),
     ("reason", "string, optional", "Up to 2,000 characters.")],
    f"""curl -s -X POST {B}/checks/$CHECK_ID/decision {SESSION} {JSONH} \\
   -d '{{"action": "reject", "tables": ["shops"], "reason": "Public by design"}}'""",
    '201 Created\n{"decisions": [{"action": "reject", "tables": ["shops"], "reason": "Public by design", "by": "Priya", "at": "…"}]}',
-   [("403", "not an app check, or not a member"), ("409", "check not finished"), ("422", "a named table wasn’t flagged")])
-ep("POST", "/checks/{id}/answers", "Session · member", "Answer the report’s business questions. Answering a question again replaces the earlier answer.",
+   [("403", "not an app check, not a member, or a member/viewer/client role"), ("409", "check not finished"), ("422", "a named table wasn’t flagged")])
+ep("POST", "/checks/{id}/answers", "Session · approver+", "Answer the report’s business questions. Answering a question again replaces the earlier answer.",
    [("answers", "array", "1 to 50 items of <code>{question, answer}</code>; each <code>question</code> must match one in <code>summary.questions_for_owner</code>.")],
    f"""curl -s -X POST {B}/checks/$CHECK_ID/answers {SESSION} {JSONH} \\
   -d '{{"answers": [{{"question": "Should sellers’ emails be public?", "answer": "No"}}]}}'""",
    '200 OK\n{"answers": [{"question": "Should sellers’ emails be public?", "answer": "No", "by": "Priya", "at": "…"}]}',
-   [("403", "not an app check, or not a member"), ("409", "not finished, or the check has no questions"), ("422", "unknown question")])
+   [("403", "not an app check, not a member, or a member/viewer/client role"), ("409", "not finished, or the check has no questions"), ("422", "unknown question")])
 ep("GET", "/receipts/{id}", "No auth · by link", "The Ed25519-signed receipt for a finished check.",
    None, f"curl -s {B}/receipts/$CHECK_ID",
    """200 OK
@@ -123,89 +123,150 @@ ep("GET", "/me/export", "Session", "Everything we hold about you, as a JSON file
 ep("DELETE", "/me", "Session", "Delete your account. Workspaces you own alone are deleted with their apps, checks and keys; shared ones pass to their longest-standing member.", None,
    f"curl -s -X DELETE {B}/me {SESSION}", '200 OK\n{"ok": true, "deleted_workspaces": 1}')
 
-group("workspaces", "Workspaces", "Every workspace endpoint needs you to be a member; some need the owner role. Guide: <a href=\"/docs/teams\">teams</a>.")
-ep("GET", "/workspaces/{wid}", "Session · member", "Plan, limits, usage, webhook, members and pending invites.", None,
+group("workspaces", "Workspaces", "Every workspace endpoint needs you to be a member, and your role must allow the call. Roles, most to least: <code>owner</code>, <code>admin</code> (everything but making or removing owners), <code>approver</code> (also approves or rejects fixes and answers the owner’s questions), <code>member</code> (views and runs checks), <code>viewer</code> (read-only) and <code>client</code> (read-only, only the apps shared with them, plus support tickets about those apps; clients never use a team seat). “approver+” means owner, admin or approver. Guide: <a href=\"/docs/teams\">teams</a>.")
+ep("GET", "/workspaces/{wid}", "Session · any role", "Plan, limits, usage, webhook, members and pending invites. What you get depends on your role: the webhook, its secret and invites only for owners and admins; a client gets only the name, plan, their own membership and <code>permissions</code>.", None,
    f"curl -s {B}/workspaces/$WORKSPACE_ID {SESSION}",
    """200 OK
 {"id": "…", "name": "Acme", "plan": "maker", "role": "owner", "created_at": "…",
  "limits": {"apps": 3, "runs_per_month": 30, "seats": 2, "schedules": ["off", "weekly", "monthly"]},
  "usage": {"apps": 2, "runs_this_month": 5, "members": 2},
- "webhook_url": "https://hooks.slack.com/services/…",
- "members": [{"user_id": "…", "email": "…", "name": "…", "role": "owner", "joined_at": "…"}],
- "invites": [{"id": "…", "email": "…", "role": "member", "created_at": "…", "expires_at": "…"}]}""")
-ep("PATCH", "/workspaces/{wid}", "Session · owner", "Rename the workspace or set its webhook.",
-   [("name", "string, optional", "1 to 100 characters."), ("webhook_url", "string | null, optional", "https only, on a public host; <code>null</code> or empty removes it.")],
+ "webhook_url": "https://hooks.slack.com/services/…", "webhook_format": "auto", "webhook_kind": "slack",
+ "permissions": ["decide", "manage", "owner", "run", "view", "view_team"],
+ "members": [{"user_id": "…", "email": "…", "name": "…", "role": "owner", "joined_at": "…", "app_ids": null}],
+ "invites": [{"id": "…", "email": "…", "role": "client", "app_ids": ["…"], "created_at": "…", "expires_at": "…"}]}""")
+ep("PATCH", "/workspaces/{wid}", "Session · owner/admin", "Rename the workspace or set its webhook. Slack, Discord and Microsoft Teams webhook URLs get native chat messages; any other URL gets the signed JSON event.",
+   [("name", "string, optional", "1 to 100 characters."), ("webhook_url", "string | null, optional", "https only, on a public host; <code>null</code> or empty removes it."),
+    ("webhook_format", "auto | json | slack | discord | teams, optional", "<code>auto</code> (default) detects <code>hooks.slack.com</code>, <code>discord.com/api/webhooks</code>, <code>*.webhook.office.com</code> and Teams Workflows on <code>*.powerplatform.com</code>. Set <code>teams</code> for a Workflows URL on <code>*.logic.azure.com</code>.")],
    f"""curl -s -X PATCH {B}/workspaces/$WORKSPACE_ID {SESSION} {JSONH} \\
   -d '{{"webhook_url": "https://hooks.slack.com/services/T000/B000/XXXX"}}'""", "200 OK\n{…the workspace…}",
-   [("403", "not an owner"), ("422", "webhook URL not https, unresolvable, or private")])
-ep("POST", "/workspaces/{wid}/webhook/test", "Session · member", "Send a <code>test</code> event to the webhook and report what it answered.", None,
+   [("403", "not an owner or admin"), ("422", "webhook URL not https, unresolvable, or private, or an unknown format")])
+ep("POST", "/workspaces/{wid}/webhook/test", "Session · owner/admin", "Send a test to the webhook in its own format (a chat message for Slack, Discord and Teams, a <code>test</code> event otherwise) and report what it answered.", None,
    f"curl -s -X POST {B}/workspaces/$WORKSPACE_ID/webhook/test {SESSION}",
-   '200 OK\n{"ok": true, "status_code": 200}\n# or {"ok": false, "status_code": null, "detail": "…why it failed…"}', [("409", "no webhook URL set")])
-ep("POST", "/workspaces/{wid}/invites", "Session · owner", "Email an invite link (valid 14 days). Re-inviting an address replaces its pending invite.",
-   [("email", "string", "Required."), ("role", "member | owner", "Defaults to <code>member</code>.")],
+   '200 OK\n{"ok": true, "status_code": 200, "format": "slack"}\n# or {"ok": false, "status_code": null, "format": "json", "detail": "…why it failed…"}', [("409", "no webhook URL set")])
+ep("POST", "/workspaces/{wid}/invites", "Session · owner/admin", "Email an invite link (valid 14 days). Re-inviting an address replaces its pending invite. Only owners can invite owners.",
+   [("email", "string", "Required."), ("role", "owner | admin | approver | member | viewer | client", "Defaults to <code>member</code>."),
+    ("app_ids", "string[], optional", "Clients only: the apps they will see. Every id must be an app in this workspace.")],
    f"""curl -s -X POST {B}/workspaces/$WORKSPACE_ID/invites {SESSION} {JSONH} \\
   -d '{{"email": "dev@client.com", "role": "member"}}'""",
    '201 Created\n{"id": "…", "email": "dev@client.com", "role": "member", "created_at": "…", "expires_at": "…"}',
-   [("403", "not an owner, or no free seats (pending invites count)"), ("409", "already a member")])
-ep("DELETE", "/workspaces/{wid}/invites/{iid}", "Session · owner", "Cancel a pending invite.", None,
+   [("403", "not an owner or admin, an admin inviting an owner, or no free seats (pending invites count)"), ("409", "already a member"), ("422", "app_ids for a non-client role, or an app from elsewhere")])
+ep("DELETE", "/workspaces/{wid}/invites/{iid}", "Session · owner/admin", "Cancel a pending invite.", None,
    f"curl -s -X DELETE {B}/workspaces/$WORKSPACE_ID/invites/$INVITE_ID {SESSION}", '200 OK\n{"ok": true}', [("404", "no such invite")])
-ep("PATCH", "/workspaces/{wid}/members/{uid}", "Session · owner", "Change a member’s role.", [("role", "member | owner", "Required.")],
-   f"""curl -s -X PATCH {B}/workspaces/$WORKSPACE_ID/members/$USER_ID {SESSION} {JSONH} -d '{{"role": "owner"}}'""",
-   "200 OK\n{…the workspace…}", [("409", "would leave the workspace with no owner")])
-ep("DELETE", "/workspaces/{wid}/members/{uid}", "Session", "Remove a member. Owners can remove anyone; members can remove themselves.", None,
+ep("PATCH", "/workspaces/{wid}/members/{uid}", "Session · owner/admin", "Change a member’s role. Admins can’t change owners or make anyone an owner. Someone who can no longer run checks (viewer, client) loses their API keys.",
+   [("role", "owner | admin | approver | member | viewer | client", "Required."), ("app_ids", "string[], optional", "With <code>role: client</code>: the apps they see.")],
+   f"""curl -s -X PATCH {B}/workspaces/$WORKSPACE_ID/members/$USER_ID {SESSION} {JSONH} -d '{{"role": "approver"}}'""",
+   "200 OK\n{…the workspace…}", [("403", "not an owner or admin, or an admin touching an owner"), ("409", "would leave the workspace with no owner")])
+ep("PUT", "/workspaces/{wid}/members/{uid}/apps", "Session · owner/admin", "Set the apps a client sees (replaces the list).",
+   [("app_ids", "string[]", "Apps in this workspace; empty means none.")],
+   f"""curl -s -X PUT {B}/workspaces/$WORKSPACE_ID/members/$USER_ID/apps {SESSION} {JSONH} -d '{{"app_ids": ["…"]}}'""",
+   "200 OK\n{…the workspace…}", [("409", "the member isn’t a client"), ("422", "an app from elsewhere")])
+ep("DELETE", "/workspaces/{wid}/members/{uid}", "Session", "Remove a member. Owners can remove anyone, admins anyone but owners; everyone can remove themselves.", None,
    f"curl -s -X DELETE {B}/workspaces/$WORKSPACE_ID/members/$USER_ID {SESSION}", '200 OK\n{"ok": true}',
-   [("403", "a member removing someone else"), ("409", "the last owner")])
-ep("GET", "/workspaces/{wid}/api-keys", "Session · member", "List API keys (never the keys themselves).", None,
+   [("403", "removing someone else without the right role"), ("409", "the last owner")])
+ep("GET", "/workspaces/{wid}/api-keys", "Session · viewer+", "List API keys (never the keys themselves).", None,
    f"curl -s {B}/workspaces/$WORKSPACE_ID/api-keys {SESSION}",
    '200 OK\n{"api_keys": [{"id": "…", "name": "GitHub Actions", "prefix": "pl_live_Xy3k", "created_at": "…", "last_used_at": "…"}]}')
-ep("POST", "/workspaces/{wid}/api-keys", "Session · member", "Create an API key. The full key is in this response <strong>only</strong>; we store a hash.",
+ep("POST", "/workspaces/{wid}/api-keys", "Session · member+", "Create an API key. The full key is in this response <strong>only</strong>; we store a hash.",
    [("name", "string", "1 to 100 characters, so you know where it’s used.")],
    f"""curl -s -X POST {B}/workspaces/$WORKSPACE_ID/api-keys {SESSION} {JSONH} -d '{{"name": "GitHub Actions"}}'""",
    '201 Created\n{"id": "…", "name": "GitHub Actions", "prefix": "pl_live_Xy3k", "created_at": "…",\n "last_used_at": null, "key": "pl_live_Xy3k…32 characters…"}')
-ep("DELETE", "/workspaces/{wid}/api-keys/{kid}", "Session · member", "Revoke an API key. It stops working immediately.", None,
-   f"curl -s -X DELETE {B}/workspaces/$WORKSPACE_ID/api-keys/$KEY_ID {SESSION}", '200 OK\n{"ok": true}', [("404", "no such key")])
-ep("POST", "/workspaces/{wid}/upgrade-request", "Session · member", "Ask to move to a paid plan. We reply by email within a day and set the plan (card payments aren’t live yet).",
+ep("DELETE", "/workspaces/{wid}/api-keys/{kid}", "Session · member+", "Revoke an API key. It stops working immediately. Owners and admins revoke any key, others their own.", None,
+   f"curl -s -X DELETE {B}/workspaces/$WORKSPACE_ID/api-keys/$KEY_ID {SESSION}", '200 OK\n{"ok": true}', [("403", "someone else’s key"), ("404", "no such key")])
+ep("POST", "/workspaces/{wid}/upgrade-request", "Session · owner/admin", "Ask to move to a paid plan. We reply by email within a day and set the plan (card payments aren’t live yet).",
    [("plan", "maker | agency | enterprise", "Required."), ("note", "string, optional", "Anything we should know, up to 2,000 characters.")],
    f"""curl -s -X POST {B}/workspaces/$WORKSPACE_ID/upgrade-request {SESSION} {JSONH} -d '{{"plan": "agency"}}'""",
    '201 Created\n{"id": "…", "plan": "agency", "note": null, "created_at": "…", "detail": "Thanks. We\'ll reply within a day."}')
 
-group("apps", "Apps", "An app is a monitored repo inside a workspace. Guide: <a href=\"/docs/monitoring\">monitoring</a>.")
-ep("GET", "/workspaces/{wid}/apps", "Session · member", "Every app in the workspace with its latest finished check and any open one.", None,
+group("audit", "Audit log", "An append-only record of who did what in the workspace: sign-ins and sign-outs, invites, role changes, removals, apps, checks started, decisions, suppressions, API keys, webhooks, exports, tickets and plan changes. Owners and admins only. Secrets, tokens and webhook URLs are never recorded (only the webhook’s host). Emails show in full only for current members and pending invites; anyone else is masked (<code>b•••@example.com</code>), and “a former member” after deleting their account.")
+ep("GET", "/workspaces/{wid}/audit", "Session · owner/admin", "Events, newest first. Page with <code>before</code> = the last page’s <code>next_before</code> (null on the last page).",
+   [("action", "query, optional", "An action such as <code>member.role_changed</code>, or a family such as <code>member</code>."),
+    ("actor", "query, optional", "A user id, or <code>api_key</code>, <code>admin</code> (PatchLabs admin) or <code>system</code> (scheduler)."),
+    ("since, until", "query, optional", "Dates (<code>2026-11-10</code>, both inclusive) or ISO times."),
+    ("limit, before", "query, optional", "Page size 1 to 200 (default 50); cursor.")],
+   f"curl -s '{B}/workspaces/$WORKSPACE_ID/audit?action=member&limit=50' {SESSION}",
+   """200 OK
+{"events": [{"id": 812, "at": "…", "action": "member.role_changed",
+             "actor": {"kind": "user", "id": "…", "label": "Priya", "email": "priya@agency.com"},
+             "target": {"type": "member", "id": "…", "label": null, "email": "dev@client.com"},
+             "detail": {"from": "member", "to": "approver"}}],
+ "next_before": 811, "actions": ["auth.sign_in", "auth.sign_out", "member.invited", …]}""",
+   [("403", "not an owner or admin"), ("422", "a date that can’t be read")])
+ep("GET", "/workspaces/{wid}/audit/export", "Session · owner/admin", "The same filters as a CSV download (up to 10,000 rows). The export itself is recorded as <code>audit.exported</code>.", None,
+   f"curl -s -OJ '{B}/workspaces/$WORKSPACE_ID/audit/export?since=2026-11-01' {SESSION}",
+   '200 OK (text/csv)\nid,at,action,actor_kind,actor,actor_email,target_type,target_id,target,target_email,detail')
+
+group("apps", "Apps", "An app is a monitored repo inside a workspace. Owners and admins add, change and delete apps; members and above run checks; everyone can view them, except that a client sees only the apps shared with them. Guide: <a href=\"/docs/monitoring\">monitoring</a>.")
+ep("GET", "/workspaces/{wid}/apps", "Session · any role", "Every app in the workspace (a client: the apps shared with them) with its latest finished check, any open one, and whether the result is stale.", None,
    f"curl -s {B}/workspaces/$WORKSPACE_ID/apps {SESSION}",
    """200 OK
 {"apps": [{"id": "…", "workspace_id": "…", "repo": "you/your-app", "branch": "main",
            "client_label": "Acme", "schedule": "weekly", "next_check_at": "…",
            "badge_public": false, "created_at": "…", "verified_at": "…", "verified": true,
            "last_check": {"id": "…", "status": "no_leaks", "finished_at": "…", "tables_leaking": []},
-           "open_check_id": null, "suppressed_tables": []}]}""")
-ep("POST", "/workspaces/{wid}/apps", "Session · member", "Add an app. It starts unverified and returns its verification details.",
+           "open_check_id": null, "suppressed_tables": [],
+           "freshness": {"stale": false, "days_since_check": 3, "stale_after_days": 14}}]}""")
+ep("POST", "/workspaces/{wid}/apps", "Session · owner/admin", "Add an app. It starts unverified and returns its verification details.",
    [("repo", "string", "Public GitHub repo."), ("client_label", "string, optional", "Up to 100 characters."),
     ("schedule", "off | weekly | monthly, optional", "Defaults to <code>monthly</code>; must be allowed by the plan.")],
    f"""curl -s -X POST {B}/workspaces/$WORKSPACE_ID/apps {SESSION} {JSONH} \\
   -d '{{"repo": "you/your-app", "client_label": "Acme"}}'""",
    '201 Created\n{"id": "…", "repo": "you/your-app", "verified": false, …,\n "verify": {"file": "patchlabs-verify.txt", "code": "patchlabs-…", "add_url": "https://github.com/…"}}',
-   [("403", "plan’s app limit, or schedule not on the plan"), ("409", "repo already in this workspace"), ("422", "repo not found")])
-ep("POST", "/apps/{aid}/verify", "Session · member", "Check the verification file. On success the app is verified for good and its first check is queued.", None,
+   [("403", "not an owner or admin, plan’s app limit, or schedule not on the plan"), ("409", "repo already in this workspace"), ("422", "repo not found")])
+ep("POST", "/apps/{aid}/verify", "Session · owner/admin", "Check the verification file. On success the app is verified for good and its first check is queued.", None,
    f"curl -s -X POST {B}/apps/$APP_ID/verify {SESSION}", '200 OK\n{"verified": true, "check_id": "…"}',
    [("409", "file or code not found yet"), ("503", "GitHub unreachable")])
-ep("GET", "/apps/{aid}", "Session · member", "The app, its latest 50 checks and the diff between its last two finished checks. Model costs are never included.", None,
+ep("GET", "/apps/{aid}", "Session · any role", "The app, its latest 50 checks, the diff between its last two finished checks, and its findings: <code>open</code> (in the latest finished check, worst first) and recently <code>fixed</code>, each with CWE/OWASP tags, <code>first_seen</code>, <code>days_open</code> and, once fixed, <code>fixed_at</code>. A finding is matched across checks by its <code>id</code> and <code>object</code>. Model costs are never included.", None,
    f"curl -s {B}/apps/$APP_ID {SESSION}",
    """200 OK
 {"id": "…", "repo": "you/your-app", …,
  "checks": [{"id": "…", "status": "done", "trigger": "scheduled", "created_at": "…",
              "finished_at": "…", "tables_leaking": ["orders"], "lab_proof_passed": true}],
  "diff": {"new_leaks": ["orders"], "fixed": [], "still_leaking": [], "suppressed": [],
-          "to_check_id": "…", "from_check_id": "…"}}""")
-ep("PATCH", "/apps/{aid}", "Session · member", "Change the label, schedule or badge. Changing the schedule restarts its clock.",
+          "to_check_id": "…", "from_check_id": "…"},
+ "findings": {"open": [{"id": "PL-001", "object": "public.orders", "severity": "critical", "title": "…",
+                        "cwe": ["CWE-359", "CWE-863"], "owasp": "A01:2021", "owasp_name": "Broken Access Control",
+                        "first_seen": "…", "first_check_id": "…", "days_open": 12, "fixed_at": null, "regressed": false}],
+              "fixed": [{"id": "PL-023", "object": "package.json", "days_open": 7, "fixed_at": "…", "fixed_in_check_id": "…", …}]}}""")
+ep("PATCH", "/apps/{aid}", "Session · owner/admin", "Change the label, schedule or badge. Changing the schedule restarts its clock.",
    [("client_label", "string | null, optional", ""), ("schedule", "off | weekly | monthly, optional", ""), ("badge_public", "boolean, optional", "")],
    f"""curl -s -X PATCH {B}/apps/$APP_ID {SESSION} {JSONH} -d '{{"schedule": "weekly", "badge_public": true}}'""",
    "200 OK\n{…the app…}", [("403", "schedule not on the plan")])
-ep("DELETE", "/apps/{aid}", "Session · member", "Delete the app <strong>with all its checks, reports and receipts</strong>.", None,
+ep("DELETE", "/apps/{aid}", "Session · owner/admin", "Delete the app <strong>with all its checks, reports and receipts</strong>.", None,
    f"curl -s -X DELETE {B}/apps/$APP_ID {SESSION}", '200 OK\n{"ok": true}')
-ep("POST", "/apps/{aid}/checks", "Session · member", "Run a check now (trigger <code>manual</code>). Verified apps skip verification.", None,
+ep("POST", "/apps/{aid}/checks", "Session · member+", "Run a check now (trigger <code>manual</code>). Verified apps skip verification.", None,
    f"curl -s -X POST {B}/apps/$APP_ID/checks {SESSION}",
    '201 Created\n{"check_id": "…", "status": "queued", "url": "https://patchlabs.dev/check?id=…"}',
    [("409", "not verified, or a check is already queued or running"), ("429", "monthly run limit reached")])
+
+group("support", "Support tickets", "Tickets belong to a workspace: its team sees them and our replies, nobody else does; viewers read but can’t write. A client sees and writes only tickets about apps shared with them, must give <code>app_id</code> (one of their apps) when raising one, and sees teammates’ emails masked. The app’s <a href=\"/app/support\">support page</a> uses these calls. We reply within a day.")
+ep("GET", "/workspaces/{wid}/support/tickets", "Session · any role", "The workspace’s tickets, most recently updated first, with a count per status.",
+   [("status", "query, optional", "<code>active</code> (open or waiting on you), <code>open</code>, <code>waiting_on_customer</code>, <code>resolved</code> or <code>closed</code>.")],
+   f"curl -s {B}/workspaces/$WORKSPACE_ID/support/tickets {SESSION}",
+   """200 OK
+{"tickets": [{"id": "…", "number": 12, "subject": "Report says profiles leak", "category": "finding",
+              "priority": "normal", "status": "waiting_on_customer", "app": {"id": "…", "repo": "you/your-app"},
+              "created_by": "Olive", "message_count": 2, "last_from": "support", "updated_at": "…"}],
+ "counts": {"open": 0, "waiting_on_customer": 1, "resolved": 3, "closed": 1}}""")
+ep("POST", "/workspaces/{wid}/support/tickets", "Session · member+ or client", "Raise a ticket. We email you a confirmation; the founder is emailed too.",
+   [("subject", "string", "Up to 200 characters."), ("category", "billing | finding | fix | account | bug | other", "Required."),
+    ("message", "string", "Plain text, up to 10,000 characters. Line breaks are kept; it is never rendered as HTML."),
+    ("priority", "normal | urgent", "Optional, default <code>normal</code>. Urgent: personal data is exposed right now, or PatchLabs is unusable."),
+    ("app_id", "string, optional", "An app in the same workspace.")],
+   f"""curl -s -X POST {B}/workspaces/$WORKSPACE_ID/support/tickets {SESSION} {JSONH} \\
+  -d '{{"subject": "Report says profiles leak", "category": "finding", "message": "Is this real?"}}'""",
+   """201 Created
+{"id": "…", "number": 12, "status": "open", "priority": "normal", "subject": "Report says profiles leak", …,
+ "messages": [{"author": "customer", "kind": "message", "by": "Olive", "body": "Is this real?", "created_at": "…"}]}""",
+   [("422", "missing or too-long subject or message, unknown category or priority, or an app from another workspace"),
+    ("429", "20 tickets from you today")])
+ep("GET", "/support/tickets/{tid}", "Session · any role", "One ticket and its thread: your team’s messages, our replies (<code>author: support</code>, <code>by: PatchLabs support</code>) and status changes (<code>kind: status</code>, <code>body</code> is the new status).", None,
+   f"curl -s {B}/support/tickets/$TICKET_ID {SESSION}", None, [("404", "no such ticket, or not in a workspace you belong to")])
+ep("POST", "/support/tickets/{tid}/messages", "Session · member+ or client", "Reply. The ticket goes back to <code>open</code>, even if it was resolved or closed, and we’re emailed.",
+   [("body", "string", "Plain text, up to 10,000 characters.")],
+   f"""curl -s -X POST {B}/support/tickets/$TICKET_ID/messages {SESSION} {JSONH} -d '{{"body": "Applied the fix, thanks."}}'""",
+   '201 Created\n{"id": "…", "status": "open", "messages": […]}', [("429", "200 replies from you today")])
+ep("POST", "/support/tickets/{tid}/close", "Session · member+ or client", "Close the ticket. Replying later opens it again.", None,
+   f"curl -s -X POST {B}/support/tickets/$TICKET_ID/close {SESSION}", '200 OK\n{"id": "…", "status": "closed", "closed_at": "…", "messages": […]}')
 
 group("ci", "CI endpoints (API key)", "For scripts and CI. Send a workspace API key as <code>X-API-Key</code>; it works only for that workspace’s apps. The <a href=\"/docs/github-action\">GitHub Action</a> uses these two.")
 ep("POST", "/v1/apps/{aid}/checks", "API key", "Run a check now (trigger <code>api</code>). Shares the workspace’s monthly run allowance.", None,
@@ -225,12 +286,16 @@ ep("GET", "/v1/checks/{cid}", "API key", "Status and summary of a check on one o
    [("401", "bad key"), ("403", "key from another workspace"), ("404", "no such check")])
 
 group("public", "Public", "No authentication, safe to call from anywhere.")
-ep("GET", "/badge/{aid}.svg", "No auth", "The app’s badge as SVG. Shows the status only when the app’s badge is public, otherwise “private”. Cached for an hour. Guide: <a href=\"/docs/badge\">badge</a>.", None,
+ep("GET", "/badge/{aid}.svg", "No auth", "The app’s badge as SVG. Shows the status only when the app’s badge is public, otherwise “private”. When the last finished check is older than twice the app’s schedule (14 days weekly, 60 monthly, 45 without a schedule) it shows a grey “last checked N days ago” instead of a status. Cached for an hour. Guide: <a href=\"/docs/badge\">badge</a>.", None,
    f"curl -s {B}/badge/$APP_ID.svg -o badge.svg")
-ep("GET", "/public/apps/{aid}", "No auth", "Repo, status and last-checked date, only when the badge is public.", None,
+ep("GET", "/public/apps/{aid}", "No auth", "Repo, status, last-checked date and freshness, only when the badge is public. A stale result is reported as <code>stale</code>, never as its old status.", None,
    f"curl -s {B}/public/apps/$APP_ID",
-   '200 OK\n{"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "…"}\n# status: no_known_leaks | fix_in_progress | not_checked_yet',
+   '200 OK\n{"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "…",\n "stale": false, "days_since_check": 3, "stale_after_days": 60}\n# status: no_known_leaks | fix_in_progress | not_checked_yet | stale',
    [("404", "badge not public")])
+ep("GET", "/taxonomy/findings", "No auth", "The CWE and OWASP Top 10 (2021) tags for every finding ID, with their names.", None,
+   f"curl -s {B}/taxonomy/findings",
+   '200 OK\n{"findings": {"PL-001": {"cwe": ["CWE-359", "CWE-863"], "owasp": "A01:2021", "owasp_name": "Broken Access Control"}, …},\n "cwe": {"CWE-359": "Exposure of Private Personal Information to an Unauthorized Actor", …},\n "owasp": {"A01:2021": "Broken Access Control", …}}',
+   extra="TRY:GET:/taxonomy/findings")
 ep("GET", "/stats", "No auth", "Live totals across PatchLabs.", None, f"curl -s {B}/stats",
    '200 OK\n{"checks_completed": <int>, "apps_monitored": <int>, "leaks_found": <int>, "fixes_proven": <int>}')
 ep("GET", "/health", "No auth", "Whether the API and database are up, when the lab worker last checked in, and how many checks are queued.", None,

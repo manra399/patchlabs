@@ -1,45 +1,89 @@
 <!--
-title: Finding index: every Supabase leak PatchLabs tests for | PatchLabs
-description: Stable IDs for the data-access and key leaks PatchLabs finds in AI-built Supabase apps, each with example SQL, a self-check, the fix we write and the proof.
+title: Finding index: every issue PatchLabs Lab and Code test for | PatchLabs
+description: Stable IDs for the database, key and code problems PatchLabs finds in AI-built apps, each with example code, a self-check, the fix and how it is proven. Live and coming checks marked.
 layout: marketing
 nav: findings
-head: <link rel="stylesheet" href="/assets/pages/B-research.css">
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css">
 -->
 <main id="main">
   <section class="sec tight">
     <div class="wrap">
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
       <p class="lab">Finding index</p>
-      <h1>Every leak we test for, with the fix and the proof.</h1>
-      <p class="lede">Ten stable IDs for the ways AI-built Supabase apps expose data and keys. Each page shows the vulnerable SQL, a query to check your own project, the fix PatchLabs writes and the test that proves it.</p>
-      <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/tools/rls-check">Free static RLS check</a></div>
+      <h1>Every problem we test for, with the fix and the proof.</h1>
+      <p class="lede">21 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, and 13 that PatchLabs Code finds by reading your repo. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
+      <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/learn">Read the guides</a></div>
     </div>
   </section>
 
   <section class="sec tight" aria-labelledby="list-h">
     <div class="wrap">
       <h2 id="list-h" class="sr-only">All findings</h2>
+      <div class="f-filters js-only" role="group" aria-label="Filter findings">
+        <div class="f-fgroup" data-filter-group="line"><span class="f-flabel">Line</span>
+          <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="f-chipbtn" data-filter="lab" aria-pressed="false">Lab</button>
+          <button type="button" class="f-chipbtn" data-filter="code" aria-pressed="false">Code</button>
+        </div>
+        <div class="f-fgroup" data-filter-group="sev"><span class="f-flabel">Severity</span>
+          <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="f-chipbtn" data-filter="critical" aria-pressed="false">Critical</button>
+          <button type="button" class="f-chipbtn" data-filter="high" aria-pressed="false">High</button>
+          <button type="button" class="f-chipbtn" data-filter="medium" aria-pressed="false">Medium</button>
+          <button type="button" class="f-chipbtn" data-filter="low" aria-pressed="false">Low</button>
+          <button type="button" class="f-chipbtn" data-filter="advisory" aria-pressed="false">Advisory</button>
+        </div>
+        <div class="f-fgroup" data-filter-group="status"><span class="f-flabel">Status</span>
+          <button type="button" class="f-chipbtn" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="f-chipbtn" data-filter="live" aria-pressed="false">Live</button>
+          <button type="button" class="f-chipbtn" data-filter="coming" aria-pressed="false">Coming</button>
+        </div>
+        <p class="f-count" aria-live="polite"><span id="f-shown">26</span> of 26 shown</p>
+      </div>
       <div class="f-group">
-        <p class="lab red">Data access · who can read what</p>
+        <p class="lab red">Live · PatchLabs Lab · who can read what in your database</p>
         <div class="f-index">
-      <a class="f-row" href="/findings/pl-001"><span class="fid">PL-001</span><div><h3>Anonymous visitor can read personal data</h3><p>Anyone with your app's public key can read emails, phone numbers or addresses.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-002"><span class="fid">PL-002</span><div><h3>Any signed-in user can read every row</h3><p>Signing up unlocks other people's rows. If sign-up is open, that means anyone.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-003"><span class="fid">PL-003</span><div><h3>RLS enabled but no policies (owner locked out)</h3><p>Not a leak, yet. The table is locked to everyone, and the quick fix people reach for is the leak.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-004"><span class="fid">PL-004</span><div><h3>UPDATE policy missing WITH CHECK</h3><p>Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-005"><span class="fid">PL-005</span><div><h3>Always-true policy</h3><p>A policy that says yes to everyone. On writes, anyone can change or delete your data.</p></div><span class="sevcell"><span class="pill sev-high">high to low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-006"><span class="fid">PL-006</span><div><h3>SECURITY DEFINER function exposed</h3><p>A function that runs with the owner's powers, callable by anyone through the API.</p></div><span class="sevcell"><span class="pill sev-high">high or medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-007"><span class="fid">PL-007</span><div><h3>Public storage bucket</h3><p>Files in this bucket are served to anyone with the link. ID scans and invoices don't belong there.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-008"><span class="fid">PL-008</span><div><h3>Row level security not enabled</h3><p>No rules at all. With API access granted, anyone with the public key can read and change every row.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-001" data-line="lab" data-sev="critical" data-status="live"><span class="fid">PL-001</span><div><h3>Anonymous visitor can read personal data</h3><p>Anyone with your app's public key can read emails, phone numbers or addresses.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-002" data-line="lab" data-sev="high" data-status="live"><span class="fid">PL-002</span><div><h3>Any signed-in user can read every row</h3><p>Signing up unlocks other people's rows. If sign-up is open, that means anyone.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-003" data-line="lab" data-sev="low" data-status="live"><span class="fid">PL-003</span><div><h3>RLS enabled but no policies (owner locked out)</h3><p>Not a leak, yet. The table is locked to everyone, and the quick fix people reach for is the leak.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-004" data-line="lab" data-sev="medium" data-status="live"><span class="fid">PL-004</span><div><h3>UPDATE policy missing WITH CHECK</h3><p>Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-005" data-line="lab" data-sev="high" data-status="live"><span class="fid">PL-005</span><div><h3>Always-true policy</h3><p>A policy that says yes to everyone. On writes, anyone can change or delete your data.</p></div><span class="sevcell"><span class="pill sev-high">high to low</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-006" data-line="lab" data-sev="high" data-status="live"><span class="fid">PL-006</span><div><h3>SECURITY DEFINER function exposed</h3><p>A function that runs with the owner's powers, callable by anyone through the API.</p></div><span class="sevcell"><span class="pill sev-high">high or medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-007" data-line="lab" data-sev="medium" data-status="live"><span class="fid">PL-007</span><div><h3>Public storage bucket</h3><p>Files in this bucket are served to anyone with the link. ID scans and invoices don't belong there.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">RLS check</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-008" data-line="lab" data-sev="critical" data-status="live"><span class="fid">PL-008</span><div><h3>Row level security not enabled</h3><p>No rules at all. With API access granted, anyone with the public key can read and change every row.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">RLS check · lab</span><span class="go" aria-hidden="true">→</span></a>
         </div>
       </div>
       <div class="f-group">
-        <p class="lab">Keys · code and git history</p>
+        <p class="lab">Live · PatchLabs Code · keys and risky code in your repo</p>
         <div class="f-index">
-      <a class="f-row" href="/findings/pl-010"><span class="fid">PL-010</span><div><h3>Service role key in client code</h3><p>The key that ignores every access rule, shipped to every visitor's browser.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Key scan · code</span><span class="go" aria-hidden="true">→</span></a>
-      <a class="f-row" href="/findings/pl-011"><span class="fid">PL-011</span><div><h3>Key still in git history</h3><p>You deleted the key. Every old commit still has it, and so does every clone and fork.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Key scan · history</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-009" data-line="code" data-sev="high" data-status="live"><span class="fid">PL-009</span><div><h3>AI, payment or database key in the code</h3><p>A secret key for an AI, payment or database service is sitting in your current code, readable by anyone who can read the repo.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Key scan · code</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-010" data-line="code" data-sev="critical" data-status="live"><span class="fid">PL-010</span><div><h3>Service role key in client code</h3><p>The key that ignores every access rule, shipped to every visitor's browser.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Key scan · code</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-011" data-line="code" data-sev="high" data-status="live"><span class="fid">PL-011</span><div><h3>Key still in git history</h3><p>You deleted the key. Every old commit still has it, and so does every clone and fork.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Key scan · history</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-017" data-line="code" data-sev="high" data-status="live"><span class="fid">PL-017</span><div><h3>Edge function open without sign-in while using the service key</h3><p>A server function holding the key that ignores every rule, with nothing checking who is calling it.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Code · functions</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-018" data-line="code" data-sev="low" data-status="live"><span class="fid">PL-018</span><div><h3>Sign-ups need no email confirmation</h3><p>Anyone can create a working account with any email address, including one they don't own.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">Code · config</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-019" data-line="code" data-sev="critical" data-status="live"><span class="fid">PL-019</span><div><h3>Access decided by user_metadata, which users can edit</h3><p>Roles stored where users can rewrite them. One call from the browser and they're an admin.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Code · SQL + app code</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-020" data-line="code" data-sev="high" data-status="live"><span class="fid">PL-020</span><div><h3>Admin check only in the browser</h3><p>The admin page is hidden in the app, but nothing stops a normal user asking the database for the same data.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Code · frontend</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-021" data-line="code" data-sev="high" data-status="live"><span class="fid">PL-021</span><div><h3>Payment webhook doesn't verify its signature</h3><p>Anyone can send your app a fake 'payment succeeded' event and get the paid plan for free.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Code · webhooks</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-022" data-line="code" data-sev="high" data-status="live"><span class="fid">PL-022</span><div><h3>Edge function trusts a user id sent in the request</h3><p>The function acts on whichever user id the request names, so any user can act as any other.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Code · functions</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-023" data-line="code" data-sev="advisory" data-status="live"><span class="fid">PL-023</span><div><h3>Dependency with a known vulnerability</h3><p>A package version in your lockfile matches a published advisory in the OSV database.</p></div><span class="sevcell"><span class="pill plain">from the advisory</span></span><span class="where">Code · lockfile + OSV</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-024" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-024</span><div><h3>User content rendered as raw HTML</h3><p>Text one user wrote goes into the page as HTML, so it can run scripts in other users' browsers.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · frontend</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-025" data-line="code" data-sev="critical" data-status="live"><span class="fid">PL-025</span><div><h3>Firebase rules allow anyone</h3><p>Your Firestore, Realtime Database or Storage rules say yes to everyone, or do until a test-mode date.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Code · Firebase rules</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-026" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-026</span><div><h3>Any website can call a signed-in function</h3><p>The endpoint tells browsers that any website may send your users' cookies to it and read the answer.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · CORS headers</span><span class="go" aria-hidden="true">→</span></a>
         </div>
       </div>
-      <p class="small muted mt-3">IDs never change meaning and are never reused, so you can link to them from tickets and docs. Gaps (such as PL-009) are reserved. Last reviewed 10 Nov 2026.</p>
+      <div class="f-group f-group-coming">
+        <p class="lab">Coming · not tested yet</p>
+        <p class="small muted f-coming-note">Explained, with self-checks and fixes, but PatchLabs does not test for these yet. They won’t appear in a report until they ship.</p>
+        <div class="f-index">
+      <a class="f-row" href="/findings/pl-012" data-line="lab" data-sev="critical" data-status="coming"><span class="fid">PL-012</span><div><h3>Strangers can change or delete other people's rows</h3><p>A write policy checks that someone is signed in, not that the row is theirs. Anyone who signs up can edit or wipe it.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Lab · coming</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-013" data-line="lab" data-sev="critical" data-status="coming"><span class="fid">PL-013</span><div><h3>Users can make themselves admin</h3><p>A role column or roles table that users can write to. One request turns a normal account into an admin.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Lab · coming</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-014" data-line="lab" data-sev="high" data-status="coming"><span class="fid">PL-014</span><div><h3>View skips row level security</h3><p>Your table's policies are right, but a view on top of it runs as its owner and hands every row to the API.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Lab · coming</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-015" data-line="lab" data-sev="high" data-status="coming"><span class="fid">PL-015</span><div><h3>Stored files readable or writable by anyone</h3><p>The bucket is private, but its storage policies let anyone read, upload, replace or delete other people's files.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Lab · coming</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-016" data-line="lab" data-sev="high" data-status="coming"><span class="fid">PL-016</span><div><h3>Realtime sends private rows to subscribers</h3><p>A table is published to Realtime and its read policy is too broad, so new rows stream to people who shouldn't see them.</p></div><span class="sevcell"><span class="pill sev-high">high</span></span><span class="where">Lab · coming</span><span class="go" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <p class="f-empty muted" hidden>No findings match those filters.</p>
+      <p class="small muted mt-3">IDs never change meaning and are never reused, so you can link to them from tickets and docs. Last reviewed 10 Nov 2026.</p>
     </div>
   </section>
 
@@ -48,16 +92,16 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css">
       <div>
         <p class="lab">Severity</p>
         <h2 id="sev-h">Ranked by who can reach the data.</h2>
-        <p class="lede">Severity follows one question: who, outside the people meant to see it, can read or change the data? The same rules drive the free RLS check and every full report.</p>
+        <p class="lede">Severity follows one question: who, outside the people meant to see it, can read or change the data? Dependency findings take the severity of their published advisory.</p>
       </div>
       <div class="table-wrap">
         <table class="table">
           <thead><tr><th scope="col">Level</th><th scope="col">Meaning</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><span class="pill sev-critical">critical</span></th><td>Anyone on the internet can read personal data, or read and change a whole table.</td></tr>
-            <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, anyone can change rows, or a privileged function is open to anonymous callers.</td></tr>
-            <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter, such as an UPDATE rule without WITH CHECK or a public bucket.</td></tr>
-            <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed, but the app is likely broken, or the rule only opens non-personal data.</td></tr>
+            <tr><th scope="row"><span class="pill sev-critical">critical</span></th><td>Anyone on the internet, or anyone who signs up, can read personal data, change a whole table or make themselves admin.</td></tr>
+            <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, a privileged function or webhook is open, or a user can act on another user's data.</td></tr>
+            <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter, such as a public bucket, unsanitised HTML or a loose CORS rule.</td></tr>
+            <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed by itself, but the app is likely broken or other findings get easier to exploit.</td></tr>
           </tbody>
         </table>
       </div>
@@ -67,22 +111,28 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css">
   <section class="sec" aria-labelledby="how-h">
     <div class="wrap">
       <div class="sec-head">
-        <p class="lab">Static vs proven</p>
-        <h2 id="how-h">A rule that looks wrong, or data you watched leak.</h2>
-        <p>Two ways a finding reaches you. Both use these IDs.</p>
+        <p class="lab">How a finding reaches you</p>
+        <h2 id="how-h">Data you watched leak, or code you can point at.</h2>
+        <p>Every finding in a report uses these IDs and the same shape: severity, the object, the file and line, short evidence, and how it was proven.</p>
       </div>
-      <div class="grid g2">
+      <div class="grid g3">
+        <div class="card green-edge">
+          <span class="n-big">LAB · PROVEN</span>
+          <h3>PatchLabs Lab</h3>
+          <p>Rebuilds the database from your migrations in a disposable Postgres with Supabase's roles and grants, seeds fake rows, and reads every table as an anonymous visitor, a signed-in stranger and the owner. Then writes the fix and proves it the same way.</p>
+          <div class="card-foot"><a class="link-arrow" href="/product/lab">PatchLabs Lab</a></div>
+        </div>
+        <div class="card">
+          <span class="n-big">CODE · FILE AND LINE</span>
+          <h3>PatchLabs Code</h3>
+          <p>Reads the repo without running it: keys in code and the full git history, Edge Functions and their config, webhooks, CORS, admin checks in the browser, raw HTML, Firebase rules, and dependency versions checked against OSV.</p>
+          <div class="card-foot"><a class="link-arrow" href="/product/code">PatchLabs Code</a></div>
+        </div>
         <div class="card">
           <span class="n-big">FREE · NO SIGN-UP</span>
           <h3>Static RLS check</h3>
-          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. Fast, and honest about its limit: it can't tell whether a public read is intended, or what the database really allows once every migration has run.</p>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. Fast, and honest about its limit: it can't tell whether a public read is intended.</p>
           <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
-        </div>
-        <div class="card green-edge">
-          <span class="n-big">FULL CHECK · FREE FOR ONE APP</span>
-          <h3>Lab proof</h3>
-          <p>Rebuilds the database from your migrations in a disposable Postgres with Supabase's roles and grants, seeds fake rows, and reads every table as an anonymous visitor, a signed-in stranger and the owner. Then writes the fix and proves it the same way. Also scans code and full git history for keys (PL-010, PL-011).</p>
-          <div class="card-foot"><a class="link-arrow" href="/#check">Check my app free</a></div>
         </div>
       </div>
     </div>
@@ -92,8 +142,8 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css">
     <div class="wrap">
       <div class="sec-head">
         <p class="lab">Map</p>
-        <h2 id="lint-h">How our IDs line up with Supabase’s linter.</h2>
-        <p>Use Supabase's Security Advisor as well: it covers health and performance checks we don't. The difference is in the rows marked "none": public reads, which the linter skips on purpose because only the app's intent can say whether they are a leak.</p>
+        <h2 id="lint-h">How our database IDs line up with Supabase’s linter.</h2>
+        <p>Use Supabase's Security Advisor as well: it covers health and performance checks we don't. The difference is in the rows marked "none": public reads, which the linter skips on purpose because only the app's intent can say whether they are a leak. Code findings without a linter equivalent are left out.</p>
       </div>
       <div class="table-wrap">
         <table class="table">
@@ -109,6 +159,12 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css">
             <tr><th scope="row"><a href="/findings/pl-008">PL-008</a></th><td>Row level security not enabled</td><td class="mono">0013, 0007</td></tr>
             <tr><th scope="row"><a href="/findings/pl-010">PL-010</a></th><td>Service role key in client code</td><td class="mono">–</td></tr>
             <tr><th scope="row"><a href="/findings/pl-011">PL-011</a></th><td>Key still in git history</td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-012">PL-012</a></th><td>Strangers can change or delete other people's rows <span class="pill pending">coming</span></td><td class="mono">0024 (only literal true)</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-013">PL-013</a></th><td>Users can make themselves admin <span class="pill pending">coming</span></td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-014">PL-014</a></th><td>View skips row level security <span class="pill pending">coming</span></td><td class="mono">0010, 0002, 0016</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-015">PL-015</a></th><td>Stored files readable or writable by anyone <span class="pill pending">coming</span></td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-016">PL-016</a></th><td>Realtime sends private rows to subscribers <span class="pill pending">coming</span></td><td class="mono">–</td></tr>
+            <tr><th scope="row"><a href="/findings/pl-019">PL-019</a></th><td>Access decided by user_metadata, which users can edit</td><td class="mono">0015 (policies only)</td></tr>
           </tbody>
         </table>
       </div>
@@ -121,7 +177,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css">
       <div class="cta-panel">
         <p class="lab">Free check</p>
         <h2>Which of these does your app have?</h2>
-        <p class="lede">Paste your public repo. You get every finding, the fix and the proof on one page.</p>
+        <p class="lede">Paste your public repo. You get every live finding, the fix and the proof on one page.</p>
         <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
           <div class="in">
             <label class="sr-only" for="repo-fi">Public GitHub repo</label>
@@ -138,4 +194,31 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css">
       </div>
     </div>
   </section>
+  <script>
+  (function () {
+    var bar = document.querySelector('.f-filters'); if (!bar) return;
+    var state = { line: 'all', sev: 'all', status: 'all' };
+    function apply() {
+      var shown = 0;
+      document.querySelectorAll('.f-row').forEach(function (r) {
+        var ok = (state.line === 'all' || r.dataset.line === state.line) &&
+                 (state.sev === 'all' || r.dataset.sev === state.sev) &&
+                 (state.status === 'all' || r.dataset.status === state.status);
+        r.hidden = !ok; if (ok) shown++;
+      });
+      document.querySelectorAll('.f-group').forEach(function (g) {
+        g.hidden = !g.querySelector('.f-row:not([hidden])');
+      });
+      document.getElementById('f-shown').textContent = shown;
+      document.querySelector('.f-empty').hidden = shown > 0;
+    }
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-filter]'); if (!b) return;
+      var grp = b.closest('[data-filter-group]');
+      state[grp.dataset.filterGroup] = b.dataset.filter;
+      grp.querySelectorAll('[data-filter]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      apply();
+    });
+  })();
+  </script>
 </main>

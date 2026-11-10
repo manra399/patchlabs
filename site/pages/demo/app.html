@@ -1,0 +1,44 @@
+<!--
+title: Demo app | PatchLabs
+description: A demo app in the PatchLabs app: findings, history, schedule and badge. Fake data, no sign-in.
+layout: bare
+sitemap: no
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script><script src="/assets/app-pages.js"></script>
+-->
+<header class="app-header demo-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="hide-sm">PatchLabs</span></a>
+    <div id="ws-slot"></div>
+    <nav aria-label="Demo">
+      <a href="/demo/" aria-current="page">Apps</a>
+      <a href="/demo/settings">Settings</a>
+      <a href="/docs" class="hide-sm">Docs</a>
+    </nav>
+    <div class="right">
+      <button class="theme-toggle hide-sm" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+      <a class="btn small ghost hide-sm" href="/app/login">Sign in</a>
+      <a class="btn small primary" href="/#check">Check my app free</a>
+    </div>
+  </div>
+</header>
+<div class="demo-banner" role="note">
+  <div class="wrap">
+    <p><span class="lab">Demo</span><strong>Demo workspace, fake data.</strong> <span class="hide-sm">The real PatchLabs app on made-up apps and representative findings. Nothing you change is saved.</span></p>
+    <a class="link-arrow" href="/#check">Check your own app</a>
+  </div>
+</div>
+<main id="main" class="app-main">
+  <div class="wrap wide" id="view">
+    <noscript><div class="callout limit"><p>The demo runs the PatchLabs app in your browser, so it needs JavaScript. See the <a href="/sample-report">sample report</a> instead.</p></div></noscript>
+  </div>
+  <div class="wrap wide">
+    <div class="demo-cta">
+      <div><p class="lab">Your turn</p><h2>See this for your own app.</h2><p>Paste your public repo. We rebuild your database from its migrations, read the code and its history, and prove every fix in the lab. Your first app is free.</p></div>
+      <div class="row"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/pricing">See plans</a></div>
+    </div>
+  </div>
+</main>
+<script>
+PL.useDemo('/demo/workspace.json').then(function () { PL.views.app(document.getElementById('view')); })
+  .catch(function (e) { PL.errorBox(document.getElementById('view'), e, function () { location.reload(); }); });
+</script>

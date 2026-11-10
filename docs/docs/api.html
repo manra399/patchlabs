@@ -40,28 +40,84 @@
   <div class="wrap">
     <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
     <nav class="nav" id="site-nav" aria-label="Main">
-      <details class="dd">
-        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-        <div class="dd-panel">
-          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
-          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
-          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
-          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
-          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
-          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
-          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
-          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
-          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
         </div>
       </details>
-      <a href="/how-it-works">How it works</a>
-      <a href="/research/1-in-4">Research</a>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
       <a href="/pricing">Pricing</a>
       <a href="/docs" aria-current="page">Docs</a>
     </nav>
     <div class="nav-right">
-      <a class="urgent" href="/leaking-now">Leaking right now?</a>
       <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
       <a class="btn primary small" href="/#check">Check my app free</a>
     </div>
     <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
@@ -77,6 +133,7 @@
 <li><a href="/docs">Quickstart</a></li>
 <li><a href="/docs/verification">Proving repo ownership</a></li>
 <li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/findings">Findings and product lines</a></li>
 <li><a href="/docs/applying-a-fix">Applying a fix</a></li>
 <li><a href="/docs/decisions">Decisions and questions</a></li>
 </ul>
@@ -182,8 +239,8 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <tr><td><span class="method get">GET</span></td><td><a href="#get-checks-id"><code>/checks/{id}</code></a></td><td class="small muted">No auth · by link</td></tr>
 <tr><td><span class="method post">POST</span></td><td><a href="#post-checks-id-verify"><code>/checks/{id}/verify</code></a></td><td class="small muted">No auth · by link</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#decisions">Decisions and receipts</a></th></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-checks-id-decision"><code>/checks/{id}/decision</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-checks-id-answers"><code>/checks/{id}/answers</code></a></td><td class="small muted">Session · member</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-checks-id-decision"><code>/checks/{id}/decision</code></a></td><td class="small muted">Session · approver+</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-checks-id-answers"><code>/checks/{id}/answers</code></a></td><td class="small muted">Session · approver+</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-receipts-id"><code>/receipts/{id}</code></a></td><td class="small muted">No auth · by link</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-well-known-patchlabs-receipt-key"><code>/.well-known/patchlabs-receipt-key</code></a></td><td class="small muted">No auth</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#auth">Sign-in</a></th></tr>
@@ -198,31 +255,42 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <tr><td><span class="method get">GET</span></td><td><a href="#get-me-export"><code>/me/export</code></a></td><td class="small muted">Session</td></tr>
 <tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-me"><code>/me</code></a></td><td class="small muted">Session</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#workspaces">Workspaces</a></th></tr>
-<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid"><code>/workspaces/{wid}</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method ">PATCH</span></td><td><a href="#patch-workspaces-wid"><code>/workspaces/{wid}</code></a></td><td class="small muted">Session · owner</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-webhook-test"><code>/workspaces/{wid}/webhook/test</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-invites"><code>/workspaces/{wid}/invites</code></a></td><td class="small muted">Session · owner</td></tr>
-<tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-workspaces-wid-invites-iid"><code>/workspaces/{wid}/invites/{iid}</code></a></td><td class="small muted">Session · owner</td></tr>
-<tr><td><span class="method ">PATCH</span></td><td><a href="#patch-workspaces-wid-members-uid"><code>/workspaces/{wid}/members/{uid}</code></a></td><td class="small muted">Session · owner</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid"><code>/workspaces/{wid}</code></a></td><td class="small muted">Session · any role</td></tr>
+<tr><td><span class="method ">PATCH</span></td><td><a href="#patch-workspaces-wid"><code>/workspaces/{wid}</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-webhook-test"><code>/workspaces/{wid}/webhook/test</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-invites"><code>/workspaces/{wid}/invites</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-workspaces-wid-invites-iid"><code>/workspaces/{wid}/invites/{iid}</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method ">PATCH</span></td><td><a href="#patch-workspaces-wid-members-uid"><code>/workspaces/{wid}/members/{uid}</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method ">PUT</span></td><td><a href="#put-workspaces-wid-members-uid-apps"><code>/workspaces/{wid}/members/{uid}/apps</code></a></td><td class="small muted">Session · owner/admin</td></tr>
 <tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-workspaces-wid-members-uid"><code>/workspaces/{wid}/members/{uid}</code></a></td><td class="small muted">Session</td></tr>
-<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-api-keys"><code>/workspaces/{wid}/api-keys</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-api-keys"><code>/workspaces/{wid}/api-keys</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-workspaces-wid-api-keys-kid"><code>/workspaces/{wid}/api-keys/{kid}</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-upgrade-request"><code>/workspaces/{wid}/upgrade-request</code></a></td><td class="small muted">Session · member</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-api-keys"><code>/workspaces/{wid}/api-keys</code></a></td><td class="small muted">Session · viewer+</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-api-keys"><code>/workspaces/{wid}/api-keys</code></a></td><td class="small muted">Session · member+</td></tr>
+<tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-workspaces-wid-api-keys-kid"><code>/workspaces/{wid}/api-keys/{kid}</code></a></td><td class="small muted">Session · member+</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-upgrade-request"><code>/workspaces/{wid}/upgrade-request</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><th scope="rowgroup" colspan="3"><a href="#audit">Audit log</a></th></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-audit"><code>/workspaces/{wid}/audit</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-audit-export"><code>/workspaces/{wid}/audit/export</code></a></td><td class="small muted">Session · owner/admin</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#apps">Apps</a></th></tr>
-<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-apps"><code>/workspaces/{wid}/apps</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-apps"><code>/workspaces/{wid}/apps</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-apps-aid-verify"><code>/apps/{aid}/verify</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method get">GET</span></td><td><a href="#get-apps-aid"><code>/apps/{aid}</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method ">PATCH</span></td><td><a href="#patch-apps-aid"><code>/apps/{aid}</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-apps-aid"><code>/apps/{aid}</code></a></td><td class="small muted">Session · member</td></tr>
-<tr><td><span class="method post">POST</span></td><td><a href="#post-apps-aid-checks"><code>/apps/{aid}/checks</code></a></td><td class="small muted">Session · member</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-apps"><code>/workspaces/{wid}/apps</code></a></td><td class="small muted">Session · any role</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-apps"><code>/workspaces/{wid}/apps</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-apps-aid-verify"><code>/apps/{aid}/verify</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-apps-aid"><code>/apps/{aid}</code></a></td><td class="small muted">Session · any role</td></tr>
+<tr><td><span class="method ">PATCH</span></td><td><a href="#patch-apps-aid"><code>/apps/{aid}</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method delete">DELETE</span></td><td><a href="#delete-apps-aid"><code>/apps/{aid}</code></a></td><td class="small muted">Session · owner/admin</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-apps-aid-checks"><code>/apps/{aid}/checks</code></a></td><td class="small muted">Session · member+</td></tr>
+<tr><th scope="rowgroup" colspan="3"><a href="#support">Support tickets</a></th></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-workspaces-wid-support-tickets"><code>/workspaces/{wid}/support/tickets</code></a></td><td class="small muted">Session · any role</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-workspaces-wid-support-tickets"><code>/workspaces/{wid}/support/tickets</code></a></td><td class="small muted">Session · member+ or client</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-support-tickets-tid"><code>/support/tickets/{tid}</code></a></td><td class="small muted">Session · any role</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-support-tickets-tid-messages"><code>/support/tickets/{tid}/messages</code></a></td><td class="small muted">Session · member+ or client</td></tr>
+<tr><td><span class="method post">POST</span></td><td><a href="#post-support-tickets-tid-close"><code>/support/tickets/{tid}/close</code></a></td><td class="small muted">Session · member+ or client</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#ci">CI endpoints (API key)</a></th></tr>
 <tr><td><span class="method post">POST</span></td><td><a href="#post-v1-apps-aid-checks"><code>/v1/apps/{aid}/checks</code></a></td><td class="small muted">API key</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-v1-checks-cid"><code>/v1/checks/{cid}</code></a></td><td class="small muted">API key</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#public">Public</a></th></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-badge-aid-svg"><code>/badge/{aid}.svg</code></a></td><td class="small muted">No auth</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-public-apps-aid"><code>/public/apps/{aid}</code></a></td><td class="small muted">No auth</td></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-taxonomy-findings"><code>/taxonomy/findings</code></a></td><td class="small muted">No auth</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-stats"><code>/stats</code></a></td><td class="small muted">No auth</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-health"><code>/health</code></a></td><td class="small muted">No auth</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#tools">Free RLS check</a></th></tr>
@@ -250,7 +318,7 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <p>The check and, once it has finished, its report. Fields appear as the check moves along.</p>
 <p class="small muted mb-1">Response fields</p><dl class="fields">
 <dt>verify <i>object</i></dt><dd>While <code>awaiting_verification</code>: <code>{file, code, add_url}</code>.</dd>
-<dt>summary <i>object</i></dt><dd>When finished: <code>tables_leaking</code>, <code>readable_by_anyone</code>, <code>readable_by_signed_in</code>, <code>lab_proof_passed</code>, <code>break_risk</code>, <code>questions_for_owner</code>, <code>models</code>.</dd>
+<dt>summary <i>object</i></dt><dd>When finished: <code>tables_leaking</code>, <code>readable_by_anyone</code>, <code>readable_by_signed_in</code>, <code>lab_proof_passed</code>, <code>break_risk</code>, <code>questions_for_owner</code>, <code>models</code>, and <code>findings</code>: each finding carries <code>cwe</code> (list), <code>owasp</code> and <code>owasp_name</code> (OWASP Top 10 2021); on an app’s check also <code>first_seen</code>, <code>days_open</code>, <code>fixed_at</code> (null while open), <code>fixed_in_check_id</code> and <code>regressed</code>.</dd>
 <dt>report_md, fix_sql <i>string</i></dt><dd>When finished: the report as Markdown and the fix migration (<code>null</code> when there are no leaks).</dd>
 <dt>error <i>string</i></dt><dd>When <code>failed</code>: a plain-English explanation.</dd>
 <dt>events <i>array</i></dt><dd>Timeline: <code>[{at, kind}]</code>.</dd>
@@ -274,8 +342,8 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <p class="codes"><span><b>409</b> file or code not found on the default branch yet</span><span><b>503</b> GitHub unreachable; try again</span></p>
 </div></section>
 <h2 id="decisions">Decisions and receipts</h2>
-<p>Decisions and answers need a session that belongs to the app’s workspace, and a finished check. Receipts are public by link. Guides: <a href="/docs/decisions">decisions</a>, <a href="/docs/receipts">receipts</a>.</p>
-<section class="ep" aria-labelledby="post-checks-id-decision"><header><h3 id="post-checks-id-decision"><span class="method post">POST</span> <code>/checks/{id}/decision</code></h3><span class="auth">Session · member</span></header><div class="body">
+<p>Decisions and answers need an owner, admin or approver session in the app’s workspace, and a finished check. Receipts are public by link. Guides: <a href="/docs/decisions">decisions</a>, <a href="/docs/receipts">receipts</a>.</p>
+<section class="ep" aria-labelledby="post-checks-id-decision"><header><h3 id="post-checks-id-decision"><span class="method post">POST</span> <code>/checks/{id}/decision</code></h3><span class="auth">Session · approver+</span></header><div class="body">
 <p>Approve a fix, or reject tables as intentionally readable (remembered for the app as suppressions).</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>action <i>approve | reject</i></dt><dd>Required.</dd>
@@ -285,9 +353,9 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/checks/$CHECK_ID/decision -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
   -d '{"action": "reject", "tables": ["shops"], "reason": "Public by design"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"decisions": [{"action": "reject", "tables": ["shops"], "reason": "Public by design", "by": "Priya", "at": "…"}]}</code></pre></div>
-<p class="codes"><span><b>403</b> not an app check, or not a member</span><span><b>409</b> check not finished</span><span><b>422</b> a named table wasn’t flagged</span></p>
+<p class="codes"><span><b>403</b> not an app check, not a member, or a member/viewer/client role</span><span><b>409</b> check not finished</span><span><b>422</b> a named table wasn’t flagged</span></p>
 </div></section>
-<section class="ep" aria-labelledby="post-checks-id-answers"><header><h3 id="post-checks-id-answers"><span class="method post">POST</span> <code>/checks/{id}/answers</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="post-checks-id-answers"><header><h3 id="post-checks-id-answers"><span class="method post">POST</span> <code>/checks/{id}/answers</code></h3><span class="auth">Session · approver+</span></header><div class="body">
 <p>Answer the report’s business questions. Answering a question again replaces the earlier answer.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>answers <i>array</i></dt><dd>1 to 50 items of <code>{question, answer}</code>; each <code>question</code> must match one in <code>summary.questions_for_owner</code>.</dd>
@@ -295,7 +363,7 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/checks/$CHECK_ID/answers -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
   -d '{"answers": [{"question": "Should sellers’ emails be public?", "answer": "No"}]}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"answers": [{"question": "Should sellers’ emails be public?", "answer": "No", "by": "Priya", "at": "…"}]}</code></pre></div>
-<p class="codes"><span><b>403</b> not an app check, or not a member</span><span><b>409</b> not finished, or the check has no questions</span><span><b>422</b> unknown question</span></p>
+<p class="codes"><span><b>403</b> not an app check, not a member, or a member/viewer/client role</span><span><b>409</b> not finished, or the check has no questions</span><span><b>422</b> unknown question</span></p>
 </div></section>
 <section class="ep" aria-labelledby="get-receipts-id"><header><h3 id="get-receipts-id"><span class="method get">GET</span> <code>/receipts/{id}</code></h3><span class="auth">No auth · by link</span></header><div class="body">
 <p>The Ed25519-signed receipt for a finished check.</p>
@@ -379,73 +447,86 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true, "deleted_workspaces": 1}</code></pre></div>
 </div></section>
 <h2 id="workspaces">Workspaces</h2>
-<p>Every workspace endpoint needs you to be a member; some need the owner role. Guide: <a href="/docs/teams">teams</a>.</p>
-<section class="ep" aria-labelledby="get-workspaces-wid"><header><h3 id="get-workspaces-wid"><span class="method get">GET</span> <code>/workspaces/{wid}</code></h3><span class="auth">Session · member</span></header><div class="body">
-<p>Plan, limits, usage, webhook, members and pending invites.</p>
+<p>Every workspace endpoint needs you to be a member, and your role must allow the call. Roles, most to least: <code>owner</code>, <code>admin</code> (everything but making or removing owners), <code>approver</code> (also approves or rejects fixes and answers the owner’s questions), <code>member</code> (views and runs checks), <code>viewer</code> (read-only) and <code>client</code> (read-only, only the apps shared with them, plus support tickets about those apps; clients never use a team seat). “approver+” means owner, admin or approver. Guide: <a href="/docs/teams">teams</a>.</p>
+<section class="ep" aria-labelledby="get-workspaces-wid"><header><h3 id="get-workspaces-wid"><span class="method get">GET</span> <code>/workspaces/{wid}</code></h3><span class="auth">Session · any role</span></header><div class="body">
+<p>Plan, limits, usage, webhook, members and pending invites. What you get depends on your role: the webhook, its secret and invites only for owners and admins; a client gets only the name, plan, their own membership and <code>permissions</code>.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/workspaces/$WORKSPACE_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"id": "…", "name": "Acme", "plan": "maker", "role": "owner", "created_at": "…",
  "limits": {"apps": 3, "runs_per_month": 30, "seats": 2, "schedules": ["off", "weekly", "monthly"]},
  "usage": {"apps": 2, "runs_this_month": 5, "members": 2},
- "webhook_url": "https://hooks.slack.com/services/…",
- "members": [{"user_id": "…", "email": "…", "name": "…", "role": "owner", "joined_at": "…"}],
- "invites": [{"id": "…", "email": "…", "role": "member", "created_at": "…", "expires_at": "…"}]}</code></pre></div>
+ "webhook_url": "https://hooks.slack.com/services/…", "webhook_format": "auto", "webhook_kind": "slack",
+ "permissions": ["decide", "manage", "owner", "run", "view", "view_team"],
+ "members": [{"user_id": "…", "email": "…", "name": "…", "role": "owner", "joined_at": "…", "app_ids": null}],
+ "invites": [{"id": "…", "email": "…", "role": "client", "app_ids": ["…"], "created_at": "…", "expires_at": "…"}]}</code></pre></div>
 </div></section>
-<section class="ep" aria-labelledby="patch-workspaces-wid"><header><h3 id="patch-workspaces-wid"><span class="method ">PATCH</span> <code>/workspaces/{wid}</code></h3><span class="auth">Session · owner</span></header><div class="body">
-<p>Rename the workspace or set its webhook.</p>
+<section class="ep" aria-labelledby="patch-workspaces-wid"><header><h3 id="patch-workspaces-wid"><span class="method ">PATCH</span> <code>/workspaces/{wid}</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>Rename the workspace or set its webhook. Slack, Discord and Microsoft Teams webhook URLs get native chat messages; any other URL gets the signed JSON event.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>name <i>string, optional</i></dt><dd>1 to 100 characters.</dd>
 <dt>webhook_url <i>string | null, optional</i></dt><dd>https only, on a public host; <code>null</code> or empty removes it.</dd>
+<dt>webhook_format <i>auto | json | slack | discord | teams, optional</i></dt><dd><code>auto</code> (default) detects <code>hooks.slack.com</code>, <code>discord.com/api/webhooks</code>, <code>*.webhook.office.com</code> and Teams Workflows on <code>*.powerplatform.com</code>. Set <code>teams</code> for a Workflows URL on <code>*.logic.azure.com</code>.</dd>
 </dl>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/workspaces/$WORKSPACE_ID -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
   -d '{"webhook_url": "https://hooks.slack.com/services/T000/B000/XXXX"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{…the workspace…}</code></pre></div>
-<p class="codes"><span><b>403</b> not an owner</span><span><b>422</b> webhook URL not https, unresolvable, or private</span></p>
+<p class="codes"><span><b>403</b> not an owner or admin</span><span><b>422</b> webhook URL not https, unresolvable, or private, or an unknown format</span></p>
 </div></section>
-<section class="ep" aria-labelledby="post-workspaces-wid-webhook-test"><header><h3 id="post-workspaces-wid-webhook-test"><span class="method post">POST</span> <code>/workspaces/{wid}/webhook/test</code></h3><span class="auth">Session · member</span></header><div class="body">
-<p>Send a <code>test</code> event to the webhook and report what it answered.</p>
+<section class="ep" aria-labelledby="post-workspaces-wid-webhook-test"><header><h3 id="post-workspaces-wid-webhook-test"><span class="method post">POST</span> <code>/workspaces/{wid}/webhook/test</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>Send a test to the webhook in its own format (a chat message for Slack, Discord and Teams, a <code>test</code> event otherwise) and report what it answered.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/webhook/test -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
-<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true, "status_code": 200}
-<span class="c"># or {"ok": false, "status_code": null, "detail": "…why it failed…"}</span></code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true, "status_code": 200, "format": "slack"}
+<span class="c"># or {"ok": false, "status_code": null, "format": "json", "detail": "…why it failed…"}</span></code></pre></div>
 <p class="codes"><span><b>409</b> no webhook URL set</span></p>
 </div></section>
-<section class="ep" aria-labelledby="post-workspaces-wid-invites"><header><h3 id="post-workspaces-wid-invites"><span class="method post">POST</span> <code>/workspaces/{wid}/invites</code></h3><span class="auth">Session · owner</span></header><div class="body">
-<p>Email an invite link (valid 14 days). Re-inviting an address replaces its pending invite.</p>
+<section class="ep" aria-labelledby="post-workspaces-wid-invites"><header><h3 id="post-workspaces-wid-invites"><span class="method post">POST</span> <code>/workspaces/{wid}/invites</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>Email an invite link (valid 14 days). Re-inviting an address replaces its pending invite. Only owners can invite owners.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>email <i>string</i></dt><dd>Required.</dd>
-<dt>role <i>member | owner</i></dt><dd>Defaults to <code>member</code>.</dd>
+<dt>role <i>owner | admin | approver | member | viewer | client</i></dt><dd>Defaults to <code>member</code>.</dd>
+<dt>app_ids <i>string[], optional</i></dt><dd>Clients only: the apps they will see. Every id must be an app in this workspace.</dd>
 </dl>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/invites -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
   -d '{"email": "dev@client.com", "role": "member"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"id": "…", "email": "dev@client.com", "role": "member", "created_at": "…", "expires_at": "…"}</code></pre></div>
-<p class="codes"><span><b>403</b> not an owner, or no free seats (pending invites count)</span><span><b>409</b> already a member</span></p>
+<p class="codes"><span><b>403</b> not an owner or admin, an admin inviting an owner, or no free seats (pending invites count)</span><span><b>409</b> already a member</span><span><b>422</b> app_ids for a non-client role, or an app from elsewhere</span></p>
 </div></section>
-<section class="ep" aria-labelledby="delete-workspaces-wid-invites-iid"><header><h3 id="delete-workspaces-wid-invites-iid"><span class="method delete">DELETE</span> <code>/workspaces/{wid}/invites/{iid}</code></h3><span class="auth">Session · owner</span></header><div class="body">
+<section class="ep" aria-labelledby="delete-workspaces-wid-invites-iid"><header><h3 id="delete-workspaces-wid-invites-iid"><span class="method delete">DELETE</span> <code>/workspaces/{wid}/invites/{iid}</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
 <p>Cancel a pending invite.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X DELETE https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/invites/$INVITE_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true}</code></pre></div>
 <p class="codes"><span><b>404</b> no such invite</span></p>
 </div></section>
-<section class="ep" aria-labelledby="patch-workspaces-wid-members-uid"><header><h3 id="patch-workspaces-wid-members-uid"><span class="method ">PATCH</span> <code>/workspaces/{wid}/members/{uid}</code></h3><span class="auth">Session · owner</span></header><div class="body">
-<p>Change a member’s role.</p>
+<section class="ep" aria-labelledby="patch-workspaces-wid-members-uid"><header><h3 id="patch-workspaces-wid-members-uid"><span class="method ">PATCH</span> <code>/workspaces/{wid}/members/{uid}</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>Change a member’s role. Admins can’t change owners or make anyone an owner. Someone who can no longer run checks (viewer, client) loses their API keys.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
-<dt>role <i>member | owner</i></dt><dd>Required.</dd>
+<dt>role <i>owner | admin | approver | member | viewer | client</i></dt><dd>Required.</dd>
+<dt>app_ids <i>string[], optional</i></dt><dd>With <code>role: client</code>: the apps they see.</dd>
 </dl>
-<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/members/$USER_ID -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' -d '{"role": "owner"}'</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/members/$USER_ID -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' -d '{"role": "approver"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{…the workspace…}</code></pre></div>
-<p class="codes"><span><b>409</b> would leave the workspace with no owner</span></p>
+<p class="codes"><span><b>403</b> not an owner or admin, or an admin touching an owner</span><span><b>409</b> would leave the workspace with no owner</span></p>
+</div></section>
+<section class="ep" aria-labelledby="put-workspaces-wid-members-uid-apps"><header><h3 id="put-workspaces-wid-members-uid-apps"><span class="method ">PUT</span> <code>/workspaces/{wid}/members/{uid}/apps</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>Set the apps a client sees (replaces the list).</p>
+<p class="small muted mb-1">Response fields</p><dl class="fields">
+<dt>app_ids <i>string[]</i></dt><dd>Apps in this workspace; empty means none.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PUT https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/members/$USER_ID/apps -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' -d '{"app_ids": ["…"]}'</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{…the workspace…}</code></pre></div>
+<p class="codes"><span><b>409</b> the member isn’t a client</span><span><b>422</b> an app from elsewhere</span></p>
 </div></section>
 <section class="ep" aria-labelledby="delete-workspaces-wid-members-uid"><header><h3 id="delete-workspaces-wid-members-uid"><span class="method delete">DELETE</span> <code>/workspaces/{wid}/members/{uid}</code></h3><span class="auth">Session</span></header><div class="body">
-<p>Remove a member. Owners can remove anyone; members can remove themselves.</p>
+<p>Remove a member. Owners can remove anyone, admins anyone but owners; everyone can remove themselves.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X DELETE https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/members/$USER_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true}</code></pre></div>
-<p class="codes"><span><b>403</b> a member removing someone else</span><span><b>409</b> the last owner</span></p>
+<p class="codes"><span><b>403</b> removing someone else without the right role</span><span><b>409</b> the last owner</span></p>
 </div></section>
-<section class="ep" aria-labelledby="get-workspaces-wid-api-keys"><header><h3 id="get-workspaces-wid-api-keys"><span class="method get">GET</span> <code>/workspaces/{wid}/api-keys</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="get-workspaces-wid-api-keys"><header><h3 id="get-workspaces-wid-api-keys"><span class="method get">GET</span> <code>/workspaces/{wid}/api-keys</code></h3><span class="auth">Session · viewer+</span></header><div class="body">
 <p>List API keys (never the keys themselves).</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/api-keys -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"api_keys": [{"id": "…", "name": "GitHub Actions", "prefix": "pl_live_Xy3k", "created_at": "…", "last_used_at": "…"}]}</code></pre></div>
 </div></section>
-<section class="ep" aria-labelledby="post-workspaces-wid-api-keys"><header><h3 id="post-workspaces-wid-api-keys"><span class="method post">POST</span> <code>/workspaces/{wid}/api-keys</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="post-workspaces-wid-api-keys"><header><h3 id="post-workspaces-wid-api-keys"><span class="method post">POST</span> <code>/workspaces/{wid}/api-keys</code></h3><span class="auth">Session · member+</span></header><div class="body">
 <p>Create an API key. The full key is in this response <strong>only</strong>; we store a hash.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>name <i>string</i></dt><dd>1 to 100 characters, so you know where it’s used.</dd>
@@ -454,13 +535,13 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"id": "…", "name": "GitHub Actions", "prefix": "pl_live_Xy3k", "created_at": "…",
  "last_used_at": null, "key": "pl_live_Xy3k…32 characters…"}</code></pre></div>
 </div></section>
-<section class="ep" aria-labelledby="delete-workspaces-wid-api-keys-kid"><header><h3 id="delete-workspaces-wid-api-keys-kid"><span class="method delete">DELETE</span> <code>/workspaces/{wid}/api-keys/{kid}</code></h3><span class="auth">Session · member</span></header><div class="body">
-<p>Revoke an API key. It stops working immediately.</p>
+<section class="ep" aria-labelledby="delete-workspaces-wid-api-keys-kid"><header><h3 id="delete-workspaces-wid-api-keys-kid"><span class="method delete">DELETE</span> <code>/workspaces/{wid}/api-keys/{kid}</code></h3><span class="auth">Session · member+</span></header><div class="body">
+<p>Revoke an API key. It stops working immediately. Owners and admins revoke any key, others their own.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X DELETE https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/api-keys/$KEY_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true}</code></pre></div>
-<p class="codes"><span><b>404</b> no such key</span></p>
+<p class="codes"><span><b>403</b> someone else’s key</span><span><b>404</b> no such key</span></p>
 </div></section>
-<section class="ep" aria-labelledby="post-workspaces-wid-upgrade-request"><header><h3 id="post-workspaces-wid-upgrade-request"><span class="method post">POST</span> <code>/workspaces/{wid}/upgrade-request</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="post-workspaces-wid-upgrade-request"><header><h3 id="post-workspaces-wid-upgrade-request"><span class="method post">POST</span> <code>/workspaces/{wid}/upgrade-request</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
 <p>Ask to move to a paid plan. We reply by email within a day and set the plan (card payments aren’t live yet).</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>plan <i>maker | agency | enterprise</i></dt><dd>Required.</dd>
@@ -469,18 +550,42 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/upgrade-request -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' -d '{"plan": "agency"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"id": "…", "plan": "agency", "note": null, "created_at": "…", "detail": "Thanks. We'll reply within a day."}</code></pre></div>
 </div></section>
+<h2 id="audit">Audit log</h2>
+<p>An append-only record of who did what in the workspace: sign-ins and sign-outs, invites, role changes, removals, apps, checks started, decisions, suppressions, API keys, webhooks, exports, tickets and plan changes. Owners and admins only. Secrets, tokens and webhook URLs are never recorded (only the webhook’s host). Emails show in full only for current members and pending invites; anyone else is masked (<code>b•••@example.com</code>), and “a former member” after deleting their account.</p>
+<section class="ep" aria-labelledby="get-workspaces-wid-audit"><header><h3 id="get-workspaces-wid-audit"><span class="method get">GET</span> <code>/workspaces/{wid}/audit</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>Events, newest first. Page with <code>before</code> = the last page’s <code>next_before</code> (null on the last page).</p>
+<p class="small muted mb-1">Response fields</p><dl class="fields">
+<dt>action <i>query, optional</i></dt><dd>An action such as <code>member.role_changed</code>, or a family such as <code>member</code>.</dd>
+<dt>actor <i>query, optional</i></dt><dd>A user id, or <code>api_key</code>, <code>admin</code> (PatchLabs admin) or <code>system</code> (scheduler).</dd>
+<dt>since, until <i>query, optional</i></dt><dd>Dates (<code>2026-11-10</code>, both inclusive) or ISO times.</dd>
+<dt>limit, before <i>query, optional</i></dt><dd>Page size 1 to 200 (default 50); cursor.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s 'https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/audit?action=member&amp;limit=50' -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"events": [{"id": 812, "at": "…", "action": "member.role_changed",
+             "actor": {"kind": "user", "id": "…", "label": "Priya", "email": "priya@agency.com"},
+             "target": {"type": "member", "id": "…", "label": null, "email": "dev@client.com"},
+             "detail": {"from": "member", "to": "approver"}}],
+ "next_before": 811, "actions": ["auth.sign_in", "auth.sign_out", "member.invited", …]}</code></pre></div>
+<p class="codes"><span><b>403</b> not an owner or admin</span><span><b>422</b> a date that can’t be read</span></p>
+</div></section>
+<section class="ep" aria-labelledby="get-workspaces-wid-audit-export"><header><h3 id="get-workspaces-wid-audit-export"><span class="method get">GET</span> <code>/workspaces/{wid}/audit/export</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
+<p>The same filters as a CSV download (up to 10,000 rows). The export itself is recorded as <code>audit.exported</code>.</p>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -OJ 'https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/audit/export?since=2026-11-01' -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK (text/csv)</span></div><pre><code>id,at,action,actor_kind,actor,actor_email,target_type,target_id,target,target_email,detail</code></pre></div>
+</div></section>
 <h2 id="apps">Apps</h2>
-<p>An app is a monitored repo inside a workspace. Guide: <a href="/docs/monitoring">monitoring</a>.</p>
-<section class="ep" aria-labelledby="get-workspaces-wid-apps"><header><h3 id="get-workspaces-wid-apps"><span class="method get">GET</span> <code>/workspaces/{wid}/apps</code></h3><span class="auth">Session · member</span></header><div class="body">
-<p>Every app in the workspace with its latest finished check and any open one.</p>
+<p>An app is a monitored repo inside a workspace. Owners and admins add, change and delete apps; members and above run checks; everyone can view them, except that a client sees only the apps shared with them. Guide: <a href="/docs/monitoring">monitoring</a>.</p>
+<section class="ep" aria-labelledby="get-workspaces-wid-apps"><header><h3 id="get-workspaces-wid-apps"><span class="method get">GET</span> <code>/workspaces/{wid}/apps</code></h3><span class="auth">Session · any role</span></header><div class="body">
+<p>Every app in the workspace (a client: the apps shared with them) with its latest finished check, any open one, and whether the result is stale.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/apps -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"apps": [{"id": "…", "workspace_id": "…", "repo": "you/your-app", "branch": "main",
            "client_label": "Acme", "schedule": "weekly", "next_check_at": "…",
            "badge_public": false, "created_at": "…", "verified_at": "…", "verified": true,
            "last_check": {"id": "…", "status": "no_leaks", "finished_at": "…", "tables_leaking": []},
-           "open_check_id": null, "suppressed_tables": []}]}</code></pre></div>
+           "open_check_id": null, "suppressed_tables": [],
+           "freshness": {"stale": false, "days_since_check": 3, "stale_after_days": 14}}]}</code></pre></div>
 </div></section>
-<section class="ep" aria-labelledby="post-workspaces-wid-apps"><header><h3 id="post-workspaces-wid-apps"><span class="method post">POST</span> <code>/workspaces/{wid}/apps</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="post-workspaces-wid-apps"><header><h3 id="post-workspaces-wid-apps"><span class="method post">POST</span> <code>/workspaces/{wid}/apps</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
 <p>Add an app. It starts unverified and returns its verification details.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>repo <i>string</i></dt><dd>Public GitHub repo.</dd>
@@ -491,24 +596,28 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
   -d '{"repo": "you/your-app", "client_label": "Acme"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"id": "…", "repo": "you/your-app", "verified": false, …,
  "verify": {"file": "patchlabs-verify.txt", "code": "patchlabs-…", "add_url": "https://github.com/…"}}</code></pre></div>
-<p class="codes"><span><b>403</b> plan’s app limit, or schedule not on the plan</span><span><b>409</b> repo already in this workspace</span><span><b>422</b> repo not found</span></p>
+<p class="codes"><span><b>403</b> not an owner or admin, plan’s app limit, or schedule not on the plan</span><span><b>409</b> repo already in this workspace</span><span><b>422</b> repo not found</span></p>
 </div></section>
-<section class="ep" aria-labelledby="post-apps-aid-verify"><header><h3 id="post-apps-aid-verify"><span class="method post">POST</span> <code>/apps/{aid}/verify</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="post-apps-aid-verify"><header><h3 id="post-apps-aid-verify"><span class="method post">POST</span> <code>/apps/{aid}/verify</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
 <p>Check the verification file. On success the app is verified for good and its first check is queued.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/apps/$APP_ID/verify -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"verified": true, "check_id": "…"}</code></pre></div>
 <p class="codes"><span><b>409</b> file or code not found yet</span><span><b>503</b> GitHub unreachable</span></p>
 </div></section>
-<section class="ep" aria-labelledby="get-apps-aid"><header><h3 id="get-apps-aid"><span class="method get">GET</span> <code>/apps/{aid}</code></h3><span class="auth">Session · member</span></header><div class="body">
-<p>The app, its latest 50 checks and the diff between its last two finished checks. Model costs are never included.</p>
+<section class="ep" aria-labelledby="get-apps-aid"><header><h3 id="get-apps-aid"><span class="method get">GET</span> <code>/apps/{aid}</code></h3><span class="auth">Session · any role</span></header><div class="body">
+<p>The app, its latest 50 checks, the diff between its last two finished checks, and its findings: <code>open</code> (in the latest finished check, worst first) and recently <code>fixed</code>, each with CWE/OWASP tags, <code>first_seen</code>, <code>days_open</code> and, once fixed, <code>fixed_at</code>. A finding is matched across checks by its <code>id</code> and <code>object</code>. Model costs are never included.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/apps/$APP_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"id": "…", "repo": "you/your-app", …,
  "checks": [{"id": "…", "status": "done", "trigger": "scheduled", "created_at": "…",
              "finished_at": "…", "tables_leaking": ["orders"], "lab_proof_passed": true}],
  "diff": {"new_leaks": ["orders"], "fixed": [], "still_leaking": [], "suppressed": [],
-          "to_check_id": "…", "from_check_id": "…"}}</code></pre></div>
+          "to_check_id": "…", "from_check_id": "…"},
+ "findings": {"open": [{"id": "PL-001", "object": "public.orders", "severity": "critical", "title": "…",
+                        "cwe": ["CWE-359", "CWE-863"], "owasp": "A01:2021", "owasp_name": "Broken Access Control",
+                        "first_seen": "…", "first_check_id": "…", "days_open": 12, "fixed_at": null, "regressed": false}],
+              "fixed": [{"id": "PL-023", "object": "package.json", "days_open": 7, "fixed_at": "…", "fixed_in_check_id": "…", …}]}}</code></pre></div>
 </div></section>
-<section class="ep" aria-labelledby="patch-apps-aid"><header><h3 id="patch-apps-aid"><span class="method ">PATCH</span> <code>/apps/{aid}</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="patch-apps-aid"><header><h3 id="patch-apps-aid"><span class="method ">PATCH</span> <code>/apps/{aid}</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
 <p>Change the label, schedule or badge. Changing the schedule restarts its clock.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>client_label <i>string | null, optional</i></dt><dd>&nbsp;</dd>
@@ -519,16 +628,63 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{…the app…}</code></pre></div>
 <p class="codes"><span><b>403</b> schedule not on the plan</span></p>
 </div></section>
-<section class="ep" aria-labelledby="delete-apps-aid"><header><h3 id="delete-apps-aid"><span class="method delete">DELETE</span> <code>/apps/{aid}</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="delete-apps-aid"><header><h3 id="delete-apps-aid"><span class="method delete">DELETE</span> <code>/apps/{aid}</code></h3><span class="auth">Session · owner/admin</span></header><div class="body">
 <p>Delete the app <strong>with all its checks, reports and receipts</strong>.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X DELETE https://api.patchlabs.dev/apps/$APP_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"ok": true}</code></pre></div>
 </div></section>
-<section class="ep" aria-labelledby="post-apps-aid-checks"><header><h3 id="post-apps-aid-checks"><span class="method post">POST</span> <code>/apps/{aid}/checks</code></h3><span class="auth">Session · member</span></header><div class="body">
+<section class="ep" aria-labelledby="post-apps-aid-checks"><header><h3 id="post-apps-aid-checks"><span class="method post">POST</span> <code>/apps/{aid}/checks</code></h3><span class="auth">Session · member+</span></header><div class="body">
 <p>Run a check now (trigger <code>manual</code>). Verified apps skip verification.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/apps/$APP_ID/checks -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"check_id": "…", "status": "queued", "url": "https://patchlabs.dev/check?id=…"}</code></pre></div>
 <p class="codes"><span><b>409</b> not verified, or a check is already queued or running</span><span><b>429</b> monthly run limit reached</span></p>
+</div></section>
+<h2 id="support">Support tickets</h2>
+<p>Tickets belong to a workspace: its team sees them and our replies, nobody else does; viewers read but can’t write. A client sees and writes only tickets about apps shared with them, must give <code>app_id</code> (one of their apps) when raising one, and sees teammates’ emails masked. The app’s <a href="/app/support">support page</a> uses these calls. We reply within a day.</p>
+<section class="ep" aria-labelledby="get-workspaces-wid-support-tickets"><header><h3 id="get-workspaces-wid-support-tickets"><span class="method get">GET</span> <code>/workspaces/{wid}/support/tickets</code></h3><span class="auth">Session · any role</span></header><div class="body">
+<p>The workspace’s tickets, most recently updated first, with a count per status.</p>
+<p class="small muted mb-1">Response fields</p><dl class="fields">
+<dt>status <i>query, optional</i></dt><dd><code>active</code> (open or waiting on you), <code>open</code>, <code>waiting_on_customer</code>, <code>resolved</code> or <code>closed</code>.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/support/tickets -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"tickets": [{"id": "…", "number": 12, "subject": "Report says profiles leak", "category": "finding",
+              "priority": "normal", "status": "waiting_on_customer", "app": {"id": "…", "repo": "you/your-app"},
+              "created_by": "Olive", "message_count": 2, "last_from": "support", "updated_at": "…"}],
+ "counts": {"open": 0, "waiting_on_customer": 1, "resolved": 3, "closed": 1}}</code></pre></div>
+</div></section>
+<section class="ep" aria-labelledby="post-workspaces-wid-support-tickets"><header><h3 id="post-workspaces-wid-support-tickets"><span class="method post">POST</span> <code>/workspaces/{wid}/support/tickets</code></h3><span class="auth">Session · member+ or client</span></header><div class="body">
+<p>Raise a ticket. We email you a confirmation; the founder is emailed too.</p>
+<p class="small muted mb-1">Body</p><dl class="fields">
+<dt>subject <i>string</i></dt><dd>Up to 200 characters.</dd>
+<dt>category <i>billing | finding | fix | account | bug | other</i></dt><dd>Required.</dd>
+<dt>message <i>string</i></dt><dd>Plain text, up to 10,000 characters. Line breaks are kept; it is never rendered as HTML.</dd>
+<dt>priority <i>normal | urgent</i></dt><dd>Optional, default <code>normal</code>. Urgent: personal data is exposed right now, or PatchLabs is unusable.</dd>
+<dt>app_id <i>string, optional</i></dt><dd>An app in the same workspace.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/support/tickets -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' \
+  -d '{"subject": "Report says profiles leak", "category": "finding", "message": "Is this real?"}'</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"id": "…", "number": 12, "status": "open", "priority": "normal", "subject": "Report says profiles leak", …,
+ "messages": [{"author": "customer", "kind": "message", "by": "Olive", "body": "Is this real?", "created_at": "…"}]}</code></pre></div>
+<p class="codes"><span><b>422</b> missing or too-long subject or message, unknown category or priority, or an app from another workspace</span><span><b>429</b> 20 tickets from you today</span></p>
+</div></section>
+<section class="ep" aria-labelledby="get-support-tickets-tid"><header><h3 id="get-support-tickets-tid"><span class="method get">GET</span> <code>/support/tickets/{tid}</code></h3><span class="auth">Session · any role</span></header><div class="body">
+<p>One ticket and its thread: your team’s messages, our replies (<code>author: support</code>, <code>by: PatchLabs support</code>) and status changes (<code>kind: status</code>, <code>body</code> is the new status).</p>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/support/tickets/$TICKET_ID -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
+<p class="codes"><span><b>404</b> no such ticket, or not in a workspace you belong to</span></p>
+</div></section>
+<section class="ep" aria-labelledby="post-support-tickets-tid-messages"><header><h3 id="post-support-tickets-tid-messages"><span class="method post">POST</span> <code>/support/tickets/{tid}/messages</code></h3><span class="auth">Session · member+ or client</span></header><div class="body">
+<p>Reply. The ticket goes back to <code>open</code>, even if it was resolved or closed, and we’re emailed.</p>
+<p class="small muted mb-1">Body</p><dl class="fields">
+<dt>body <i>string</i></dt><dd>Plain text, up to 10,000 characters.</dd>
+</dl>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/support/tickets/$TICKET_ID/messages -H "Authorization: Bearer $PL_SESSION" -H 'Content-Type: application/json' -d '{"body": "Applied the fix, thanks."}'</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 201 Created</span></div><pre><code>{"id": "…", "status": "open", "messages": […]}</code></pre></div>
+<p class="codes"><span><b>429</b> 200 replies from you today</span></p>
+</div></section>
+<section class="ep" aria-labelledby="post-support-tickets-tid-close"><header><h3 id="post-support-tickets-tid-close"><span class="method post">POST</span> <code>/support/tickets/{tid}/close</code></h3><span class="auth">Session · member+ or client</span></header><div class="body">
+<p>Close the ticket. Replying later opens it again.</p>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/support/tickets/$TICKET_ID/close -H "Authorization: Bearer $PL_SESSION"</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"id": "…", "status": "closed", "closed_at": "…", "messages": […]}</code></pre></div>
 </div></section>
 <h2 id="ci">CI endpoints (API key)</h2>
 <p>For scripts and CI. Send a workspace API key as <code>X-API-Key</code>; it works only for that workspace’s apps. The <a href="/docs/github-action">GitHub Action</a> uses these two.</p>
@@ -555,15 +711,24 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <h2 id="public">Public</h2>
 <p>No authentication, safe to call from anywhere.</p>
 <section class="ep" aria-labelledby="get-badge-aid-svg"><header><h3 id="get-badge-aid-svg"><span class="method get">GET</span> <code>/badge/{aid}.svg</code></h3><span class="auth">No auth</span></header><div class="body">
-<p>The app’s badge as SVG. Shows the status only when the app’s badge is public, otherwise “private”. Cached for an hour. Guide: <a href="/docs/badge">badge</a>.</p>
+<p>The app’s badge as SVG. Shows the status only when the app’s badge is public, otherwise “private”. When the last finished check is older than twice the app’s schedule (14 days weekly, 60 monthly, 45 without a schedule) it shows a grey “last checked N days ago” instead of a status. Cached for an hour. Guide: <a href="/docs/badge">badge</a>.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/badge/$APP_ID.svg -o badge.svg</code></pre></div>
 </div></section>
 <section class="ep" aria-labelledby="get-public-apps-aid"><header><h3 id="get-public-apps-aid"><span class="method get">GET</span> <code>/public/apps/{aid}</code></h3><span class="auth">No auth</span></header><div class="body">
-<p>Repo, status and last-checked date, only when the badge is public.</p>
+<p>Repo, status, last-checked date and freshness, only when the badge is public. A stale result is reported as <code>stale</code>, never as its old status.</p>
 <div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/public/apps/$APP_ID</code></pre></div>
-<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "…"}
-<span class="c"># status: no_known_leaks | fix_in_progress | not_checked_yet</span></code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"repo": "you/your-app", "status": "no_known_leaks", "last_checked": "…",
+ "stale": false, "days_since_check": 3, "stale_after_days": 60}
+<span class="c"># status: no_known_leaks | fix_in_progress | not_checked_yet | stale</span></code></pre></div>
 <p class="codes"><span><b>404</b> badge not public</span></p>
+</div></section>
+<section class="ep" aria-labelledby="get-taxonomy-findings"><header><h3 id="get-taxonomy-findings"><span class="method get">GET</span> <code>/taxonomy/findings</code></h3><span class="auth">No auth</span></header><div class="body">
+<p>The CWE and OWASP Top 10 (2021) tags for every finding ID, with their names.</p>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/taxonomy/findings</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"findings": {"PL-001": {"cwe": ["CWE-359", "CWE-863"], "owasp": "A01:2021", "owasp_name": "Broken Access Control"}, …},
+ "cwe": {"CWE-359": "Exposure of Private Personal Information to an Unauthorized Actor", …},
+ "owasp": {"A01:2021": "Broken Access Control", …}}</code></pre></div>
+<div class="doc-tool" data-tool="try" data-method="GET" data-path="/taxonomy/findings"><p class="lab">Try it</p><p class="mb-1">Send this request to the live API from your browser.</p><button class="btn secondary small needs-js" type="button" data-send>Send GET /taxonomy/findings</button><p class="nojs-note small muted mb-0">Needs JavaScript; use the curl example instead.</p><div class="out" aria-live="polite"></div></div>
 </div></section>
 <section class="ep" aria-labelledby="get-stats"><header><h3 id="get-stats"><span class="method get">GET</span> <code>/stats</code></h3><span class="auth">No auth</span></header><div class="body">
 <p>Live totals across PatchLabs.</p>
@@ -614,44 +779,70 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 </article>
 <aside class="toc" aria-label="On this page">
 <h2>On this page</h2>
-<ul><li><a href="#overview">Overview</a></li><li><a href="#authentication">Authentication</a></li><li><a href="#errors">Errors</a></li><li><a href="#rate-limits">Rate limits</a></li><li><a href="#statuses">Check statuses</a></li><li><a href="#endpoints">All endpoints</a></li><li><a href="#checks">Free checks</a></li><li><a href="#decisions">Decisions and receipts</a></li><li><a href="#auth">Sign-in</a></li><li><a href="#me">Your account</a></li><li><a href="#workspaces">Workspaces</a></li><li><a href="#apps">Apps</a></li><li><a href="#ci">CI endpoints (API key)</a></li><li><a href="#public">Public</a></li><li><a href="#tools">Free RLS check</a></li><li><a href="#mcp">MCP</a></li></ul>
+<ul><li><a href="#overview">Overview</a></li><li><a href="#authentication">Authentication</a></li><li><a href="#errors">Errors</a></li><li><a href="#rate-limits">Rate limits</a></li><li><a href="#statuses">Check statuses</a></li><li><a href="#endpoints">All endpoints</a></li><li><a href="#checks">Free checks</a></li><li><a href="#decisions">Decisions and receipts</a></li><li><a href="#auth">Sign-in</a></li><li><a href="#me">Your account</a></li><li><a href="#workspaces">Workspaces</a></li><li><a href="#audit">Audit log</a></li><li><a href="#apps">Apps</a></li><li><a href="#support">Support tickets</a></li><li><a href="#ci">CI endpoints (API key)</a></li><li><a href="#public">Public</a></li><li><a href="#tools">Free RLS check</a></li><li><a href="#mcp">MCP</a></li></ul>
 </aside>
 </div>
 </main>
 
 <footer class="site-footer" id="site-footer">
   <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
     <div class="foot-top">
       <div class="foot-brand">
         <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
-        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
       </div>
-      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
-        <li><a href="/product/leak-lab">Leak lab</a></li>
-        <li><a href="/product/key-scan">Key scan</a></li>
-        <li><a href="/product/monitoring">Monitoring</a></li>
-        <li><a href="/product/badge">Badge &amp; proof page</a></li>
-        <li><a href="/agencies">Agencies</a></li>
-        <li><a href="/how-it-works">How it works</a></li>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
-        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
       </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
         <li><a href="/for/lovable">Lovable apps</a></li>
         <li><a href="/for/supabase">Supabase apps</a></li>
         <li><a href="/for/bolt">Bolt apps</a></li>
         <li><a href="/for/replit">Replit apps</a></li>
         <li><a href="/for/cursor">Cursor projects</a></li>
       </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
         <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
         <li><a href="/research/methodology">Methodology</a></li>
-        <li><a href="/findings">Finding index</a></li>
-        <li><a href="/tools">Free tools</a></li>
-        <li><a href="/tools/rls-check">Free RLS check</a></li>
-        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/findings">Findings library</a></li>
         <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
         <li><a href="/compare">All comparisons</a></li>
@@ -663,13 +854,8 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
         <li><a href="/about">About</a></li>
-        <li><a href="/changelog">Changelog</a></li>
-        <li><a href="/status">Status</a></li>
         <li><a href="/security">Security</a></li>
-        <li><a href="/docs">Docs</a></li>
         <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
         <li><a href="/legal/terms">Terms</a></li>
         <li><a href="/legal/privacy">Privacy</a></li>
         <li><a href="/legal/acceptable-use">Acceptable use</a></li>
@@ -680,14 +866,13 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
     </div>
     <div class="foot-bottom">
       <span>© 2026 PatchLabs</span>
-      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
       <a href="/changelog.xml">Changelog feed</a>
       <a href="/llms.txt">llms.txt</a>
       <a href="/.well-known/security.txt">security.txt</a>
       <span class="spacer"></span>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
     </div>
-    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
   </div>
 </footer>
 

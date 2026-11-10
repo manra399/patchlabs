@@ -1,0 +1,138 @@
+title: Verify Stripe webhook signatures in a Supabase Edge Function
+description: A working Deno Edge Function that verifies Stripe webhook signatures with constructEventAsync, reads the raw body, handles retries, and how to test it with the Stripe CLI.
+h1: Verify Stripe webhook signatures in a Supabase Edge Function
+navtitle: Stripe webhooks in Edge Functions
+topic: server
+order: 3
+short: A working Deno function that verifies the signature, reads the raw body and handles retries.
+lede: To verify a Stripe webhook in a Supabase Edge Function, read the request body as raw text, then pass it with the <code>Stripe-Signature</code> header and your webhook signing secret to <code>stripe.webhooks.constructEventAsync()</code> using Stripe’s Web Crypto provider; reject the request if that throws. Without this check, anyone who finds the URL can send a fake “payment succeeded” event.
+tldr: Stripe signs every webhook. Unverified handlers let anyone fake payments (<a href="/findings/pl-021">PL-021</a>). || Read the body with <code>req.text()</code>. Parsing JSON first breaks the signature check. || In Deno, use <code>constructEventAsync</code> with <code>Stripe.createSubtleCryptoProvider()</code>. || Set <code>verify_jwt = false</code> for this one function (Stripe has no Supabase token), and record event ids, because Stripe can deliver the same event more than once.
+findings: PL-021, PL-017
+---
+<h2 id="why">Why the signature matters</h2>
+<p>A webhook endpoint is a public URL that changes your database: “checkout completed, give this user Pro”. If the handler trusts the JSON it receives, anyone can send:</p>
+[[CODE a forged event]]
+curl -X POST https://<project>.supabase.co/functions/v1/stripe-webhook \
+  -H "Content-Type: application/json" \
+  -d '{"type":"checkout.session.completed","data":{"object":{"client_reference_id":"<any user id>"}}}'
+[[/CODE]]
+<p>Stripe prevents this by signing each delivery with a secret that only you and Stripe know (it starts <code>whsec_</code>). The signature covers the exact bytes of the body plus a timestamp, so a forged or replayed event fails verification.</p>
+
+<h2 id="setup">Set up the secrets</h2>
+<ol>
+  <li>In the Stripe dashboard, add a webhook endpoint pointing at <code>https://&lt;project&gt;.supabase.co/functions/v1/stripe-webhook</code> and choose the events you handle (for example <code>checkout.session.completed</code>).</li>
+  <li>Copy the endpoint’s signing secret.</li>
+  <li>Store both keys as function secrets, never in code:</li>
+</ol>
+[[CODE terminal]]
+supabase secrets set STRIPE_SECRET_KEY=sk_live_... STRIPE_WEBHOOK_SECRET=whsec_...
+[[/CODE]]
+<p>Stripe can’t send a Supabase sign-in token, so turn off the platform JWT check for this function only. The signature is what proves the caller here.</p>
+[[CODE supabase/config.toml]]
+[functions.stripe-webhook]
+verify_jwt = false
+[[/CODE]]
+
+<h2 id="code">The function</h2>
+[[CODE supabase/functions/stripe-webhook/index.ts]]
+import Stripe from 'npm:stripe@17';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
+const admin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
+
+Deno.serve(async (req) => {
+  const signature = req.headers.get('Stripe-Signature');
+  if (!signature) return new Response('Missing signature', { status: 400 });
+
+  // 1. The raw body, exactly as Stripe sent it
+  const body = await req.text();
+
+  // 2. Verify. Throws if the signature, secret or timestamp don't match.
+  let event: Stripe.Event;
+  try {
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      Deno.env.get('STRIPE_WEBHOOK_SECRET')!,
+      undefined,
+      cryptoProvider,
+    );
+  } catch (_err) {
+    return new Response('Invalid signature', { status: 400 });
+  }
+
+  // 3. Skip events already handled (Stripe may deliver more than once)
+  const { error: seenErr } = await admin
+    .from('stripe_events')
+    .insert({ id: event.id, type: event.type });
+  if (seenErr) {
+    // 23505 = unique violation: we've processed this event before
+    if (seenErr.code === '23505') return Response.json({ received: true });
+    return new Response('Could not record event', { status: 500 });
+  }
+
+  // 4. Act on the verified event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    if (session.payment_status === 'paid' && session.client_reference_id) {
+      await admin.from('profiles')
+        .update({ plan: 'pro' })
+        .eq('id', session.client_reference_id);
+    }
+  }
+
+  return Response.json({ received: true });
+});
+[[/CODE]]
+[[CODE supabase/migrations/…_stripe_events.sql]]
+-- Event ids already processed. Only the service role writes here.
+create table public.stripe_events (
+  id text primary key,
+  type text not null,
+  received_at timestamptz not null default now()
+);
+alter table public.stripe_events enable row level security;
+-- No policies: the API roles can't read or write it; the service role can.
+[[/CODE]]
+
+<h2 id="details">Details that trip people up</h2>
+<ul>
+  <li><strong>Raw body.</strong> <code>await req.json()</code> and then <code>JSON.stringify</code> doesn’t reproduce the original bytes, so verification fails. Read <code>req.text()</code> once and parse only the verified event.</li>
+  <li><strong>Async in Deno.</strong> Node examples use <code>constructEvent</code>. In an Edge Function use <code>constructEventAsync</code> with the Web Crypto provider, as above.</li>
+  <li><strong>Which secret.</strong> The signing secret is per endpoint, and the Stripe CLI has its own for local testing. A “No signatures found matching the expected signature” error usually means the wrong <code>whsec_</code> value.</li>
+  <li><strong>Who the payment is for.</strong> Set <code>client_reference_id</code> (or metadata) when you create the Checkout Session on your server, from the signed-in user’s id. Don’t let the browser choose it.</li>
+  <li><strong>Retries.</strong> Stripe retries deliveries that fail or time out, which is why the function records event ids. If the work after recording an event fails, delete that event’s row and return a 500, so Stripe’s retry can process it again.</li>
+</ul>
+
+<h2 id="test">Test it locally with the Stripe CLI</h2>
+[[CODE terminal]]
+# 1. Serve functions locally (needs supabase start)
+supabase functions serve --env-file supabase/functions/.env
+
+# 2. Forward Stripe test events to it; note the whsec_ secret it prints
+stripe listen --forward-to http://127.0.0.1:54321/functions/v1/stripe-webhook
+
+# 3. Trigger a signed test event
+stripe trigger checkout.session.completed
+
+# 4. A forged, unsigned event must be refused with 400
+curl -i -X POST http://127.0.0.1:54321/functions/v1/stripe-webhook \
+  -H "Content-Type: application/json" \
+  -d '{"type":"checkout.session.completed","data":{"object":{}}}'
+[[/CODE]]
+<p>Put the secret printed by <code>stripe listen</code> in <code>supabase/functions/.env</code> as <code>STRIPE_WEBHOOK_SECRET</code> for local runs, and keep that file out of git.</p>
+
+<h2 id="other-providers">Other payment providers</h2>
+<p>Lemon Squeezy, Paddle and others also sign their webhooks, each with its own header and scheme. Use the provider’s documented verification, always over the raw body, and compare signatures in constant time. If a provider doesn’t sign, treat the webhook as a hint: fetch the payment from the provider’s API with your secret key and act on that.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://docs.stripe.com/webhooks">Stripe: receive webhook events (and verify signatures)</a></li>
+  <li><a href="https://docs.stripe.com/stripe-cli">Stripe CLI</a></li>
+  <li><a href="https://supabase.com/docs/guides/functions/secrets">Supabase: Edge Function secrets</a></li>
+</ul>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support | PatchLabs</title>
+<meta name="description" content="Raise a support ticket, follow our replies and answer them.">
+<link rel="canonical" href="https://patchlabs.dev/app/support">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Support | PatchLabs">
+<meta property="og:description" content="Raise a support ticket, follow our replies and answer them.">
+<meta property="og:url" content="https://patchlabs.dev/app/support">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Support | PatchLabs">
+<meta name="twitter:description" content="Raise a support ticket, follow our replies and answer them.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><link rel="stylesheet" href="/assets/pages/app-support.css"><script src="/assets/app-ui.js"></script><script src="/assets/app-support.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="app-header">
+  <div class="wrap">
+    <a class="logo" href="/app/" aria-label="PatchLabs app home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="hide-sm">PatchLabs</span></a>
+    <div id="ws-slot"></div>
+    <nav aria-label="App">
+      <a href="/app/">Apps</a>
+      <a href="/app/settings">Settings</a>
+      <a href="/app/support" aria-current="page">Support</a>
+      <a href="/docs" class="hide-sm">Docs</a>
+    </nav>
+    <div class="right">
+      <button class="theme-toggle hide-sm" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+      <button class="btn small secondary" type="button" id="signout">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="app-main">
+  <div class="wrap wide">
+    <div class="app-head">
+      <div>
+        <p class="lab">Support</p>
+        <h1 class="app-title">Support</h1>
+        <p class="app-sub" id="ws-line"><span class="skeleton" style="display:inline-block;width:260px;height:14px"></span></p>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" id="sp-new" disabled>New ticket</button></div>
+    </div>
+    <div class="sp-layout" id="sp-root" data-view="list">
+      <section class="sp-list" aria-labelledby="sp-list-h">
+        <h2 class="sr-only" id="sp-list-h">Your workspace’s tickets</h2>
+        <div id="sp-items" aria-live="polite"></div>
+      </section>
+      <section class="sp-detail" id="sp-detail" aria-label="Ticket"></section>
+    </div>
+    <noscript><div class="callout note"><p>This page needs JavaScript. You can always email <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a> instead.</p></div></noscript>
+  </div>
+</main>
+<script>PLSupport.customer();</script>
+
+</body>
+</html>

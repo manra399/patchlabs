@@ -6,7 +6,8 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from core import FINISHED, as_uuid, current_user, db, event, leaking, mask_email
+import audit
+from core import FINISHED, as_uuid, current_user, db, event, leaking, mask_email, may_see_app, require
 
 router = APIRouter()
 
@@ -62,14 +63,17 @@ def questions(summary):
     return [q if isinstance(q, str) else str(q.get("question", "")) for q in (qs or []) if isinstance(q, (str, dict))]
 
 
-def check_for_member(c, user, cid):
-    k = c.execute("SELECT k.*, a.workspace_id FROM checks k LEFT JOIN apps a ON a.id = k.app_id WHERE k.id = %s",
+def check_for_member(c, user, cid, perm="view"):
+    """A finished app check the user may see (clients: only apps shared with them), with a role that allows `perm`."""
+    k = c.execute("SELECT k.*, a.workspace_id, a.repo AS app_repo FROM checks k LEFT JOIN apps a ON a.id = k.app_id WHERE k.id = %s",
                   (as_uuid(cid, "Check not found."),)).fetchone()
     if not k:
         raise HTTPException(404, "Check not found.")
-    if not k["app_id"] or not c.execute("SELECT 1 FROM workspace_members WHERE workspace_id = %s AND user_id = %s",
-                                        (k["workspace_id"], user["id"])).fetchone():
+    m = c.execute("SELECT role FROM workspace_members WHERE workspace_id = %s AND user_id = %s",
+                  (k["workspace_id"], user["id"])).fetchone() if k["app_id"] else None
+    if not m or not may_see_app(c, m["role"], k["workspace_id"], user["id"], k["app_id"]):
         raise HTTPException(403, "Only members of the app's workspace can do that.")
+    require(m["role"], perm)
     if k["status"] not in FINISHED:
         raise HTTPException(409, "Wait until the check has finished.")
     return k
@@ -92,7 +96,7 @@ class Answers(BaseModel):
 
 @router.post("/checks/{cid}/decision", status_code=201)
 def decide(cid: str, body: Decision, user=Depends(current_user), c=Depends(db)):
-    k = check_for_member(c, user, cid)
+    k = check_for_member(c, user, cid, "decide")
     found = leaking(k["summary"])
     tables = found if body.tables is None else list(dict.fromkeys(body.tables))
     unknown = [t for t in tables if t not in found]
@@ -101,20 +105,27 @@ def decide(cid: str, body: Decision, user=Depends(current_user), c=Depends(db)):
     did = uuid.uuid4()
     c.execute("INSERT INTO decisions (id, check_id, user_id, by_label, action, tables, reason) VALUES (%s, %s, %s, %s, %s, %s, %s)",
               (did, k["id"], user["id"], by_label(user), body.action, tables, (body.reason or "").strip() or None))
+    target = {"type": "check", "id": k["id"], "label": k["app_repo"]}
+    audit.log(c, k["workspace_id"], "decision.made", user, target=target,
+              detail={"action": body.action, "tables": tables, "app_id": k["app_id"], "decision_id": did})
     if body.action == "reject":
         for t in tables:
-            c.execute("INSERT INTO finding_suppressions (app_id, table_name, decision_id) VALUES (%s, %s, %s) "
-                      "ON CONFLICT (app_id, table_name) DO UPDATE SET decision_id = EXCLUDED.decision_id, created_at = now()",
-                      (k["app_id"], t, did))
+            new = c.execute("INSERT INTO finding_suppressions (app_id, table_name, decision_id) VALUES (%s, %s, %s) "
+                            "ON CONFLICT (app_id, table_name) DO UPDATE SET decision_id = EXCLUDED.decision_id, created_at = now() "
+                            "RETURNING (xmax = 0) AS inserted", (k["app_id"], t, did)).fetchone()["inserted"]
+            if new:
+                audit.log(c, k["workspace_id"], "suppression.added", user, target=target, detail={"table": t, "app_id": k["app_id"]})
     elif tables:
-        c.execute("DELETE FROM finding_suppressions WHERE app_id = %s AND table_name = ANY(%s)", (k["app_id"], tables))
+        for r in c.execute("DELETE FROM finding_suppressions WHERE app_id = %s AND table_name = ANY(%s) RETURNING table_name",
+                           (k["app_id"], tables)).fetchall():
+            audit.log(c, k["workspace_id"], "suppression.removed", user, target=target, detail={"table": r["table_name"], "app_id": k["app_id"]})
     event(c, k["id"], f"decision_{body.action}", ", ".join(tables) or None)
     return {"decisions": decisions(c, k["id"], members=True)}
 
 
 @router.post("/checks/{cid}/answers")
 def answer(cid: str, body: Answers, user=Depends(current_user), c=Depends(db)):
-    k = check_for_member(c, user, cid)
+    k = check_for_member(c, user, cid, "decide")
     qs = questions(k["summary"])
     if not qs:
         raise HTTPException(409, "This check has no questions for the owner.")
@@ -126,6 +137,8 @@ def answer(cid: str, body: Answers, user=Depends(current_user), c=Depends(db)):
                   "ON CONFLICT (check_id, question) DO UPDATE SET answer = EXCLUDED.answer, user_id = EXCLUDED.user_id, "
                   "by_label = EXCLUDED.by_label, created_at = now()", (k["id"], a.question, a.answer.strip(), user["id"], by_label(user)))
     event(c, k["id"], "answers_saved")
+    audit.log(c, k["workspace_id"], "check.answered", user, target={"type": "check", "id": k["id"], "label": k["app_repo"]},
+              detail={"questions": len(body.answers)})
     return {"answers": answers(c, k["id"], members=True)}
 
 
@@ -148,6 +161,8 @@ def receipt(cid: str, c=Depends(db)):
          "lab_proof_passed": bool(s.get("lab_proof_passed")), "finished_at": iso(k["finished_at"]),
          "fix_sha256": hashlib.sha256(k["fix_sql"].encode()).hexdigest() if k["fix_sql"] else None,
          "decisions": decisions(c, k["id"]), "answers": answers(c, k["id"])}
+    if isinstance(s.get("findings"), list):  # v3 checks: every finding, by ID only (no paths or evidence on a public receipt)
+        r["findings"] = [{x: f.get(x) for x in ("id", "line", "severity", "proven", "fixed_in_lab")} for f in s["findings"] if isinstance(f, dict)]
     return {"receipt": r, "signature": base64.b64encode(KEY.sign(canonical(r))).decode(), "key_id": KEY_ID, "algorithm": "Ed25519"}
 
 

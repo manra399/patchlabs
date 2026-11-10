@@ -1,6 +1,7 @@
 // PatchLabs site behaviour. Every page works without this file; it only enhances.
 // Contents: header + mobile nav, dropdowns, theme toggle, copy buttons, tabs, scroll reveal, scrollspy (.toc, [data-scrollspy]),
-// footer status dot, toast(), free-check forms ([data-check-form]), hero lab replay ([data-replay]).
+// footer status dot, toast(), free-check forms ([data-check-form]), lab replay ([data-replay], optional stage rail),
+// mega menu hover + arrow keys (details.dd[data-mega]), live counters ([data-live-stats] reads /stats).
 (function () {
   'use strict';
   var d = document, root = d.documentElement;
@@ -44,6 +45,27 @@
   d.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     dds.forEach(function (dd) { if (dd.open) { dd.open = false; dd.querySelector('summary').focus(); } });
+  });
+
+  /* ---- mega menu: hover opens on wide screens with a fine pointer; ArrowDown from a summary enters the panel ---- */
+  var fine = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)');
+  $$('details.dd[data-mega]').forEach(function (dd) {
+    var sum = dd.querySelector('summary'), t = null;
+    var wide = function () { return fine && fine.matches && window.innerWidth > 1080; };
+    dd.addEventListener('mouseenter', function () { if (!wide()) return; clearTimeout(t); t = setTimeout(function () { dd.open = true; }, 70); });
+    dd.addEventListener('mouseleave', function () { if (!wide()) return; clearTimeout(t); t = setTimeout(function () { dd.open = false; }, 200); });
+    var links = function () { return $$('.dd-panel a', dd); };
+    sum.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowDown') return;
+      e.preventDefault(); dd.open = true; var l = links(); if (l[0]) l[0].focus();
+    });
+    dd.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      var l = links(), i = l.indexOf(d.activeElement); if (i < 0) return;
+      e.preventDefault(); var j = i + (e.key === 'ArrowDown' ? 1 : -1);
+      if (j < 0) sum.focus(); else if (l[j]) l[j].focus();
+    });
+    dd.addEventListener('focusout', function (e) { if (dd.open && e.relatedTarget && !dd.contains(e.relatedTarget) && wide()) dd.open = false; });
   });
 
   /* ---- theme toggle: [data-theme-toggle]; stored in localStorage "pl_theme" ---- */
@@ -180,6 +202,16 @@
   /* ---- hero lab replay: [data-replay] window; lines .ln (data-wait = ms before the line, data-status/-text update the pill) ---- */
   $$('[data-replay]').forEach(function (el) {
     var lines = $$('.ln', el), btn = el.querySelector('[data-replay-toggle]'), pill = el.querySelector('[data-replay-status]');
+    // optional stage rail: data-replay-stages="#id" points at a list of li[data-stage]; lines with data-stage advance it
+    var rail = el.getAttribute('data-replay-stages') ? d.querySelector(el.getAttribute('data-replay-stages')) : null;
+    var nodes = rail ? $$('[data-stage]', rail) : [];
+    var stageTo = function (name) {
+      var k = -1; nodes.forEach(function (n, j) { if (n.getAttribute('data-stage') === name) k = j; });
+      if (k < 0) return;
+      nodes.forEach(function (n, j) { n.classList.toggle('done', j < k); n.classList.toggle('now', j === k); });
+    };
+    var stagesDone = function () { nodes.forEach(function (n) { n.classList.add('done'); n.classList.remove('now'); }); };
+    var stagesReset = function () { nodes.forEach(function (n) { n.classList.remove('done', 'now'); }); };
     var btnText = btn && btn.querySelector('.t');
     var finalPill = pill ? { cls: pill.className, text: pill.textContent } : null;
     if (reduce || !lines.length) { if (btn) btn.hidden = true; return; }
@@ -190,16 +222,17 @@
     var show = function (ln) {
       ln.classList.remove('off'); ln.appendChild(cursor);
       if (ln.dataset.status) setPill('pill ' + ln.dataset.status, ln.dataset.statusText || ln.dataset.status);
+      if (ln.dataset.stage) stageTo(ln.dataset.stage);
     };
     var step = function () {
       if (!playing) return;
-      if (i >= lines.length) { playing = false; el.classList.remove('playing'); setBtn('Replay', 'replay'); if (finalPill) setPill(finalPill.cls, finalPill.text); return; }
+      if (i >= lines.length) { playing = false; el.classList.remove('playing'); setBtn('Replay', 'replay'); if (finalPill) setPill(finalPill.cls, finalPill.text); stagesDone(); return; }
       var wait = parseInt(lines[i].dataset.wait || '260', 10);
       timer = setTimeout(function () { show(lines[i]); i++; step(); }, wait);
     };
     var start = function () {
       clearTimeout(timer); started = true; i = 0; playing = true;
-      el.classList.add('playing'); lines.forEach(function (l) { l.classList.add('off'); });
+      el.classList.add('playing'); lines.forEach(function (l) { l.classList.add('off'); }); stagesReset();
       setPill('pill neutral', 'running'); setBtn('Pause', 'pause'); step();
     };
     if (btn) btn.addEventListener('click', function () {
@@ -212,5 +245,19 @@
       var o = new IntersectionObserver(function (es) { if (es[0].isIntersecting && !started) { o.disconnect(); start(); } }, { threshold: 0.35 });
       o.observe(el);
     } else start();
+  });
+
+  /* ---- live counters: [data-live-stats] > [data-k="checks_completed"] .v ; shown only for values above zero ---- */
+  $$('[data-live-stats]').forEach(function (box) {
+    var base = window.API || ((location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:8001' : 'https://api.patchlabs.dev');
+    fetch(base + '/stats', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (j) {
+      var any = false;
+      $$('[data-k]', box).forEach(function (el) {
+        var v = j[el.getAttribute('data-k')];
+        if (typeof v === 'number' && v > 0) { any = true; el.hidden = false; var o = el.querySelector('.v'); if (o) o.textContent = v.toLocaleString('en-GB'); }
+        else el.hidden = true;
+      });
+      box.hidden = !any;
+    }).catch(function () { box.hidden = true; });
   });
 })();

@@ -1,0 +1,145 @@
+<!--
+title: Supabase Realtime security: keep private rows out of subscriptions | PatchLabs
+description: How Supabase Realtime decides who receives database changes, why a loose read policy streams private rows, and how to check and fix published tables.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Supabase Realtime security: keep private rows out of subscriptions","description":"How Supabase Realtime decides who receives database changes, why a loose read policy streams private rows, and how to check and fix published tables.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/supabase-realtime-security"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Supabase Realtime security: keep private rows out of subscriptions","item":"https://patchlabs.dev/learn/supabase-realtime-security"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security" aria-current="page">Realtime security</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Realtime security</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>Supabase Realtime security: keep private rows out of subscriptions</h1>
+      <p class="lede">Supabase Realtime sends a table’s inserts and updates to a subscriber only if that subscriber could read the row under the table’s row level security policies, so a Realtime stream is exactly as private as the table’s read policy. If a published table’s policy is loose, or RLS is off, private rows stream to anyone who subscribes, the moment they are written.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>A table streams changes when it is in the <code>supabase_realtime</code> publication (the dashboard’s Realtime switch adds it).</li><li>For each change, Realtime checks the subscriber’s own token against the table’s <code>SELECT</code> policies.</li><li>So fix the read policy, not the subscription. Client-side filters are not security.</li><li>Delete events can’t be checked against a deleted row; with RLS on they carry only the primary key.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#how">How Postgres Changes decides who gets what</a></li><li><a href="#leak">How private rows end up streaming</a></li><li><a href="#check">Check which tables stream, and to whom</a></li><li><a href="#fix">Fix the read policy</a></li><li><a href="#filters">Filters are for efficiency, not security</a></li><li><a href="#deletes">Delete events</a></li><li><a href="#broadcast">Broadcast and Presence</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="how">How Postgres Changes decides who gets what</h2>
+<p>Realtime’s “Postgres Changes” feature reads your database’s change stream and forwards changes to browsers subscribed to a table. Only tables in the <code>supabase_realtime</code> publication take part. Turning on Realtime for a table in the dashboard, or running <code>alter publication supabase_realtime add table …</code> in a migration, adds it.</p>
+<p>For a table with row level security on, Realtime checks each change against each subscriber before sending it, using the subscriber’s JWT and the table’s <code>SELECT</code> policies: if that user couldn’t read the row with a normal query, they don’t receive it. For a table with RLS off, there is nothing to check, and every subscriber gets every change.</p>
+<p>That is a good design, and it means the question “is my Realtime secure?” is really “is my read policy right?”.</p>
+
+<h2 id="leak">How private rows end up streaming</h2>
+<p>Chat, notifications and live dashboards are where this shows up. The table was created with a loose read policy during development, when every user was the same test account, and Realtime was switched on later to make messages appear without a refresh:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_messages.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Signed-in users can read messages"
+  on public.messages for select to authenticated using (true);
+
+alter publication supabase_realtime add table public.messages;</code></pre></div>
+<p>Any signed-in user can now run this in your app’s browser console and watch other people’s private messages arrive:</p>
+<div class="code"><div class="code-bar"><span class="name">what a stranger runs</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>supabase
+  .channel('anything')
+  .on('postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'messages' },
+      (payload) =&gt; console.log(payload.new))
+  .subscribe();</code></pre></div>
+<p>They could also just query the table, of course; the policy is the real problem (<a href="/findings/pl-002">PL-002</a>). Realtime makes it worse: data arrives as it is created, with nothing to notice.</p>
+
+<h2 id="check">Check which tables stream, and to whom</h2>
+<div class="code"><div class="code-bar"><span class="name">check-realtime.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Tables published to Realtime, and whether RLS is on</span>
+select pt.schemaname, pt.tablename, c.relrowsecurity as rls_on
+from pg_publication_tables pt
+join pg_namespace n on n.nspname = pt.schemaname
+join pg_class c on c.relnamespace = n.oid and c.relname = pt.tablename
+where pt.pubname = 'supabase_realtime';
+
+<span class="c">-- The read policies that decide who receives their changes</span>
+select tablename, policyname, roles, qual
+from pg_policies
+where schemaname = 'public' and cmd in ('SELECT', 'ALL')
+  and tablename in (select tablename from pg_publication_tables
+                    where pubname = 'supabase_realtime');</code></pre></div>
+<p>Treat any published table with <code>rls_on = false</code>, or with a read policy that doesn’t mention the user, as streaming to everyone that policy allows. Confirm with the stranger test from the <a href="/learn/rls-policies-explained#test-sql">RLS guide</a>: whatever the stranger can select, the stranger can receive.</p>
+
+<h2 id="fix">Fix the read policy</h2>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_fix_messages.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Signed-in users can read messages" on public.messages;</span>
+<span class="add">create policy "Participants read their messages"</span>
+<span class="add">  on public.messages for select to authenticated</span>
+<span class="add">  using ((select auth.uid()) in (sender_id, recipient_id));</span></code></pre></div>
+<p>Realtime picks up the new policy automatically: subscribers now receive only messages they are part of. If nothing in your app listens to a published table, remove it from the publication rather than leaving it streaming:</p>
+<div class="code"><div class="code-bar"><span class="name">remove from Realtime</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alter publication supabase_realtime drop table public.audit_log;</code></pre></div>
+
+<h2 id="filters">Filters are for efficiency, not security</h2>
+<p>A subscription can carry a filter, such as <code>filter: 'recipient_id=eq.' + user.id</code>. Use it: it cuts the traffic each browser receives. But the subscriber writes the filter, so an attacker simply leaves it off. Only the policy is enforced by the server.</p>
+
+<h2 id="deletes">Delete events</h2>
+<p>Postgres can’t check a policy against a row that no longer exists, so delete events can’t be filtered per user and go to every subscriber of the table. When RLS is on, the old record in a delete event carries only the primary key, so what leaks is the fact that a row with that id was deleted. If even that matters, don’t subscribe to deletes on that table.</p>
+
+<h2 id="broadcast">Broadcast and Presence</h2>
+<p>Realtime also has Broadcast (messages between clients) and Presence (who is online). These don’t go through your table policies. Channels are public by default; private channels are authorized with policies on the <code>realtime.messages</code> table. If you send anything personal over Broadcast, use private channels and write those policies.</p>
+
+<h2 id="checklist">Checklist</h2>
+<ul class="ticks">
+  <li>Every table in <code>supabase_realtime</code> has RLS on.</li>
+  <li>Each of their read policies limits rows to the people meant to see them.</li>
+  <li>Tables nothing subscribes to are out of the publication.</li>
+  <li>Anything personal over Broadcast uses private channels.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/realtime/postgres-changes">Supabase: Realtime Postgres Changes</a></li>
+  <li><a href="https://supabase.com/docs/guides/realtime/authorization">Supabase: Realtime authorization</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/logical-replication-publication.html">PostgreSQL: publications</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-016"><span class="n-big">PL-016 · coming</span><h3>Realtime sends private rows to subscribers</h3></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3></a><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-supabase-realtime-">Public GitHub repo</label>
+            <input id="repo-l-supabase-realtime-" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-supabase-realtime-">Your email</label>
+            <input id="email-l-supabase-realtime-" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20supabase-realtime-security">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/supabase-storage-policies" rel="prev"><span>Previous guide</span>Supabase storage bucket policies: public, private and per-user folders</a><a class="next" href="/learn/user-metadata-vs-app-metadata" rel="next"><span>Next guide</span>user_metadata vs app_metadata: where to store roles in Supabase</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#how">How Postgres Changes decides who gets what</a></li><li><a href="#leak">How private rows end up streaming</a></li><li><a href="#check">Check which tables stream, and to whom</a></li><li><a href="#fix">Fix the read policy</a></li><li><a href="#filters">Filters are for efficiency, not security</a></li><li><a href="#deletes">Delete events</a></li><li><a href="#broadcast">Broadcast and Presence</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

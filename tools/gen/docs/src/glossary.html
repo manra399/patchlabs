@@ -1,17 +1,18 @@
 title: Glossary
-description: Plain-English definitions of the terms used in PatchLabs reports and docs: anon key, RLS, policy, migration, lab proof, proven fix, receipt, suppression and more.
+description: Plain-English definitions of the terms in PatchLabs reports and docs: anon key, RLS, finding, Lab, Code, user_metadata, lab proof, proven fix, receipt and more.
 lab: Glossary
 h1: Glossary
 lede: The words you’ll meet in reports and these docs, in plain English. Engineers will know most of them; founders shouldn’t have to.
 ---
 <ul class="gloss-letters" aria-label="Jump to letter">
-  <li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li>
+  <li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#u">U</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li>
 </ul>
 
 <h2 id="a">A</h2>
 <dl class="gloss">
   <dt id="anon">Anonymous visitor (anon)</dt><dd>Someone using your app without signing in. In the lab, the identity that uses only your public anon key. If it can read personal data, so can anyone on the internet.</dd>
   <dt id="anon-key">Anon key</dt><dd>Supabase’s public API key. It is built into your frontend, so treat it as known to everyone. It’s meant to be public; your <a href="#policy">policies</a> are what keep data private.</dd>
+  <dt id="app-metadata">app_metadata</dt><dd>Per-user data in Supabase Auth that only a server with the service role key can change. The right place for a role. Compare <a href="#user-metadata">user_metadata</a>. <a href="/learn/user-metadata-vs-app-metadata">Guide</a>.</dd>
   <dt id="api-key">API key (PatchLabs)</dt><dd>A <code>pl_live_…</code> key for one workspace, used by CI, scripts and the MCP server. Shown once, stored as a hash, revocable. <a href="/docs/api#api-keys">More</a>.</dd>
   <dt id="app">App</dt><dd>A repo you monitor in a workspace. Verified once, then re-checked on a schedule. <a href="/docs/monitoring">More</a>.</dd>
   <dt id="approve">Approve</dt><dd>A <a href="#decision">decision</a> that says “this is a real leak; we’re applying the fix”.</dd>
@@ -27,6 +28,8 @@ lede: The words you’ll meet in reports and these docs, in plain English. Engin
 <dl class="gloss">
   <dt id="check">Check</dt><dd>One run of the lab against your repo: rebuild, probe, fix, prove, plus the key scan. Ends with a report and a <a href="#receipt">receipt</a>.</dd>
   <dt id="client-label">Client label</dt><dd>A short name on an app, such as the client it belongs to. Shown in the dashboard and every alert.</dd>
+  <dt id="code-line">Code (PatchLabs Code)</dt><dd>The product line that reads your repo without running it: keys in code and history, Edge Functions, webhooks, CORS, admin checks, raw HTML, Firebase rules and dependencies. Its findings carry a file and line, and are not lab-proven. <a href="/docs/findings#lines">More</a>.</dd>
+  <dt id="coming">Coming</dt><dd>A finding ID with a published page that PatchLabs does not test for yet (currently <code>PL-012</code> to <code>PL-016</code>). It won’t appear in a report until it ships.</dd>
 </dl>
 
 <h2 id="d">D</h2>
@@ -34,17 +37,21 @@ lede: The words you’ll meet in reports and these docs, in plain English. Engin
   <dt id="decision">Decision</dt><dd>A recorded <a href="#approve">approve</a> or <a href="#reject">reject</a> on a finished check, with who, when and why. Included in the signed receipt.</dd>
   <dt id="default-branch">Default branch</dt><dd>The branch GitHub shows first, usually <code>main</code>. Verification and every check read this branch.</dd>
   <dt id="diff">Diff</dt><dd>What changed between an app’s last two checks: new leaks, fixed, still leaking, and marked as intended.</dd>
+  <dt id="dependency-finding">Dependency finding</dt><dd><code>PL-023</code>: a package version in your lockfile that matches a published advisory in the <a href="#osv">OSV</a> database. Its severity comes from the advisory.</dd>
 </dl>
 
 <h2 id="e">E</h2>
 <dl class="gloss">
   <dt id="ed25519">Ed25519</dt><dd>A widely used digital signature scheme. We sign receipts with it so anyone can check them against our published public key.</dd>
+  <dt id="edge-function">Edge Function</dt><dd>Server-side code in a Supabase project (Deno), in <code>supabase/functions</code>. The right home for secret keys, as long as it checks who is calling. <a href="/learn/secure-supabase-edge-functions">Guide</a>.</dd>
 </dl>
 
 <h2 id="f">F</h2>
 <dl class="gloss">
-  <dt id="finding-id">Finding ID</dt><dd>A stable code for a kind of problem the free RLS check spots, from <code>PL-001</code> (anyone with the public key can read personal data) to <code>PL-008</code> (row level security not enabled). <a href="/docs/api#finding-ids">The list</a>.</dd>
+  <dt id="finding">Finding</dt><dd>One problem in a report, in a fixed shape: ID, line, severity, object, file and line, evidence, whether it was proven, and the fix. <a href="/docs/findings#shape">The fields</a>.</dd>
+  <dt id="finding-id">Finding ID</dt><dd>A stable code for a kind of problem, from <code>PL-001</code> (anyone with the public key can read personal data) to <code>PL-026</code> (any website can call a signed-in function). Lab IDs are <code>PL-001</code> to <code>PL-008</code>; Code IDs are <code>PL-009</code> to <code>PL-011</code> and <code>PL-017</code> to <code>PL-026</code>; <code>PL-012</code> to <code>PL-016</code> are <a href="#coming">coming</a>. IDs never change meaning. <a href="/findings">The index</a>.</dd>
   <dt id="fix">Fix</dt><dd>A SQL migration (plus any code change it notes) that closes a leak. Called a <a href="#proven-fix">proven fix</a> once it passes the lab proof.</dd>
+  <dt id="fix-line">Fix (PatchLabs Fix)</dt><dd>The product line that writes the migration, proves it in a fresh lab, asks your business questions and waits for your engineer to approve. <a href="/docs/findings#lines">More</a>.</dd>
 </dl>
 
 <h2 id="k">K</h2>
@@ -54,7 +61,7 @@ lede: The words you’ll meet in reports and these docs, in plain English. Engin
 
 <h2 id="l">L</h2>
 <dl class="gloss">
-  <dt id="lab">Lab</dt><dd>A disposable local Postgres that copies Supabase’s roles, auth functions and default grants. We rebuild your database in it from your migrations, test it, and throw it away. It never touches your live app.</dd>
+  <dt id="lab">Lab</dt><dd>A disposable local Postgres that copies Supabase’s roles, auth functions and default grants. We rebuild your database in it from your migrations, test it, and throw it away. It never touches your live app. <strong>PatchLabs Lab</strong> is the product line built on it; its findings are proven by real queries.</dd>
   <dt id="lab-proof">Lab proof</dt><dd>The three tests a fix must pass: anonymous visitor denied, signed-in stranger denied, owner still reads their own rows.</dd>
   <dt id="leak">Leak</dt><dd>Personal data that the wrong people can read: an anonymous visitor, or a signed-in user who doesn’t own it.</dd>
 </dl>
@@ -74,6 +81,7 @@ lede: The words you’ll meet in reports and these docs, in plain English. Engin
 <dl class="gloss">
   <dt id="owner-identity">Owner (in the lab)</dt><dd>The test user who owns a seeded row. After a fix they must still read their own data, or the proof fails.</dd>
   <dt id="owner-role">Owner (in a workspace)</dt><dd>The role that manages a workspace: invites, roles, webhook and name. The other role is member. <a href="/docs/teams#roles">More</a>.</dd>
+  <dt id="osv">OSV</dt><dd>An open database of published vulnerabilities (osv.dev), keyed by package and version. The dependency check sends package names and versions to it, nothing else.</dd>
 </dl>
 
 <h2 id="p">P</h2>
@@ -81,6 +89,7 @@ lede: The words you’ll meet in reports and these docs, in plain English. Engin
   <dt id="personal-data">Personal data</dt><dd>Information about a person, such as an email address, phone number, home address or date of birth. These are the columns a check looks for.</dd>
   <dt id="policy">Policy</dt><dd>A row level security rule in Postgres that says who may read or change which rows, for example “users can read their own profile”.</dd>
   <dt id="proven-fix">Proven fix</dt><dd>A fix that has passed the <a href="#lab-proof">lab proof</a>. A scanner gives you a finding; a proven fix is one you’ve seen work.</dd>
+  <dt id="proven">Proven (finding)</dt><dd>A finding the Lab reproduced with a real query against the rebuilt database. Code findings are read from the code and are not marked proven.</dd>
 </dl>
 
 <h2 id="r">R</h2>
@@ -100,13 +109,20 @@ lede: The words you’ll meet in reports and these docs, in plain English. Engin
   <dt id="suppression">Suppression</dt><dd>A table your team marked as intended for one app. Later checks list it as “marked as intended” and don’t alert on it. <a href="/docs/decisions#suppressions">More</a>.</dd>
 </dl>
 
+<h2 id="u">U</h2>
+<dl class="gloss">
+  <dt id="user-metadata">user_metadata</dt><dd>Per-user data in Supabase Auth that users can change themselves, at sign-up and with <code>updateUser</code>. Fine for a display name; never for roles (<code>PL-019</code>). <a href="/learn/user-metadata-vs-app-metadata">Guide</a>.</dd>
+</dl>
+
 <h2 id="v">V</h2>
 <dl class="gloss">
   <dt id="verification-file">Verification file</dt><dd><code>patchlabs-verify.txt</code>, committed with a one-time code to prove you control the repo. <a href="/docs/verification">More</a>.</dd>
+  
 </dl>
 
 <h2 id="w">W</h2>
 <dl class="gloss">
   <dt id="webhook">Webhook</dt><dd>A URL we POST to when a check finishes. Works with Slack and Discord incoming webhooks. <a href="/docs/webhooks">More</a>.</dd>
+  <dt id="watch-line">Watch (PatchLabs Watch)</dt><dd>The product line that re-checks on a schedule, shows diffs, sends alerts and signs every result. <a href="/docs/monitoring">More</a>.</dd>
   <dt id="workspace">Workspace</dt><dd>Where apps, members, API keys, the webhook and the plan live. You can belong to several. <a href="/docs/teams">More</a>.</dd>
 </dl>

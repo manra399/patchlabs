@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field
 
-import accounts, mcp_server, monitor, receipts, rls
+import accounts, audit, mcp_server, monitor, receipts, rls, support, taxonomy
 from core import (ADMIN_TOKEN, EMAIL_RE, ORIGINS, SITE_URL, VERIFY_FILE, WORKER_TOKEN, bearer, clean_report, db, event, ip_hash, notify,
                   parse_repo, pool, repo_has_code, repo_lookup, scrub, send_email, verify_info)  # noqa: F401 (send_email re-exported)
 
@@ -33,13 +33,16 @@ async def lifespan(_):
 
 
 app = FastAPI(title="PatchLabs API", lifespan=lifespan, docs_url=None, redoc_url=None)
-app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_methods=["GET", "POST", "PATCH", "DELETE"],
+app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
                    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Workspace"], expose_headers=["Content-Disposition"])
 app.include_router(accounts.router)
 app.include_router(monitor.router)
 app.include_router(receipts.router)
 app.include_router(rls.router)
 app.include_router(mcp_server.router)
+app.include_router(support.router)
+app.include_router(audit.router)
+app.include_router(taxonomy.router)
 
 
 class NewCheck(BaseModel):
@@ -109,8 +112,10 @@ def load(c, cid):
 def get_check(cid: str, c=Depends(db)):
     row = load(c, cid)
     events = c.execute("SELECT at, kind FROM check_events WHERE check_id = %s ORDER BY at", (cid,)).fetchall()
-    return {**public_view(row, events), **monitor.check_extras(c, row), "decisions": receipts.decisions(c, cid),
-            "answers": receipts.answers(c, cid)}
+    out = public_view(row, events)
+    if out.get("summary"):  # CWE/OWASP per finding; first_seen/days_open/fixed_at across the app's checks
+        out["summary"] = taxonomy.enrich_summary(c, out["summary"], row)
+    return {**out, **monitor.check_extras(c, row), "decisions": receipts.decisions(c, cid), "answers": receipts.answers(c, cid)}
 
 
 @app.post("/checks/{cid}/verify")

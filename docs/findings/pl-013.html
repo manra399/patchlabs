@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PL-013 Users can make themselves admin | PatchLabs findings</title>
+<meta name="description" content="PL-013: users can give themselves the admin role in a Supabase app through a role column or roles table they can write to. How to check, the fix, and why it's critical.">
+<link rel="canonical" href="https://patchlabs.dev/findings/pl-013">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="PL-013 Users can make themselves admin | PatchLabs findings">
+<meta property="og:description" content="PL-013: users can give themselves the admin role in a Supabase app through a role column or roles table they can write to. How to check, the fix, and why it's critical.">
+<meta property="og:url" content="https://patchlabs.dev/findings/pl-013">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PL-013 Users can make themselves admin | PatchLabs findings">
+<meta name="twitter:description" content="PL-013: users can give themselves the admin role in a Supabase app through a role column or roles table they can write to. How to check, the fix, and why it's critical.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-013: Users can make themselves admin","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings" aria-current="page"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Lab · database</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Code · repo</h2>
+      <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013" aria-current="page"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding is-coming">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-013</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-013</span><span class="pill sev-critical">critical</span><span class="pill pending">coming · not tested yet</span></div>
+        <h1>Users can make themselves admin</h1>
+        <p class="lede">A role column or roles table that users can write to. One request turns a normal account into an admin.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Critical</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Anyone who signs up</dd></div>
+          <div><dt>Found by</dt><dd>Not tested yet: coming to PatchLabs Lab</dd></div>
+          <div><dt>Status</dt><dd>Coming</dd></div>
+        </dl>
+      </header>
+      <div class="callout limit"><p><strong>PatchLabs does not test for this yet (coming).</strong> This page explains the problem, how to check your own project and how to fix it. The Lab’s live checks today are PL-001 to PL-008; this one is not part of any report until it ships. Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>Many apps keep each user's role in the database: a <code>role</code> column on <code>profiles</code>, or a separate <code>user_roles</code> table read by a helper such as <code>has_role()</code>. Every admin policy then trusts that value. PL-013 means a normal user can write it.</p>
+<p>Two shapes are common. In the first, users may update their own profile row and nothing limits which columns they change, so <code>update profiles set role = 'admin'</code> on their own row succeeds (the policy shape is <a href="/findings/pl-004">PL-004</a>). In the second, the roles table has an insert policy like <code>with check (auth.uid() = user_id)</code>, meant as "users can create their own role row", which also lets a user insert the row <em>(their id, 'admin')</em>.</p>
+      
+
+      <h2 id="why"><span class="lab" aria-hidden="true">Cause</span>Why AI builders produce it</h2>
+      <p>AI builders are good at producing a roles table, a <code>has_role</code> function and admin policies, which looks like a complete design. The write side gets less attention. The sign-up flow needs to create a role row, the quickest way to allow that is to let users insert their own, and nobody constrains the value. Profile edit forms add a generic "users can update own profile" policy that covers every column, including <code>role</code>.</p>
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_roles.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create type public.app_role as enum ('admin', 'user');
+
+create table public.user_roles (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  role public.app_role not null default 'user',
+  unique (user_id, role)
+);
+alter table public.user_roles enable row level security;
+
+create policy "Users can read own roles"
+  on public.user_roles for select to authenticated
+  using (auth.uid() = user_id);
+
+<span class="c">-- Meant for sign-up. Also lets a user insert (their id, 'admin').</span>
+create policy "Users can insert own role"
+  on public.user_roles for insert to authenticated
+  with check (auth.uid() = user_id);</code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-013.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- 1. Write policies on tables that hold roles or privileges</span>
+select p.tablename, p.policyname, p.cmd, p.with_check
+from pg_policies p
+where p.schemaname = 'public'
+  and p.cmd in ('INSERT', 'UPDATE', 'ALL')
+  and exists (
+    select 1 from information_schema.columns c
+    where c.table_schema = 'public' and c.table_name = p.tablename
+      and c.column_name in ('role', 'roles', 'is_admin', 'plan', 'credits', 'is_verified')
+  );
+
+<span class="c">-- 2. Can signed-in users write a role column directly?</span>
+select table_name, column_name, privilege_type
+from information_schema.column_privileges
+where table_schema = 'public' and grantee = 'authenticated'
+  and privilege_type in ('INSERT', 'UPDATE')
+  and column_name in ('role', 'is_admin');</code></pre>
+</div><p>Then try it. Use the id of a real, normal test user in your project (the foreign key needs one); the transaction is rolled back.</p><div class="code">
+  <div class="code-bar"><span class="name">try-pl-013.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>begin;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"&lt;a normal test user id&gt;","role":"authenticated"}', true);
+insert into public.user_roles (user_id, role)
+values ('&lt;a normal test user id&gt;', 'admin');<span class="c">  -- INSERT 0 1 means self-promotion works</span>
+rollback;</code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
+      <p>Users shouldn't write roles at all. New users get the default role from a trigger, and admins are granted from the server (with the service role key) or the SQL editor.</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_fix_roles.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Users can insert own role" on public.user_roles;</span>
+<span class="add">create or replace function public.handle_new_user_role()</span>
+<span class="add">returns trigger</span>
+<span class="add">language plpgsql</span>
+<span class="add">security definer</span>
+<span class="add">set search_path = ''</span>
+<span class="add">as $$</span>
+<span class="add">begin</span>
+<span class="add">  insert into public.user_roles (user_id, role) values (new.id, 'user');</span>
+<span class="add">  return new;</span>
+<span class="add">end;</span>
+<span class="add">$$;</span>
+<span class="add">create trigger on_auth_user_created_role</span>
+<span class="add">  after insert on auth.users</span>
+<span class="add">  for each row execute function public.handle_new_user_role();</span></code></pre>
+</div><p>For a role column on <code>profiles</code>, limit which columns users may change. The column grant is what blocks the role change:</p><div class="code">
+  <div class="code-bar"><span class="name">variant: role column on profiles</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>revoke update on public.profiles from authenticated;
+grant update (full_name, avatar_url) on public.profiles to authenticated;</code></pre>
+</div>
+      <p class="small muted">PatchLabs doesn’t write this fix yet. Review the SQL with your engineer and add it as a new migration.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs will test it</h2>
+      
+      <p>When this check ships, the Lab will run it the way it runs PL-001 to PL-008 today: rebuild your database from <code>supabase/migrations</code> in a disposable Postgres, seed fake rows for two users, and try the exploit as an anonymous visitor, a signed-in stranger and the owner. Until then, the self-check above is the test.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>Never for roles that unlock other people's data. A user choosing a harmless account type at sign-up ("buyer" or "seller") can be fine if neither type grants access to anything extra. Constrain the values so "admin" can't sneak in: <code>with check (auth.uid() = user_id and role in ('buyer', 'seller'))</code>.</p>
+
+      <h2 id="severity"><span class="lab" aria-hidden="true">Rate</span>Why it’s rated critical</h2>
+      <p>Critical. An admin role usually unlocks every admin policy and every admin screen at once, and getting it needs only a free account and one request.</p>
+
+      
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3><p class="small">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></a><a class="card link" href="/findings/pl-019"><span class="n-big">PL-019</span><h3>Access decided by user_metadata, which users can edit</h3><p class="small">Roles stored where users can rewrite them. One call from the browser and they're an admin.</p></a><a class="card link" href="/findings/pl-020"><span class="n-big">PL-020</span><h3>Admin check only in the browser</h3><p class="small">The admin page is hidden in the app, but nothing stops a normal user asking the database for the same data.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li></ul>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Check what PatchLabs does test today</h2>
+        <p>This check is coming. Today’s free check rebuilds your database from your migrations, tests it as a visitor, a stranger and the owner (PL-001 to PL-008), and reads your repo for keys and risky code.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f013">Public GitHub repo</label>
+            <input id="repo-f013" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f013">Your email</label>
+            <input id="email-f013" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-013">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-012"><span>Previous · PL-012</span>Strangers can change or delete other people's rows</a><a class="next" href="/findings/pl-014"><span>Next · PL-014</span>View skips row level security</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">How we test it</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

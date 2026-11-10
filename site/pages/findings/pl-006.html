@@ -3,15 +3,15 @@ title: PL-006 SECURITY DEFINER function exposed | PatchLabs findings
 description: PL-006: a SECURITY DEFINER function in a Supabase app is callable by anonymous users or has no fixed search_path. How to check, the fix and the test.
 layout: marketing
 nav: findings
-head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-006: SECURITY DEFINER function exposed","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-006: SECURITY DEFINER function exposed","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
 -->
 <main id="main">
   <div class="wrap wide docs">
     <nav class="docs-nav" aria-label="Findings">
       <details open><summary class="show-sm">All findings</summary>
       <h2>Overview</h2>
-      <ul><li><a href="/findings">Finding index</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
-      <h2>Data access</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Lab · database</h2>
       <ul>
         <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
         <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
@@ -22,17 +22,36 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
         <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
       </ul>
-      <h2>Keys</h2>
+      <h2>Code · repo</h2>
       <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
         <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
         <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
       </ul>
       </details>
     </nav>
     <article class="docs-main prose finding">
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-006</li></ol></nav>
       <header class="f-head">
-        <div class="f-id"><span class="f-chip">PL-006</span><span class="pill sev-high">high or medium</span></div>
+        <div class="f-id"><span class="f-chip">PL-006</span><span class="pill sev-high">high or medium</span><span class="pill plain">Lab</span></div>
         <h1>SECURITY DEFINER function exposed</h1>
         <p class="lede">A function that runs with the owner's powers, callable by anyone through the API.</p>
         <dl class="f-facts">
@@ -42,12 +61,15 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
           <div><dt>Lab proof</dt><dd>Call test included for your engineer</dd></div>
         </dl>
       </header>
+      
 
       <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
       <p>A <code>security definer</code> function runs with the rights of whoever created it, usually a role that ignores RLS. That is useful for small, careful helpers. It becomes a leak when two things combine:</p>
 <ul><li><strong>Anyone can call it.</strong> Postgres lets every role execute a new function unless you revoke it, and Supabase exposes functions in <code>public</code> through the API at <code>/rest/v1/rpc/&lt;name&gt;</code>.</li>
 <li><strong>It returns or changes more than the caller should reach</strong>, such as looking up any user's email by id.</li></ul>
 <p>A definer function with no fixed <code>search_path</code> is a second problem: it can be tricked into running a look-alike object created in another schema. The free RLS check flags both (high when anonymous users can call it).</p>
+      
+
       
 
       <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
@@ -121,6 +143,8 @@ rollback;</code></pre>
 <ul><li>a helper used inside policies, such as <code>has_role(uid, 'admin')</code>, which returns only true or false about the caller and avoids recursive policies;</li>
 <li>a trigger that creates a profile row when a user signs up (trigger functions can't be called through the API).</li></ul>
 
+      
+
       <h2 id="lint"><span class="lab" aria-hidden="true">Map</span>Supabase linter</h2>
 <dl class="lint"><dt>0011 function_search_path_mutable</dt><dd>Flags functions without a fixed <code>search_path</code>.</dd>
 <dt>0028 anon_security_definer_function_executable</dt><dd>Flags definer functions anonymous users can execute.</dd>
@@ -128,6 +152,7 @@ rollback;</code></pre>
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3><p class="small">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3><p class="small">Signing up unlocks other people's rows. If sign-up is open, that means anyone.</p></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3><p class="small">The key that ignores every access rule, shipped to every visitor's browser.</p></a></div>
+      
 
       <div class="f-cta">
         <p class="lab">Free check</p>

@@ -1,0 +1,29 @@
+<!--
+title: Support | PatchLabs
+description: Raise a support ticket, follow our replies and answer them.
+layout: app
+nav: support
+sitemap: no
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><link rel="stylesheet" href="/assets/pages/app-support.css"><script src="/assets/app-ui.js"></script><script src="/assets/app-support.js"></script>
+-->
+<main id="main" class="app-main">
+  <div class="wrap wide">
+    <div class="app-head">
+      <div>
+        <p class="lab">Support</p>
+        <h1 class="app-title">Support</h1>
+        <p class="app-sub" id="ws-line"><span class="skeleton" style="display:inline-block;width:260px;height:14px"></span></p>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" id="sp-new" disabled>New ticket</button></div>
+    </div>
+    <div class="sp-layout" id="sp-root" data-view="list">
+      <section class="sp-list" aria-labelledby="sp-list-h">
+        <h2 class="sr-only" id="sp-list-h">Your workspace’s tickets</h2>
+        <div id="sp-items" aria-live="polite"></div>
+      </section>
+      <section class="sp-detail" id="sp-detail" aria-label="Ticket"></section>
+    </div>
+    <noscript><div class="callout note"><p>This page needs JavaScript. You can always email <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a> instead.</p></div></noscript>
+  </div>
+</main>
+<script>PLSupport.customer();</script>

@@ -1,0 +1,187 @@
+<!--
+title: Firebase security rules basics: lock down Firestore and Storage | PatchLabs
+description: How Firestore and Cloud Storage security rules work, why test-mode rules leak, owner-only rules you can copy, and how to test them with the emulator before you deploy.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Firebase security rules basics: lock down Firestore and Storage","description":"How Firestore and Cloud Storage security rules work, why test-mode rules leak, owner-only rules you can copy, and how to test them with the emulator before you deploy.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/firebase-security-rules-basics"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Firebase security rules basics: lock down Firestore and Storage","item":"https://patchlabs.dev/learn/firebase-security-rules-basics"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics" aria-current="page">Firebase rules basics</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Firebase rules basics</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>Firebase security rules basics: lock down Firestore and Storage</h1>
+      <p class="lede">Firebase security rules are the only thing deciding who can read and write your Firestore, Realtime Database and Cloud Storage data, because your app’s Firebase config is public by design. Replace any <code>if true</code> or test-mode <code>request.time &lt; …</code> rule with rules that compare <code>request.auth.uid</code> with the document’s owner, and test them in the emulator as a visitor, a stranger and the owner before deploying.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Your <code>apiKey</code> and <code>projectId</code> are public. Rules are your security.</li><li>Test mode opens everything for 30 days. <code>if request.auth != null</code> opens everything to anyone who signs up.</li><li>Match on ownership: <code>request.auth.uid == userId</code>, or <code>resource.data.ownerId == request.auth.uid</code>.</li><li>Test with <code>@firebase/rules-unit-testing</code> and the emulator; keep the rules in your repo and deploy from there.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why">Why rules are your whole security model</a></li><li><a href="#dangerous">The rules that leak</a></li><li><a href="#how">How rules evaluate</a></li><li><a href="#owner-rules">Owner-only rules to start from</a></li><li><a href="#test">Test the rules before you deploy</a></li><li><a href="#deploy">Keep rules in the repo, deploy from the repo</a></li><li><a href="#app-check">App Check is not a rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="why">Why rules are your whole security model</h2>
+<p>A Firebase web app talks to Firestore, Realtime Database and Cloud Storage directly from the browser using a config object with an <code>apiKey</code>. That key identifies your project; it doesn’t grant access, and it isn’t secret. Anyone can copy it from your site and use the Firebase SDK against your project. What they can do is decided entirely by your security rules, evaluated by Google’s servers on every request.</p>
+<p>Firebase Admin SDKs on servers bypass rules, the same way Supabase’s service role key bypasses RLS, so admin credentials must never reach the browser either.</p>
+
+<h2 id="dangerous">The rules that leak</h2>
+<div class="code"><div class="code-bar"><span class="name">firestore.rules: three ways to be open</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">// 1. Open to everyone, forever</span>
+allow read, write: if true;
+
+<span class="c">// 2. "Test mode": open to everyone until the date</span>
+allow read, write: if request.time &lt; timestamp.date(2026, 12, 31);
+
+<span class="c">// 3. Open to anyone who signs up</span>
+allow read, write: if request.auth != null;</code></pre></div>
+<p>Test mode is what the Firebase console offers when you create a database, so you can build without rules for 30 days. Apps ship with it, or the date gets pushed forward when it expires and the app stops working. The third form is Firebase’s version of <a href="/findings/pl-002">PL-002</a>: if anyone can create an account, “signed in” means anyone.</p>
+<p>Realtime Database uses JSON rules; the equivalent of rule 1 is <code>{"rules": {".read": true, ".write": true}}</code>.</p>
+
+<h2 id="how">How rules evaluate</h2>
+<ul>
+  <li><strong><code>match</code></strong> blocks select document paths. <code>{userId}</code> captures a path segment; <code>{document=**}</code> matches everything below.</li>
+  <li><strong><code>allow</code></strong> grants an operation if its condition is true: <code>read</code> (or <code>get</code> and <code>list</code>) and <code>write</code> (or <code>create</code>, <code>update</code>, <code>delete</code>).</li>
+  <li>If <em>any</em> matching <code>allow</code> is true, the request is allowed. A broad <code>{document=**}</code> rule overrides careful rules elsewhere.</li>
+  <li><code>request.auth</code> is the signed-in user (or null). <code>resource.data</code> is the document as stored; <code>request.resource.data</code> is the document as it would be after a write.</li>
+  <li>Rules are not filters: a query must ask only for documents the rules allow, or the whole query is refused. Query with <code>where('ownerId', '==', uid)</code> to match an ownership rule.</li>
+</ul>
+
+<h2 id="owner-rules">Owner-only rules to start from</h2>
+<div class="code"><div class="code-bar"><span class="name">firestore.rules</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() &amp;&amp; request.auth.uid == uid; }
+
+<span class="c">    // A user's own profile, keyed by their uid</span>
+    match /users/{userId} {
+      allow read, update, delete: if isOwner(userId);
+      allow create: if isOwner(userId);
+    }
+
+<span class="c">    // Documents with an ownerId field</span>
+    match /notes/{noteId} {
+      allow read, delete: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+<span class="c">      // Owners can edit, but can't hand the note to someone else</span>
+      allow update: if isOwner(resource.data.ownerId)
+        &amp;&amp; request.resource.data.ownerId == resource.data.ownerId;
+    }
+
+<span class="c">    // Public to read, written only by the author</span>
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isOwner(request.resource.data.authorId);
+      allow update, delete: if isOwner(resource.data.authorId);
+    }
+  }
+}</code></pre></div>
+<p>Anything not matched is denied, so there is no need for a catch-all. Never store a role on a document the user can update; for admins, use custom claims set from a server with the Admin SDK and check <code>request.auth.token.admin == true</code>.</p>
+<div class="code"><div class="code-bar"><span class="name">storage.rules</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+<span class="c">    // Each user reads and writes only under users/&lt;their uid&gt;/</span>
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null &amp;&amp; request.auth.uid == userId;
+    }
+  }
+}</code></pre></div>
+
+<h2 id="test">Test the rules before you deploy</h2>
+<p>The emulator runs your rules locally, and <code>@firebase/rules-unit-testing</code> lets you act as any user. This test seeds one private document, then checks a visitor and a stranger are refused while the owner can still read:</p>
+<div class="code"><div class="code-bar"><span class="name">rules.test.mjs</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">// npm i -D firebase @firebase/rules-unit-testing</span>
+<span class="c">// run: firebase emulators:exec --only firestore "node rules.test.mjs"</span>
+import { readFileSync } from 'node:fs';
+import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+const env = await initializeTestEnvironment({
+  projectId: 'demo-rules-check',
+  firestore: { rules: readFileSync('firestore.rules', 'utf8') },
+});
+await env.withSecurityRulesDisabled(async (ctx) =&gt; {
+  await setDoc(doc(ctx.firestore(), 'users/owner'), { email: 'owner@example.com' });
+});
+
+const visitor = env.unauthenticatedContext().firestore();
+const stranger = env.authenticatedContext('stranger').firestore();
+const owner = env.authenticatedContext('owner').firestore();
+
+await assertFails(getDoc(doc(visitor, 'users/owner')));
+await assertFails(getDoc(doc(stranger, 'users/owner')));
+await assertSucceeds(getDoc(doc(owner, 'users/owner')));
+await assertFails(setDoc(doc(stranger, 'users/owner'), { email: 'x' }));
+console.log('rules pass: visitor and stranger denied, owner reads');
+await env.cleanup();</code></pre></div>
+<p>A <code>demo-</code> project id keeps the emulator fully offline. Run the test in CI so a later change can’t quietly reopen the database.</p>
+
+<h2 id="deploy">Keep rules in the repo, deploy from the repo</h2>
+<p>Rules edited in the Firebase console and never copied back drift away from what your repo says, and from what anyone reviewing the repo will see. Keep <code>firestore.rules</code> and <code>storage.rules</code> in the repo, referenced from <code>firebase.json</code>, and deploy with:</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>firebase deploy --only firestore:rules,storage</code></pre></div>
+<p>The console’s Rules Playground is handy for one-off checks, but it doesn’t replace a test that runs on every change.</p>
+
+<h2 id="app-check">App Check is not a rule</h2>
+<p>Firebase App Check makes it harder for scripts outside your app to call your backend. It is a useful extra layer, but a determined attacker can still act through your real app, so it doesn’t make open rules safe. Fix the rules first.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://firebase.google.com/docs/rules">Firebase: Security Rules</a></li>
+  <li><a href="https://firebase.google.com/docs/firestore/security/get-started">Firebase: get started with Cloud Firestore rules</a></li>
+  <li><a href="https://firebase.google.com/docs/rules/unit-tests">Firebase: build unit tests for rules</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-025"><span class="n-big">PL-025</span><h3>Firebase rules allow anyone</h3></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-firebase-security-">Public GitHub repo</label>
+            <input id="repo-l-firebase-security-" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-firebase-security-">Your email</label>
+            <input id="email-l-firebase-security-" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20firebase-security-rules-basics">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/vibe-coded-app-security-checklist" rel="prev"><span>Previous guide</span>Pre-launch security checklist for vibe-coded apps</a><a class="next" href="/learn/npm-dependency-vulnerabilities" rel="next"><span>Next guide</span>How to find and fix vulnerable npm dependencies</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#why">Why rules are your whole security model</a></li><li><a href="#dangerous">The rules that leak</a></li><li><a href="#how">How rules evaluate</a></li><li><a href="#owner-rules">Owner-only rules to start from</a></li><li><a href="#test">Test the rules before you deploy</a></li><li><a href="#deploy">Keep rules in the repo, deploy from the repo</a></li><li><a href="#app-check">App Check is not a rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

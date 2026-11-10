@@ -1,0 +1,152 @@
+<!--
+title: PatchLabs Watch: scheduled re-checks, alerts, badge and signed receipts | PatchLabs
+description: PatchLabs Watch re-checks your app on a schedule, alerts your team only when something new appears, and publishes a dated badge, proof page and signed receipts.
+layout: marketing
+nav: watch
+head: <link rel="stylesheet" href="/assets/pages/platform.css">
+-->
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/#platform">Products</a></li><li aria-current="page">Watch</li></ol></nav>
+      <div class="p2-kicker"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span><span>Product line</span><b>PatchLabs Watch</b></span></div>
+      <h1>Every migration you merge can reopen a leak. Watch re-checks.</h1>
+      <p class="lede">Scheduled re-checks compare each run with the last and alert your team only when something new appears. Share the result with a dated badge, a public proof page and a receipt anyone can verify.</p>
+      <div class="row"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/demo">Try the demo</a></div>
+      <p class="meta-line">Scheduled re-checks are never counted against your monthly runs</p>
+    </div>
+    <figure class="figure">
+      <div class="ui" role="img" aria-label="Watch: the demo app's diff since the last check, its check history, the next scheduled re-check, a public badge and a webhook message.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/demo · monitoring</span><span class="ui-tag">Demo workspace · fake data</span></div>
+  <div class="ui-body">
+    <div class="ui-diff" style="margin-bottom:16px">
+      <div class="ui-dc red"><div class="k">New leaks</div><div class="n">1</div><div class="t"><code>profiles</code></div></div>
+      <div class="ui-dc green"><div class="k">Fixed</div><div class="n">0</div><div class="t">Nothing to fix</div></div>
+      <div class="ui-dc red"><div class="k">Still leaking</div><div class="n">0</div><div class="t">None</div></div>
+      <div class="ui-dc"><div class="k">Marked intended</div><div class="n">0</div><div class="t">None</div></div>
+    </div>
+    <div class="ui-card" style="margin-bottom:14px">
+      <div class="ui-group">Check history <span class="ct">weekly</span></div>
+      <ul class="ui-tl">
+        <li><span class="d"></span><span><b>Next scheduled re-check</b> · weekly</span><span class="w">in 7 days</span></li>
+        <li><span class="d red"></span><span><b>First check</b> · 1 table leaking: <code>profiles</code> · lab proof passed</span><span class="w">9 Nov 16:57</span></li>
+      </ul>
+    </div>
+    <div class="msg"><span class="av"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>PatchLabs</b><span class="w">webhook · example</span><p>manra399/patchlabs-demo-app: 1 table leaking (profiles). A lab-proven fix is ready.</p></div></div>
+  </div>
+</div>
+      <figcaption>Monitoring for our demo app. The webhook message is an example of the format.</figcaption>
+    </figure>
+  </div>
+</section>
+<section class="sec tight" aria-label="Product lines" style="padding-top:0">
+  <div class="wrap"><nav class="lines-strip" aria-label="Product lines"><a href="/product/lab"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><b>PatchLabs Lab</b><span class="d">Rebuilds the database and reproduces each leak.</span></a><a href="/product/code"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><b>PatchLabs Code</b><span class="d">Keys, dependencies and risky AI-written code.</span></a><a href="/product/fix"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><b>PatchLabs Fix</b><span class="d">A migration proven as three identities.</span></a><a href="/product/watch" aria-current="page"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><b>PatchLabs Watch</b><span class="d">Re-checks, alerts, badge and receipts.</span></a></nav></div>
+</section>
+<section class="sec" aria-labelledby="how-h">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">How it works</p><h2 id="how-h">Schedule, compare, alert, share.</h2></div><ol class="flow" style="--n:4" data-reveal><li><h3>Schedule</h3><p>Weekly or monthly, by plan. Run one by hand, or from CI, any time.</p><div class="art">schedule: weekly
+next check in 7 days</div></li><li><h3>Compare</h3><p>Each finished check is compared with the one before: new, fixed, still leaking, marked as intended.</p><div class="art">new 1 · fixed 0
+still 0 · intended 0</div></li><li><h3>Alert</h3><p>Email every member when a new leak appears, and POST a signed webhook that works as a Slack incoming webhook.</p><div class="art">X-PatchLabs-Signature
+v1=…</div></li><li><h3>Share</h3><p>An opt-in badge and public proof page, and an Ed25519-signed receipt for every finished check.</p><div class="art">receipt · Ed25519
+verify in browser</div></li></ol>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="caps-h">
+  <div class="wrap">
+<div class="sec-head split "><div><p class="lab">Capabilities</p><h2 id="caps-h">Monitoring, sharing and teams.</h2><p>All live today, on every plan. Plans differ only in apps, schedule and seats.</p></div><a class="link-arrow" href="/pricing">Plans and limits</a></div><div class="feats" data-reveal><div><span class="k"><span>Re-check</span><span class="live">live</span></span><h3>Scheduled re-checks</h3><p>Weekly or monthly, with a full Lab and Code run each time. <a href="/docs/monitoring">Monitoring</a>.</p></div><div><span class="k"><span>Diff</span><span class="live">live</span></span><h3>What changed since last time</h3><p>New leaks, fixed, still leaking, and tables your team marked as intended.</p></div><div><span class="k"><span>Alert</span><span class="live">live</span></span><h3>Email alerts</h3><p>To every member of the workspace, with “new leak” in the subject only when there is one.</p></div><div><span class="k"><span>Alert</span><span class="live">live</span></span><h3>Signed webhooks</h3><p>HMAC-SHA256 signed, Slack-compatible <code>text</code> field. <a href="/docs/webhooks">Webhooks</a>.</p></div><div><span class="k"><span>Share</span><span class="live">live</span></span><h3>Badge and proof page</h3><p>A dated badge for your README or site, linked to a public proof page. Off until you turn it on.</p></div><div><span class="k"><span>Trust</span><span class="live">live</span></span><h3>Signed receipts</h3><p>Every finished check signed with Ed25519, verifiable by anyone. <a href="/docs/receipts">Receipts</a>.</p></div><div><span class="k"><span>Teams</span><span class="live">live</span></span><h3>Workspaces and roles</h3><p>Owners and members, invites, client labels for agencies. <a href="/docs/teams">Teams</a>.</p></div><div><span class="k"><span>Build</span><span class="live">live</span></span><h3>API keys and CI</h3><p>Start a re-check from your pipeline with a workspace key. <a href="/docs/api">REST API</a>.</p></div><div><span class="k"><span>Agents</span><span class="live">live</span></span><h3>MCP tools</h3><p><code>list_apps</code> and <code>run_check</code> for monitored apps, from your coding agent.</p></div></div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="badge-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Badge &amp; proof page</p>
+        <h2 id="badge-h">A dated, public record of your last check.</h2>
+        <p class="lede">The badge shows the result of your last finished check and when it ran. It links to a proof page that says what was tested and what isn’t covered. It never hides a leak: it stays amber until a re-check comes back clean.</p>
+        <p class="small muted">A badge is not a certification. It reports our last check of the access rules and code in your repo.</p>
+      </div>
+      <div class="stack-ui">
+        <div class="badges">
+          <figure><img src="/assets/pages/badge-example-green.svg" alt="PatchLabs: no known leaks · 9 Nov 2026" width="261" height="20" loading="lazy"><figcaption>no known leaks</figcaption></figure>
+          <figure><img src="/assets/pages/badge-example-amber.svg" alt="PatchLabs: fix in progress · 9 Nov 2026" width="267" height="20" loading="lazy"><figcaption>fix in progress</figcaption></figure>
+          <figure><img src="/assets/pages/badge-example-grey.svg" alt="PatchLabs: not checked yet" width="182" height="20" loading="lazy"><figcaption>not checked yet</figcaption></figure>
+          <figure><img src="/assets/pages/badge-example-private.svg" alt="PatchLabs: private" width="129" height="20" loading="lazy"><figcaption>private</figcaption></figure>
+        </div>
+        <div class="code mb-0">
+          <div class="code-bar"><span class="name">README.md</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>[![PatchLabs status](https://api.patchlabs.dev/badge/&lt;app-id&gt;.svg)](https://patchlabs.dev/proof?app=&lt;app-id&gt;)</code></pre>
+        </div>
+        <p class="small"><a class="link-arrow" href="/docs/badge">Badge docs</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="sample-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Sample output</p>
+        <h2 id="sample-h">The webhook every finished check sends.</h2>
+        <p class="lede">The <code>text</code> field makes it work as a Slack incoming webhook as-is. Everything else is structured for your own tools, signed so you can trust it.</p>
+        <ul class="ticks mt-3"><li>Rejects replays: check the timestamp is within 5 minutes</li><li>Rotate the secret any time; the old one stops at once</li><li>Private and loopback addresses are refused as targets</li></ul>
+      </div>
+      <div class="code dark mb-0">
+        <div class="code-bar"><span class="name">POST your-webhook-url · example</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">X-PatchLabs-Timestamp: 1762707420
+X-PatchLabs-Signature: v1=&lt;hex HMAC-SHA256&gt;</span>
+
+{
+  "event": "check.finished",
+  "text": "manra399/patchlabs-demo-app: 1 table leaking (profiles). A lab-proven fix is ready. https://patchlabs.dev/check?id=…",
+  "check": {
+    "repo": "manra399/patchlabs-demo-app",
+    "status": "done",
+    "tables_leaking": ["profiles"],
+    "url": "https://patchlabs.dev/check?id=…"
+  }
+}</code></pre>
+      </div>
+    </div><div class="callout limit mt-4"><p><strong>What Watch can’t see.</strong> Re-checks read your repo, not your live database, so a change made by hand in the Supabase dashboard won’t show up until it’s in a migration. Monitoring isn’t uptime or runtime protection, and a badge isn’t a certification.</p></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Questions about this product line.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>Do scheduled re-checks use my monthly runs?</summary><div class="acc-body"><p>No. Scheduled re-checks are never counted, and keep running even if you use all your manual runs.</p></div></details>
+<details class="acc"><summary>Will I get an alert every week?</summary><div class="acc-body"><p>Only when something new appears. Every member gets an email per finished check, and the subject says “new leak” only when there is one. Tables your team marked as intended don’t raise alerts.</p></div></details>
+<details class="acc"><summary>Can anyone verify a receipt?</summary><div class="acc-body"><p>Yes. Receipts are signed with Ed25519 and the public key is published at <code>/.well-known/patchlabs-receipt-key</code>. The <a href="/proof">proof page</a> verifies them in your browser.</p></div></details>
+<details class="acc"><summary>Is the badge public by default?</summary><div class="acc-body"><p>No. It’s off until an owner turns it on for an app. A private app’s badge shows only “private”.</p></div></details></div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Start watching your app today.</h2>
+      <p class="lede">Your first check is free. Add the app to your workspace and it re-checks on a schedule.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo3">Public GitHub repo</label>
+          <input id="repo3" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email3">Your email</label>
+          <input id="email3" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/demo">Try the demo</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>

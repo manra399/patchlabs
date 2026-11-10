@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-10T12:00:00Z</updated>
+  <updated>2026-11-10T18:00:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>PatchLabs v3: four product lines, and checks that read your code</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#v3"/>
+    <id>https://patchlabs.dev/changelog#v3</id>
+    <updated>2026-11-10T18:00:00Z</updated>
+    <summary>Four product lines (Lab, Code, Fix, Watch). PatchLabs Code reads the repo on every check: secret keys in code (PL-009), open Edge Functions using the service key (PL-017), sign-ups without email confirmation (PL-018), roles in user_metadata (PL-019), browser-only admin checks (PL-020), unverified payment webhooks (PL-021), trusted user ids (PL-022), vulnerable dependencies via OSV (PL-023), raw HTML (PL-024), open Firebase rules (PL-025), risky CORS (PL-026). One finding format across report and API. Findings library PL-001 to PL-026 and Learn guides. Demo, integrations and solutions pages. Coming, not shipped: Lab checks PL-012 to PL-016; automatic pull requests with the GitHub App.</summary>
+  </entry>
   <entry>
     <title>PatchLabs v2: accounts, monitoring and proof anyone can verify</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#v2"/>
@@ -19,7 +26,7 @@
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#v1"/>
     <id>https://patchlabs.dev/changelog#v1</id>
     <updated>2026-11-09T12:00:00Z</updated>
-    <summary>Public leak checks from a GitHub repo with ownership proof, reports by email and a spend cap per check. Autonomous run on 20 new apps: 18 of 20 fixes passed the strict lab proof with no human (n=20); 15 needed only the smallest model; median model cost $0.46 and 3.5 minutes per app.</summary>
+    <summary>Public leak checks from a GitHub repo with ownership proof, reports by email and a spend cap per check. Autonomous run on 20 new apps: 18 of 20 fixes passed the strict lab proof with no human (n=20); 15 needed only the smallest model; median 3.5 minutes per app.</summary>
   </entry>
   <entry>
     <title>Fix agents re-verified: 19 of 20 worked first time</title>

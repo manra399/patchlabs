@@ -76,12 +76,12 @@ def test_webhook_test_requires_url(client, owner):
 def test_webhook_test_posts_slack_compatible_payload(client, owner, local_webhooks):
     set_hook(client, owner, local_webhooks)
     r = client.post(f"/workspaces/{owner.wid}/webhook/test", headers=owner.h).json()
-    assert r == {"ok": True, "status_code": 200}
+    assert r == {"ok": True, "status_code": 200, "format": "json"}
     body = STATE.hooks[-1]["body"]
     assert body["event"] == "test" and body["text"].startswith("PatchLabs: webhooks for")
     assert STATE.hooks[-1]["headers"]["Content-Type"] == "application/json"
     STATE.hook_status = 500
-    assert client.post(f"/workspaces/{owner.wid}/webhook/test", headers=owner.h).json() == {"ok": False, "status_code": 500}
+    assert client.post(f"/workspaces/{owner.wid}/webhook/test", headers=owner.h).json() == {"ok": False, "status_code": 500, "format": "json"}
 
 
 def test_send_is_pinned_to_the_checked_address(client, owner, local_webhooks, monkeypatch):
@@ -95,7 +95,7 @@ def test_send_is_pinned_to_the_checked_address(client, owner, local_webhooks, mo
 def test_redirects_are_not_followed(client, owner, local_webhooks):
     STATE.hook_status = 302
     set_hook(client, owner, local_webhooks)
-    assert client.post(f"/workspaces/{owner.wid}/webhook/test", headers=owner.h).json() == {"ok": False, "status_code": 302}
+    assert client.post(f"/workspaces/{owner.wid}/webhook/test", headers=owner.h).json() == {"ok": False, "status_code": 302, "format": "json"}
 
 
 def test_webhook_times_out_after_five_seconds(client, owner, local_webhooks):

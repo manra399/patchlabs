@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Glossary | PatchLabs docs</title>
-<meta name="description" content="Plain-English definitions of the terms used in PatchLabs reports and docs: anon key, RLS, policy, migration, lab proof, proven fix, receipt, suppression and more.">
+<meta name="description" content="Plain-English definitions of the terms in PatchLabs reports and docs: anon key, RLS, finding, Lab, Code, user_metadata, lab proof, proven fix, receipt and more.">
 <link rel="canonical" href="https://patchlabs.dev/docs/glossary">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
 <meta property="og:title" content="Glossary | PatchLabs docs">
-<meta property="og:description" content="Plain-English definitions of the terms used in PatchLabs reports and docs: anon key, RLS, policy, migration, lab proof, proven fix, receipt, suppression and more.">
+<meta property="og:description" content="Plain-English definitions of the terms in PatchLabs reports and docs: anon key, RLS, finding, Lab, Code, user_metadata, lab proof, proven fix, receipt and more.">
 <meta property="og:url" content="https://patchlabs.dev/docs/glossary">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -17,7 +17,7 @@
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Glossary | PatchLabs docs">
-<meta name="twitter:description" content="Plain-English definitions of the terms used in PatchLabs reports and docs: anon key, RLS, policy, migration, lab proof, proven fix, receipt, suppression and more.">
+<meta name="twitter:description" content="Plain-English definitions of the terms in PatchLabs reports and docs: anon key, RLS, finding, Lab, Code, user_metadata, lab proof, proven fix, receipt and more.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -40,28 +40,84 @@
   <div class="wrap">
     <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
     <nav class="nav" id="site-nav" aria-label="Main">
-      <details class="dd">
-        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-        <div class="dd-panel">
-          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
-          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
-          <a href="/product/monitoring"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
-          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
-          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
-          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
-          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
-          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
-          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
         </div>
       </details>
-      <a href="/how-it-works">How it works</a>
-      <a href="/research/1-in-4">Research</a>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
       <a href="/pricing">Pricing</a>
       <a href="/docs" aria-current="page">Docs</a>
     </nav>
     <div class="nav-right">
-      <a class="urgent" href="/leaking-now">Leaking right now?</a>
       <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
       <a class="btn primary small" href="/#check">Check my app free</a>
     </div>
     <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
@@ -77,6 +133,7 @@
 <li><a href="/docs">Quickstart</a></li>
 <li><a href="/docs/verification">Proving repo ownership</a></li>
 <li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/findings">Findings and product lines</a></li>
 <li><a href="/docs/applying-a-fix">Applying a fix</a></li>
 <li><a href="/docs/decisions">Decisions and questions</a></li>
 </ul>
@@ -104,13 +161,14 @@
 <h1>Glossary</h1>
 <p class="lede">The words you’ll meet in reports and these docs, in plain English. Engineers will know most of them; founders shouldn’t have to.</p>
 <ul class="gloss-letters" aria-label="Jump to letter">
-  <li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li>
+  <li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#u">U</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li>
 </ul>
 
 <h2 id="a">A</h2>
 <dl class="gloss">
   <dt id="anon">Anonymous visitor (anon)</dt><dd>Someone using your app without signing in. In the lab, the identity that uses only your public anon key. If it can read personal data, so can anyone on the internet.</dd>
   <dt id="anon-key">Anon key</dt><dd>Supabase’s public API key. It is built into your frontend, so treat it as known to everyone. It’s meant to be public; your <a href="#policy">policies</a> are what keep data private.</dd>
+  <dt id="app-metadata">app_metadata</dt><dd>Per-user data in Supabase Auth that only a server with the service role key can change. The right place for a role. Compare <a href="#user-metadata">user_metadata</a>. <a href="/learn/user-metadata-vs-app-metadata">Guide</a>.</dd>
   <dt id="api-key">API key (PatchLabs)</dt><dd>A <code>pl_live_…</code> key for one workspace, used by CI, scripts and the MCP server. Shown once, stored as a hash, revocable. <a href="/docs/api#api-keys">More</a>.</dd>
   <dt id="app">App</dt><dd>A repo you monitor in a workspace. Verified once, then re-checked on a schedule. <a href="/docs/monitoring">More</a>.</dd>
   <dt id="approve">Approve</dt><dd>A <a href="#decision">decision</a> that says “this is a real leak; we’re applying the fix”.</dd>
@@ -126,6 +184,8 @@
 <dl class="gloss">
   <dt id="check">Check</dt><dd>One run of the lab against your repo: rebuild, probe, fix, prove, plus the key scan. Ends with a report and a <a href="#receipt">receipt</a>.</dd>
   <dt id="client-label">Client label</dt><dd>A short name on an app, such as the client it belongs to. Shown in the dashboard and every alert.</dd>
+  <dt id="code-line">Code (PatchLabs Code)</dt><dd>The product line that reads your repo without running it: keys in code and history, Edge Functions, webhooks, CORS, admin checks, raw HTML, Firebase rules and dependencies. Its findings carry a file and line, and are not lab-proven. <a href="/docs/findings#lines">More</a>.</dd>
+  <dt id="coming">Coming</dt><dd>A finding ID with a published page that PatchLabs does not test for yet (currently <code>PL-012</code> to <code>PL-016</code>). It won’t appear in a report until it ships.</dd>
 </dl>
 
 <h2 id="d">D</h2>
@@ -133,17 +193,21 @@
   <dt id="decision">Decision</dt><dd>A recorded <a href="#approve">approve</a> or <a href="#reject">reject</a> on a finished check, with who, when and why. Included in the signed receipt.</dd>
   <dt id="default-branch">Default branch</dt><dd>The branch GitHub shows first, usually <code>main</code>. Verification and every check read this branch.</dd>
   <dt id="diff">Diff</dt><dd>What changed between an app’s last two checks: new leaks, fixed, still leaking, and marked as intended.</dd>
+  <dt id="dependency-finding">Dependency finding</dt><dd><code>PL-023</code>: a package version in your lockfile that matches a published advisory in the <a href="#osv">OSV</a> database. Its severity comes from the advisory.</dd>
 </dl>
 
 <h2 id="e">E</h2>
 <dl class="gloss">
   <dt id="ed25519">Ed25519</dt><dd>A widely used digital signature scheme. We sign receipts with it so anyone can check them against our published public key.</dd>
+  <dt id="edge-function">Edge Function</dt><dd>Server-side code in a Supabase project (Deno), in <code>supabase/functions</code>. The right home for secret keys, as long as it checks who is calling. <a href="/learn/secure-supabase-edge-functions">Guide</a>.</dd>
 </dl>
 
 <h2 id="f">F</h2>
 <dl class="gloss">
-  <dt id="finding-id">Finding ID</dt><dd>A stable code for a kind of problem the free RLS check spots, from <code>PL-001</code> (anyone with the public key can read personal data) to <code>PL-008</code> (row level security not enabled). <a href="/docs/api#finding-ids">The list</a>.</dd>
+  <dt id="finding">Finding</dt><dd>One problem in a report, in a fixed shape: ID, line, severity, object, file and line, evidence, whether it was proven, and the fix. <a href="/docs/findings#shape">The fields</a>.</dd>
+  <dt id="finding-id">Finding ID</dt><dd>A stable code for a kind of problem, from <code>PL-001</code> (anyone with the public key can read personal data) to <code>PL-026</code> (any website can call a signed-in function). Lab IDs are <code>PL-001</code> to <code>PL-008</code>; Code IDs are <code>PL-009</code> to <code>PL-011</code> and <code>PL-017</code> to <code>PL-026</code>; <code>PL-012</code> to <code>PL-016</code> are <a href="#coming">coming</a>. IDs never change meaning. <a href="/findings">The index</a>.</dd>
   <dt id="fix">Fix</dt><dd>A SQL migration (plus any code change it notes) that closes a leak. Called a <a href="#proven-fix">proven fix</a> once it passes the lab proof.</dd>
+  <dt id="fix-line">Fix (PatchLabs Fix)</dt><dd>The product line that writes the migration, proves it in a fresh lab, asks your business questions and waits for your engineer to approve. <a href="/docs/findings#lines">More</a>.</dd>
 </dl>
 
 <h2 id="k">K</h2>
@@ -153,7 +217,7 @@
 
 <h2 id="l">L</h2>
 <dl class="gloss">
-  <dt id="lab">Lab</dt><dd>A disposable local Postgres that copies Supabase’s roles, auth functions and default grants. We rebuild your database in it from your migrations, test it, and throw it away. It never touches your live app.</dd>
+  <dt id="lab">Lab</dt><dd>A disposable local Postgres that copies Supabase’s roles, auth functions and default grants. We rebuild your database in it from your migrations, test it, and throw it away. It never touches your live app. <strong>PatchLabs Lab</strong> is the product line built on it; its findings are proven by real queries.</dd>
   <dt id="lab-proof">Lab proof</dt><dd>The three tests a fix must pass: anonymous visitor denied, signed-in stranger denied, owner still reads their own rows.</dd>
   <dt id="leak">Leak</dt><dd>Personal data that the wrong people can read: an anonymous visitor, or a signed-in user who doesn’t own it.</dd>
 </dl>
@@ -173,6 +237,7 @@
 <dl class="gloss">
   <dt id="owner-identity">Owner (in the lab)</dt><dd>The test user who owns a seeded row. After a fix they must still read their own data, or the proof fails.</dd>
   <dt id="owner-role">Owner (in a workspace)</dt><dd>The role that manages a workspace: invites, roles, webhook and name. The other role is member. <a href="/docs/teams#roles">More</a>.</dd>
+  <dt id="osv">OSV</dt><dd>An open database of published vulnerabilities (osv.dev), keyed by package and version. The dependency check sends package names and versions to it, nothing else.</dd>
 </dl>
 
 <h2 id="p">P</h2>
@@ -180,6 +245,7 @@
   <dt id="personal-data">Personal data</dt><dd>Information about a person, such as an email address, phone number, home address or date of birth. These are the columns a check looks for.</dd>
   <dt id="policy">Policy</dt><dd>A row level security rule in Postgres that says who may read or change which rows, for example “users can read their own profile”.</dd>
   <dt id="proven-fix">Proven fix</dt><dd>A fix that has passed the <a href="#lab-proof">lab proof</a>. A scanner gives you a finding; a proven fix is one you’ve seen work.</dd>
+  <dt id="proven">Proven (finding)</dt><dd>A finding the Lab reproduced with a real query against the rebuilt database. Code findings are read from the code and are not marked proven.</dd>
 </dl>
 
 <h2 id="r">R</h2>
@@ -199,14 +265,21 @@
   <dt id="suppression">Suppression</dt><dd>A table your team marked as intended for one app. Later checks list it as “marked as intended” and don’t alert on it. <a href="/docs/decisions#suppressions">More</a>.</dd>
 </dl>
 
+<h2 id="u">U</h2>
+<dl class="gloss">
+  <dt id="user-metadata">user_metadata</dt><dd>Per-user data in Supabase Auth that users can change themselves, at sign-up and with <code>updateUser</code>. Fine for a display name; never for roles (<code>PL-019</code>). <a href="/learn/user-metadata-vs-app-metadata">Guide</a>.</dd>
+</dl>
+
 <h2 id="v">V</h2>
 <dl class="gloss">
   <dt id="verification-file">Verification file</dt><dd><code>patchlabs-verify.txt</code>, committed with a one-time code to prove you control the repo. <a href="/docs/verification">More</a>.</dd>
+  
 </dl>
 
 <h2 id="w">W</h2>
 <dl class="gloss">
   <dt id="webhook">Webhook</dt><dd>A URL we POST to when a check finishes. Works with Slack and Discord incoming webhooks. <a href="/docs/webhooks">More</a>.</dd>
+  <dt id="watch-line">Watch (PatchLabs Watch)</dt><dd>The product line that re-checks on a schedule, shows diffs, sends alerts and signs every result. <a href="/docs/monitoring">More</a>.</dd>
   <dt id="workspace">Workspace</dt><dd>Where apps, members, API keys, the webhook and the plan live. You can belong to several. <a href="/docs/teams">More</a>.</dd>
 </dl>
 <div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Glossary">Tell the founder</a></span></div>
@@ -214,44 +287,70 @@
 </article>
 <aside class="toc" aria-label="On this page">
 <h2>On this page</h2>
-<ul><li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li></ul>
+<ul><li><a href="#a">A</a></li><li><a href="#b">B</a></li><li><a href="#c">C</a></li><li><a href="#d">D</a></li><li><a href="#e">E</a></li><li><a href="#f">F</a></li><li><a href="#k">K</a></li><li><a href="#l">L</a></li><li><a href="#m">M</a></li><li><a href="#n">N</a></li><li><a href="#o">O</a></li><li><a href="#p">P</a></li><li><a href="#r">R</a></li><li><a href="#s">S</a></li><li><a href="#u">U</a></li><li><a href="#v">V</a></li><li><a href="#w">W</a></li></ul>
 </aside>
 </div>
 </main>
 
 <footer class="site-footer" id="site-footer">
   <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
     <div class="foot-top">
       <div class="foot-brand">
         <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
-        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
       </div>
-      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
-        <li><a href="/product/leak-lab">Leak lab</a></li>
-        <li><a href="/product/key-scan">Key scan</a></li>
-        <li><a href="/product/monitoring">Monitoring</a></li>
-        <li><a href="/product/badge">Badge &amp; proof page</a></li>
-        <li><a href="/agencies">Agencies</a></li>
-        <li><a href="/how-it-works">How it works</a></li>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
         <li><a href="/pricing">Pricing</a></li>
-        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
       </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
         <li><a href="/for/lovable">Lovable apps</a></li>
         <li><a href="/for/supabase">Supabase apps</a></li>
         <li><a href="/for/bolt">Bolt apps</a></li>
         <li><a href="/for/replit">Replit apps</a></li>
         <li><a href="/for/cursor">Cursor projects</a></li>
       </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
         <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
         <li><a href="/research/methodology">Methodology</a></li>
-        <li><a href="/findings">Finding index</a></li>
-        <li><a href="/tools">Free tools</a></li>
-        <li><a href="/tools/rls-check">Free RLS check</a></li>
-        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
+        <li><a href="/findings">Findings library</a></li>
         <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
         <li><a href="/compare">All comparisons</a></li>
@@ -263,13 +362,8 @@
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
         <li><a href="/about">About</a></li>
-        <li><a href="/changelog">Changelog</a></li>
-        <li><a href="/status">Status</a></li>
         <li><a href="/security">Security</a></li>
-        <li><a href="/docs">Docs</a></li>
         <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
         <li><a href="/legal/terms">Terms</a></li>
         <li><a href="/legal/privacy">Privacy</a></li>
         <li><a href="/legal/acceptable-use">Acceptable use</a></li>
@@ -280,14 +374,13 @@
     </div>
     <div class="foot-bottom">
       <span>© 2026 PatchLabs</span>
-      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
       <a href="/changelog.xml">Changelog feed</a>
       <a href="/llms.txt">llms.txt</a>
       <a href="/.well-known/security.txt">security.txt</a>
       <span class="spacer"></span>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
     </div>
-    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
   </div>
 </footer>
 

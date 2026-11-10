@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PatchLabs for agencies: every client app checked after handover | PatchLabs</title>
+<meta name="description" content="For agencies shipping AI-built client apps: every client app on one plan, client labels, weekly re-checks, team seats and a Slack-compatible webhook. £99/month for 10 apps.">
+<link rel="canonical" href="https://patchlabs.dev/solutions/agencies">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="PatchLabs for agencies: every client app checked after handover | PatchLabs">
+<meta property="og:description" content="For agencies shipping AI-built client apps: every client app on one plan, client labels, weekly re-checks, team seats and a Slack-compatible webhook. £99/month for 10 apps.">
+<meta property="og:url" content="https://patchlabs.dev/solutions/agencies">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PatchLabs for agencies: every client app checked after handover | PatchLabs">
+<meta name="twitter:description" content="For agencies shipping AI-built client apps: every client app on one plan, client labels, weekly re-checks, team seats and a Slack-compatible webhook. £99/month for 10 apps.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/platform.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies" aria-current="page"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/#who-h">Solutions</a></li><li aria-current="page">Agencies</li></ol></nav>
+      <p class="lab">For agencies</p>
+      <h1>Every client app you ship, still checked after handover.</h1>
+      <p class="lede">You built it fast with AI. The client keeps prompting after you leave. PatchLabs watches every client app on one plan and tells you the moment a new leak appears, with the fix already proven.</p>
+      <div class="row"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/pricing">Agency pricing</a></div>
+    </div>
+    <figure class="figure"><div class="ui" role="img" aria-label="Example agency workspace with four fictional client apps and their statuses.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/app</span><span class="ui-tag">Example · fictional clients</span></div>
+  <div class="ui-appbar"><span class="ui-logo"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ui-hide-sm">PatchLabs</span></span><span class="ui-ws">Your studio</span><span class="ui-nav"><span class="on">Apps</span><span>Settings</span></span><span class="sp"></span></div>
+  <div class="ui-body">
+    <div class="ui-head"><div><p class="lab">Monitoring</p><p class="ui-title" style="font-family:var(--sans)">Apps</p><p class="ui-sub">Agency plan · 7 of 10 apps · 4 of 10 seats</p></div><span class="btn primary">Add app</span></div>
+    <div class="ui-card">
+      <div class="ui-group">Client <span class="ct">next check</span></div>
+      <div class="ui-row" style="grid-template-columns:72px minmax(0,1fr) auto auto"><span class="fid">Client A</span><span><span class="tt">studio/booking-app</span><span class="ob">new leak · PL-002</span></span><span class="pill leak">fix ready</span><span class="pr">in 6 days</span></div>
+      <div class="ui-row" style="grid-template-columns:72px minmax(0,1fr) auto auto"><span class="fid">Client B</span><span><span class="tt">studio/clinic-portal</span><span class="ob">a person is reviewing the fix</span></span><span class="pill pending">needs review</span><span class="pr">in 2 days</span></div>
+      <div class="ui-row" style="grid-template-columns:72px minmax(0,1fr) auto auto"><span class="fid">Client C</span><span><span class="tt">studio/shop-front</span><span class="ob">last checked 3 days ago</span></span><span class="pill proven">no known leaks</span><span class="pr">in 4 days</span></div>
+      <div class="ui-row" style="grid-template-columns:72px minmax(0,1fr) auto auto"><span class="fid">Client D</span><span><span class="tt">studio/crm-lite</span><span class="ob">re-check running</span></span><span class="pill pending">checking</span><span class="pr">now</span></div>
+    </div>
+  </div>
+</div><figcaption>An example workspace with fictional clients. The real dashboard lists every app with its client label, status and next check.</figcaption></figure>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="plan-h">
+  <div class="wrap">
+<div class="sec-head split "><div><p class="lab">The agency plan</p><h2 id="plan-h">One workspace for your whole portfolio.</h2><p>Everything here works today. What’s missing is listed below.</p></div><a class="link-arrow" href="/pricing">£99/month for 10 apps</a></div><div class="feats" data-reveal><div><span class="k"><span>Portfolio</span><span class="live">live</span></span><h3>Client labels on every app</h3><p>Alerts and reports say “Client A” instead of a repo slug.</p></div><div><span class="k"><span>Schedule</span><span class="live">live</span></span><h3>Weekly or monthly re-checks</h3><p>Set per app. Only new findings raise an alert.</p></div><div><span class="k"><span>Team</span><span class="live">live</span></span><h3>10 seats, owners and members</h3><p>Invite your developers by email. Owners manage members and the webhook.</p></div><div><span class="k"><span>Alerts</span><span class="live">live</span></span><h3>Into your Slack</h3><p>One webhook for the workspace: every finished check posts the client name and report link.</p></div><div><span class="k"><span>CI</span><span class="live">live</span></span><h3>API keys for your pipelines</h3><p>Re-check from any client’s GitHub Actions after a migration merges.</p></div><div><span class="k"><span>Clients</span><span class="live">live</span></span><h3>Questions in plain English</h3><p>When the fix depends on what the client intends, the report asks them, with a recommended answer.</p></div></div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="how-h">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">How agencies use it</p><h2 id="how-h">From handover to “we caught it first”.</h2><p>The value isn’t one clean report at launch. It’s telling the client about a leak, fix in hand, before anyone else finds it.</p></div><ol class="flow" style="--n:4" data-reveal><li><h3>Add the repo</h3><p>Client label and schedule. Public repos today; private with our GitHub App.</p><div class="art">client: Client A
+schedule: weekly</div></li><li><h3>Verify</h3><p>Someone with write access commits the verification file once. The first check queues.</p><div class="art">patchlabs-verify.txt</div></li><li><h3>Send the report</h3><p>Public by link, plain English: what leaked, the fix and the proof.</p><div class="art">patchlabs.dev/check?id=…</div></li><li><h3>Re-check weekly</h3><p>A new leak posts to your Slack and emails your team, with a proven fix ready.</p><div class="art">#client-alerts
+Client A <span class="leak">new leak</span></div></li></ol>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="notyet-h">
+  <div class="wrap">
+<div class="sec-head"><p class="lab">Not built yet</p><h2 id="notyet-h">What agencies ask for that we don’t have yet.</h2><p>We’d rather tell you now. Tell us which matters most and it moves up the list.</p></div><div class="feats" data-reveal><div><span class="k"><span>Not yet</span><span class="soon">coming</span></span><h3>Client-only logins</h3><p>Everyone in a workspace sees every app. Until client views exist, share each client’s report link.</p></div><div><span class="k"><span>Not yet</span><span class="soon">coming</span></span><h3>White-label monthly reports</h3><p>Reports carry PatchLabs branding today. A branded monthly summary per client is on the list.</p></div><div><span class="k"><span>GitHub App</span><span class="soon">coming</span></span><h3>Private repos and automatic PRs</h3><p>Both need our GitHub App. Until then: public repos, and fixes as a file or one-click commit.</p></div></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Agency questions.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>Can my clients see each other’s apps?</summary><div class="acc-body"><p>Only if you invite them into your workspace, because every member sees every app in it. Keep clients out of the workspace and send them their report links instead.</p></div></details>
+<details class="acc"><summary>Do I need access to the client’s repo?</summary><div class="acc-body"><p>Someone with write access has to commit the verification file once. That can be you, or the client.</p></div></details>
+<details class="acc"><summary>What if a client’s app doesn’t use Supabase?</summary><div class="acc-body"><p>Code checks still run. The Lab needs a <code>supabase/migrations</code> folder to rebuild the database, so apps on other backends can’t be lab-tested yet.</p></div></details>
+<details class="acc"><summary>Can I resell this to clients?</summary><div class="acc-body"><p>Many agencies include monitoring in a care plan. Talk to us before you put our name in a contract, so we can agree how it is described.</p></div></details>
+<details class="acc"><summary>Is there a free trial?</summary><div class="acc-body"><p>Your first app is free forever, with monthly re-checks. Try it on one client app before you request the agency plan.</p></div></details></div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Start with the client app you worry about most.</h2>
+      <p class="lede">Paste the public repo. You’ll get the leaks, the fix and the proof on one page, ready to send.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo4">Public GitHub repo</label>
+          <input id="repo4" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email4">Your email</label>
+          <input id="email4" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/demo">Try the demo</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

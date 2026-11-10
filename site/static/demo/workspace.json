@@ -1,0 +1,5148 @@
+{
+ "_about": "PatchLabs demo workspace. Fake data for /demo: no real customers, apps or people. The first app is our own demo repo; its findings beyond PL-001 on public.profiles are representative examples, not a real run.",
+ "anchor": "2026-11-10T09:00:00Z",
+ "routes": {
+  "/checks/demo-chk-1-5": {
+   "id": "demo-chk-1-5",
+   "repo": "manra399/patchlabs-demo-app",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-11-10T06:00:00Z",
+   "verified_at": "2026-11-10T06:00:00Z",
+   "finished_at": "2026-11-10T06:00:00Z",
+   "app_id": "demo-app-1",
+   "summary": {
+    "tables_leaking": [
+     "invoices",
+     "profiles",
+     "messages"
+    ],
+    "readable_by_anyone": [
+     "invoices",
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "messages"
+    ],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [
+     {
+      "question": "Should people who aren't signed in see avatars?",
+      "recommended": "Yes, if avatars appear on public pages; the files hold no other personal data."
+     }
+    ],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 39
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.messages",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 58,
+      "evidence": "policy \"Signed in users can read\" FOR SELECT TO authenticated USING (true); columns: sender_email, body",
+      "proven": true,
+      "proof": "Signed-in stranger read 3 messages between two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the sender or the recipient: auth.uid() IN (sender_id, recipient_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 39
+     },
+     {
+      "id": "PL-003",
+      "line": "lab",
+      "severity": "low",
+      "title": "Row level security is on but no policies exist",
+      "object": "public.audit_log",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 102,
+      "evidence": "ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY; (no CREATE POLICY follows)",
+      "proven": true,
+      "proof": "Owner read 0 of their own 4 seeded rows: nobody but the service role can read this table.",
+      "fix": "Add an owner-only SELECT policy if the app reads this table; otherwise leave it locked.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-004",
+      "line": "lab",
+      "severity": "medium",
+      "title": "UPDATE policy has no WITH CHECK",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 40,
+      "evidence": "CREATE POLICY \"Users update own profile\" FOR UPDATE USING (auth.uid() = user_id); -- no WITH CHECK",
+      "proven": true,
+      "proof": "Owner changed user_id on their own row to another user's id and the update was accepted.",
+      "fix": "Add WITH CHECK (auth.uid() = user_id) so a row can't be handed to someone else.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 21
+     },
+     {
+      "id": "PL-005",
+      "line": "lab",
+      "severity": "high",
+      "title": "Policy is always true",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 77,
+      "evidence": "CREATE POLICY \"Anyone can manage feedback\" FOR ALL USING (true) WITH CHECK (true);",
+      "proven": true,
+      "proof": "Anonymous visitor deleted 1 feedback row written by a seeded user.",
+      "fix": "Split into INSERT for anyone and SELECT/DELETE for the author only.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-006",
+      "line": "lab",
+      "severity": "high",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 120,
+      "evidence": "CREATE FUNCTION public.get_user_stats() ... SECURITY DEFINER; GRANT EXECUTE ... TO anon;",
+      "proven": true,
+      "proof": "Anonymous visitor called get_user_stats() and received counts for every seeded user.",
+      "fix": "Revoke EXECUTE from anon, set search_path, and filter by auth.uid() inside the function.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-007",
+      "line": "lab",
+      "severity": "medium",
+      "title": "Storage bucket is public",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "line_no": 4,
+      "evidence": "INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);",
+      "proven": true,
+      "proof": "Anonymous visitor listed and downloaded 2 seeded files from the avatars bucket.",
+      "fix": "Make the bucket private and serve files with signed URLs, or confirm avatars are meant to be public.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-008",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Row level security is not enabled",
+      "object": "public.invoices",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 140,
+      "evidence": "CREATE TABLE public.invoices (...); -- no ENABLE ROW LEVEL SECURITY anywhere in the migrations",
+      "proven": true,
+      "proof": "Anonymous visitor read 3 of 3 seeded invoices (billing_email, amount).",
+      "fix": "Enable row level security and add owner-only policies.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 39
+     },
+     {
+      "id": "PL-009",
+      "line": "code",
+      "severity": "high",
+      "title": "AI, payment or database key in the code",
+      "object": "src/lib/ai.ts",
+      "file": "src/lib/ai.ts",
+      "line_no": 4,
+      "evidence": "const OPENAI_API_KEY = \"sk-proj-••••••••\" // shipped to the browser bundle",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call behind a server-side function, then rotate the key with the provider.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-010",
+      "line": "code",
+      "severity": "critical",
+      "title": "Service role key in client code",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "line_no": 3,
+      "evidence": "const SUPABASE_SERVICE_KEY = \"eyJhbGciOiJIUzI1NiIs…[redacted]\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call to a server-side function, then rotate the key in the Supabase dashboard.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 39
+     },
+     {
+      "id": "PL-011",
+      "line": "code",
+      "severity": "high",
+      "title": "Key still in git history",
+      "object": "commit 4f2a9c1",
+      "file": ".env",
+      "line_no": 2,
+      "evidence": "STRIPE_SECRET_KEY=sk_test_•••••••• (added in 4f2a9c1, deleted in 9b17e03)",
+      "proven": false,
+      "proof": "",
+      "fix": "Rotate the key. Deleting the file doesn't remove it from history.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798",
+       "CWE-540"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 39
+     },
+     {
+      "id": "PL-017",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function open without sign-in while using the service key",
+      "object": "supabase/functions/send-invite",
+      "file": "supabase/functions/send-invite/index.ts",
+      "line_no": 12,
+      "evidence": "createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) with no Authorization check; verify_jwt = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Check the caller's JWT before using the service key, or turn verify_jwt back on.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-306"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-019",
+      "line": "code",
+      "severity": "critical",
+      "title": "Access decided by user_metadata, which users can edit",
+      "object": "supabase/functions/admin-export",
+      "file": "supabase/functions/admin-export/index.ts",
+      "line_no": 21,
+      "evidence": "if (user.user_metadata.role !== 'admin') return new Response('Forbidden', { status: 403 })",
+      "proven": false,
+      "proof": "",
+      "fix": "Decide roles from app_metadata or a roles table the user can't write to.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-807"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-020",
+      "line": "code",
+      "severity": "high",
+      "title": "Admin check only in the browser",
+      "object": "src/pages/Admin.tsx",
+      "file": "src/pages/Admin.tsx",
+      "line_no": 18,
+      "evidence": "if (user.email !== ADMIN_EMAIL) return <Navigate to=\"/\" /> // data queries below have no server-side check",
+      "proven": false,
+      "proof": "",
+      "fix": "Enforce the admin role in a policy or server function, not only in the page.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-602",
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-021",
+      "line": "code",
+      "severity": "high",
+      "title": "Payment webhook doesn't verify its signature",
+      "object": "supabase/functions/stripe-webhook",
+      "file": "supabase/functions/stripe-webhook/index.ts",
+      "line_no": 9,
+      "evidence": "const event = await req.json(); // no stripe.webhooks.constructEvent(...)",
+      "proven": false,
+      "proof": "",
+      "fix": "Verify the Stripe-Signature header with your webhook secret before trusting the event.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-345",
+       "CWE-347"
+      ],
+      "owasp": "A08:2021",
+      "owasp_name": "Software and Data Integrity Failures",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 21
+     },
+     {
+      "id": "PL-022",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function trusts a user id sent in the request",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "line_no": 15,
+      "evidence": "const { user_id, ...fields } = await req.json(); ... .eq('id', user_id)",
+      "proven": false,
+      "proof": "",
+      "fix": "Take the user id from the verified JWT, never from the request body.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-023",
+      "line": "code",
+      "severity": "critical",
+      "title": "Dependency with a known vulnerability",
+      "object": "next 14.1.0",
+      "file": "package-lock.json",
+      "line_no": 1804,
+      "evidence": "next@14.1.0: middleware authorisation bypass (fixed in 14.2.25)",
+      "proven": false,
+      "proof": "",
+      "fix": "Upgrade next to 14.2.25 or later.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-1395"
+      ],
+      "owasp": "A06:2021",
+      "owasp_name": "Vulnerable and Outdated Components",
+      "advisory": "GHSA-f82v-jwr5-mffw",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 7
+     },
+     {
+      "id": "PL-024",
+      "line": "code",
+      "severity": "medium",
+      "title": "User content rendered as raw HTML",
+      "object": "src/components/Comment.tsx",
+      "file": "src/components/Comment.tsx",
+      "line_no": 27,
+      "evidence": "<div dangerouslySetInnerHTML={{ __html: comment.body }} />",
+      "proven": false,
+      "proof": "",
+      "fix": "Render as text, or sanitise with DOMPurify before inserting HTML.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-79"
+      ],
+      "owasp": "A03:2021",
+      "owasp_name": "Injection",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": true,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 7
+     },
+     {
+      "id": "PL-025",
+      "line": "code",
+      "severity": "critical",
+      "title": "Firebase rules allow anyone",
+      "object": "firestore.rules",
+      "file": "firestore.rules",
+      "line_no": 5,
+      "evidence": "match /{document=**} { allow read, write: if true; }",
+      "proven": false,
+      "proof": "",
+      "fix": "Require request.auth and match the document owner in the rules.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 12
+     },
+     {
+      "id": "PL-026",
+      "line": "code",
+      "severity": "medium",
+      "title": "Any website can call a signed-in function",
+      "object": "supabase/functions/_shared/cors.ts",
+      "file": "supabase/functions/_shared/cors.ts",
+      "line_no": 2,
+      "evidence": "'Access-Control-Allow-Origin': '*' with 'Access-Control-Allow-Headers': 'authorization, ...'",
+      "proven": false,
+      "proof": "",
+      "fix": "Allow only your own site's origin.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-942"
+      ],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 7
+     }
+    ],
+    "counts": {
+     "critical": 6,
+     "high": 9,
+     "medium": 4,
+     "low": 2,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: manra399/patchlabs-demo-app\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.messages`\n- **PL-003** (low) Row level security is on but no policies exist: `public.audit_log`\n- **PL-004** (medium) UPDATE policy has no WITH CHECK: `public.profiles`\n- **PL-005** (high) Policy is always true: `public.feedback`\n- **PL-006** (high) SECURITY DEFINER function callable by anyone: `public.get_user_stats()`\n- **PL-007** (medium) Storage bucket is public: `storage.buckets: avatars`\n- **PL-008** (critical) Row level security is not enabled: `public.invoices`\n- **PL-009** (high) AI, payment or database key in the code: `src/lib/ai.ts`\n- **PL-010** (critical) Service role key in client code: `src/lib/admin.ts`\n- **PL-011** (high) Key still in git history: `commit 4f2a9c1`\n- **PL-017** (high) Edge function open without sign-in while using the service key: `supabase/functions/send-invite`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n- **PL-019** (critical) Access decided by user_metadata, which users can edit: `supabase/functions/admin-export`\n- **PL-020** (high) Admin check only in the browser: `src/pages/Admin.tsx`\n- **PL-021** (high) Payment webhook doesn't verify its signature: `supabase/functions/stripe-webhook`\n- **PL-022** (high) Edge function trusts a user id sent in the request: `supabase/functions/update-profile`\n- **PL-023** (critical) Dependency with a known vulnerability: `next 14.1.0`\n- **PL-024** (medium) User content rendered as raw HTML: `src/components/Comment.tsx`\n- **PL-025** (critical) Firebase rules allow anyone: `firestore.rules`\n- **PL-026** (medium) Any website can call a signed-in function: `supabase/functions/_shared/cors.ts`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-1-4": {
+   "id": "demo-chk-1-4",
+   "repo": "manra399/patchlabs-demo-app",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-11-03T06:00:00Z",
+   "verified_at": "2026-11-03T06:00:00Z",
+   "finished_at": "2026-11-03T06:00:00Z",
+   "app_id": "demo-app-1",
+   "summary": {
+    "tables_leaking": [
+     "invoices",
+     "profiles",
+     "messages",
+     "orders"
+    ],
+    "readable_by_anyone": [
+     "invoices",
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "messages",
+     "orders"
+    ],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [
+     {
+      "question": "Should people who aren't signed in see avatars?",
+      "recommended": "Yes, if avatars appear on public pages; the files hold no other personal data."
+     }
+    ],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 32
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.messages",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 58,
+      "evidence": "policy \"Signed in users can read\" FOR SELECT TO authenticated USING (true); columns: sender_email, body",
+      "proven": true,
+      "proof": "Signed-in stranger read 3 messages between two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the sender or the recipient: auth.uid() IN (sender_id, recipient_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 32
+     },
+     {
+      "id": "PL-003",
+      "line": "lab",
+      "severity": "low",
+      "title": "Row level security is on but no policies exist",
+      "object": "public.audit_log",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 102,
+      "evidence": "ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY; (no CREATE POLICY follows)",
+      "proven": true,
+      "proof": "Owner read 0 of their own 4 seeded rows: nobody but the service role can read this table.",
+      "fix": "Add an owner-only SELECT policy if the app reads this table; otherwise leave it locked.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-004",
+      "line": "lab",
+      "severity": "medium",
+      "title": "UPDATE policy has no WITH CHECK",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 40,
+      "evidence": "CREATE POLICY \"Users update own profile\" FOR UPDATE USING (auth.uid() = user_id); -- no WITH CHECK",
+      "proven": true,
+      "proof": "Owner changed user_id on their own row to another user's id and the update was accepted.",
+      "fix": "Add WITH CHECK (auth.uid() = user_id) so a row can't be handed to someone else.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 14
+     },
+     {
+      "id": "PL-005",
+      "line": "lab",
+      "severity": "high",
+      "title": "Policy is always true",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 77,
+      "evidence": "CREATE POLICY \"Anyone can manage feedback\" FOR ALL USING (true) WITH CHECK (true);",
+      "proven": true,
+      "proof": "Anonymous visitor deleted 1 feedback row written by a seeded user.",
+      "fix": "Split into INSERT for anyone and SELECT/DELETE for the author only.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-006",
+      "line": "lab",
+      "severity": "high",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 120,
+      "evidence": "CREATE FUNCTION public.get_user_stats() ... SECURITY DEFINER; GRANT EXECUTE ... TO anon;",
+      "proven": true,
+      "proof": "Anonymous visitor called get_user_stats() and received counts for every seeded user.",
+      "fix": "Revoke EXECUTE from anon, set search_path, and filter by auth.uid() inside the function.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-007",
+      "line": "lab",
+      "severity": "medium",
+      "title": "Storage bucket is public",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "line_no": 4,
+      "evidence": "INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);",
+      "proven": true,
+      "proof": "Anonymous visitor listed and downloaded 2 seeded files from the avatars bucket.",
+      "fix": "Make the bucket private and serve files with signed URLs, or confirm avatars are meant to be public.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-008",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Row level security is not enabled",
+      "object": "public.invoices",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 140,
+      "evidence": "CREATE TABLE public.invoices (...); -- no ENABLE ROW LEVEL SECURITY anywhere in the migrations",
+      "proven": true,
+      "proof": "Anonymous visitor read 3 of 3 seeded invoices (billing_email, amount).",
+      "fix": "Enable row level security and add owner-only policies.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 32
+     },
+     {
+      "id": "PL-009",
+      "line": "code",
+      "severity": "high",
+      "title": "AI, payment or database key in the code",
+      "object": "src/lib/ai.ts",
+      "file": "src/lib/ai.ts",
+      "line_no": 4,
+      "evidence": "const OPENAI_API_KEY = \"sk-proj-••••••••\" // shipped to the browser bundle",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call behind a server-side function, then rotate the key with the provider.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-010",
+      "line": "code",
+      "severity": "critical",
+      "title": "Service role key in client code",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "line_no": 3,
+      "evidence": "const SUPABASE_SERVICE_KEY = \"eyJhbGciOiJIUzI1NiIs…[redacted]\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call to a server-side function, then rotate the key in the Supabase dashboard.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 32
+     },
+     {
+      "id": "PL-011",
+      "line": "code",
+      "severity": "high",
+      "title": "Key still in git history",
+      "object": "commit 4f2a9c1",
+      "file": ".env",
+      "line_no": 2,
+      "evidence": "STRIPE_SECRET_KEY=sk_test_•••••••• (added in 4f2a9c1, deleted in 9b17e03)",
+      "proven": false,
+      "proof": "",
+      "fix": "Rotate the key. Deleting the file doesn't remove it from history.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798",
+       "CWE-540"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 32
+     },
+     {
+      "id": "PL-017",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function open without sign-in while using the service key",
+      "object": "supabase/functions/send-invite",
+      "file": "supabase/functions/send-invite/index.ts",
+      "line_no": 12,
+      "evidence": "createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) with no Authorization check; verify_jwt = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Check the caller's JWT before using the service key, or turn verify_jwt back on.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-306"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-019",
+      "line": "code",
+      "severity": "critical",
+      "title": "Access decided by user_metadata, which users can edit",
+      "object": "supabase/functions/admin-export",
+      "file": "supabase/functions/admin-export/index.ts",
+      "line_no": 21,
+      "evidence": "if (user.user_metadata.role !== 'admin') return new Response('Forbidden', { status: 403 })",
+      "proven": false,
+      "proof": "",
+      "fix": "Decide roles from app_metadata or a roles table the user can't write to.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-807"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-020",
+      "line": "code",
+      "severity": "high",
+      "title": "Admin check only in the browser",
+      "object": "src/pages/Admin.tsx",
+      "file": "src/pages/Admin.tsx",
+      "line_no": 18,
+      "evidence": "if (user.email !== ADMIN_EMAIL) return <Navigate to=\"/\" /> // data queries below have no server-side check",
+      "proven": false,
+      "proof": "",
+      "fix": "Enforce the admin role in a policy or server function, not only in the page.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-602",
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-021",
+      "line": "code",
+      "severity": "high",
+      "title": "Payment webhook doesn't verify its signature",
+      "object": "supabase/functions/stripe-webhook",
+      "file": "supabase/functions/stripe-webhook/index.ts",
+      "line_no": 9,
+      "evidence": "const event = await req.json(); // no stripe.webhooks.constructEvent(...)",
+      "proven": false,
+      "proof": "",
+      "fix": "Verify the Stripe-Signature header with your webhook secret before trusting the event.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-345",
+       "CWE-347"
+      ],
+      "owasp": "A08:2021",
+      "owasp_name": "Software and Data Integrity Failures",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 14
+     },
+     {
+      "id": "PL-022",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function trusts a user id sent in the request",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "line_no": 15,
+      "evidence": "const { user_id, ...fields } = await req.json(); ... .eq('id', user_id)",
+      "proven": false,
+      "proof": "",
+      "fix": "Take the user id from the verified JWT, never from the request body.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-023",
+      "line": "code",
+      "severity": "critical",
+      "title": "Dependency with a known vulnerability",
+      "object": "next 14.1.0",
+      "file": "package-lock.json",
+      "line_no": 1804,
+      "evidence": "next@14.1.0: middleware authorisation bypass (fixed in 14.2.25)",
+      "proven": false,
+      "proof": "",
+      "fix": "Upgrade next to 14.2.25 or later.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-1395"
+      ],
+      "owasp": "A06:2021",
+      "owasp_name": "Vulnerable and Outdated Components",
+      "advisory": "GHSA-f82v-jwr5-mffw",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-024",
+      "line": "code",
+      "severity": "medium",
+      "title": "User content rendered as raw HTML",
+      "object": "src/components/Comment.tsx",
+      "file": "src/components/Comment.tsx",
+      "line_no": 27,
+      "evidence": "<div dangerouslySetInnerHTML={{ __html: comment.body }} />",
+      "proven": false,
+      "proof": "",
+      "fix": "Render as text, or sanitise with DOMPurify before inserting HTML.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-79"
+      ],
+      "owasp": "A03:2021",
+      "owasp_name": "Injection",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": true,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-025",
+      "line": "code",
+      "severity": "critical",
+      "title": "Firebase rules allow anyone",
+      "object": "firestore.rules",
+      "file": "firestore.rules",
+      "line_no": 5,
+      "evidence": "match /{document=**} { allow read, write: if true; }",
+      "proven": false,
+      "proof": "",
+      "fix": "Require request.auth and match the document owner in the rules.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     },
+     {
+      "id": "PL-026",
+      "line": "code",
+      "severity": "medium",
+      "title": "Any website can call a signed-in function",
+      "object": "supabase/functions/_shared/cors.ts",
+      "file": "supabase/functions/_shared/cors.ts",
+      "line_no": 2,
+      "evidence": "'Access-Control-Allow-Origin': '*' with 'Access-Control-Allow-Headers': 'authorization, ...'",
+      "proven": false,
+      "proof": "",
+      "fix": "Allow only your own site's origin.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-942"
+      ],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.orders",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 88,
+      "evidence": "policy \"Orders visible to signed in users\" FOR SELECT TO authenticated USING (true); columns: shipping_address, phone",
+      "proven": true,
+      "proof": "Signed-in stranger read 5 orders placed by other seeded users.",
+      "fix": "Scope SELECT to the buyer: auth.uid() = buyer_id.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 5
+     }
+    ],
+    "counts": {
+     "critical": 6,
+     "high": 10,
+     "medium": 4,
+     "low": 2,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: manra399/patchlabs-demo-app\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.messages`\n- **PL-003** (low) Row level security is on but no policies exist: `public.audit_log`\n- **PL-004** (medium) UPDATE policy has no WITH CHECK: `public.profiles`\n- **PL-005** (high) Policy is always true: `public.feedback`\n- **PL-006** (high) SECURITY DEFINER function callable by anyone: `public.get_user_stats()`\n- **PL-007** (medium) Storage bucket is public: `storage.buckets: avatars`\n- **PL-008** (critical) Row level security is not enabled: `public.invoices`\n- **PL-009** (high) AI, payment or database key in the code: `src/lib/ai.ts`\n- **PL-010** (critical) Service role key in client code: `src/lib/admin.ts`\n- **PL-011** (high) Key still in git history: `commit 4f2a9c1`\n- **PL-017** (high) Edge function open without sign-in while using the service key: `supabase/functions/send-invite`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n- **PL-019** (critical) Access decided by user_metadata, which users can edit: `supabase/functions/admin-export`\n- **PL-020** (high) Admin check only in the browser: `src/pages/Admin.tsx`\n- **PL-021** (high) Payment webhook doesn't verify its signature: `supabase/functions/stripe-webhook`\n- **PL-022** (high) Edge function trusts a user id sent in the request: `supabase/functions/update-profile`\n- **PL-023** (critical) Dependency with a known vulnerability: `next 14.1.0`\n- **PL-024** (medium) User content rendered as raw HTML: `src/components/Comment.tsx`\n- **PL-025** (critical) Firebase rules allow anyone: `firestore.rules`\n- **PL-026** (medium) Any website can call a signed-in function: `supabase/functions/_shared/cors.ts`\n- **PL-002** (high) Any signed-in user can read every row: `public.orders`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-1-3": {
+   "id": "demo-chk-1-3",
+   "repo": "manra399/patchlabs-demo-app",
+   "branch": "main",
+   "status": "needs_review",
+   "created_at": "2026-10-28T09:00:00Z",
+   "verified_at": "2026-10-28T09:00:00Z",
+   "finished_at": "2026-10-28T09:00:00Z",
+   "app_id": "demo-app-1",
+   "summary": {
+    "tables_leaking": [
+     "invoices",
+     "profiles",
+     "messages",
+     "orders"
+    ],
+    "readable_by_anyone": [
+     "invoices",
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "messages",
+     "orders"
+    ],
+    "lab_proof_passed": false,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 27
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.messages",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 58,
+      "evidence": "policy \"Signed in users can read\" FOR SELECT TO authenticated USING (true); columns: sender_email, body",
+      "proven": true,
+      "proof": "Signed-in stranger read 3 messages between two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the sender or the recipient: auth.uid() IN (sender_id, recipient_id).",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 27
+     },
+     {
+      "id": "PL-003",
+      "line": "lab",
+      "severity": "low",
+      "title": "Row level security is on but no policies exist",
+      "object": "public.audit_log",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 102,
+      "evidence": "ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY; (no CREATE POLICY follows)",
+      "proven": true,
+      "proof": "Owner read 0 of their own 4 seeded rows: nobody but the service role can read this table.",
+      "fix": "Add an owner-only SELECT policy if the app reads this table; otherwise leave it locked.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-004",
+      "line": "lab",
+      "severity": "medium",
+      "title": "UPDATE policy has no WITH CHECK",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 40,
+      "evidence": "CREATE POLICY \"Users update own profile\" FOR UPDATE USING (auth.uid() = user_id); -- no WITH CHECK",
+      "proven": true,
+      "proof": "Owner changed user_id on their own row to another user's id and the update was accepted.",
+      "fix": "Add WITH CHECK (auth.uid() = user_id) so a row can't be handed to someone else.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 8
+     },
+     {
+      "id": "PL-005",
+      "line": "lab",
+      "severity": "high",
+      "title": "Policy is always true",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 77,
+      "evidence": "CREATE POLICY \"Anyone can manage feedback\" FOR ALL USING (true) WITH CHECK (true);",
+      "proven": true,
+      "proof": "Anonymous visitor deleted 1 feedback row written by a seeded user.",
+      "fix": "Split into INSERT for anyone and SELECT/DELETE for the author only.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-006",
+      "line": "lab",
+      "severity": "high",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 120,
+      "evidence": "CREATE FUNCTION public.get_user_stats() ... SECURITY DEFINER; GRANT EXECUTE ... TO anon;",
+      "proven": true,
+      "proof": "Anonymous visitor called get_user_stats() and received counts for every seeded user.",
+      "fix": "Revoke EXECUTE from anon, set search_path, and filter by auth.uid() inside the function.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-007",
+      "line": "lab",
+      "severity": "medium",
+      "title": "Storage bucket is public",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "line_no": 4,
+      "evidence": "INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);",
+      "proven": true,
+      "proof": "Anonymous visitor listed and downloaded 2 seeded files from the avatars bucket.",
+      "fix": "Make the bucket private and serve files with signed URLs, or confirm avatars are meant to be public.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-008",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Row level security is not enabled",
+      "object": "public.invoices",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 140,
+      "evidence": "CREATE TABLE public.invoices (...); -- no ENABLE ROW LEVEL SECURITY anywhere in the migrations",
+      "proven": true,
+      "proof": "Anonymous visitor read 3 of 3 seeded invoices (billing_email, amount).",
+      "fix": "Enable row level security and add owner-only policies.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 27
+     },
+     {
+      "id": "PL-009",
+      "line": "code",
+      "severity": "high",
+      "title": "AI, payment or database key in the code",
+      "object": "src/lib/ai.ts",
+      "file": "src/lib/ai.ts",
+      "line_no": 4,
+      "evidence": "const OPENAI_API_KEY = \"sk-proj-••••••••\" // shipped to the browser bundle",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call behind a server-side function, then rotate the key with the provider.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-010",
+      "line": "code",
+      "severity": "critical",
+      "title": "Service role key in client code",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "line_no": 3,
+      "evidence": "const SUPABASE_SERVICE_KEY = \"eyJhbGciOiJIUzI1NiIs…[redacted]\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call to a server-side function, then rotate the key in the Supabase dashboard.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 27
+     },
+     {
+      "id": "PL-011",
+      "line": "code",
+      "severity": "high",
+      "title": "Key still in git history",
+      "object": "commit 4f2a9c1",
+      "file": ".env",
+      "line_no": 2,
+      "evidence": "STRIPE_SECRET_KEY=sk_test_•••••••• (added in 4f2a9c1, deleted in 9b17e03)",
+      "proven": false,
+      "proof": "",
+      "fix": "Rotate the key. Deleting the file doesn't remove it from history.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798",
+       "CWE-540"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 27
+     },
+     {
+      "id": "PL-017",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function open without sign-in while using the service key",
+      "object": "supabase/functions/send-invite",
+      "file": "supabase/functions/send-invite/index.ts",
+      "line_no": 12,
+      "evidence": "createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) with no Authorization check; verify_jwt = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Check the caller's JWT before using the service key, or turn verify_jwt back on.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-306"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-019",
+      "line": "code",
+      "severity": "critical",
+      "title": "Access decided by user_metadata, which users can edit",
+      "object": "supabase/functions/admin-export",
+      "file": "supabase/functions/admin-export/index.ts",
+      "line_no": 21,
+      "evidence": "if (user.user_metadata.role !== 'admin') return new Response('Forbidden', { status: 403 })",
+      "proven": false,
+      "proof": "",
+      "fix": "Decide roles from app_metadata or a roles table the user can't write to.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-807"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-020",
+      "line": "code",
+      "severity": "high",
+      "title": "Admin check only in the browser",
+      "object": "src/pages/Admin.tsx",
+      "file": "src/pages/Admin.tsx",
+      "line_no": 18,
+      "evidence": "if (user.email !== ADMIN_EMAIL) return <Navigate to=\"/\" /> // data queries below have no server-side check",
+      "proven": false,
+      "proof": "",
+      "fix": "Enforce the admin role in a policy or server function, not only in the page.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-602",
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-021",
+      "line": "code",
+      "severity": "high",
+      "title": "Payment webhook doesn't verify its signature",
+      "object": "supabase/functions/stripe-webhook",
+      "file": "supabase/functions/stripe-webhook/index.ts",
+      "line_no": 9,
+      "evidence": "const event = await req.json(); // no stripe.webhooks.constructEvent(...)",
+      "proven": false,
+      "proof": "",
+      "fix": "Verify the Stripe-Signature header with your webhook secret before trusting the event.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-345",
+       "CWE-347"
+      ],
+      "owasp": "A08:2021",
+      "owasp_name": "Software and Data Integrity Failures",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 8
+     },
+     {
+      "id": "PL-022",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function trusts a user id sent in the request",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "line_no": 15,
+      "evidence": "const { user_id, ...fields } = await req.json(); ... .eq('id', user_id)",
+      "proven": false,
+      "proof": "",
+      "fix": "Take the user id from the verified JWT, never from the request body.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-025",
+      "line": "code",
+      "severity": "critical",
+      "title": "Firebase rules allow anyone",
+      "object": "firestore.rules",
+      "file": "firestore.rules",
+      "line_no": 5,
+      "evidence": "match /{document=**} { allow read, write: if true; }",
+      "proven": false,
+      "proof": "",
+      "fix": "Require request.auth and match the document owner in the rules.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.orders",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 88,
+      "evidence": "policy \"Orders visible to signed in users\" FOR SELECT TO authenticated USING (true); columns: shipping_address, phone",
+      "proven": true,
+      "proof": "Signed-in stranger read 5 orders placed by other seeded users.",
+      "fix": "Scope SELECT to the buyer: auth.uid() = buyer_id.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     }
+    ],
+    "counts": {
+     "critical": 5,
+     "high": 10,
+     "medium": 2,
+     "low": 2,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: manra399/patchlabs-demo-app\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.messages`\n- **PL-003** (low) Row level security is on but no policies exist: `public.audit_log`\n- **PL-004** (medium) UPDATE policy has no WITH CHECK: `public.profiles`\n- **PL-005** (high) Policy is always true: `public.feedback`\n- **PL-006** (high) SECURITY DEFINER function callable by anyone: `public.get_user_stats()`\n- **PL-007** (medium) Storage bucket is public: `storage.buckets: avatars`\n- **PL-008** (critical) Row level security is not enabled: `public.invoices`\n- **PL-009** (high) AI, payment or database key in the code: `src/lib/ai.ts`\n- **PL-010** (critical) Service role key in client code: `src/lib/admin.ts`\n- **PL-011** (high) Key still in git history: `commit 4f2a9c1`\n- **PL-017** (high) Edge function open without sign-in while using the service key: `supabase/functions/send-invite`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n- **PL-019** (critical) Access decided by user_metadata, which users can edit: `supabase/functions/admin-export`\n- **PL-020** (high) Admin check only in the browser: `src/pages/Admin.tsx`\n- **PL-021** (high) Payment webhook doesn't verify its signature: `supabase/functions/stripe-webhook`\n- **PL-022** (high) Edge function trusts a user id sent in the request: `supabase/functions/update-profile`\n- **PL-025** (critical) Firebase rules allow anyone: `firestore.rules`\n- **PL-002** (high) Any signed-in user can read every row: `public.orders`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-1-2": {
+   "id": "demo-chk-1-2",
+   "repo": "manra399/patchlabs-demo-app",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-10-20T06:00:00Z",
+   "verified_at": "2026-10-20T06:00:00Z",
+   "finished_at": "2026-10-20T06:00:00Z",
+   "app_id": "demo-app-1",
+   "summary": {
+    "tables_leaking": [
+     "invoices",
+     "profiles",
+     "messages"
+    ],
+    "readable_by_anyone": [
+     "invoices",
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "messages"
+    ],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 18
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.messages",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 58,
+      "evidence": "policy \"Signed in users can read\" FOR SELECT TO authenticated USING (true); columns: sender_email, body",
+      "proven": true,
+      "proof": "Signed-in stranger read 3 messages between two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the sender or the recipient: auth.uid() IN (sender_id, recipient_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 18
+     },
+     {
+      "id": "PL-004",
+      "line": "lab",
+      "severity": "medium",
+      "title": "UPDATE policy has no WITH CHECK",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 40,
+      "evidence": "CREATE POLICY \"Users update own profile\" FOR UPDATE USING (auth.uid() = user_id); -- no WITH CHECK",
+      "proven": true,
+      "proof": "Owner changed user_id on their own row to another user's id and the update was accepted.",
+      "fix": "Add WITH CHECK (auth.uid() = user_id) so a row can't be handed to someone else.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-008",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Row level security is not enabled",
+      "object": "public.invoices",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 140,
+      "evidence": "CREATE TABLE public.invoices (...); -- no ENABLE ROW LEVEL SECURITY anywhere in the migrations",
+      "proven": true,
+      "proof": "Anonymous visitor read 3 of 3 seeded invoices (billing_email, amount).",
+      "fix": "Enable row level security and add owner-only policies.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 18
+     },
+     {
+      "id": "PL-010",
+      "line": "code",
+      "severity": "critical",
+      "title": "Service role key in client code",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "line_no": 3,
+      "evidence": "const SUPABASE_SERVICE_KEY = \"eyJhbGciOiJIUzI1NiIs…[redacted]\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call to a server-side function, then rotate the key in the Supabase dashboard.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 18
+     },
+     {
+      "id": "PL-011",
+      "line": "code",
+      "severity": "high",
+      "title": "Key still in git history",
+      "object": "commit 4f2a9c1",
+      "file": ".env",
+      "line_no": 2,
+      "evidence": "STRIPE_SECRET_KEY=sk_test_•••••••• (added in 4f2a9c1, deleted in 9b17e03)",
+      "proven": false,
+      "proof": "",
+      "fix": "Rotate the key. Deleting the file doesn't remove it from history.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798",
+       "CWE-540"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 18
+     },
+     {
+      "id": "PL-021",
+      "line": "code",
+      "severity": "high",
+      "title": "Payment webhook doesn't verify its signature",
+      "object": "supabase/functions/stripe-webhook",
+      "file": "supabase/functions/stripe-webhook/index.ts",
+      "line_no": 9,
+      "evidence": "const event = await req.json(); // no stripe.webhooks.constructEvent(...)",
+      "proven": false,
+      "proof": "",
+      "fix": "Verify the Stripe-Signature header with your webhook secret before trusting the event.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-345",
+       "CWE-347"
+      ],
+      "owasp": "A08:2021",
+      "owasp_name": "Software and Data Integrity Failures",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-024",
+      "line": "code",
+      "severity": "medium",
+      "title": "User content rendered as raw HTML",
+      "object": "src/components/Comment.tsx",
+      "file": "src/components/Comment.tsx",
+      "line_no": 27,
+      "evidence": "<div dangerouslySetInnerHTML={{ __html: comment.body }} />",
+      "proven": false,
+      "proof": "",
+      "fix": "Render as text, or sanitise with DOMPurify before inserting HTML.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-79"
+      ],
+      "owasp": "A03:2021",
+      "owasp_name": "Injection",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     }
+    ],
+    "counts": {
+     "critical": 3,
+     "high": 3,
+     "medium": 2,
+     "low": 0,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: manra399/patchlabs-demo-app\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.messages`\n- **PL-004** (medium) UPDATE policy has no WITH CHECK: `public.profiles`\n- **PL-008** (critical) Row level security is not enabled: `public.invoices`\n- **PL-010** (critical) Service role key in client code: `src/lib/admin.ts`\n- **PL-011** (high) Key still in git history: `commit 4f2a9c1`\n- **PL-021** (high) Payment webhook doesn't verify its signature: `supabase/functions/stripe-webhook`\n- **PL-024** (medium) User content rendered as raw HTML: `src/components/Comment.tsx`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-1-1": {
+   "id": "demo-chk-1-1",
+   "repo": "manra399/patchlabs-demo-app",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-10-01T09:00:00Z",
+   "verified_at": "2026-10-01T09:00:00Z",
+   "finished_at": "2026-10-01T09:00:00Z",
+   "app_id": "demo-app-1",
+   "summary": {
+    "tables_leaking": [
+     "invoices",
+     "profiles",
+     "messages"
+    ],
+    "readable_by_anyone": [
+     "invoices",
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "messages"
+    ],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.messages",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 58,
+      "evidence": "policy \"Signed in users can read\" FOR SELECT TO authenticated USING (true); columns: sender_email, body",
+      "proven": true,
+      "proof": "Signed-in stranger read 3 messages between two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the sender or the recipient: auth.uid() IN (sender_id, recipient_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-008",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Row level security is not enabled",
+      "object": "public.invoices",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 140,
+      "evidence": "CREATE TABLE public.invoices (...); -- no ENABLE ROW LEVEL SECURITY anywhere in the migrations",
+      "proven": true,
+      "proof": "Anonymous visitor read 3 of 3 seeded invoices (billing_email, amount).",
+      "fix": "Enable row level security and add owner-only policies.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-010",
+      "line": "code",
+      "severity": "critical",
+      "title": "Service role key in client code",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "line_no": 3,
+      "evidence": "const SUPABASE_SERVICE_KEY = \"eyJhbGciOiJIUzI1NiIs…[redacted]\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call to a server-side function, then rotate the key in the Supabase dashboard.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-011",
+      "line": "code",
+      "severity": "high",
+      "title": "Key still in git history",
+      "object": "commit 4f2a9c1",
+      "file": ".env",
+      "line_no": 2,
+      "evidence": "STRIPE_SECRET_KEY=sk_test_•••••••• (added in 4f2a9c1, deleted in 9b17e03)",
+      "proven": false,
+      "proof": "",
+      "fix": "Rotate the key. Deleting the file doesn't remove it from history.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798",
+       "CWE-540"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     }
+    ],
+    "counts": {
+     "critical": 3,
+     "high": 2,
+     "medium": 0,
+     "low": 0,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: manra399/patchlabs-demo-app\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.messages`\n- **PL-008** (critical) Row level security is not enabled: `public.invoices`\n- **PL-010** (critical) Service role key in client code: `src/lib/admin.ts`\n- **PL-011** (high) Key still in git history: `commit 4f2a9c1`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/apps/demo-app-1": {
+   "id": "demo-app-1",
+   "workspace_id": "demo-ws",
+   "repo": "manra399/patchlabs-demo-app",
+   "branch": "main",
+   "client_label": null,
+   "schedule": "weekly",
+   "next_check_at": "2026-11-17T06:00:00Z",
+   "badge_public": true,
+   "created_at": "2026-10-01T09:00:00Z",
+   "verified_at": "2026-10-01T09:00:00Z",
+   "verified": true,
+   "last_check": {
+    "id": "demo-chk-1-5",
+    "status": "done",
+    "finished_at": "2026-11-10T06:00:00Z",
+    "tables_leaking": [
+     "invoices",
+     "profiles",
+     "messages"
+    ],
+    "counts": {
+     "critical": 6,
+     "high": 9,
+     "medium": 4,
+     "low": 2,
+     "info": 0
+    }
+   },
+   "open_check_id": null,
+   "suppressed_tables": [],
+   "freshness": {
+    "stale": false,
+    "days_since_check": 0,
+    "stale_after_days": 14
+   },
+   "checks": [
+    {
+     "id": "demo-chk-1-5",
+     "status": "done",
+     "trigger": "scheduled",
+     "created_at": "2026-11-10T06:00:00Z",
+     "finished_at": "2026-11-10T06:00:00Z",
+     "tables_leaking": [
+      "invoices",
+      "profiles",
+      "messages"
+     ],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 6,
+      "high": 9,
+      "medium": 4,
+      "low": 2,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-1-4",
+     "status": "done",
+     "trigger": "scheduled",
+     "created_at": "2026-11-03T06:00:00Z",
+     "finished_at": "2026-11-03T06:00:00Z",
+     "tables_leaking": [
+      "invoices",
+      "profiles",
+      "messages",
+      "orders"
+     ],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 6,
+      "high": 10,
+      "medium": 4,
+      "low": 2,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-1-3",
+     "status": "needs_review",
+     "trigger": "manual",
+     "created_at": "2026-10-28T09:00:00Z",
+     "finished_at": "2026-10-28T09:00:00Z",
+     "tables_leaking": [
+      "invoices",
+      "profiles",
+      "messages",
+      "orders"
+     ],
+     "lab_proof_passed": false,
+     "counts": {
+      "critical": 5,
+      "high": 10,
+      "medium": 2,
+      "low": 2,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-1-2",
+     "status": "done",
+     "trigger": "scheduled",
+     "created_at": "2026-10-20T06:00:00Z",
+     "finished_at": "2026-10-20T06:00:00Z",
+     "tables_leaking": [
+      "invoices",
+      "profiles",
+      "messages"
+     ],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 3,
+      "high": 3,
+      "medium": 2,
+      "low": 0,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-1-1",
+     "status": "done",
+     "trigger": "verify",
+     "created_at": "2026-10-01T09:00:00Z",
+     "finished_at": "2026-10-01T09:00:00Z",
+     "tables_leaking": [
+      "invoices",
+      "profiles",
+      "messages"
+     ],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 3,
+      "high": 2,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+     }
+    }
+   ],
+   "diff": {
+    "new_leaks": [],
+    "fixed": [
+     "orders"
+    ],
+    "still_leaking": [
+     "invoices",
+     "profiles",
+     "messages"
+    ],
+    "suppressed": [],
+    "from_check_id": "demo-chk-1-4",
+    "to_check_id": "demo-chk-1-5"
+   },
+   "findings": {
+    "open": [
+     {
+      "id": "PL-001",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Anyone on the internet can read personal data",
+      "severity": "critical",
+      "line": "lab",
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 40,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-008",
+      "object": "public.invoices",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Row level security is not enabled",
+      "severity": "critical",
+      "line": "lab",
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 40,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-010",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "title": "Service role key in client code",
+      "severity": "critical",
+      "line": "code",
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 40,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-019",
+      "object": "supabase/functions/admin-export",
+      "file": "supabase/functions/admin-export/index.ts",
+      "title": "Access decided by user_metadata, which users can edit",
+      "severity": "critical",
+      "line": "code",
+      "cwe": [
+       "CWE-807"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-025",
+      "object": "firestore.rules",
+      "file": "firestore.rules",
+      "title": "Firebase rules allow anyone",
+      "severity": "critical",
+      "line": "code",
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-023",
+      "object": "next 14.1.0",
+      "file": "package-lock.json",
+      "title": "Dependency with a known vulnerability",
+      "severity": "critical",
+      "line": "code",
+      "cwe": [
+       "CWE-1395"
+      ],
+      "owasp": "A06:2021",
+      "owasp_name": "Vulnerable and Outdated Components",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 7,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-002",
+      "object": "public.messages",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Any signed-in user can read every row",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 40,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-011",
+      "object": "commit 4f2a9c1",
+      "file": ".env",
+      "title": "Key still in git history",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-798",
+       "CWE-540"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-01T09:00:00Z",
+      "first_check_id": "demo-chk-1-1",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 40,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-021",
+      "object": "supabase/functions/stripe-webhook",
+      "file": "supabase/functions/stripe-webhook/index.ts",
+      "title": "Payment webhook doesn't verify its signature",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-345",
+       "CWE-347"
+      ],
+      "owasp": "A08:2021",
+      "owasp_name": "Software and Data Integrity Failures",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 21,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-005",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Policy is always true",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-006",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-009",
+      "object": "src/lib/ai.ts",
+      "file": "src/lib/ai.ts",
+      "title": "AI, payment or database key in the code",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-017",
+      "object": "supabase/functions/send-invite",
+      "file": "supabase/functions/send-invite/index.ts",
+      "title": "Edge function open without sign-in while using the service key",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-306"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-020",
+      "object": "src/pages/Admin.tsx",
+      "file": "src/pages/Admin.tsx",
+      "title": "Admin check only in the browser",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-602",
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-022",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "title": "Edge function trusts a user id sent in the request",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-004",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "UPDATE policy has no WITH CHECK",
+      "severity": "medium",
+      "line": "lab",
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 21,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-007",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "title": "Storage bucket is public",
+      "severity": "medium",
+      "line": "lab",
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-024",
+      "object": "src/components/Comment.tsx",
+      "file": "src/components/Comment.tsx",
+      "title": "User content rendered as raw HTML",
+      "severity": "medium",
+      "line": "code",
+      "cwe": [
+       "CWE-79"
+      ],
+      "owasp": "A03:2021",
+      "owasp_name": "Injection",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": true,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 7,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-026",
+      "object": "supabase/functions/_shared/cors.ts",
+      "file": "supabase/functions/_shared/cors.ts",
+      "title": "Any website can call a signed-in function",
+      "severity": "medium",
+      "line": "code",
+      "cwe": [
+       "CWE-942"
+      ],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-11-03T06:00:00Z",
+      "first_check_id": "demo-chk-1-4",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 7,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-003",
+      "object": "public.audit_log",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Row level security is on but no policies exist",
+      "severity": "low",
+      "line": "lab",
+      "cwe": [],
+      "owasp": "A05:2021",
+      "owasp_name": "Security Misconfiguration",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-018",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "title": "Sign-ups need no email confirmation",
+      "severity": "low",
+      "line": "code",
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-10T06:00:00Z",
+      "last_check_id": "demo-chk-1-5",
+      "days_open": 13,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     }
+    ],
+    "fixed": [
+     {
+      "id": "PL-002",
+      "object": "public.orders",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Any signed-in user can read every row",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-10-28T09:00:00Z",
+      "first_check_id": "demo-chk-1-3",
+      "regressed": false,
+      "last_seen": "2026-11-03T06:00:00Z",
+      "last_check_id": "demo-chk-1-4",
+      "fixed_at": "2026-11-10T06:00:00Z",
+      "fixed_in_check_id": "demo-chk-1-5",
+      "days_open": 12
+     },
+     {
+      "id": "PL-024",
+      "object": "src/components/Comment.tsx",
+      "file": "src/components/Comment.tsx",
+      "title": "User content rendered as raw HTML",
+      "severity": "medium",
+      "line": "code",
+      "cwe": [
+       "CWE-79"
+      ],
+      "owasp": "A03:2021",
+      "owasp_name": "Injection",
+      "first_seen": "2026-10-20T06:00:00Z",
+      "first_check_id": "demo-chk-1-2",
+      "regressed": false,
+      "last_seen": "2026-10-20T06:00:00Z",
+      "last_check_id": "demo-chk-1-2",
+      "fixed_at": "2026-10-28T09:00:00Z",
+      "fixed_in_check_id": "demo-chk-1-3",
+      "days_open": 8
+     }
+    ]
+   }
+  },
+  "/checks/demo-chk-2-3": {
+   "id": "demo-chk-2-3",
+   "repo": "example-org/booking-portal",
+   "branch": "main",
+   "status": "needs_review",
+   "created_at": "2026-11-08T09:00:00Z",
+   "verified_at": "2026-11-08T09:00:00Z",
+   "finished_at": "2026-11-08T09:00:00Z",
+   "app_id": "demo-app-2",
+   "summary": {
+    "tables_leaking": [
+     "bookings"
+    ],
+    "readable_by_anyone": [],
+    "readable_by_signed_in": [
+     "bookings"
+    ],
+    "lab_proof_passed": false,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.bookings",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 64,
+      "evidence": "policy \"Bookings readable when signed in\" FOR SELECT TO authenticated USING (true); columns: guest_email, phone",
+      "proven": true,
+      "proof": "Signed-in stranger read 4 bookings made by two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the guest and the venue owner: auth.uid() IN (guest_id, owner_id).",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 60
+     },
+     {
+      "id": "PL-005",
+      "line": "lab",
+      "severity": "high",
+      "title": "Policy is always true",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 77,
+      "evidence": "CREATE POLICY \"Anyone can manage feedback\" FOR ALL USING (true) WITH CHECK (true);",
+      "proven": true,
+      "proof": "Anonymous visitor deleted 1 feedback row written by a seeded user.",
+      "fix": "Split into INSERT for anyone and SELECT/DELETE for the author only.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 60
+     },
+     {
+      "id": "PL-022",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function trusts a user id sent in the request",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "line_no": 15,
+      "evidence": "const { user_id, ...fields } = await req.json(); ... .eq('id', user_id)",
+      "proven": false,
+      "proof": "",
+      "fix": "Take the user id from the verified JWT, never from the request body.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 60
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 60
+     }
+    ],
+    "counts": {
+     "critical": 0,
+     "high": 3,
+     "medium": 0,
+     "low": 1,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: example-org/booking-portal\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-002** (high) Any signed-in user can read every row: `public.bookings`\n- **PL-005** (high) Policy is always true: `public.feedback`\n- **PL-022** (high) Edge function trusts a user id sent in the request: `supabase/functions/update-profile`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-2-2": {
+   "id": "demo-chk-2-2",
+   "repo": "example-org/booking-portal",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-10-09T09:00:00Z",
+   "verified_at": "2026-10-09T09:00:00Z",
+   "finished_at": "2026-10-09T09:00:00Z",
+   "app_id": "demo-app-2",
+   "summary": {
+    "tables_leaking": [
+     "profiles",
+     "bookings"
+    ],
+    "readable_by_anyone": [
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "bookings"
+    ],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 30
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.bookings",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 64,
+      "evidence": "policy \"Bookings readable when signed in\" FOR SELECT TO authenticated USING (true); columns: guest_email, phone",
+      "proven": true,
+      "proof": "Signed-in stranger read 4 bookings made by two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the guest and the venue owner: auth.uid() IN (guest_id, owner_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 30
+     },
+     {
+      "id": "PL-005",
+      "line": "lab",
+      "severity": "high",
+      "title": "Policy is always true",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 77,
+      "evidence": "CREATE POLICY \"Anyone can manage feedback\" FOR ALL USING (true) WITH CHECK (true);",
+      "proven": true,
+      "proof": "Anonymous visitor deleted 1 feedback row written by a seeded user.",
+      "fix": "Split into INSERT for anyone and SELECT/DELETE for the author only.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 30
+     },
+     {
+      "id": "PL-006",
+      "line": "lab",
+      "severity": "high",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 120,
+      "evidence": "CREATE FUNCTION public.get_user_stats() ... SECURITY DEFINER; GRANT EXECUTE ... TO anon;",
+      "proven": true,
+      "proof": "Anonymous visitor called get_user_stats() and received counts for every seeded user.",
+      "fix": "Revoke EXECUTE from anon, set search_path, and filter by auth.uid() inside the function.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 30
+     },
+     {
+      "id": "PL-022",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function trusts a user id sent in the request",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "line_no": 15,
+      "evidence": "const { user_id, ...fields } = await req.json(); ... .eq('id', user_id)",
+      "proven": false,
+      "proof": "",
+      "fix": "Take the user id from the verified JWT, never from the request body.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 30
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 30
+     }
+    ],
+    "counts": {
+     "critical": 1,
+     "high": 4,
+     "medium": 0,
+     "low": 1,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: example-org/booking-portal\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.bookings`\n- **PL-005** (high) Policy is always true: `public.feedback`\n- **PL-006** (high) SECURITY DEFINER function callable by anyone: `public.get_user_stats()`\n- **PL-022** (high) Edge function trusts a user id sent in the request: `supabase/functions/update-profile`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-2-1": {
+   "id": "demo-chk-2-1",
+   "repo": "example-org/booking-portal",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-09-09T09:00:00Z",
+   "verified_at": "2026-09-09T09:00:00Z",
+   "finished_at": "2026-09-09T09:00:00Z",
+   "app_id": "demo-app-2",
+   "summary": {
+    "tables_leaking": [
+     "profiles",
+     "bookings"
+    ],
+    "readable_by_anyone": [
+     "profiles"
+    ],
+    "readable_by_signed_in": [
+     "bookings"
+    ],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-001",
+      "line": "lab",
+      "severity": "critical",
+      "title": "Anyone on the internet can read personal data",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 31,
+      "evidence": "policy \"Profiles are viewable by everyone\" FOR SELECT USING (true); columns: email, phone",
+      "proven": true,
+      "proof": "Anonymous visitor read 2 of 2 seeded rows (email, phone). After the fix: anon 0, stranger 0, owner 1.",
+      "fix": "Replace the everyone-can-read policy with an owner-only SELECT (auth.uid() = user_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-002",
+      "line": "lab",
+      "severity": "high",
+      "title": "Any signed-in user can read every row",
+      "object": "public.bookings",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 64,
+      "evidence": "policy \"Bookings readable when signed in\" FOR SELECT TO authenticated USING (true); columns: guest_email, phone",
+      "proven": true,
+      "proof": "Signed-in stranger read 4 bookings made by two other seeded users. After the fix: stranger 0, owner 2.",
+      "fix": "Scope SELECT to the guest and the venue owner: auth.uid() IN (guest_id, owner_id).",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-004",
+      "line": "lab",
+      "severity": "medium",
+      "title": "UPDATE policy has no WITH CHECK",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 40,
+      "evidence": "CREATE POLICY \"Users update own profile\" FOR UPDATE USING (auth.uid() = user_id); -- no WITH CHECK",
+      "proven": true,
+      "proof": "Owner changed user_id on their own row to another user's id and the update was accepted.",
+      "fix": "Add WITH CHECK (auth.uid() = user_id) so a row can't be handed to someone else.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-005",
+      "line": "lab",
+      "severity": "high",
+      "title": "Policy is always true",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 77,
+      "evidence": "CREATE POLICY \"Anyone can manage feedback\" FOR ALL USING (true) WITH CHECK (true);",
+      "proven": true,
+      "proof": "Anonymous visitor deleted 1 feedback row written by a seeded user.",
+      "fix": "Split into INSERT for anyone and SELECT/DELETE for the author only.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-006",
+      "line": "lab",
+      "severity": "high",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "line_no": 120,
+      "evidence": "CREATE FUNCTION public.get_user_stats() ... SECURITY DEFINER; GRANT EXECUTE ... TO anon;",
+      "proven": true,
+      "proof": "Anonymous visitor called get_user_stats() and received counts for every seeded user.",
+      "fix": "Revoke EXECUTE from anon, set search_path, and filter by auth.uid() inside the function.",
+      "fixed_in_lab": true,
+      "demo": true,
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-007",
+      "line": "lab",
+      "severity": "medium",
+      "title": "Storage bucket is public",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "line_no": 4,
+      "evidence": "INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);",
+      "proven": true,
+      "proof": "Anonymous visitor listed and downloaded 2 seeded files from the avatars bucket.",
+      "fix": "Make the bucket private and serve files with signed URLs, or confirm avatars are meant to be public.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-010",
+      "line": "code",
+      "severity": "critical",
+      "title": "Service role key in client code",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "line_no": 3,
+      "evidence": "const SUPABASE_SERVICE_KEY = \"eyJhbGciOiJIUzI1NiIs…[redacted]\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call to a server-side function, then rotate the key in the Supabase dashboard.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-022",
+      "line": "code",
+      "severity": "high",
+      "title": "Edge function trusts a user id sent in the request",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "line_no": 15,
+      "evidence": "const { user_id, ...fields } = await req.json(); ... .eq('id', user_id)",
+      "proven": false,
+      "proof": "",
+      "fix": "Take the user id from the verified JWT, never from the request body.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     }
+    ],
+    "counts": {
+     "critical": 2,
+     "high": 4,
+     "medium": 2,
+     "low": 1,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: example-org/booking-portal\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-001** (critical) Anyone on the internet can read personal data: `public.profiles`\n- **PL-002** (high) Any signed-in user can read every row: `public.bookings`\n- **PL-004** (medium) UPDATE policy has no WITH CHECK: `public.profiles`\n- **PL-005** (high) Policy is always true: `public.feedback`\n- **PL-006** (high) SECURITY DEFINER function callable by anyone: `public.get_user_stats()`\n- **PL-007** (medium) Storage bucket is public: `storage.buckets: avatars`\n- **PL-010** (critical) Service role key in client code: `src/lib/admin.ts`\n- **PL-022** (high) Edge function trusts a user id sent in the request: `supabase/functions/update-profile`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/apps/demo-app-2": {
+   "id": "demo-app-2",
+   "workspace_id": "demo-ws",
+   "repo": "example-org/booking-portal",
+   "branch": "main",
+   "client_label": "Example client (fake)",
+   "schedule": "monthly",
+   "next_check_at": "2026-12-08T09:00:00Z",
+   "badge_public": false,
+   "created_at": "2026-08-27T09:00:00Z",
+   "verified_at": "2026-08-27T09:00:00Z",
+   "verified": true,
+   "last_check": {
+    "id": "demo-chk-2-3",
+    "status": "needs_review",
+    "finished_at": "2026-11-08T09:00:00Z",
+    "tables_leaking": [
+     "bookings"
+    ],
+    "counts": {
+     "critical": 0,
+     "high": 3,
+     "medium": 0,
+     "low": 1,
+     "info": 0
+    }
+   },
+   "open_check_id": null,
+   "suppressed_tables": [],
+   "freshness": {
+    "stale": false,
+    "days_since_check": 2,
+    "stale_after_days": 60
+   },
+   "checks": [
+    {
+     "id": "demo-chk-2-3",
+     "status": "needs_review",
+     "trigger": "scheduled",
+     "created_at": "2026-11-08T09:00:00Z",
+     "finished_at": "2026-11-08T09:00:00Z",
+     "tables_leaking": [
+      "bookings"
+     ],
+     "lab_proof_passed": false,
+     "counts": {
+      "critical": 0,
+      "high": 3,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-2-2",
+     "status": "done",
+     "trigger": "scheduled",
+     "created_at": "2026-10-09T09:00:00Z",
+     "finished_at": "2026-10-09T09:00:00Z",
+     "tables_leaking": [
+      "profiles",
+      "bookings"
+     ],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 1,
+      "high": 4,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-2-1",
+     "status": "done",
+     "trigger": "verify",
+     "created_at": "2026-09-09T09:00:00Z",
+     "finished_at": "2026-09-09T09:00:00Z",
+     "tables_leaking": [
+      "profiles",
+      "bookings"
+     ],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 2,
+      "high": 4,
+      "medium": 2,
+      "low": 1,
+      "info": 0
+     }
+    }
+   ],
+   "diff": {
+    "new_leaks": [],
+    "fixed": [
+     "profiles"
+    ],
+    "still_leaking": [
+     "bookings"
+    ],
+    "suppressed": [],
+    "from_check_id": "demo-chk-2-2",
+    "to_check_id": "demo-chk-2-3"
+   },
+   "findings": {
+    "open": [
+     {
+      "id": "PL-002",
+      "object": "public.bookings",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Any signed-in user can read every row",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-863",
+       "CWE-359"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-11-08T09:00:00Z",
+      "last_check_id": "demo-chk-2-3",
+      "days_open": 62,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-005",
+      "object": "public.feedback",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Policy is always true",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-862"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-11-08T09:00:00Z",
+      "last_check_id": "demo-chk-2-3",
+      "days_open": 62,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-022",
+      "object": "supabase/functions/update-profile",
+      "file": "supabase/functions/update-profile/index.ts",
+      "title": "Edge function trusts a user id sent in the request",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-639"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-11-08T09:00:00Z",
+      "last_check_id": "demo-chk-2-3",
+      "days_open": 62,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-018",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "title": "Sign-ups need no email confirmation",
+      "severity": "low",
+      "line": "code",
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-11-08T09:00:00Z",
+      "last_check_id": "demo-chk-2-3",
+      "days_open": 62,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     }
+    ],
+    "fixed": [
+     {
+      "id": "PL-001",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "Anyone on the internet can read personal data",
+      "severity": "critical",
+      "line": "lab",
+      "cwe": [
+       "CWE-359",
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-10-09T09:00:00Z",
+      "last_check_id": "demo-chk-2-2",
+      "fixed_at": "2026-11-08T09:00:00Z",
+      "fixed_in_check_id": "demo-chk-2-3",
+      "days_open": 60
+     },
+     {
+      "id": "PL-006",
+      "object": "public.get_user_stats()",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "SECURITY DEFINER function callable by anyone",
+      "severity": "high",
+      "line": "lab",
+      "cwe": [
+       "CWE-250",
+       "CWE-426"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-10-09T09:00:00Z",
+      "last_check_id": "demo-chk-2-2",
+      "fixed_at": "2026-11-08T09:00:00Z",
+      "fixed_in_check_id": "demo-chk-2-3",
+      "days_open": 60
+     },
+     {
+      "id": "PL-004",
+      "object": "public.profiles",
+      "file": "supabase/migrations/20241014120000_init.sql",
+      "title": "UPDATE policy has no WITH CHECK",
+      "severity": "medium",
+      "line": "lab",
+      "cwe": [
+       "CWE-863"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-09-09T09:00:00Z",
+      "last_check_id": "demo-chk-2-1",
+      "fixed_at": "2026-10-09T09:00:00Z",
+      "fixed_in_check_id": "demo-chk-2-2",
+      "days_open": 30
+     },
+     {
+      "id": "PL-007",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "title": "Storage bucket is public",
+      "severity": "medium",
+      "line": "lab",
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-09-09T09:00:00Z",
+      "last_check_id": "demo-chk-2-1",
+      "fixed_at": "2026-10-09T09:00:00Z",
+      "fixed_in_check_id": "demo-chk-2-2",
+      "days_open": 30
+     },
+     {
+      "id": "PL-010",
+      "object": "src/lib/admin.ts",
+      "file": "src/lib/admin.ts",
+      "title": "Service role key in client code",
+      "severity": "critical",
+      "line": "code",
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-09T09:00:00Z",
+      "first_check_id": "demo-chk-2-1",
+      "regressed": false,
+      "last_seen": "2026-09-09T09:00:00Z",
+      "last_check_id": "demo-chk-2-1",
+      "fixed_at": "2026-10-09T09:00:00Z",
+      "fixed_in_check_id": "demo-chk-2-2",
+      "days_open": 30
+     }
+    ]
+   }
+  },
+  "/checks/demo-chk-3-2": {
+   "id": "demo-chk-3-2",
+   "repo": "example-org/landing-site",
+   "branch": "main",
+   "status": "no_leaks",
+   "created_at": "2026-09-21T04:00:00Z",
+   "verified_at": "2026-09-21T04:00:00Z",
+   "finished_at": "2026-09-21T04:00:00Z",
+   "app_id": "demo-app-3",
+   "summary": {
+    "tables_leaking": [],
+    "readable_by_anyone": [],
+    "readable_by_signed_in": [],
+    "lab_proof_passed": false,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-009",
+      "line": "code",
+      "severity": "high",
+      "title": "AI, payment or database key in the code",
+      "object": "src/config.ts",
+      "file": "src/config.ts",
+      "line_no": 7,
+      "evidence": "export const STRIPE_KEY = \"sk_live_••••••••\"",
+      "proven": false,
+      "proof": "",
+      "fix": "Move the call behind a server-side function, then rotate the key with the provider.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-21T04:00:00Z",
+      "first_check_id": "demo-chk-3-2",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-08-17T09:00:00Z",
+      "first_check_id": "demo-chk-3-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 34
+     }
+    ],
+    "counts": {
+     "critical": 0,
+     "high": 1,
+     "medium": 0,
+     "low": 1,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: example-org/landing-site\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-009** (high) AI, payment or database key in the code: `src/config.ts`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n",
+   "fix_sql": null,
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/checks/demo-chk-3-1": {
+   "id": "demo-chk-3-1",
+   "repo": "example-org/landing-site",
+   "branch": "main",
+   "status": "done",
+   "created_at": "2026-08-17T09:00:00Z",
+   "verified_at": "2026-08-17T09:00:00Z",
+   "finished_at": "2026-08-17T09:00:00Z",
+   "app_id": "demo-app-3",
+   "summary": {
+    "tables_leaking": [],
+    "readable_by_anyone": [],
+    "readable_by_signed_in": [],
+    "lab_proof_passed": true,
+    "break_risk": "low",
+    "questions_for_owner": [],
+    "findings": [
+     {
+      "id": "PL-007",
+      "line": "lab",
+      "severity": "medium",
+      "title": "Storage bucket is public",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "line_no": 4,
+      "evidence": "INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);",
+      "proven": true,
+      "proof": "Anonymous visitor listed and downloaded 2 seeded files from the avatars bucket.",
+      "fix": "Make the bucket private and serve files with signed URLs, or confirm avatars are meant to be public.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-08-17T09:00:00Z",
+      "first_check_id": "demo-chk-3-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     },
+     {
+      "id": "PL-018",
+      "line": "code",
+      "severity": "low",
+      "title": "Sign-ups need no email confirmation",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "line_no": 41,
+      "evidence": "[auth.email] enable_confirmations = false",
+      "proven": false,
+      "proof": "",
+      "fix": "Turn on email confirmations so nobody can sign up with someone else's address.",
+      "fixed_in_lab": false,
+      "demo": true,
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-08-17T09:00:00Z",
+      "first_check_id": "demo-chk-3-1",
+      "regressed": false,
+      "fixed_at": null,
+      "fixed_in_check_id": null,
+      "days_open": 0
+     }
+    ],
+    "counts": {
+     "critical": 0,
+     "high": 0,
+     "medium": 1,
+     "low": 1,
+     "info": 0
+    },
+    "demo": true
+   },
+   "report_md": "# Leak check: example-org/landing-site\n\n_Demo workspace: fake data, shown to illustrate the PatchLabs app._\n\n## What we found\n- **PL-007** (medium) Storage bucket is public: `storage.buckets: avatars`\n- **PL-018** (low) Sign-ups need no email confirmation: `supabase/config.toml`\n",
+   "fix_sql": "-- Fix: Replace overly permissive \"everyone can read\" policy with owner-only access\n-- The original policy \"Profiles are viewable by everyone\" allowed anonymous and any signed-in user\n-- to read all columns (email, phone) from all profile rows.\n-- Change: Only allow users to read their own profile (where user_id = auth.uid())\n\nDROP POLICY \"Profiles are viewable by everyone\" ON public.profiles;\nCREATE POLICY \"Users can view own profile\" ON public.profiles FOR SELECT USING (auth.uid() = user_id);\n\n-- Demo data: the rest of this migration is representative, not from a real run.\nDROP POLICY \"Signed in users can read\" ON public.messages;\nCREATE POLICY \"Sender or recipient can read\" ON public.messages FOR SELECT\n  USING (auth.uid() IN (sender_id, recipient_id));\nALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Owner reads own invoices\" ON public.invoices FOR SELECT USING (auth.uid() = user_id);\n",
+   "events": [],
+   "decisions": [],
+   "answers": [],
+   "suppressed_tables": [],
+   "new_leaks": []
+  },
+  "/apps/demo-app-3": {
+   "id": "demo-app-3",
+   "workspace_id": "demo-ws",
+   "repo": "example-org/landing-site",
+   "branch": "main",
+   "client_label": null,
+   "schedule": "off",
+   "next_check_at": null,
+   "badge_public": true,
+   "created_at": "2026-08-12T09:00:00Z",
+   "verified_at": "2026-08-12T09:00:00Z",
+   "verified": true,
+   "last_check": {
+    "id": "demo-chk-3-2",
+    "status": "no_leaks",
+    "finished_at": "2026-09-21T04:00:00Z",
+    "tables_leaking": [],
+    "counts": {
+     "critical": 0,
+     "high": 1,
+     "medium": 0,
+     "low": 1,
+     "info": 0
+    }
+   },
+   "open_check_id": null,
+   "suppressed_tables": [],
+   "freshness": {
+    "stale": true,
+    "days_since_check": 50,
+    "stale_after_days": 45
+   },
+   "checks": [
+    {
+     "id": "demo-chk-3-2",
+     "status": "no_leaks",
+     "trigger": "manual",
+     "created_at": "2026-09-21T04:00:00Z",
+     "finished_at": "2026-09-21T04:00:00Z",
+     "tables_leaking": [],
+     "lab_proof_passed": false,
+     "counts": {
+      "critical": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+     }
+    },
+    {
+     "id": "demo-chk-3-1",
+     "status": "done",
+     "trigger": "verify",
+     "created_at": "2026-08-17T09:00:00Z",
+     "finished_at": "2026-08-17T09:00:00Z",
+     "tables_leaking": [],
+     "lab_proof_passed": true,
+     "counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 1,
+      "info": 0
+     }
+    }
+   ],
+   "diff": {
+    "new_leaks": [],
+    "fixed": [],
+    "still_leaking": [],
+    "suppressed": [],
+    "from_check_id": "demo-chk-3-1",
+    "to_check_id": "demo-chk-3-2"
+   },
+   "findings": {
+    "open": [
+     {
+      "id": "PL-009",
+      "object": "src/config.ts",
+      "file": "src/config.ts",
+      "title": "AI, payment or database key in the code",
+      "severity": "high",
+      "line": "code",
+      "cwe": [
+       "CWE-798"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-09-21T04:00:00Z",
+      "first_check_id": "demo-chk-3-2",
+      "regressed": false,
+      "last_seen": "2026-09-21T04:00:00Z",
+      "last_check_id": "demo-chk-3-2",
+      "days_open": 50,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     },
+     {
+      "id": "PL-018",
+      "object": "supabase/config.toml",
+      "file": "supabase/config.toml",
+      "title": "Sign-ups need no email confirmation",
+      "severity": "low",
+      "line": "code",
+      "cwe": [
+       "CWE-287"
+      ],
+      "owasp": "A07:2021",
+      "owasp_name": "Identification and Authentication Failures",
+      "first_seen": "2026-08-17T09:00:00Z",
+      "first_check_id": "demo-chk-3-1",
+      "regressed": false,
+      "last_seen": "2026-09-21T04:00:00Z",
+      "last_check_id": "demo-chk-3-2",
+      "days_open": 85,
+      "fixed_at": null,
+      "fixed_in_check_id": null
+     }
+    ],
+    "fixed": [
+     {
+      "id": "PL-007",
+      "object": "storage.buckets: avatars",
+      "file": "supabase/migrations/20241020090000_storage.sql",
+      "title": "Storage bucket is public",
+      "severity": "medium",
+      "line": "lab",
+      "cwe": [
+       "CWE-552"
+      ],
+      "owasp": "A01:2021",
+      "owasp_name": "Broken Access Control",
+      "first_seen": "2026-08-17T09:00:00Z",
+      "first_check_id": "demo-chk-3-1",
+      "regressed": false,
+      "last_seen": "2026-08-17T09:00:00Z",
+      "last_check_id": "demo-chk-3-1",
+      "fixed_at": "2026-09-21T04:00:00Z",
+      "fixed_in_check_id": "demo-chk-3-2",
+      "days_open": 34
+     }
+    ]
+   }
+  },
+  "/me": {
+   "user": {
+    "id": "demo-user",
+    "email": "you@example.test",
+    "name": "Demo user",
+    "created_at": "2026-08-27T09:00:00Z"
+   },
+   "workspaces": [
+    {
+     "id": "demo-ws",
+     "name": "Demo workspace",
+     "role": "owner",
+     "plan": "agency"
+    }
+   ]
+  },
+  "/workspaces/demo-ws": {
+   "id": "demo-ws",
+   "name": "Demo workspace",
+   "plan": "agency",
+   "role": "owner",
+   "created_at": "2026-08-27T09:00:00Z",
+   "limits": {
+    "apps": 10,
+    "runs_per_month": 200,
+    "seats": 10,
+    "schedules": [
+     "weekly",
+     "monthly",
+     "off"
+    ]
+   },
+   "usage": {
+    "apps": 3,
+    "runs_this_month": 4,
+    "members": 4,
+    "clients": 1
+   },
+   "permissions": [
+    "decide",
+    "manage",
+    "owner",
+    "run",
+    "support",
+    "view",
+    "view_team"
+   ],
+   "webhook_url": "https://hooks.slack.com/services/demo-workspace-example",
+   "webhook_format": "auto",
+   "webhook_kind": "slack",
+   "webhook_secret": null,
+   "members": [
+    {
+     "user_id": "demo-user",
+     "email": "you@example.test",
+     "name": "Demo user",
+     "role": "owner",
+     "joined_at": "2026-08-27T09:00:00Z",
+     "app_ids": null
+    },
+    {
+     "user_id": "demo-m-admin",
+     "email": "avery@example.test",
+     "name": "Avery",
+     "role": "admin",
+     "joined_at": "2026-09-11T09:00:00Z",
+     "app_ids": null
+    },
+    {
+     "user_id": "demo-m-approver",
+     "email": "jordan@example.test",
+     "name": "Jordan",
+     "role": "approver",
+     "joined_at": "2026-09-27T09:00:00Z",
+     "app_ids": null
+    },
+    {
+     "user_id": "demo-m-viewer",
+     "email": "riley@example.test",
+     "name": "Riley",
+     "role": "viewer",
+     "joined_at": "2026-10-21T09:00:00Z",
+     "app_ids": null
+    },
+    {
+     "user_id": "demo-m-client",
+     "email": "contact@client.example.test",
+     "name": "Client contact",
+     "role": "client",
+     "joined_at": "2026-10-29T09:00:00Z",
+     "app_ids": [
+      "demo-app-2"
+     ]
+    }
+   ],
+   "invites": [
+    {
+     "id": "demo-inv-1",
+     "email": "new.teammate@example.test",
+     "role": "viewer",
+     "app_ids": [],
+     "created_at": "2026-11-09T09:00:00Z",
+     "expires_at": "2026-11-23T09:00:00Z"
+    }
+   ]
+  },
+  "/workspaces/demo-ws/api-keys": {
+   "api_keys": [
+    {
+     "id": "demo-key-1",
+     "name": "GitHub Actions",
+     "prefix": "pl_live_Dm0x",
+     "created_at": "2026-10-11T09:00:00Z",
+     "last_used_at": "2026-11-10T06:00:00Z",
+     "created_by": "demo-user",
+     "created_by_email": "you@example.test"
+    }
+   ]
+  },
+  "/taxonomy/findings": {
+   "findings": {
+    "PL-001": {
+     "cwe": [
+      "CWE-359",
+      "CWE-863"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-002": {
+     "cwe": [
+      "CWE-863",
+      "CWE-359"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-003": {
+     "cwe": [],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    },
+    "PL-004": {
+     "cwe": [
+      "CWE-863"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-005": {
+     "cwe": [
+      "CWE-862"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-006": {
+     "cwe": [
+      "CWE-250",
+      "CWE-426"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-007": {
+     "cwe": [
+      "CWE-552"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-008": {
+     "cwe": [
+      "CWE-862"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-009": {
+     "cwe": [
+      "CWE-798"
+     ],
+     "owasp": "A07:2021",
+     "owasp_name": "Identification and Authentication Failures"
+    },
+    "PL-010": {
+     "cwe": [
+      "CWE-798"
+     ],
+     "owasp": "A07:2021",
+     "owasp_name": "Identification and Authentication Failures"
+    },
+    "PL-011": {
+     "cwe": [
+      "CWE-798",
+      "CWE-540"
+     ],
+     "owasp": "A07:2021",
+     "owasp_name": "Identification and Authentication Failures"
+    },
+    "PL-012": {
+     "cwe": [
+      "CWE-639",
+      "CWE-863"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-013": {
+     "cwe": [
+      "CWE-269",
+      "CWE-915"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-014": {
+     "cwe": [
+      "CWE-250",
+      "CWE-863"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-015": {
+     "cwe": [
+      "CWE-552",
+      "CWE-284"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-016": {
+     "cwe": [
+      "CWE-359",
+      "CWE-200"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-017": {
+     "cwe": [
+      "CWE-306"
+     ],
+     "owasp": "A07:2021",
+     "owasp_name": "Identification and Authentication Failures"
+    },
+    "PL-018": {
+     "cwe": [
+      "CWE-287"
+     ],
+     "owasp": "A07:2021",
+     "owasp_name": "Identification and Authentication Failures"
+    },
+    "PL-019": {
+     "cwe": [
+      "CWE-807"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-020": {
+     "cwe": [
+      "CWE-602",
+      "CWE-862"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-021": {
+     "cwe": [
+      "CWE-345",
+      "CWE-347"
+     ],
+     "owasp": "A08:2021",
+     "owasp_name": "Software and Data Integrity Failures"
+    },
+    "PL-022": {
+     "cwe": [
+      "CWE-639"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-023": {
+     "cwe": [
+      "CWE-1395"
+     ],
+     "owasp": "A06:2021",
+     "owasp_name": "Vulnerable and Outdated Components"
+    },
+    "PL-024": {
+     "cwe": [
+      "CWE-79"
+     ],
+     "owasp": "A03:2021",
+     "owasp_name": "Injection"
+    },
+    "PL-025": {
+     "cwe": [
+      "CWE-862"
+     ],
+     "owasp": "A01:2021",
+     "owasp_name": "Broken Access Control"
+    },
+    "PL-026": {
+     "cwe": [
+      "CWE-942"
+     ],
+     "owasp": "A05:2021",
+     "owasp_name": "Security Misconfiguration"
+    }
+   },
+   "cwe": {
+    "CWE-79": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+    "CWE-200": "Exposure of Sensitive Information to an Unauthorized Actor",
+    "CWE-250": "Execution with Unnecessary Privileges",
+    "CWE-269": "Improper Privilege Management",
+    "CWE-284": "Improper Access Control",
+    "CWE-287": "Improper Authentication",
+    "CWE-306": "Missing Authentication for Critical Function",
+    "CWE-345": "Insufficient Verification of Data Authenticity",
+    "CWE-347": "Improper Verification of Cryptographic Signature",
+    "CWE-359": "Exposure of Private Personal Information to an Unauthorized Actor",
+    "CWE-426": "Untrusted Search Path",
+    "CWE-540": "Inclusion of Sensitive Information in Source Code",
+    "CWE-552": "Files or Directories Accessible to External Parties",
+    "CWE-602": "Client-Side Enforcement of Server-Side Security",
+    "CWE-639": "Authorization Bypass Through User-Controlled Key",
+    "CWE-798": "Use of Hard-coded Credentials",
+    "CWE-807": "Reliance on Untrusted Inputs in a Security Decision",
+    "CWE-862": "Missing Authorization",
+    "CWE-863": "Incorrect Authorization",
+    "CWE-915": "Improperly Controlled Modification of Dynamically-Determined Object Attributes",
+    "CWE-942": "Permissive Cross-domain Policy with Untrusted Domains",
+    "CWE-1395": "Dependency on Vulnerable Third-Party Component"
+   },
+   "owasp": {
+    "A01:2021": "Broken Access Control",
+    "A02:2021": "Cryptographic Failures",
+    "A03:2021": "Injection",
+    "A04:2021": "Insecure Design",
+    "A05:2021": "Security Misconfiguration",
+    "A06:2021": "Vulnerable and Outdated Components",
+    "A07:2021": "Identification and Authentication Failures",
+    "A08:2021": "Software and Data Integrity Failures",
+    "A09:2021": "Security Logging and Monitoring Failures",
+    "A10:2021": "Server-Side Request Forgery"
+   }
+  },
+  "/workspaces/demo-ws/audit": {
+   "events": [
+    {
+     "id": 1000,
+     "at": "2026-11-10T08:00:00Z",
+     "action": "auth.sign_in",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": null,
+     "detail": {}
+    },
+    {
+     "id": 999,
+     "at": "2026-11-10T06:00:00Z",
+     "action": "check.started",
+     "actor": {
+      "kind": "system",
+      "id": null,
+      "label": "PatchLabs",
+      "email": null
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "trigger": "scheduled",
+      "app_id": "demo-app-1"
+     }
+    },
+    {
+     "id": 998,
+     "at": "2026-11-09T13:00:00Z",
+     "action": "decision.made",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-approver",
+      "label": "Jordan",
+      "email": "jordan@example.test"
+     },
+     "target": {
+      "type": "check",
+      "id": "demo-chk-1-4",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "action": "approve",
+      "tables": [
+       "profiles",
+       "invoices"
+      ]
+     }
+    },
+    {
+     "id": 997,
+     "at": "2026-11-09T09:00:00Z",
+     "action": "member.invited",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "invite",
+      "id": "demo-inv-1",
+      "label": null,
+      "email": "new.teammate@example.test"
+     },
+     "detail": {
+      "role": "viewer"
+     }
+    },
+    {
+     "id": 996,
+     "at": "2026-11-08T09:00:00Z",
+     "action": "check.started",
+     "actor": {
+      "kind": "api_key",
+      "id": null,
+      "label": "API key GitHub Actions (pl_live_Dm0x)",
+      "email": null
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-2",
+      "label": "example-org/booking-portal",
+      "email": null
+     },
+     "detail": {
+      "trigger": "api",
+      "app_id": "demo-app-2"
+     }
+    },
+    {
+     "id": 995,
+     "at": "2026-11-07T09:00:00Z",
+     "action": "webhook.tested",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-admin",
+      "label": "Avery",
+      "email": "avery@example.test"
+     },
+     "target": {
+      "type": "webhook",
+      "id": "demo-ws",
+      "label": "hooks.slack.com",
+      "email": null
+     },
+     "detail": {
+      "ok": true,
+      "status_code": 200,
+      "format": "slack"
+     }
+    },
+    {
+     "id": 994,
+     "at": "2026-11-07T08:00:00Z",
+     "action": "webhook.changed",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-admin",
+      "label": "Avery",
+      "email": "avery@example.test"
+     },
+     "target": {
+      "type": "webhook",
+      "id": "demo-ws",
+      "label": "hooks.slack.com",
+      "email": null
+     },
+     "detail": {
+      "host": "hooks.slack.com",
+      "kind": "slack",
+      "previous_host": "example.test"
+     }
+    },
+    {
+     "id": 993,
+     "at": "2026-11-05T09:00:00Z",
+     "action": "suppression.added",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "table": "audit_log"
+     }
+    },
+    {
+     "id": 992,
+     "at": "2026-11-05T08:00:00Z",
+     "action": "suppression.removed",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {
+      "table": "audit_log"
+     }
+    },
+    {
+     "id": 991,
+     "at": "2026-11-02T09:00:00Z",
+     "action": "check.answered",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-approver",
+      "label": "Jordan",
+      "email": "jordan@example.test"
+     },
+     "target": {
+      "type": "check",
+      "id": "demo-chk-1-4",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {}
+    },
+    {
+     "id": 990,
+     "at": "2026-10-29T09:00:00Z",
+     "action": "member.apps_changed",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "member",
+      "id": "demo-m-client",
+      "label": "Client contact",
+      "email": "contact@client.example.test"
+     },
+     "detail": {
+      "added": [
+       "demo-app-2"
+      ],
+      "removed": []
+     }
+    },
+    {
+     "id": 989,
+     "at": "2026-10-29T08:00:00Z",
+     "action": "member.joined",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-client",
+      "label": "Client contact",
+      "email": "contact@client.example.test"
+     },
+     "target": {
+      "type": "member",
+      "id": "demo-m-client",
+      "label": "Client contact",
+      "email": "contact@client.example.test"
+     },
+     "detail": {
+      "role": "client"
+     }
+    },
+    {
+     "id": 988,
+     "at": "2026-10-27T09:00:00Z",
+     "action": "ticket.raised",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-approver",
+      "label": "Jordan",
+      "email": "jordan@example.test"
+     },
+     "target": {
+      "type": "ticket",
+      "id": "demo-t-1",
+      "label": "Fix for public.bookings",
+      "email": null
+     },
+     "detail": {
+      "number": 7,
+      "category": "fix",
+      "priority": "normal"
+     }
+    },
+    {
+     "id": 987,
+     "at": "2026-10-21T09:00:00Z",
+     "action": "member.role_changed",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "member",
+      "id": "demo-m-viewer",
+      "label": "Riley",
+      "email": "riley@example.test"
+     },
+     "detail": {
+      "from": "member",
+      "to": "viewer"
+     }
+    },
+    {
+     "id": 986,
+     "at": "2026-10-21T07:00:00Z",
+     "action": "api_key.revoked",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "api_key",
+      "id": "demo-key-0",
+      "label": "Old CI key",
+      "email": null
+     },
+     "detail": {
+      "prefix": "pl_live_Q9aa",
+      "reason": "role changed to viewer"
+     }
+    },
+    {
+     "id": 985,
+     "at": "2026-10-11T09:00:00Z",
+     "action": "api_key.created",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "api_key",
+      "id": "demo-key-1",
+      "label": "GitHub Actions",
+      "email": null
+     },
+     "detail": {
+      "prefix": "pl_live_Dm0x"
+     }
+    },
+    {
+     "id": 984,
+     "at": "2026-10-09T09:00:00Z",
+     "action": "app.updated",
+     "actor": {
+      "kind": "user",
+      "id": "demo-m-admin",
+      "label": "Avery",
+      "email": "avery@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-2",
+      "label": "example-org/booking-portal",
+      "email": null
+     },
+     "detail": {
+      "schedule": {
+       "from": "weekly",
+       "to": "monthly"
+      }
+     }
+    },
+    {
+     "id": 983,
+     "at": "2026-10-01T09:00:00Z",
+     "action": "app.verified",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {}
+    },
+    {
+     "id": 982,
+     "at": "2026-10-01T08:00:00Z",
+     "action": "app.added",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "app",
+      "id": "demo-app-1",
+      "label": "manra399/patchlabs-demo-app",
+      "email": null
+     },
+     "detail": {}
+    },
+    {
+     "id": 981,
+     "at": "2026-09-27T09:00:00Z",
+     "action": "member.role_changed",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "member",
+      "id": "demo-m-approver",
+      "label": "Jordan",
+      "email": "jordan@example.test"
+     },
+     "detail": {
+      "from": "member",
+      "to": "approver"
+     }
+    },
+    {
+     "id": 980,
+     "at": "2026-09-21T09:00:00Z",
+     "action": "plan.changed",
+     "actor": {
+      "kind": "admin",
+      "id": null,
+      "label": "PatchLabs admin",
+      "email": null
+     },
+     "target": {
+      "type": "workspace",
+      "id": "demo-ws",
+      "label": "Demo workspace",
+      "email": null
+     },
+     "detail": {
+      "plan": {
+       "from": "maker",
+       "to": "agency"
+      }
+     }
+    },
+    {
+     "id": 979,
+     "at": "2026-09-20T09:00:00Z",
+     "action": "upgrade.requested",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "workspace",
+      "id": "demo-ws",
+      "label": "Demo workspace",
+      "email": null
+     },
+     "detail": {
+      "plan": "agency"
+     }
+    },
+    {
+     "id": 978,
+     "at": "2026-09-11T09:00:00Z",
+     "action": "workspace.renamed",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "workspace",
+      "id": "demo-ws",
+      "label": "Demo workspace",
+      "email": null
+     },
+     "detail": {
+      "from": "My workspace",
+      "to": "Demo workspace"
+     }
+    },
+    {
+     "id": 977,
+     "at": "2026-09-10T09:00:00Z",
+     "action": "webhook.created",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": {
+      "type": "webhook",
+      "id": "demo-ws",
+      "label": "example.test",
+      "email": null
+     },
+     "detail": {
+      "host": "example.test",
+      "kind": "json"
+     }
+    },
+    {
+     "id": 976,
+     "at": "2026-09-09T09:00:00Z",
+     "action": "audit.exported",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": null,
+     "detail": {
+      "rows": 12
+     }
+    },
+    {
+     "id": 975,
+     "at": "2026-09-01T09:00:00Z",
+     "action": "data.exported",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": null,
+     "detail": {}
+    },
+    {
+     "id": 974,
+     "at": "2026-08-27T09:00:00Z",
+     "action": "auth.sign_in",
+     "actor": {
+      "kind": "user",
+      "id": "demo-user",
+      "label": "Demo user",
+      "email": "you@example.test"
+     },
+     "target": null,
+     "detail": {}
+    }
+   ],
+   "next_before": null,
+   "actions": [
+    "auth.sign_in",
+    "auth.sign_out",
+    "member.invited",
+    "member.invite_cancelled",
+    "member.joined",
+    "member.role_changed",
+    "member.apps_changed",
+    "member.removed",
+    "member.left",
+    "workspace.renamed",
+    "plan.changed",
+    "upgrade.requested",
+    "app.added",
+    "app.updated",
+    "app.verified",
+    "app.removed",
+    "check.started",
+    "decision.made",
+    "check.answered",
+    "suppression.added",
+    "suppression.removed",
+    "api_key.created",
+    "api_key.revoked",
+    "webhook.created",
+    "webhook.changed",
+    "webhook.deleted",
+    "webhook.secret_rotated",
+    "webhook.tested",
+    "data.exported",
+    "audit.exported",
+    "ticket.raised"
+   ]
+  },
+  "/workspaces/demo-ws/apps": {
+   "apps": [
+    {
+     "id": "demo-app-1",
+     "workspace_id": "demo-ws",
+     "repo": "manra399/patchlabs-demo-app",
+     "branch": "main",
+     "client_label": null,
+     "schedule": "weekly",
+     "next_check_at": "2026-11-17T06:00:00Z",
+     "badge_public": true,
+     "created_at": "2026-10-01T09:00:00Z",
+     "verified_at": "2026-10-01T09:00:00Z",
+     "verified": true,
+     "last_check": {
+      "id": "demo-chk-1-5",
+      "status": "done",
+      "finished_at": "2026-11-10T06:00:00Z",
+      "tables_leaking": [
+       "invoices",
+       "profiles",
+       "messages"
+      ],
+      "counts": {
+       "critical": 6,
+       "high": 9,
+       "medium": 4,
+       "low": 2,
+       "info": 0
+      }
+     },
+     "open_check_id": null,
+     "suppressed_tables": [],
+     "freshness": {
+      "stale": false,
+      "days_since_check": 0,
+      "stale_after_days": 14
+     }
+    },
+    {
+     "id": "demo-app-2",
+     "workspace_id": "demo-ws",
+     "repo": "example-org/booking-portal",
+     "branch": "main",
+     "client_label": "Example client (fake)",
+     "schedule": "monthly",
+     "next_check_at": "2026-12-08T09:00:00Z",
+     "badge_public": false,
+     "created_at": "2026-08-27T09:00:00Z",
+     "verified_at": "2026-08-27T09:00:00Z",
+     "verified": true,
+     "last_check": {
+      "id": "demo-chk-2-3",
+      "status": "needs_review",
+      "finished_at": "2026-11-08T09:00:00Z",
+      "tables_leaking": [
+       "bookings"
+      ],
+      "counts": {
+       "critical": 0,
+       "high": 3,
+       "medium": 0,
+       "low": 1,
+       "info": 0
+      }
+     },
+     "open_check_id": null,
+     "suppressed_tables": [],
+     "freshness": {
+      "stale": false,
+      "days_since_check": 2,
+      "stale_after_days": 60
+     }
+    },
+    {
+     "id": "demo-app-3",
+     "workspace_id": "demo-ws",
+     "repo": "example-org/landing-site",
+     "branch": "main",
+     "client_label": null,
+     "schedule": "off",
+     "next_check_at": null,
+     "badge_public": true,
+     "created_at": "2026-08-12T09:00:00Z",
+     "verified_at": "2026-08-12T09:00:00Z",
+     "verified": true,
+     "last_check": {
+      "id": "demo-chk-3-2",
+      "status": "no_leaks",
+      "finished_at": "2026-09-21T04:00:00Z",
+      "tables_leaking": [],
+      "counts": {
+       "critical": 0,
+       "high": 1,
+       "medium": 0,
+       "low": 1,
+       "info": 0
+      }
+     },
+     "open_check_id": null,
+     "suppressed_tables": [],
+     "freshness": {
+      "stale": true,
+      "days_since_check": 50,
+      "stale_after_days": 45
+     }
+    }
+   ]
+  },
+  "/me/checks": {
+   "checks": [
+    {
+     "id": "sample",
+     "repo": "manra399/patchlabs-demo-app",
+     "status": "done",
+     "created_at": "2026-11-09T16:55:42.478572+00:00"
+    }
+   ]
+  }
+ }
+}

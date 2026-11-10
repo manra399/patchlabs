@@ -7,7 +7,8 @@ then build. Paths are relative to the repo; run from anywhere.
 | Generator | Writes | Source of truth |
 |---|---|---|
 | `python3 tools/gen/builders.py` | `site/pages/for/{lovable,supabase,bolt,replit,cursor}.html` | the `PAGES` dict in the script |
-| `python3 tools/gen/findings.py` | `site/pages/findings/index.html`, `site/pages/findings/pl-0xx.html` | the `F` list in the script |
+| `python3 tools/gen/findings.py` | `site/pages/findings/index.html`, `site/pages/findings/pl-0xx.html` | the `F` list in the script (each entry has `line` lab/code and `status` live/coming; flip `status` to `"live"` when a coming Lab check ships) |
+| `python3 tools/gen/learn/build.py` | `site/pages/learn/index.html`, `site/pages/learn/<slug>.html` | `tools/gen/learn/src/<slug>.html` (meta, `---`, article body; `[[CODE name]]…[[/CODE]]` blocks are escaped for you). Its `findings:` meta line also feeds the Guides list on finding pages, so run `learn/build.py` before `findings.py` |
 | `python3 tools/gen/docs/api_ref.py` | `tools/gen/docs/src/api.html` (then run `build.py` below) | the endpoint list in the script + `api-pre.html` |
 | `python3 tools/gen/docs/build.py [slug …]` | `site/pages/docs/*.html` + `site/static/assets/pages/E-docs-search.json` | `tools/gen/docs/src/<slug>.html` (meta, `---`, article body); sidebar, pager, TOC and search index are built from `NAV` |
 | `PL_STUDY_BATCH=… python3 tools/gen/research/report_1in4.py` | `site/pages/research/1-in-4.html` + `site/static/research/1-in-4-aggregate.csv` | `report_tpl.html` + the 9 Nov 20-app run log |

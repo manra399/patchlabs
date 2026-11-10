@@ -9,7 +9,7 @@ def test_get_workspace_shape(client):
     w = client.get(f"/workspaces/{u.wid}", headers=u.h).json()
     assert w["plan"] == "free" and w["role"] == "owner" and w["webhook_url"] is None
     assert w["limits"] == {"apps": 1, "runs_per_month": 4, "seats": 1, "schedules": ["off", "monthly"]}
-    assert w["usage"] == {"apps": 0, "runs_this_month": 0, "members": 1}
+    assert w["usage"] == {"apps": 0, "runs_this_month": 0, "members": 1, "clients": 0}
     assert w["members"][0]["email"] == "owner@example.com" and w["members"][0]["role"] == "owner"
     assert w["invites"] == []
 
@@ -91,7 +91,7 @@ def test_accept_invite_while_signed_in(client):
 def test_invite_rules(client):
     u = make_team(client, "agency")
     assert client.post(f"/workspaces/{u.wid}/invites", json={"email": "owner@example.com"}, headers=u.h).status_code == 409
-    assert client.post(f"/workspaces/{u.wid}/invites", json={"email": "x@example.com", "role": "admin"}, headers=u.h).status_code == 422
+    assert client.post(f"/workspaces/{u.wid}/invites", json={"email": "x@example.com", "role": "superuser"}, headers=u.h).status_code == 422
     inv, _ = invite(client, u, "b@example.com")
     inv2, tok2 = invite(client, u, "b@example.com")  # re-inviting replaces the old invite
     assert len(client.get(f"/workspaces/{u.wid}", headers=u.h).json()["invites"]) == 1

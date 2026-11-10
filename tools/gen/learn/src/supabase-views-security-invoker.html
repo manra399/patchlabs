@@ -1,0 +1,93 @@
+title: Supabase views and security_invoker: stop views bypassing RLS
+description: Why a Postgres view in Supabase ignores row level security by default, how to find them, and how security_invoker = true makes your policies apply again.
+h1: Supabase views and security_invoker: stop views bypassing RLS
+navtitle: Views and security_invoker
+topic: supabase
+order: 3
+short: Why a view ignores your policies by default, and the one-line security_invoker fix.
+lede: A Postgres view runs with the rights of the role that owns it, not the person querying it, so in Supabase a view over an RLS-protected table usually returns every row to anyone allowed to read the view. Setting <code>security_invoker = true</code> on the view (Postgres 15 and later) makes it run as the caller, so the table’s policies apply again.
+tldr: Views created by migrations are owned by <code>postgres</code>, which owns the tables and isn’t subject to their RLS. The view sees everything. || Views in <code>public</code> are served by the API like tables, so <code>/rest/v1/your_view</code> can leak a table you locked. || Fix: <code>alter view public.x set (security_invoker = true);</code> and revoke the view from <code>anon</code> if visitors don’t need it. || Materialized views can’t use RLS or security_invoker: keep them away from the API roles.
+findings: PL-014, PL-001
+---
+<h2 id="problem">The problem in one example</h2>
+<p>You did everything right on the table: RLS on, an owner-only read policy. Then a dashboard needed orders joined to customer names, so a view appeared:</p>
+[[CODE supabase/migrations/…_order_summaries.sql]]
+create policy "Users read own orders" on public.orders
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+
+create view public.order_summaries as
+  select o.id, o.total, o.created_at, p.full_name, p.email
+  from public.orders o
+  join public.profiles p on p.id = o.user_id;
+
+grant select on public.order_summaries to anon, authenticated;
+[[/CODE]]
+<p>A signed-in user querying <code>orders</code> sees their own orders. The same user, or a logged-out visitor, querying <code>order_summaries</code> sees every order with every customer’s name and email.</p>
+
+<h2 id="why">Why views skip row level security</h2>
+<p>By default a Postgres view executes with the privileges of its <strong>owner</strong>. When it reads <code>orders</code>, Postgres checks the owner’s permissions, and applies row level security as it would for the owner. In Supabase, migrations and the SQL editor run as <code>postgres</code>, so <code>postgres</code> owns both the tables and the view, and a table’s owner is not subject to that table’s RLS unless the table is set to <code>force row level security</code>. So the view’s query sees every row.</p>
+<p>The API then serves the view like a table. Anything in the <code>public</code> schema that <code>anon</code> or <code>authenticated</code> can select from is reachable at <code>https://&lt;project&gt;.supabase.co/rest/v1/&lt;name&gt;</code> with your public key.</p>
+
+<h2 id="find">Find views that run as their owner</h2>
+[[CODE find-owner-views.sql]]
+select c.relname as view_name,
+       case c.relkind when 'm' then 'materialized view' else 'view' end as kind,
+       has_table_privilege('anon', c.oid, 'select') as anon_can_read,
+       has_table_privilege('authenticated', c.oid, 'select') as signed_in_can_read
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relkind in ('v', 'm')
+  and not coalesce(array_to_string(c.reloptions, ',')
+                   ~* 'security_invoker=(true|on|1|yes)', false);
+[[/CODE]]
+<p>Every row is a view that ignores your policies. The two right-hand columns tell you who can reach it. Supabase’s Security Advisor reports the same thing as lint <code>0010 security_definer_view</code>.</p>
+<p>Then confirm what a visitor actually gets, inside a transaction that changes nothing:</p>
+[[CODE read-as-anon.sql]]
+begin;
+set local role anon;
+select count(*) from public.order_summaries;
+rollback;
+[[/CODE]]
+
+<h2 id="fix">The fix: security_invoker</h2>
+[[CODE supabase/migrations/…_fix_views.sql]]
+alter view public.order_summaries set (security_invoker = true);
+revoke select on public.order_summaries from anon;
+[[/CODE]]
+<p>Now the view runs as whoever queries it. A signed-in user gets only rows that pass the policies on <code>orders</code> <em>and</em> <code>profiles</code>, so they see their own orders joined to their own profile. Visitors get nothing, because they can’t read the view at all.</p>
+<p>For new views, write it in from the start:</p>
+[[CODE new view]]
+create view public.order_summaries
+with (security_invoker = true) as
+  select o.id, o.total, o.created_at, p.full_name
+  from public.orders o
+  join public.profiles p on p.id = o.user_id;
+[[/CODE]]
+<h3 id="side-effects">What changes for your app</h3>
+<ul>
+  <li>The caller now needs <code>select</code> permission on the underlying tables. Supabase’s default grants usually cover this; if a view starts returning “permission denied”, grant the table to <code>authenticated</code> and let the policies do the filtering.</li>
+  <li>An admin dashboard that relied on the view seeing everything will now see only what the admin’s own policies allow. Give admins an explicit policy on the tables (for example with a <code>has_role('admin')</code> helper), rather than reverting the view.</li>
+  <li><code>security_invoker</code> needs Postgres 15 or later. Current Supabase projects run 15 or newer; check with <code>select version();</code>.</li>
+</ul>
+
+<h2 id="materialized">Materialized views</h2>
+<p>A materialized view stores its results. Postgres doesn’t support row level security or <code>security_invoker</code> on it, so whoever can select from it sees every stored row. Keep it away from the API roles:</p>
+[[CODE materialized views]]
+revoke select on public.daily_stats from anon, authenticated;
+-- Then either move it to a schema the API doesn't expose,
+-- or serve it through a function that filters by (select auth.uid()).
+[[/CODE]]
+<p>Supabase’s linter flags these as <code>0016 materialized_view_in_api</code>.</p>
+
+<h2 id="intended">When an owner-rights view is deliberate</h2>
+<p>Sometimes a view running as its owner is exactly the point: you want visitors to see a safe summary of a private table, such as the number of listings per city, or the display names of sellers without their emails. That is a legitimate pattern when the view selects only columns meant for everyone. Leave a comment in the migration saying so, because the linter will keep flagging it, and the next person (or the next AI edit) needs to know it was a decision.</p>
+<p>Also check for views that expose <code>auth.users</code>, which holds every user’s email: Supabase’s linter reports those as <code>0002 auth_users_exposed</code>. Copy the columns you need into a <code>profiles</code> table with its own policies instead.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://www.postgresql.org/docs/current/sql-createview.html">PostgreSQL: CREATE VIEW (security_invoker)</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">PostgreSQL: Row Security Policies (table owners)</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors</a></li>
+</ul>

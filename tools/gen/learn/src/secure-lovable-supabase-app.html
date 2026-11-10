@@ -1,0 +1,95 @@
+title: How to secure a Lovable app's Supabase database
+description: Step by step: find tables anyone can read in a Lovable app's Supabase database, fix the policies with a migration, test as a stranger, and check keys, storage and functions.
+h1: How to secure a Lovable app’s Supabase database
+navtitle: Secure a Lovable app’s database
+topic: supabase
+order: 1
+short: Find what anyone can read, fix it with a migration, and test it as a stranger, step by step.
+lede: To secure a Lovable app’s Supabase database, make sure every table has row level security on, replace any policy that lets everyone read (<code>using (true)</code>) with one that checks the row’s owner, then test each table as a logged-out visitor and as a second signed-up user. This guide walks through each step with SQL you can run, plus the keys, storage and functions that sit around the database.
+tldr: The Supabase key in your Lovable app’s frontend is public. Policies decide what it can read, so the policies are your security. || Run two queries: tables with RLS off, and read policies that never mention <code>auth.uid()</code>. Those are your leak candidates. || Fix with owner-only policies in a new migration, then test as anon, a stranger and the owner. || Then check the rest: no service role key in the code, private files in private buckets, Edge Functions that check who is calling.
+findings: PL-001, PL-002, PL-008, PL-010, PL-007, PL-017
+---
+<h2 id="how-it-fits">How a Lovable app talks to Supabase</h2>
+<p>An app built with Lovable is usually a React and Vite frontend with Supabase as the backend. The frontend creates a Supabase client with your project URL and the public anon (or publishable) key, typically in a generated file such as <code>src/integrations/supabase/client.ts</code>, and queries tables straight from the browser.</p>
+<p>That key ships to every visitor, and it is meant to: Supabase is designed for it. What keeps data private is row level security, the per-table rules Postgres applies to every query. If a table holding emails or phone numbers has no rule, or a rule that says yes to everyone, anyone can copy the key from your site and read the whole table. Nobody has to break in.</p>
+<p>If your Lovable project is connected to GitHub, the database changes it made are usually saved as SQL files in <code>supabase/migrations</code>. That folder is the record of your rules, and it is what you’ll add the fix to.</p>
+
+<h2 id="step-1">Step 1: find tables with RLS switched off</h2>
+<p>Open your project’s SQL editor in the Supabase dashboard and run:</p>
+[[CODE find-rls-off.sql]]
+-- Tables in public with row level security switched off
+select c.relname as table_name
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;
+[[/CODE]]
+<p>Every table listed here has no row rules at all. If the API roles have been granted access (older projects grant it by default), anyone with your key can read and change every row. Switch RLS on for each one; Step 3 adds back what the app needs.</p>
+
+<h2 id="step-2">Step 2: find policies that let everyone read</h2>
+[[CODE find-open-policies.sql]]
+-- Read policies that don't check who is asking
+select tablename, policyname, roles, qual
+from pg_policies
+where schemaname = 'public'
+  and cmd in ('SELECT', 'ALL')
+  and coalesce(qual, '') not ilike '%auth.uid()%';
+[[/CODE]]
+<p>Look at the <code>roles</code> column. <code>{public}</code> or <code>{anon}</code> means logged-out visitors are included. <code>{authenticated}</code> with <code>qual</code> = <code>true</code> means anyone who signs up, which for an app with open sign-up is the same thing. Some of these will be fine: a product list or blog posts are meant to be public. The ones that matter are tables with personal data: profiles, users, customers, orders, bookings, messages, leads.</p>
+
+<h2 id="step-3">Step 3: replace them with owner-only policies</h2>
+<p>For a table where each row belongs to a user (a <code>user_id</code> or <code>id</code> column that matches the user’s id), the fix is a policy that compares that column with the signed-in user. Add it as a new migration file so it is versioned with the rest of your schema, for example <code>supabase/migrations/20261110120000_lock_profiles.sql</code>:</p>
+[[CODE supabase/migrations/…_lock_profiles.sql]]
+alter table public.profiles enable row level security;
+
+! drop policy if exists "Profiles are viewable by everyone" on public.profiles;
++ create policy "Users read own profile" on public.profiles
++   for select to authenticated
++   using ((select auth.uid()) = id);
++ create policy "Users update own profile" on public.profiles
++   for update to authenticated
++   using ((select auth.uid()) = id)
++   with check ((select auth.uid()) = id);
+[[/CODE]]
+<p>Use the real policy name from Step 2 in the <code>drop policy</code> line. If part of the table genuinely needs to be public (a seller’s display name on a listing), keep rows readable and withhold the private columns instead; the <a href="/learn/rls-policies-explained#public-read">RLS guide</a> shows how.</p>
+<div class="callout note"><p><strong>Asking the AI to fix it?</strong> Be specific: “Add a migration so users can only read and update their own row in <code>profiles</code>, using <code>auth.uid() = id</code>. Do not use <code>USING (true)</code> and do not use the service role key in the frontend.” Then test the result yourself (Step 4). A vague “fix the security” can produce a policy that hides the error without closing the leak.</p></div>
+
+<h2 id="step-4">Step 4: test as a visitor, a stranger and the owner</h2>
+<p>Don’t trust the policy text: run the queries as each kind of user. The three-identity script in the <a href="/learn/rls-policies-explained#test-sql">RLS guide</a> does this for any table, inside transactions that change nothing. For each table with personal data you want:</p>
+<ul class="ticks">
+  <li>logged-out visitor: 0 rows</li>
+  <li>a signed-in stranger who owns nothing: 0 rows</li>
+  <li>the owner: their own rows, and nothing else</li>
+</ul>
+<p>Then click through the app as a normal user. If a page breaks, the frontend was relying on the open access, which usually means it was showing users data that wasn’t theirs. Fix the query rather than reopening the table.</p>
+
+<h2 id="step-5">Step 5: check the keys in your code</h2>
+<p>A Supabase project has a second key, the service role key, which ignores every policy. It belongs only on servers. Search the repo for it:</p>
+[[CODE check-keys.sh]]
+grep -rnE "service_role|SERVICE_ROLE|sb_secret_" --exclude-dir=node_modules .
+# Any hit in src/ or in a VITE_ variable means it ships to the browser
+[[/CODE]]
+<p>If you find it, rotate it in the Supabase dashboard first, then move whatever needed it into an Edge Function. The same goes for AI and payment keys pasted into frontend code. <a href="/learn/rotate-leaked-key-git-history">How to rotate a leaked key and clean git history</a>.</p>
+
+<h2 id="step-6">Step 6: storage, functions and sign-up</h2>
+<ul>
+  <li><strong>Storage.</strong> Avatars can live in a public bucket. ID documents, invoices and anything personal belong in a private bucket with per-user folder policies. <a href="/learn/supabase-storage-policies">Storage bucket policies</a>.</li>
+  <li><strong>Edge Functions.</strong> Any function using the service role key must check who is calling, and take the user’s id from their token, not the request body. <a href="/learn/secure-supabase-edge-functions">Securing Edge Functions</a>.</li>
+  <li><strong>Sign-up.</strong> Keep “Confirm email” on in your project’s authentication settings, and never decide access from an email address or from <code>user_metadata</code>. <a href="/learn/user-metadata-vs-app-metadata">Where to store roles</a>.</li>
+  <li><strong>Views.</strong> A view over a locked table can skip its policies. <a href="/learn/supabase-views-security-invoker">Views and security_invoker</a>.</li>
+</ul>
+
+<h2 id="step-7">Step 7: keep it fixed</h2>
+<p>Every time the AI changes the database, it can change a policy. Two habits keep you safe:</p>
+<ol>
+  <li><strong>Run Supabase’s Security Advisor</strong> in the dashboard after each round of changes. It catches RLS switched off, functions without a fixed search path, and more. It deliberately doesn’t judge public reads, because only you know whether a table is meant to be public.</li>
+  <li><strong>Re-test the tables with personal data</strong> as a stranger after each change, or have it done automatically on a schedule.</li>
+</ol>
+<p>Before launch, work through the <a href="/learn/vibe-coded-app-security-checklist">pre-launch checklist</a>.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: Row Level Security</a></li>
+  <li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase: understanding API keys</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors</a></li>
+</ul>
+<p class="small muted">PatchLabs is independent and not affiliated with Lovable or Supabase. This guide describes apps built on them.</p>

@@ -50,11 +50,13 @@ def test_public_app_status(client):
     a, cid = verified_app(client, u)
     assert client.get(f"/public/apps/{a['id']}").status_code == 404
     client.patch(f"/apps/{a['id']}", json={"badge_public": True}, headers=u.h)
-    assert client.get(f"/public/apps/{a['id']}").json() == {"repo": "acme/shop", "status": "not_checked_yet", "last_checked": None}
+    assert client.get(f"/public/apps/{a['id']}").json() == {"repo": "acme/shop", "status": "not_checked_yet", "last_checked": None,
+                                                            "stale": False, "days_since_check": None, "stale_after_days": 60}
     claim(client)
     finish(client, cid, "no_leaks")
     r = client.get(f"/public/apps/{a['id']}").json()
-    assert set(r) == {"repo", "status", "last_checked"} and r["status"] == "no_known_leaks" and r["last_checked"]
+    assert set(r) == {"repo", "status", "last_checked", "stale", "days_since_check", "stale_after_days"}
+    assert r["status"] == "no_known_leaks" and r["last_checked"] and r["stale"] is False and r["days_since_check"] == 0
     assert client.get(f"/public/apps/{uuid.uuid4()}").status_code == 404
     assert client.get("/public/apps/xyz").status_code == 404
 

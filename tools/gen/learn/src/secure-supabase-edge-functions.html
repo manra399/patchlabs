@@ -1,0 +1,121 @@
+title: How to secure Supabase Edge Functions
+description: Verify the caller in a Supabase Edge Function, use the service role key safely, never trust a user id from the body, set verify_jwt correctly and handle CORS, with Deno code.
+h1: How to secure Supabase Edge Functions
+navtitle: Secure Edge Functions
+topic: server
+order: 2
+short: Verify the caller, use the service key safely, never trust ids from the body, and get CORS right.
+lede: To secure a Supabase Edge Function, verify who is calling inside the function by passing the request’s token to <code>supabase.auth.getUser()</code>, take the user’s id from that result rather than from the request body, and use the service role key only after those checks, or not at all. Functions that can’t require a sign-in, like webhooks and cron jobs, need another proof of origin: a signature or a shared secret.
+tldr: A function’s URL is public and in your bundle. Anyone can call it with any body. || The platform’s JWT check (<code>verify_jwt</code>) accepts the public anon key on projects using legacy keys, so it isn’t proof of a signed-in user. Check with <code>getUser()</code>. || Prefer a client built with the caller’s token, so your RLS policies apply. Use the service key only when you must. || CORS headers control which sites can read responses. They are not access control.
+findings: PL-017, PL-022, PL-026, PL-010
+---
+<h2 id="threat">What you’re defending against</h2>
+<p>Every Edge Function is reachable at <code>https://&lt;project&gt;.supabase.co/functions/v1/&lt;name&gt;</code>. The name is in your frontend code, so assume anyone can find it and call it with whatever headers and body they like. A function is only as safe as the checks it runs before doing something.</p>
+<p>Functions are also where the service role key lives, as an automatically provided secret (<code>SUPABASE_SERVICE_ROLE_KEY</code>). That key bypasses every row level security policy. A function that uses it without checking the caller turns your database’s rules off for anyone who finds the URL (<a href="/findings/pl-017">PL-017</a>).</p>
+
+<h2 id="verify-jwt">What verify_jwt does and doesn’t do</h2>
+<p>By default the platform rejects calls to a function that don’t carry a valid JWT in the <code>Authorization</code> header. You can switch that off per function in <code>supabase/config.toml</code>:</p>
+[[CODE supabase/config.toml]]
+[functions.stripe-webhook]
+verify_jwt = false
+[[/CODE]]
+<p>Two things to know. First, on projects using the legacy API keys, the anon key is itself a valid JWT, so <code>verify_jwt = true</code> proves only that the caller has your public key, which every visitor has. Second, switching it off is sometimes right (webhooks, cron), but then the function must prove the caller some other way. Either way, the real check belongs inside the function.</p>
+
+<h2 id="pattern">The safe default: act as the caller</h2>
+<p>The simplest secure function doesn’t use the service key at all. It builds a client that carries the caller’s own token, so every query runs as that user and your RLS policies apply, exactly as they do in the browser:</p>
+[[CODE supabase/functions/my-orders/index.ts]]
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+Deno.serve(async (req) => {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return new Response('Unauthorized', { status: 401 });
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+
+  // Asks Supabase Auth who the token belongs to. The anon key has no user, so it fails.
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return new Response('Unauthorized', { status: 401 });
+
+  // Runs as the user: RLS decides which rows come back
+  const { data, error: qErr } = await supabase
+    .from('orders')
+    .select('id, total, created_at')
+    .eq('user_id', user.id);
+  if (qErr) return new Response(qErr.message, { status: 400 });
+  return Response.json(data);
+});
+[[/CODE]]
+
+<h2 id="service-key">When you need the service key</h2>
+<p>Some jobs genuinely need it: deleting an auth user, writing to a table users can’t write, calling the admin API. Verify the caller first, then decide whether they may do this specific thing:</p>
+[[CODE supabase/functions/delete-account/index.ts]]
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const admin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
+
+Deno.serve(async (req) => {
+  const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+  if (!token) return new Response('Unauthorized', { status: 401 });
+
+  const { data: { user }, error } = await admin.auth.getUser(token);
+  if (error || !user) return new Response('Unauthorized', { status: 401 });
+
+  // The id comes from the verified token, never from the request body
+  const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
+  if (delErr) return new Response(delErr.message, { status: 500 });
+  return Response.json({ ok: true });
+});
+[[/CODE]]
+<p>For admin-only functions, check the role after <code>getUser</code>: read it from <code>user.app_metadata</code>, or query your roles table with the service client. Never from <code>user.user_metadata</code>, which the user controls (<a href="/learn/user-metadata-vs-app-metadata">why</a>).</p>
+
+<h2 id="ids">Never trust a user id from the request</h2>
+<p>The most common hole in functions that <em>do</em> check sign-in: the function reads <code>userId</code> from the body and acts on it (<a href="/findings/pl-022">PL-022</a>). Any signed-in user can send someone else’s id. User ids turn up in URLs, API responses and storage paths, so they aren’t secret. Use <code>user.id</code> from <code>getUser()</code>. If admins may act on other users, check the admin role, then accept a target id.</p>
+
+<h2 id="no-session">Functions without a signed-in user</h2>
+<ul>
+  <li><strong>Payment webhooks:</strong> verify the provider’s signature over the raw body. <a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhook verification in an Edge Function</a>.</li>
+  <li><strong>Cron jobs and internal calls:</strong> send a shared secret in a header and compare it in the function. Store it with <code>supabase secrets set CRON_SECRET=…</code>.</li>
+  <li><strong>Public endpoints</strong> (a contact form): don’t use the service key; use the anon key so RLS limits what the function can do, and add rate limiting or a CAPTCHA if abuse would cost you.</li>
+</ul>
+[[CODE shared secret check]]
+const expected = Deno.env.get('CRON_SECRET');
+if (!expected || req.headers.get('x-cron-secret') !== expected) {
+  return new Response('Forbidden', { status: 403 });
+}
+[[/CODE]]
+
+<h2 id="cors">CORS: what it is and isn’t</h2>
+<p>Browsers need CORS headers before a page on your site can read a function’s response, which is why Supabase’s examples include a <code>corsHeaders</code> object with <code>Access-Control-Allow-Origin: *</code> and an <code>OPTIONS</code> handler. For a function that authenticates with a bearer token from <code>localStorage</code>, <code>*</code> is acceptable: another website can call the function, but it doesn’t have your user’s token, so it gets a 401.</p>
+<p>CORS becomes a hole when an endpoint authenticates with <strong>cookies</strong> and either reflects any origin with <code>Access-Control-Allow-Credentials: true</code>, or is otherwise opened to every site (<a href="/findings/pl-026">PL-026</a>). Then any site your users visit can make signed-in requests and read the answers. If you use cookie sessions (common in Next.js apps), allow-list your own origins. Either way, CORS never replaces checking the caller: tools like curl ignore it entirely.</p>
+
+<h2 id="secrets">Secrets</h2>
+<ul>
+  <li>Set third-party keys with <code>supabase secrets set NAME=value</code> and read them with <code>Deno.env.get('NAME')</code>. They never appear in your repo or bundle.</li>
+  <li>Locally, keep them in <code>supabase/functions/.env</code> and make sure it’s in <code>.gitignore</code>.</li>
+  <li>Don’t return secrets or raw error objects that might include them.</li>
+</ul>
+
+<h2 id="checklist">Checklist for every function</h2>
+<ul class="ticks">
+  <li>It identifies the caller with <code>getUser()</code>, a signature or a shared secret before doing anything.</li>
+  <li>It takes the user’s id from the verified token.</li>
+  <li>It uses the caller’s token for queries, or the service key only after its own checks.</li>
+  <li><code>verify_jwt = false</code> only where something else proves the caller.</li>
+  <li>Cookie-authenticated endpoints allow-list origins; none reflect any origin with credentials.</li>
+  <li>Secrets come from <code>Deno.env</code>, not the code.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/functions/auth">Supabase: Edge Functions auth</a></li>
+  <li><a href="https://supabase.com/docs/guides/functions/secrets">Supabase: Edge Function secrets</a></li>
+  <li><a href="https://supabase.com/docs/guides/functions/cors">Supabase: CORS in Edge Functions</a></li>
+  <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">MDN: Cross-Origin Resource Sharing</a></li>
+</ul>

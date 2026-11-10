@@ -66,7 +66,7 @@ class Handler(BaseHTTPRequestHandler):
         body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
         if path == "/slow":
             time.sleep(6.5)
-        if path in ("/hook", "/slow"):
+        if path in ("/hook", "/slow") or path.startswith(("/services/", "/api/webhooks/", "/webhookb2/", "/powerautomate/")):
             STATE.hooks.append({"path": path, "host": self.headers.get("Host"), "headers": dict(self.headers),
                                 "body": json.loads(body or b"null"), "raw": body})
             return self.reply(STATE.hook_status, {"ok": True})
@@ -171,4 +171,24 @@ def finish(client, cid, status="done", tables=(), proof=True, cost=0.42):
     else:
         body["error"] = "boom"
     r = client.post(f"/worker/checks/{cid}/result", json=body, headers=W)
+    assert r.status_code == 200, r.text
+
+
+def invite_as(client, owner, email, role, wid=None, app_ids=None):
+    """Invites `email` with `role` (and, for clients, the apps they may see), signs them in accepting it."""
+    body = {"email": email, "role": role, **({"app_ids": app_ids} if app_ids is not None else {})}
+    r = client.post(f"/workspaces/{wid or owner.wid}/invites", json=body, headers=owner.h)
+    assert r.status_code == 201, r.text
+    u = sign_in(client, email, invite=link_param(outbox(email.lower())[-1], "invite"))
+    assert u.finish["invite"]["accepted"], u.finish
+    return u
+
+
+def finish_with(client, cid, findings, status="done", tables=(), questions=None):
+    """Worker result carrying the v3 finding list (summary.findings)."""
+    summary = {"tables_leaking": list(tables), "lab_proof_passed": True, "findings": findings}
+    if questions:
+        summary["questions_for_owner"] = questions
+    r = client.post(f"/worker/checks/{cid}/result", headers=W, json={"status": status, "summary": summary, "report_md": "# Report",
+                                                                     "fix_sql": "ALTER TABLE x ENABLE ROW LEVEL SECURITY;" if tables else None})
     assert r.status_code == 200, r.text

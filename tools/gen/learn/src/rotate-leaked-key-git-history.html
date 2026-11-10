@@ -1,0 +1,103 @@
+title: How to rotate a leaked API key and clean your git history
+description: Leaked an OpenAI, Stripe or Supabase key in a repo? Rotate it first, move it to a server secret, then optionally remove it from git history with git filter-repo. Exact steps.
+h1: How to rotate a leaked API key and clean your git history
+navtitle: Rotate a leaked key
+topic: keys
+order: 1
+short: Why deleting the key isn’t enough, the order that works, and git filter-repo step by step.
+lede: If an API key has been committed to a repo, rotate it at the provider first: create a new key, switch your app to it, and revoke the old one. Deleting the key from your code doesn’t help on its own, because every earlier commit still contains it; rewriting git history is optional clean-up that only makes sense after the key is dead.
+tldr: Rotation is the fix. Any key that was ever in a public repo must be treated as copied. || Order: revoke or roll the key → put the new one in a server-side secret → remove it from code → optionally rewrite history. || Find every key, including deleted ones, with <code>git log -p</code> over all branches. || <code>git filter-repo</code> removes files or strings from history; everyone must re-clone afterwards, and forks keep the old commits.
+findings: PL-009, PL-010, PL-011
+---
+<h2 id="why-rotate">Why deleting the key isn’t enough</h2>
+<p>Git keeps every version of every file. If <code>.env</code> was committed last month and deleted last week, <code>git show &lt;old commit&gt;:.env</code> still prints it, for anyone who can read the repo. For a public repo that means anyone, and automated scanners watch public pushes for key patterns, so assume a pushed key is found quickly. Forks, clones and caches keep the old commits even if you rewrite yours.</p>
+<p>So the only thing that makes a leaked key harmless is making it stop working.</p>
+
+<h2 id="find">Step 0: find every key, including deleted ones</h2>
+[[CODE find-keys.sh]]
+# Key-shaped strings ever added or removed, on every branch
+git log --all -p -G 'sk-proj-|sk-ant-|sk_live_|rk_live_|service_role|sb_secret_|AIza' \
+  --format='%h %ad %s' --date=short \
+  | grep -E '^[0-9a-f]{7,} |^[+-].*(sk-|sk_live_|rk_live_|service_role|sb_secret_|AIza)' | head -80
+
+# Was an env file ever committed?
+git log --all --format='%h %ad %s' --date=short -- '.env' '*.env' '.env.*'
+[[/CODE]]
+<p>Make a list: which key, which provider, which commit. Ignore publishable keys meant for browsers (Supabase anon or publishable, Stripe <code>pk_…</code>, a Firebase web config) and test keys (<code>sk_test_…</code>), but do rotate anything secret even if it was “only there for a day”.</p>
+
+<h2 id="rotate">Step 1: rotate at the provider</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Key</th><th scope="col">Where to rotate it</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Supabase service role / secret key</th><td>Project settings, API keys. With the newer secret keys (<code>sb_secret_…</code>) you can create a new one and delete the old. Legacy JWT keys are rotated by rotating the project’s JWT secret, which also invalidates the anon key and signs users out: plan for that.</td></tr>
+    <tr><th scope="row">OpenAI, Anthropic and other AI keys</th><td>The provider’s API keys page: create a new key, update your app, delete the old key. Check usage for spend you don’t recognise.</td></tr>
+    <tr><th scope="row">Stripe secret or restricted key</th><td>Developers, API keys: roll the key. Stripe lets you choose when the old one expires, so you can deploy the new one first.</td></tr>
+    <tr><th scope="row">Database connection string</th><td>Change the database password (for Supabase, in the database settings), then update every server that uses it.</td></tr>
+    <tr><th scope="row">GitHub tokens, cloud keys</th><td>Revoke the token or key in the provider’s settings and issue a new one with the narrowest scope that works.</td></tr>
+  </tbody>
+</table></div>
+<p>Do this even before you’re sure the key was used. Then look at the provider’s logs or usage for the period the key was exposed, and note what you find; you may need it (see <a href="/learn/first-hour-after-a-leak">the first hour after a leak</a>).</p>
+
+<h2 id="move">Step 2: put the new key where it belongs</h2>
+<p>Secret keys belong on a server, never in frontend code or in a <code>VITE_</code> or <code>NEXT_PUBLIC_</code> variable (the build copies those into the browser bundle). In a Supabase app, that usually means an Edge Function:</p>
+[[CODE terminal]]
+supabase secrets set OPENAI_API_KEY=sk-proj-new...
+[[/CODE]]
+[[CODE supabase/functions/chat/index.ts]]
+import OpenAI from 'npm:openai@4';
+
+const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY')! });
+// ...verify the caller first, then call the API on their behalf
+[[/CODE]]
+<p>The frontend then calls <code>supabase.functions.invoke('chat', …)</code> instead of the AI API. <a href="/learn/secure-supabase-edge-functions">Securing Edge Functions</a> covers checking the caller.</p>
+
+<h2 id="remove">Step 3: remove it from the code and stop it happening again</h2>
+[[CODE terminal]]
+git rm --cached .env           # stop tracking it, keep your local copy
+printf '.env\n.env.*\n!.env.example\n' >> .gitignore
+git add .gitignore && git commit -m "Stop tracking env files"
+[[/CODE]]
+<p>Keep a <code>.env.example</code> with placeholder values so others know which variables exist. GitHub’s push protection and secret scanning, where available on your plan, will block or flag many key formats on future pushes.</p>
+
+<h2 id="history">Step 4 (optional): rewrite history</h2>
+<p>Once the key is revoked, rewriting history is tidiness, not security. Do it if you want the old commits gone from your repo, for instance before making a private repo public. It rewrites every later commit id, so coordinate with anyone else who works on the repo.</p>
+<p><code>git filter-repo</code> is the tool the Git project recommends over the older <code>filter-branch</code>. Install it (<code>brew install git-filter-repo</code> or <code>pip install git-filter-repo</code>), then work on a fresh clone:</p>
+[[CODE terminal]]
+git clone --mirror git@github.com:you/your-app.git
+cd your-app.git
+
+# Remove a file from every commit
+git filter-repo --invert-paths --path .env
+
+# Or replace a key string wherever it appears
+printf 'sk-proj-OLDKEY==>REMOVED\n' > ../replacements.txt
+git filter-repo --replace-text ../replacements.txt
+
+# filter-repo removes the origin remote as a safety step; add it back to push
+git remote add origin git@github.com:you/your-app.git
+git push --force --mirror origin
+[[/CODE]]
+<p>Afterwards:</p>
+<ul>
+  <li>Everyone with a clone must re-clone (or carefully rebase onto the new history). An old clone pushed back will reintroduce the commits.</li>
+  <li>Forks and existing clones elsewhere still have the old commits; you can’t rewrite those. This is why Step 1 comes first.</li>
+  <li>GitHub may keep old commits reachable through cached views or pull request refs for a while. GitHub’s guide on removing sensitive data explains how to ask support to purge them.</li>
+</ul>
+
+<h2 id="checklist">Checklist</h2>
+<ul class="ticks">
+  <li>Every secret key ever committed is listed.</li>
+  <li>Each one is rotated and the old one revoked.</li>
+  <li>Provider usage and logs checked for the exposure window.</li>
+  <li>New keys live in server-side secrets only.</li>
+  <li>Env files untracked and ignored; <code>.env.example</code> committed.</li>
+  <li>History rewritten, if you chose to, with collaborators re-cloned.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository">GitHub: removing sensitive data from a repository</a></li>
+  <li><a href="https://github.com/newren/git-filter-repo">git-filter-repo</a></li>
+  <li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase: API keys</a></li>
+  <li><a href="https://docs.stripe.com/keys">Stripe: API keys</a></li>
+</ul>

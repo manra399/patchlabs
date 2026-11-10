@@ -1,9 +1,9 @@
 <!--
 title: Admin | PatchLabs
-description: PatchLabs admin: workspaces and plans, upgrade requests, recent checks.
+description: PatchLabs admin: workspaces and plans, upgrade requests, support tickets, recent checks.
 layout: bare
 sitemap: no
-head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script>
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><link rel="stylesheet" href="/assets/pages/app-support.css"><script src="/assets/app-ui.js"></script><script src="/assets/app-support.js"></script>
 -->
 <header class="app-header">
   <div class="wrap">
@@ -32,10 +32,12 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
         <div role="tablist" aria-label="Admin">
           <button role="tab" id="t-ws" aria-controls="p-ws" aria-selected="true">Workspaces</button>
           <button role="tab" id="t-up" aria-controls="p-up" aria-selected="false">Upgrade requests</button>
+          <button role="tab" id="t-sp" aria-controls="p-sp" aria-selected="false">Support</button>
           <button role="tab" id="t-ck" aria-controls="p-ck" aria-selected="false">Recent checks</button>
         </div>
         <div class="tab-panel" id="p-ws" role="tabpanel" aria-labelledby="t-ws"><h2 class="tab-title sr-only">Workspaces</h2><div id="ws"></div></div>
         <div class="tab-panel" id="p-up" role="tabpanel" aria-labelledby="t-up"><h2 class="tab-title sr-only">Upgrade requests</h2><div id="up"></div></div>
+        <div class="tab-panel" id="p-sp" role="tabpanel" aria-labelledby="t-sp"><h2 class="tab-title sr-only">Support tickets</h2><div id="sp"></div></div>
         <div class="tab-panel" id="p-ck" role="tabpanel" aria-labelledby="t-ck"><h2 class="tab-title sr-only">Recent checks</h2><div id="ck"></div></div>
       </div>
     </div>
@@ -79,7 +81,7 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
       S.ws = r[0].workspaces; S.up = r[1].upgrade_requests; S.ck = r[2].checks;
       $('gate').hidden = true; $('console').hidden = false; $('lock').hidden = false; $('reload').hidden = false;
       $('t-up').textContent = 'Upgrade requests (' + S.up.length + ')';
-      renderWs(); renderUp(); renderCk();
+      renderWs(); renderUp(); renderCk(); support();
     } catch (e) {
       if (!e.locked) { $('gate-err').textContent = e.message; if (!$('console').hidden) PL.toast(e.message, 'err'); }
     }
@@ -152,6 +154,16 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
           '<td data-label="Email" class="small">' + esc(c.email || '–') + '</td><td data-label="Cost" class="num cost">' + (c.cost_usd != null ? '$' + Number(c.cost_usd).toFixed(2) : '–') + '</td>' +
           '<td class="acts"><a class="link-arrow small" href="/check?id=' + esc(c.id) + '">Open</a></td></tr>';
       }).join('') + '</tbody></table></div>';
+  }
+
+  // support tickets (app-support.js): mounted once, reloaded on Refresh; /admin?ticket=<id> (the link in our emails) opens one
+  var SP = null;
+  PLSupport.onCounts = function (c) { $('t-sp').textContent = 'Support (' + (c.open || 0) + ' open)'; };
+  function support() {
+    if (SP) { SP.reload(); return; }
+    SP = PLSupport.admin($('sp'), admin);
+    var want = PL.qs('ticket');
+    if (want) { $('t-sp').click(); SP.open(want); }
   }
 
   if (tok()) open_(); else $('tok').focus();

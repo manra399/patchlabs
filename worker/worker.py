@@ -61,8 +61,10 @@ def run_check(check):
     leaking = [t["table"] for t in lab["anyone"] + lab["any_signed_in"]]
     result = json.load(open(os.path.join(out, "result.json"))) if os.path.exists(os.path.join(out, "result.json")) else {}
     proof, agent, decision = result.get("proof", {}), result.get("agent", {}), result.get("decision", {})
+    checks = [{k: v for k, v in c.items() if k not in ("run_dir", "cost", "cost_usd")} for c in findings.get("checks", [])][:200]
+    counts = {s: sum(1 for c in checks if c.get("severity") == s) for s in ("critical", "high", "medium", "low", "info")}
     if not leaking:
-        status = "no_leaks"
+        status = "no_leaks"  # about data leaks only; code and key findings travel in summary.findings for the report
     elif proof.get("passed"):
         status = "done"
     else:
@@ -70,7 +72,8 @@ def run_check(check):
     summary = {"tables_leaking": leaking, "readable_by_anyone": [t["table"] for t in lab["anyone"]],
                "readable_by_signed_in": [t["table"] for t in lab["any_signed_in"]], "lab_proof_passed": bool(proof.get("passed")),
                "models": agent.get("attempts"), "break_risk": decision.get("break_risk"),
-               "questions_for_owner": decision.get("questions_for_owner") or [], "run_dir": out}
+               "questions_for_owner": decision.get("questions_for_owner") or [], "run_dir": out,
+               "findings": checks, "counts": counts}
     return {"status": status, "summary": summary, "report_md": read(os.path.join(out, "report.md")),
             "fix_sql": read(os.path.join(out, "fix.sql")) if status != "no_leaks" else None,
             "cost_usd": agent.get("total_cost_usd")}

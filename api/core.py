@@ -217,21 +217,67 @@ def current_user(authorization: str = Header(default=""), c=Depends(db)):
 def api_key(x_api_key: str = Header(default=""), c=Depends(db)):
     if not x_api_key.startswith("pl_live_"):
         raise HTTPException(401, "Send your API key in the X-API-Key header.")
-    k = c.execute("UPDATE api_keys SET last_used_at = now() WHERE key_hash = %s RETURNING id, workspace_id",
-                  (token_hash(x_api_key),)).fetchone()
+    k = c.execute("UPDATE api_keys k SET last_used_at = now() WHERE key_hash = %s AND (created_by IS NULL OR EXISTS ("
+                  " SELECT 1 FROM workspace_members m WHERE m.workspace_id = k.workspace_id AND m.user_id = k.created_by "
+                  " AND m.role = ANY(%s))) RETURNING id, workspace_id, name, prefix, created_by",
+                  (token_hash(x_api_key), sorted(PERMS["run"]))).fetchone()
     if not k:
         raise HTTPException(401, "That API key is not valid or was revoked.")
     return k
 
 
-def membership(c, user, wid, owner=False):
+# ---- roles --------------------------------------------------------------------------------------------------------
+# owner > admin > approver > member > viewer, plus client: an agency's client, read-only on the apps assigned to them.
+# Every route names the permission it needs; PERMS is the single source of truth (SPEC.md "Roles" has the matrix).
+
+ROLES = ("owner", "admin", "approver", "member", "viewer", "client")
+ROLE_RE = r"^(owner|admin|approver|member|viewer|client)$"
+RANK = {r: i for i, r in enumerate(reversed(ROLES[:-1]), 1)} | {"client": 0}   # owner 5 … viewer 1, client 0
+_ALL, _TEAM = set(ROLES), {"owner", "admin", "approver", "member", "viewer"}
+PERMS = {
+    "view": _ALL,                                           # the workspace and the apps you can see
+    "view_team": _TEAM,                                     # teammates, support tickets, API key list, every app
+    "run": {"owner", "admin", "approver", "member"},        # run checks, create API keys, raise and reply to tickets
+    "decide": {"owner", "admin", "approver"},               # approve/reject fixes, answer the owner's questions
+    "support": {"owner", "admin", "approver", "member", "client"},  # raise/reply/close tickets (clients: their apps only)
+    "manage": {"owner", "admin"},                           # apps, invites, roles, webhook, plan requests, audit log
+    "owner": {"owner"},                                     # make or remove owners
+}
+DENIED = {"view_team": "Clients can only see the apps shared with them.",
+          "run": "Your role can only view. Ask a workspace owner or admin for the member role to run checks.",
+          "support": "Your role can only read support tickets. Ask a workspace owner or admin for the member role to write.",
+          "decide": "Only owners, admins and approvers can approve or reject fixes and answer the owner's questions.",
+          "manage": "Only a workspace owner or admin can do that.",
+          "owner": "Only a workspace owner can do that."}
+
+
+def can(role, perm):
+    return role in PERMS[perm]
+
+
+def require(role, perm):
+    if not can(role, perm):
+        raise HTTPException(403, DENIED[perm])
+
+
+def membership(c, user, wid, owner=False, perm="view"):
     w = c.execute("SELECT w.*, m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id = w.id "
                   "WHERE w.id = %s AND m.user_id = %s", (as_uuid(wid, "Workspace not found."), user["id"])).fetchone()
     if not w:
         raise HTTPException(404, "Workspace not found.")
-    if owner and w["role"] != "owner":
-        raise HTTPException(403, "Only a workspace owner can do that.")
+    require(w["role"], "owner" if owner else perm)
     return w
+
+
+def client_apps(c, wid, uid):
+    """The app ids a client member may see."""
+    return [r["app_id"] for r in c.execute("SELECT app_id FROM member_app_access WHERE workspace_id = %s AND user_id = %s",
+                                           (wid, uid)).fetchall()]
+
+
+def may_see_app(c, role, wid, uid, aid):
+    return role != "client" or bool(c.execute("SELECT 1 FROM member_app_access WHERE workspace_id = %s AND user_id = %s AND app_id = %s",
+                                              (wid, uid, aid)).fetchone())
 
 
 # ---- plans -------------------------------------------------------------------------------------------------------
@@ -257,7 +303,9 @@ def usage(c, wid):
         "SELECT (SELECT count(*) FROM apps WHERE workspace_id = %(w)s) AS apps, "
         "(SELECT count(*) FROM usage_events WHERE kind = 'run' AND subject = %(s)s "
         " AND created_at >= date_trunc('month', now())) AS runs_this_month, "
-        "(SELECT count(*) FROM workspace_members WHERE workspace_id = %(w)s) AS members", {"w": wid, "s": str(wid)}).fetchone()
+        "(SELECT count(*) FROM workspace_members WHERE workspace_id = %(w)s AND role <> 'client') AS members, "   # seats
+        "(SELECT count(*) FROM workspace_members WHERE workspace_id = %(w)s AND role = 'client') AS clients",     # never seats
+        {"w": wid, "s": str(wid)}).fetchone()
 
 
 def record(c, kind, subject):

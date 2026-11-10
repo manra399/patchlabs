@@ -1,0 +1,143 @@
+<!--
+title: How to find and fix vulnerable npm dependencies | PatchLabs
+description: Find known vulnerabilities in an npm project with npm audit and the OSV database, decide which matter, and fix them with upgrades and overrides without breaking your app.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to find and fix vulnerable npm dependencies","description":"Find known vulnerabilities in an npm project with npm audit and the OSV database, decide which matter, and fix them with upgrades and overrides without breaking your app.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/npm-dependency-vulnerabilities"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to find and fix vulnerable npm dependencies","item":"https://patchlabs.dev/learn/npm-dependency-vulnerabilities"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities" aria-current="page">Vulnerable npm dependencies</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Vulnerable npm dependencies</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>How to find and fix vulnerable npm dependencies</h1>
+      <p class="lede">To find vulnerable npm dependencies, run <code>npm audit</code> (it reads your lockfile and checks every installed version against published advisories), then upgrade direct dependencies to the fixed version and use <code>overrides</code> in <code>package.json</code> for vulnerable packages pulled in by others. Not every advisory matters to your app, so read what the vulnerable function is and whether your code uses it.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Your lockfile pins exact versions of every package, including ones you never installed directly. Those versions are what get checked.</li><li><code>npm audit --omit=dev</code> shows what ships to production; OSV (osv.dev) is an open database you can query for any package version.</li><li>Fix: upgrade the direct dependency, or force a fixed version of a transitive one with <code>overrides</code>. Test afterwards.</li><li>Prioritise advisories in code that handles user input or runs on your server.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#how">Where dependency vulnerabilities come from</a></li><li><a href="#audit">Find them with npm audit</a></li><li><a href="#osv">Look up any package in OSV</a></li><li><a href="#triage">Decide which advisories matter</a></li><li><a href="#fix">Fix them</a></li><li><a href="#keep">Keep it that way</a></li><li><a href="#related">Related: rendering user content safely</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="how">Where dependency vulnerabilities come from</h2>
+<p>An app built with AI tools typically has a few dozen direct dependencies in <code>package.json</code> and several hundred packages in total once their own dependencies are counted. The lockfile (<code>package-lock.json</code>, <code>pnpm-lock.yaml</code>, <code>yarn.lock</code> or <code>bun.lock</code>) records the exact version of every one. When a security problem is found in a package, an advisory is published naming the affected versions and the version that fixes it. Your app is affected if your lockfile pins an affected version.</p>
+<p>Templates and generated projects can start out pinned to older versions, and nothing updates them on its own while the app keeps working.</p>
+
+<h2 id="audit">Find them with npm audit</h2>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c"># Everything, including build tools</span>
+npm audit
+
+<span class="c"># Only what ships to production</span>
+npm audit --omit=dev
+
+<span class="c"># Machine-readable, for CI</span>
+npm audit --omit=dev --audit-level=high --json &gt; audit.json</code></pre></div>
+<p><code>npm audit</code> sends your dependency tree to the npm registry’s advisory service and reports each match with its severity, the vulnerable path (which package pulled it in) and whether a fix is available. With <code>--audit-level=high</code> it exits non-zero only for high and critical advisories, which makes a sensible CI gate. pnpm and Yarn have their own <code>audit</code> commands.</p>
+
+<h2 id="osv">Look up any package in OSV</h2>
+<p>OSV is an open vulnerability database that aggregates advisories from GitHub, npm and other ecosystems. Its API answers “is this exact version affected?” without installing anything:</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>curl -s https://api.osv.dev/v1/query \
+  -d '{"package":{"name":"lodash","ecosystem":"npm"},"version":"4.17.20"}' \
+  | head -c 800</code></pre></div>
+<p>The response lists each advisory’s id, summary, affected ranges and fixed version. For example, lodash 4.17.20 is affected by CVE-2021-23337 (command injection through <code>_.template</code>), fixed in 4.17.21. Google’s open-source <code>osv-scanner</code> tool checks a whole lockfile against OSV in one go.</p>
+
+<h2 id="triage">Decide which advisories matter</h2>
+<p>A match means the version is affected, not that your app is exploitable. Ask three questions of each one:</p>
+<ol>
+  <li><strong>Does it ship?</strong> A bug in a build tool or test runner that never runs in production is lower priority than one in your server or browser code. (A dev server bug can still matter while you develop on an untrusted network.)</li>
+  <li><strong>Do you use the vulnerable part?</strong> The advisory usually names a function or option. A prototype-pollution bug in a function you never call is less urgent than an XSS bug in the Markdown renderer that displays user comments.</li>
+  <li><strong>Does untrusted input reach it?</strong> Bugs triggered by user content (parsers, sanitisers, renderers, upload handlers) or network requests are the ones attackers can reach.</li>
+</ol>
+<p>When in doubt, upgrade. It is usually cheaper than the analysis.</p>
+
+<h2 id="fix">Fix them</h2>
+<h3 id="direct">A direct dependency</h3>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>npm install lodash@4.17.21
+<span class="c"># or let npm apply the non-breaking fixes it knows about</span>
+npm audit fix</code></pre></div>
+<p>Avoid <code>npm audit fix --force</code> unless you have read what it will do: it may install major versions with breaking changes.</p>
+<h3 id="transitive">A dependency of a dependency</h3>
+<p>First check whether a newer version of the parent package already depends on a fixed version (<code>npm ls lodash</code> shows who pulls it in). If not, force the fixed version with <code>overrides</code> (npm 8.3 and later):</p>
+<div class="code"><div class="code-bar"><span class="name">package.json</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  "overrides": {
+    "lodash": "4.17.21"
+  }
+}</code></pre></div>
+<p>Run <code>npm install</code> to update the lockfile, then your tests and a manual click-through. pnpm uses <code>pnpm.overrides</code> and Yarn uses <code>resolutions</code> for the same purpose.</p>
+<h3 id="no-fix">No fix available</h3>
+<p>If there is no fixed version, look for a maintained alternative, remove the dependency if you barely use it, or limit exposure (for example, never pass user input to the affected function) and record the decision.</p>
+
+<h2 id="keep">Keep it that way</h2>
+<ul class="ticks">
+  <li>Commit your lockfile, so what you audit is what you ship.</li>
+  <li>Run <code>npm audit --omit=dev --audit-level=high</code> in CI.</li>
+  <li>Turn on automated dependency update pull requests (GitHub’s Dependabot or similar) and merge them regularly, in small batches.</li>
+  <li>Re-check periodically even when nothing changes: new advisories are published for old versions.</li>
+</ul>
+
+<h2 id="related">Related: rendering user content safely</h2>
+<p>Many of the dependency advisories that matter most in frontend apps are in HTML sanitisers and Markdown renderers, and they matter because user content reaches them. Rendering user content as raw HTML is its own risk even with up-to-date packages: see <a href="/findings/pl-024">PL-024</a>.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://docs.npmjs.com/cli/commands/npm-audit">npm: npm audit</a></li>
+  <li><a href="https://docs.npmjs.com/cli/configuring-npm/package-json#overrides">npm: overrides</a></li>
+  <li><a href="https://osv.dev">OSV: open source vulnerability database</a></li>
+  <li><a href="https://google.github.io/osv-scanner/">osv-scanner</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-023"><span class="n-big">PL-023</span><h3>Dependency with a known vulnerability</h3></a><a class="card link" href="/findings/pl-024"><span class="n-big">PL-024</span><h3>User content rendered as raw HTML</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-npm-dependency-vul">Public GitHub repo</label>
+            <input id="repo-l-npm-dependency-vul" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-npm-dependency-vul">Your email</label>
+            <input id="email-l-npm-dependency-vul" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20npm-dependency-vulnerabilities">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/firebase-security-rules-basics" rel="prev"><span>Previous guide</span>Firebase security rules basics: lock down Firestore and Storage</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#how">Where dependency vulnerabilities come from</a></li><li><a href="#audit">Find them with npm audit</a></li><li><a href="#osv">Look up any package in OSV</a></li><li><a href="#triage">Decide which advisories matter</a></li><li><a href="#fix">Fix them</a></li><li><a href="#keep">Keep it that way</a></li><li><a href="#related">Related: rendering user content safely</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

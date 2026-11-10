@@ -6,7 +6,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
-from helpers import STATE, W, add_repo, claim, outbox, sign_in, sql, verified_app
+from helpers import STATE, W, add_repo, claim, finish_with, outbox, sign_in, sql, verified_app
 
 QUESTIONS = ["Should sellers' emails be public?", "Is the newsletter table meant to be readable?"]
 
@@ -151,7 +151,7 @@ def test_deleted_member_decisions_are_relabelled(client, setup):
     from helpers import A, link_param
     u, a, cid = setup
     client.patch(f"/admin/workspaces/{u.wid}", json={"plan": "maker"}, headers=A)
-    client.post(f"/workspaces/{u.wid}/invites", json={"email": "bob@example.com"}, headers=u.h)
+    client.post(f"/workspaces/{u.wid}/invites", json={"email": "bob@example.com", "role": "approver"}, headers=u.h)
     bob = sign_in(client, "bob@example.com", invite=link_param(outbox("bob@example.com")[-1], "invite"))
     claim(client)
     finish_q(client, cid)
@@ -162,3 +162,16 @@ def test_deleted_member_decisions_are_relabelled(client, setup):
     r = client.get(f"/receipts/{cid}").json()["receipt"]
     assert r["decisions"][0]["by"] == "a former member" and r["answers"][0]["by"] == "a former member"
     assert "bob@example.com" not in json.dumps(client.get(f"/checks/{cid}").json())
+
+
+def test_receipt_lists_v3_findings_by_id_only(client, setup):
+    u, a, cid = setup
+    claim(client)
+    finish_with(client, cid, [{"id": "PL-001", "line": "lab", "severity": "critical", "object": "public.profiles", "evidence": "email",
+                               "proven": True, "fixed_in_lab": True},
+                              {"id": "PL-021", "line": "code", "severity": "high", "object": "supabase/functions/pay/index.ts",
+                               "evidence": "JSON.parse(body)", "proven": False, "fixed_in_lab": False}], tables=["profiles"])
+    rec = client.get(f"/receipts/{cid}").json()["receipt"]
+    assert rec["findings"] == [{"id": "PL-001", "line": "lab", "severity": "critical", "proven": True, "fixed_in_lab": True},
+                               {"id": "PL-021", "line": "code", "severity": "high", "proven": False, "fixed_in_lab": False}]
+    assert "supabase/functions" not in json.dumps(rec) and "JSON.parse" not in json.dumps(rec)

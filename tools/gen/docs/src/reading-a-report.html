@@ -27,6 +27,14 @@ lede: Every finished check ends on one page: what leaked, who could read it, the
   <dt>Questions for you</dt><dd>Business questions only you can answer, such as whether sellers’ emails should be public. Each comes with a recommended answer. See <a href="/docs/decisions#questions">questions</a>.</dd>
 </dl>
 
+<h2 id="findings">Findings, grouped by line</h2>
+<p>Below the summary, every problem the check found is listed as a finding with a stable ID, grouped by the product line that found it and sorted most severe first. Each finding has a severity, the object (a table, a function, a file), the file and line in your repo, short redacted evidence, and a one-line fix. <a href="/docs/findings">Every field explained</a>.</p>
+<ul>
+  <li><strong>Lab</strong> findings (<code>PL-001</code> to <code>PL-008</code>) were reproduced in the rebuilt database and are marked <em>proven</em>, with what the lab saw: for example “signed-in stranger read 3 rows owned by another user”.</li>
+  <li><strong>Code</strong> findings (<code>PL-009</code> to <code>PL-011</code> and <code>PL-017</code> to <code>PL-026</code>) were read from your repo: keys, Edge Functions and their config, webhooks, CORS, admin checks in the browser, roles in <code>user_metadata</code>, raw HTML, Firebase rules and vulnerable dependencies. They point at a file and line for your engineer to judge, and are not marked proven.</li>
+</ul>
+<p>Each ID links to a page with an example, a way to check it yourself and the fix: <a href="/findings">the finding index</a>. Some IDs there (<code>PL-012</code> to <code>PL-016</code>) are marked <em>coming</em>: PatchLabs doesn’t test for them yet, so they won’t appear in a report.</p>
+
 <h2 id="identities">Who “the wrong people” are</h2>
 <p>The lab tests every table as three identities, with fake seeded rows in place:</p>
 <div class="table-wrap"><table class="table compact">
@@ -64,7 +72,7 @@ lede: Every finished check ends on one page: what leaked, who could read it, the
 <p>If the check belongs to an app in your workspace and you’re signed in, the report shows a <strong>Your decision</strong> panel: approve the fix, or mark tables as meant to be readable, and answer any questions. <a href="/docs/decisions">How decisions work</a>. Below it, every finished report carries its <strong>signed receipt</strong>, which anyone can verify. <a href="/docs/receipts">About receipts</a>.</p>
 
 <h2 id="keys">Exposed keys</h2>
-<p>The report also lists any AI, payment or database keys found in your code <strong>or anywhere in its git history</strong>. A key deleted in a later commit is still readable by anyone who clones the repo.</p>
+<p>The report also lists any AI, payment or database keys found in your code <strong>or anywhere in its git history</strong>: <code>PL-009</code> for a secret key in the current code, <code>PL-010</code> for a Supabase service role key in client code, <code>PL-011</code> for a key that only survives in history. A key deleted in a later commit is still readable by anyone who clones the repo. Values are always masked.</p>
 <div class="callout warn"><p><strong>Rotate first, clean up second.</strong> If a key is listed, create a new one at the provider and revoke the old one. Rewriting git history alone doesn’t help: the old key may already have been copied.</p></div>
 
 <h2 id="run-details">Run details</h2>
@@ -74,4 +82,4 @@ lede: Every finished check ends on one page: what leaked, who could read it, the
 <p>If no fix passes the strict proof on its own, the check goes to a person instead of guessing. In the same study, 18 of 20 fixes passed the lab proof with no human and 2 went to a person (n=20, 9 Nov 2026). You’ll get an email when the reviewed fix is ready; nothing changes in your repo meanwhile.</p>
 
 <h2 id="limits">What a report can’t tell you</h2>
-<div class="callout limit"><p>The lab is only as complete as the migrations in your repo. Policies or tables created by hand in the Supabase dashboard, and never saved as a migration, are invisible to us. We test read access to tables in the <code>public</code> schema, not every query your app makes, and a report is not a penetration test. If something looks wrong, <a href="mailto:manraj@patchlabs.dev?subject=Report%20question">email the founder</a> with the check link.</p></div>
+<div class="callout limit"><p>The lab is only as complete as the migrations in your repo. Policies or tables created by hand in the Supabase dashboard, and never saved as a migration, are invisible to us. The lab tests read access to tables in the <code>public</code> schema, not every query your app makes. Code findings are pattern checks that point at a line for a person to judge; the dependency check is reported as skipped if the OSV database can’t be reached. A report is not a penetration test. If something looks wrong, <a href="mailto:manraj@patchlabs.dev?subject=Report%20question">email the founder</a> with the check link.</p></div>

@@ -1,0 +1,130 @@
+title: Firebase security rules basics: lock down Firestore and Storage
+description: How Firestore and Cloud Storage security rules work, why test-mode rules leak, owner-only rules you can copy, and how to test them with the emulator before you deploy.
+h1: Firebase security rules basics: lock down Firestore and Storage
+navtitle: Firebase rules basics
+topic: launch
+order: 2
+short: Why test-mode rules leak, owner-only rules to copy, and emulator tests as visitor, stranger and owner.
+lede: Firebase security rules are the only thing deciding who can read and write your Firestore, Realtime Database and Cloud Storage data, because your app’s Firebase config is public by design. Replace any <code>if true</code> or test-mode <code>request.time &lt; …</code> rule with rules that compare <code>request.auth.uid</code> with the document’s owner, and test them in the emulator as a visitor, a stranger and the owner before deploying.
+tldr: Your <code>apiKey</code> and <code>projectId</code> are public. Rules are your security. || Test mode opens everything for 30 days. <code>if request.auth != null</code> opens everything to anyone who signs up. || Match on ownership: <code>request.auth.uid == userId</code>, or <code>resource.data.ownerId == request.auth.uid</code>. || Test with <code>@firebase/rules-unit-testing</code> and the emulator; keep the rules in your repo and deploy from there.
+findings: PL-025, PL-002
+---
+<h2 id="why">Why rules are your whole security model</h2>
+<p>A Firebase web app talks to Firestore, Realtime Database and Cloud Storage directly from the browser using a config object with an <code>apiKey</code>. That key identifies your project; it doesn’t grant access, and it isn’t secret. Anyone can copy it from your site and use the Firebase SDK against your project. What they can do is decided entirely by your security rules, evaluated by Google’s servers on every request.</p>
+<p>Firebase Admin SDKs on servers bypass rules, the same way Supabase’s service role key bypasses RLS, so admin credentials must never reach the browser either.</p>
+
+<h2 id="dangerous">The rules that leak</h2>
+[[CODE firestore.rules: three ways to be open]]
+// 1. Open to everyone, forever
+allow read, write: if true;
+
+// 2. "Test mode": open to everyone until the date
+allow read, write: if request.time < timestamp.date(2026, 12, 31);
+
+// 3. Open to anyone who signs up
+allow read, write: if request.auth != null;
+[[/CODE]]
+<p>Test mode is what the Firebase console offers when you create a database, so you can build without rules for 30 days. Apps ship with it, or the date gets pushed forward when it expires and the app stops working. The third form is Firebase’s version of <a href="/findings/pl-002">PL-002</a>: if anyone can create an account, “signed in” means anyone.</p>
+<p>Realtime Database uses JSON rules; the equivalent of rule 1 is <code>{"rules": {".read": true, ".write": true}}</code>.</p>
+
+<h2 id="how">How rules evaluate</h2>
+<ul>
+  <li><strong><code>match</code></strong> blocks select document paths. <code>{userId}</code> captures a path segment; <code>{document=**}</code> matches everything below.</li>
+  <li><strong><code>allow</code></strong> grants an operation if its condition is true: <code>read</code> (or <code>get</code> and <code>list</code>) and <code>write</code> (or <code>create</code>, <code>update</code>, <code>delete</code>).</li>
+  <li>If <em>any</em> matching <code>allow</code> is true, the request is allowed. A broad <code>{document=**}</code> rule overrides careful rules elsewhere.</li>
+  <li><code>request.auth</code> is the signed-in user (or null). <code>resource.data</code> is the document as stored; <code>request.resource.data</code> is the document as it would be after a write.</li>
+  <li>Rules are not filters: a query must ask only for documents the rules allow, or the whole query is refused. Query with <code>where('ownerId', '==', uid)</code> to match an ownership rule.</li>
+</ul>
+
+<h2 id="owner-rules">Owner-only rules to start from</h2>
+[[CODE firestore.rules]]
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // A user's own profile, keyed by their uid
+    match /users/{userId} {
+      allow read, update, delete: if isOwner(userId);
+      allow create: if isOwner(userId);
+    }
+
+    // Documents with an ownerId field
+    match /notes/{noteId} {
+      allow read, delete: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      // Owners can edit, but can't hand the note to someone else
+      allow update: if isOwner(resource.data.ownerId)
+        && request.resource.data.ownerId == resource.data.ownerId;
+    }
+
+    // Public to read, written only by the author
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isOwner(request.resource.data.authorId);
+      allow update, delete: if isOwner(resource.data.authorId);
+    }
+  }
+}
+[[/CODE]]
+<p>Anything not matched is denied, so there is no need for a catch-all. Never store a role on a document the user can update; for admins, use custom claims set from a server with the Admin SDK and check <code>request.auth.token.admin == true</code>.</p>
+[[CODE storage.rules]]
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Each user reads and writes only under users/<their uid>/
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+[[/CODE]]
+
+<h2 id="test">Test the rules before you deploy</h2>
+<p>The emulator runs your rules locally, and <code>@firebase/rules-unit-testing</code> lets you act as any user. This test seeds one private document, then checks a visitor and a stranger are refused while the owner can still read:</p>
+[[CODE rules.test.mjs]]
+// npm i -D firebase @firebase/rules-unit-testing
+// run: firebase emulators:exec --only firestore "node rules.test.mjs"
+import { readFileSync } from 'node:fs';
+import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+const env = await initializeTestEnvironment({
+  projectId: 'demo-rules-check',
+  firestore: { rules: readFileSync('firestore.rules', 'utf8') },
+});
+await env.withSecurityRulesDisabled(async (ctx) => {
+  await setDoc(doc(ctx.firestore(), 'users/owner'), { email: 'owner@example.com' });
+});
+
+const visitor = env.unauthenticatedContext().firestore();
+const stranger = env.authenticatedContext('stranger').firestore();
+const owner = env.authenticatedContext('owner').firestore();
+
+await assertFails(getDoc(doc(visitor, 'users/owner')));
+await assertFails(getDoc(doc(stranger, 'users/owner')));
+await assertSucceeds(getDoc(doc(owner, 'users/owner')));
+await assertFails(setDoc(doc(stranger, 'users/owner'), { email: 'x' }));
+console.log('rules pass: visitor and stranger denied, owner reads');
+await env.cleanup();
+[[/CODE]]
+<p>A <code>demo-</code> project id keeps the emulator fully offline. Run the test in CI so a later change can’t quietly reopen the database.</p>
+
+<h2 id="deploy">Keep rules in the repo, deploy from the repo</h2>
+<p>Rules edited in the Firebase console and never copied back drift away from what your repo says, and from what anyone reviewing the repo will see. Keep <code>firestore.rules</code> and <code>storage.rules</code> in the repo, referenced from <code>firebase.json</code>, and deploy with:</p>
+[[CODE terminal]]
+firebase deploy --only firestore:rules,storage
+[[/CODE]]
+<p>The console’s Rules Playground is handy for one-off checks, but it doesn’t replace a test that runs on every change.</p>
+
+<h2 id="app-check">App Check is not a rule</h2>
+<p>Firebase App Check makes it harder for scripts outside your app to call your backend. It is a useful extra layer, but a determined attacker can still act through your real app, so it doesn’t make open rules safe. Fix the rules first.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://firebase.google.com/docs/rules">Firebase: Security Rules</a></li>
+  <li><a href="https://firebase.google.com/docs/firestore/security/get-started">Firebase: get started with Cloud Firestore rules</a></li>
+  <li><a href="https://firebase.google.com/docs/rules/unit-tests">Firebase: build unit tests for rules</a></li>
+</ul>

@@ -1,0 +1,203 @@
+<!--
+title: PL-021 Payment webhook doesn't verify its signature | PatchLabs findings
+description: PL-021: a Stripe, Lemon Squeezy or Paddle webhook handler trusts the request body without verifying the signature. The Supabase Edge Function fix with constructEventAsync.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-021: Payment webhook doesn't verify its signature","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Lab · database</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Code · repo</h2>
+      <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021" aria-current="page"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-021</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-021</span><span class="pill sev-high">high</span><span class="pill plain">Code</span></div>
+        <h1>Payment webhook doesn't verify its signature</h1>
+        <p class="lede">Anyone can send your app a fake 'payment succeeded' event and get the paid plan for free.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>High</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Anyone who finds the webhook URL</dd></div>
+          <div><dt>Found by</dt><dd><a href="/product/code">PatchLabs Code</a>: webhook handlers in functions and API routes</dd></div>
+          <div><dt>Lab proof</dt><dd>Not lab-proven: file and line in the report</dd></div>
+        </dl>
+      </header>
+      
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>A payment webhook tells your app that money moved: "checkout completed, give this user the Pro plan". Payment providers sign every webhook with a secret only you and they know; Stripe puts the signature in the <code>Stripe-Signature</code> header. PL-021 means the handler reads the event from the body and acts on it without checking that signature. Anyone who knows the URL can then post a hand-written <code>checkout.session.completed</code> event and upgrade any account, add credits or mark orders paid.</p>
+<p>Webhook functions have to accept calls without a Supabase sign-in, because the provider has no user token, so they normally run with <code>verify_jwt = false</code>. That is correct, but it leaves the signature as the only thing between the URL and your database.</p>
+      
+
+      <h2 id="why"><span class="lab" aria-hidden="true">Cause</span>Why AI builders produce it</h2>
+      <p>The generated handler parses JSON and switches on <code>event.type</code>, which is how simplified webhook examples look. Verifying needs the <em>raw</em> request body, so code that calls <code>req.json()</code> first can't verify at all. And Node examples use <code>constructEvent</code>, while in an Edge Function Stripe's library needs <code>constructEventAsync</code> with its Web Crypto provider; when the copied version errors, deleting the check gets the function deploying.</p>
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/functions/stripe-webhook/index.ts (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">// supabase/functions/stripe-webhook/index.ts</span>
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+Deno.serve(async (req) =&gt; {
+  const event = await req.json();  // trusted as-is: anyone can send this
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const admin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    await admin.from('profiles')
+      .update({ plan: 'pro' })
+      .eq('id', session.client_reference_id);
+  }
+  return new Response('ok');
+});</code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-021.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c"># Webhook handlers that never verify a signature</span>
+grep -rlE "checkout\.session\.completed|invoice\.paid|customer\.subscription" \
+  supabase/functions src app pages 2&gt;/dev/null | xargs grep -L "constructEvent"
+
+<span class="c"># Send an unsigned fake event to your local function (supabase functions serve)</span>
+curl -i -X POST http://127.0.0.1:54321/functions/v1/stripe-webhook \
+  -H "Content-Type: application/json" \
+  -d '{"type":"checkout.session.completed","data":{"object":{"client_reference_id":"test"}}}'
+<span class="c"># Expect 400. A 200 means anyone can fake a payment.</span></code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
+      <p>Read the raw body, verify it with your webhook signing secret, and only then trust the event.</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/functions/stripe-webhook/index.ts (fixed)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>import Stripe from 'npm:stripe@17';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
+
+Deno.serve(async (req) =&gt; {
+  const signature = req.headers.get('Stripe-Signature');
+  if (!signature) return new Response('Missing signature', { status: 400 });
+
+  const body = await req.text();  // the raw body: parsing it first breaks the check
+  let event: Stripe.Event;
+  try {
+    event = await stripe.webhooks.constructEventAsync(
+      body, signature, Deno.env.get('STRIPE_WEBHOOK_SECRET')!,
+      undefined, cryptoProvider,
+    );
+  } catch (_err) {
+    return new Response('Invalid signature', { status: 400 });
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const admin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    await admin.from('profiles')
+      .update({ plan: 'pro' })
+      .eq('id', session.client_reference_id);
+  }
+  return Response.json({ received: true });
+});</code></pre>
+</div><p>Store <code>STRIPE_WEBHOOK_SECRET</code> (it starts <code>whsec_</code>) with <code>supabase secrets set</code>. Stripe can deliver the same event more than once, so record <code>event.id</code> and skip events you've already handled. Lemon Squeezy and Paddle sign their webhooks too; verify with their documented method before acting.</p>
+      <p class="small muted">Code findings come with the file, the line and a one-line fix in the report, for your engineer to make. PatchLabs never pushes to your repo.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">code scan · report excerpt</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[SCAN]</span>    stripe-webhook/index.ts:5</span>
+<span class="ln">          event read, never verified  <span class="leak">LEAK</span></span>
+<span class="ln"><span class="step">[FIX]</span>     constructEventAsync + secret</span>
+<span class="ln"><span class="step">[RESCAN]</span>  signature verified        <span class="ok">OK</span></span>
+</pre>
+  <div class="window-foot"><span class="pill plain">synthetic example</span><span>Report excerpt · read from the repo, not lab-proven</span></div>
+</div>
+      <p>PatchLabs Code looks for payment webhook handlers (Stripe, Lemon Squeezy and Paddle) in Edge Functions and API routes, and flags those that read the request body without a signature check. It never sends events to your app. The report gives the file and line where the body is read.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>Never, for payments. If a provider really doesn't sign its webhooks, treat the webhook as a hint only: fetch the payment from the provider's API with your secret key and act on what the API says.</p>
+
+      <h2 id="severity"><span class="lab" aria-hidden="true">Rate</span>Why it’s rated high</h2>
+      <p>High: free upgrades and direct revenue loss for anyone who finds a URL that is often guessable (<code>stripe-webhook</code>). Not critical by default, because it doesn't expose other users' data.</p>
+
+      
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-017"><span class="n-big">PL-017</span><h3>Edge function open without sign-in while using the service key</h3><p class="small">A server function holding the key that ignores every rule, with nothing checking who is calling it.</p></a><a class="card link" href="/findings/pl-022"><span class="n-big">PL-022</span><h3>Edge function trusts a user id sent in the request</h3><p class="small">The function acts on whichever user id the request names, so any user can act as any other.</p></a><a class="card link" href="/findings/pl-011"><span class="n-big">PL-011</span><h3>Key still in git history</h3><p class="small">You deleted the key. Every old commit still has it, and so does every clone and fork.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/stripe-webhook-supabase-edge-function">Verify Stripe webhook signatures in a Supabase Edge Function</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your app have PL-021?</h2>
+        <p>Paste your public repo. PatchLabs Code reads it for this and every other code finding, and the Lab rebuilds your database to test who can read what.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f021">Public GitHub repo</label>
+            <input id="repo-f021" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f021">Your email</label>
+            <input id="email-f021" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-021">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-020"><span>Previous · PL-020</span>Admin check only in the browser</a><a class="next" href="/findings/pl-022"><span>Next · PL-022</span>Edge function trusts a user id sent in the request</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">The proof</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

@@ -1,0 +1,189 @@
+<!--
+title: user_metadata vs app_metadata: where to store roles in Supabase | PatchLabs
+description: Users can edit their own Supabase user_metadata, so never use it for roles. How app_metadata and a roles table work, with policies, server code and a fix for existing apps.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"user_metadata vs app_metadata: where to store roles in Supabase","description":"Users can edit their own Supabase user_metadata, so never use it for roles. How app_metadata and a roles table work, with policies, server code and a fix for existing apps.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/user-metadata-vs-app-metadata"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"user_metadata vs app_metadata: where to store roles in Supabase","item":"https://patchlabs.dev/learn/user-metadata-vs-app-metadata"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata" aria-current="page">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">user_metadata vs app_metadata</li></ol></nav>
+      <p class="lab">Auth and server code</p>
+      <h1>user_metadata vs app_metadata: where to store roles in Supabase</h1>
+      <p class="lede">Never store roles, plans or anything that grants access in Supabase’s <code>user_metadata</code>: every user can change their own with one call from the browser. Use <code>app_metadata</code>, which only your server can write, or a roles table that users can’t write, and check that in your policies.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li><code>user_metadata</code> (<code>raw_user_meta_data</code>) is set by the user, at sign-up and later with <code>updateUser</code>. Fine for a name or avatar.</li><li><code>app_metadata</code> (<code>raw_app_meta_data</code>) needs the service role key to change. Fine for a role that rarely changes.</li><li>A roles table plus a <code>has_role()</code> helper takes effect immediately and is easier to audit.</li><li>Both metadata objects are in the JWT, so a policy can read either: make sure it reads the right one.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#difference">The difference in one table</a></li><li><a href="#attack">What “users can edit it” means in practice</a></li><li><a href="#find">Find it in your project</a></li><li><a href="#option-a">Option A: app_metadata</a></li><li><a href="#option-b">Option B: a roles table and has_role()</a></li><li><a href="#migrate">Fixing an app that already uses user_metadata</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="difference">The difference in one table</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col"></th><th scope="col">user_metadata</th><th scope="col">app_metadata</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Stored as</th><td><code>auth.users.raw_user_meta_data</code></td><td><code>auth.users.raw_app_meta_data</code></td></tr>
+    <tr><th scope="row">Who can change it</th><td>The user: <code>signUp({ options: { data } })</code>, <code>updateUser({ data })</code></td><td>Your server, with the service role key: <code>auth.admin.updateUserById</code></td></tr>
+    <tr><th scope="row">In the JWT as</th><td><code>user_metadata</code></td><td><code>app_metadata</code></td></tr>
+    <tr><th scope="row">Use for</th><td>Display name, avatar URL, language</td><td>Role, tenant id, anything the user mustn’t choose</td></tr>
+  </tbody>
+</table></div>
+<p>The names are easy to mix up and both objects show up in <code>supabase.auth.getUser()</code> and in the access token, which is exactly why the wrong one gets used.</p>
+
+<h2 id="attack">What “users can edit it” means in practice</h2>
+<p>Suppose a policy grants admins access like this:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_admin_policy.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Admins read all profiles" on public.profiles
+  for select to authenticated
+  using ((auth.jwt() -&gt; 'user_metadata' -&gt;&gt; 'role') = 'admin');</code></pre></div>
+<p>Any signed-in user can open the browser console on your site and run:</p>
+<div class="code"><div class="code-bar"><span class="name">browser console</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>await supabase.auth.updateUser({ data: { role: 'admin' } });
+await supabase.auth.refreshSession();  // the new token says role: admin</code></pre></div>
+<p>From then on the policy treats them as an admin. The same goes for frontend checks like <code>user.user_metadata.role === 'admin'</code> (<a href="/findings/pl-020">PL-020</a>), and for a sign-up trigger that copies <code>raw_user_meta_data -&gt;&gt; 'role'</code> into a profile’s role column, where the attacker simply passes <code>options: { data: { role: 'admin' } }</code> when signing up.</p>
+
+<h2 id="find">Find it in your project</h2>
+<div class="code"><div class="code-bar"><span class="name">find-user-metadata.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Policies that read user_metadata</span>
+select schemaname, tablename, policyname, qual, with_check
+from pg_policies
+where coalesce(qual, '') ilike '%user_metadata%'
+   or coalesce(with_check, '') ilike '%user_metadata%';
+
+<span class="c">-- Your functions and triggers that read raw_user_meta_data</span>
+select n.nspname, p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname not in ('pg_catalog', 'information_schema', 'auth', 'storage')
+  and p.prosrc ilike '%raw_user_meta_data%';</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">find-in-code.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rnE "user_?metadata" src supabase/functions</code></pre></div>
+<p>Copying a name or avatar from metadata is fine. Look for role, admin, plan, tier, credits, permissions or anything shaped like them. Supabase’s Security Advisor flags the policy form as lint <code>0015 rls_references_user_metadata</code>.</p>
+
+<h2 id="option-a">Option A: app_metadata</h2>
+<p>Good for a small, stable set of roles. Set it from a server, never from the browser:</p>
+<div class="code"><div class="code-bar"><span class="name">scripts/make-admin.ts (run on your machine or a server)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>import { createClient } from '@supabase/supabase-js';
+
+const admin = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,  // server only
+);
+
+const userId = process.argv[2];
+const { error } = await admin.auth.admin.updateUserById(userId, {
+  app_metadata: { role: 'admin' },
+});
+if (error) throw error;
+console.log('role set; it reaches the token on the next refresh');</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_admin_policy.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Admins read all profiles" on public.profiles
+  for select to authenticated
+  using ((auth.jwt() -&gt; 'app_metadata' -&gt;&gt; 'role') = 'admin');</code></pre></div>
+<p>One trade-off: the role lives in the token, so a change (granting or removing admin) takes effect when the user’s token refreshes, which by default is within an hour. Signing the user out revokes their refresh tokens, but an access token already issued stays valid until it expires, so if you need removal to be instant, use Option B.</p>
+
+<h2 id="option-b">Option B: a roles table and has_role()</h2>
+<p>Better when roles change often or you need an audit trail, and it takes effect on the next query. The table must not be writable by users (that’s <a href="/findings/pl-013">PL-013</a>):</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_roles.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create type public.app_role as enum ('admin', 'moderator', 'user');
+
+create table public.user_roles (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  role public.app_role not null,
+  primary key (user_id, role)
+);
+alter table public.user_roles enable row level security;
+
+<span class="c">-- Users may see their own roles; nobody may write them through the API</span>
+create policy "Users read own roles" on public.user_roles
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+<span class="c">-- A helper for policies. security definer so it can read user_roles</span>
+<span class="c">-- without recursion; it only ever answers about the caller.</span>
+create or replace function public.has_role(_role public.app_role)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = (select auth.uid()) and role = _role
+  );
+$$;
+revoke execute on function public.has_role(public.app_role) from public, anon;
+grant execute on function public.has_role(public.app_role) to authenticated;
+
+create policy "Admins read all profiles" on public.profiles
+  for select to authenticated
+  using ((select public.has_role('admin')));</code></pre></div>
+<p>Grant roles from the SQL editor or a server with the service role key: <code>insert into public.user_roles values ('&lt;user id&gt;', 'admin');</code>. In the app, decide what to show with <code>supabase.rpc('has_role', { _role: 'admin' })</code>, and remember that the database rule, not the UI, is the security.</p>
+
+<h2 id="migrate">Fixing an app that already uses user_metadata</h2>
+<ol>
+  <li>Create the roles table (or decide on <code>app_metadata</code>) and copy over the users who should really be admins, checked by hand. Don’t copy everyone with <code>role = 'admin'</code> in their metadata: some may have given it to themselves.</li>
+  <li>Replace every policy, trigger and function that reads a role from <code>user_metadata</code>.</li>
+  <li>Change the sign-up trigger to always create the default role.</li>
+  <li>Change frontend checks to use the new source.</li>
+  <li>Test as a normal user who has set <code>{ role: 'admin' }</code> in their own metadata: they should get nothing extra.</li>
+</ol>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/auth/managing-user-data">Supabase: user management and metadata</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac">Supabase: custom claims and role-based access control</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors (lint 0015)</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-019"><span class="n-big">PL-019</span><h3>Access decided by user_metadata, which users can edit</h3></a><a class="card link" href="/findings/pl-013"><span class="n-big">PL-013 · coming</span><h3>Users can make themselves admin</h3></a><a class="card link" href="/findings/pl-020"><span class="n-big">PL-020</span><h3>Admin check only in the browser</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-user-metadata-vs-a">Public GitHub repo</label>
+            <input id="repo-l-user-metadata-vs-a" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-user-metadata-vs-a">Your email</label>
+            <input id="email-l-user-metadata-vs-a" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never connects to your live app or database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20user-metadata-vs-app-metadata">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/supabase-realtime-security" rel="prev"><span>Previous guide</span>Supabase Realtime security: keep private rows out of subscriptions</a><a class="next" href="/learn/secure-supabase-edge-functions" rel="next"><span>Next guide</span>How to secure Supabase Edge Functions</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#difference">The difference in one table</a></li><li><a href="#attack">What “users can edit it” means in practice</a></li><li><a href="#find">Find it in your project</a></li><li><a href="#option-a">Option A: app_metadata</a></li><li><a href="#option-b">Option B: a roles table and has_role()</a></li><li><a href="#migrate">Fixing an app that already uses user_metadata</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

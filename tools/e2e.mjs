@@ -285,7 +285,7 @@ await step('worker finishes the re-check; app page refreshes by itself with new 
 await step('run limit reached shows the 429 message with an upgrade link', p, async () => {
   await http(`/admin/workspaces/${S.wid}`, { method: 'PATCH', headers: A, body: { run_limit: 1 } });
   await p.click('#run');
-  await p.waitText('runs this month', '#runmsg');
+  await p.waitText(' this month on the ', '#runmsg');
   assert(await p.eval(`!!document.querySelector('#runmsg a[href="/app/settings#plan"]')`), 'upgrade link');
   await http(`/admin/workspaces/${S.wid}`, { method: 'PATCH', headers: A, body: { run_limit: null } });
 }, { allow: ['HTTP 429'] });
@@ -365,7 +365,7 @@ await step('settings: profile name, free plan seat limit blocks invites, upgrade
   await p.goto('/app/settings');
   await p.type('#p-name', 'Olive Owner'); await p.click('#p-save');
   await p.waitText('Name saved', '.toast-host');
-  await p.waitText('All 1 seat', '#team');
+  await p.waitText('The 1 seat', '#team');
   await p.select('#u-plan', 'maker');
   await p.type('#u-note', 'Need a second seat for a teammate (e2e).');
   await p.click('#u-go');

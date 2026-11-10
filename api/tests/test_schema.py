@@ -55,3 +55,11 @@ def test_schema_has_no_destructive_statements():
     s = open(os.path.join(ROOT, "db", "schema.sql")).read().upper()
     for bad in ("DROP TABLE", "DROP COLUMN", "TRUNCATE", "DELETE FROM", "ALTER COLUMN"):
         assert bad not in s
+
+
+def test_dockerfile_ships_every_api_module():
+    import glob, re
+    docker = open(os.path.join(ROOT, "api", "Dockerfile")).read()
+    shipped = set(re.findall(r"api/(\w+\.py)", docker))
+    modules = {os.path.basename(p) for p in glob.glob(os.path.join(ROOT, "api", "*.py"))}
+    assert modules <= shipped, modules - shipped

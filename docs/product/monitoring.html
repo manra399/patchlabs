@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monitoring: scheduled re-checks and new-leak alerts | PatchLabs</title>
-<meta name="description" content="PatchLabs re-checks your app on a schedule, compares each run with the last, and alerts your team only when a new leak appears. Email, Slack-ready webhooks and CI.">
+<title>Monitoring has moved | PatchLabs</title>
+<meta name="description" content="Monitoring, now PatchLabs Watch, now lives at /product/watch.">
 <link rel="canonical" href="https://patchlabs.dev/product/monitoring">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
-<meta property="og:title" content="Monitoring: scheduled re-checks and new-leak alerts | PatchLabs">
-<meta property="og:description" content="PatchLabs re-checks your app on a schedule, compares each run with the last, and alerts your team only when a new leak appears. Email, Slack-ready webhooks and CI.">
+<meta property="og:title" content="Monitoring has moved | PatchLabs">
+<meta property="og:description" content="Monitoring, now PatchLabs Watch, now lives at /product/watch.">
 <meta property="og:url" content="https://patchlabs.dev/product/monitoring">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Monitoring: scheduled re-checks and new-leak alerts | PatchLabs">
-<meta name="twitter:description" content="PatchLabs re-checks your app on a schedule, compares each run with the last, and alerts your team only when a new leak appears. Email, Slack-ready webhooks and CI.">
+<meta name="twitter:title" content="Monitoring has moved | PatchLabs">
+<meta name="twitter:description" content="Monitoring, now PatchLabs Watch, now lives at /product/watch.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -31,331 +31,16 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
-<link rel="stylesheet" href="/assets/pages/A-product.css">
+<meta http-equiv="refresh" content="0; url=/product/watch"><meta name="robots" content="noindex">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<header class="site-header">
-  <div class="wrap">
-    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
-    <nav class="nav" id="site-nav" aria-label="Main">
-      <details class="dd">
-        <summary>Product <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-        <div class="dd-panel">
-          <a href="/product/leak-lab"><b>Leak lab</b><span>Rebuild your database, find who can read what, prove the fix.</span></a>
-          <a href="/product/key-scan"><b>Key scan</b><span>Exposed AI, payment and database keys in code and full git history.</span></a>
-          <a href="/product/monitoring" aria-current="page"><b>Monitoring</b><span>Scheduled re-checks and alerts when a new leak appears.</span></a>
-          <a href="/product/badge"><b>Badge &amp; proof page</b><span>A dated, public record of your last passing check.</span></a>
-          <a href="/agencies"><b>Agencies</b><span>Keep every client app you ship checked after handover.</span></a>
-          <a href="/tools"><b>Free tools</b><span>RLS check for your migrations and a leak-cost calculator. No sign-up.</span></a>
-          <a href="/sample-report"><b>Sample proof report</b><span>A real report from our deliberately leaky demo app.</span></a>
-          <a href="/findings"><b>Finding index</b><span>Every finding we report, PL-001 to PL-011, with the fix.</span></a>
-          <p class="dd-foot">Works with apps built on <a href="/for/lovable">Lovable</a>, <a href="/for/supabase">Supabase</a>, <a href="/for/bolt">Bolt</a>, <a href="/for/replit">Replit</a> and <a href="/for/cursor">Cursor</a>.</p>
-        </div>
-      </details>
-      <a href="/how-it-works">How it works</a>
-      <a href="/research/1-in-4">Research</a>
-      <a href="/pricing">Pricing</a>
-      <a href="/docs">Docs</a>
-    </nav>
-    <div class="nav-right">
-      <a class="urgent" href="/leaking-now">Leaking right now?</a>
-      <a class="signin" href="/app/login">Sign in</a>
-      <a class="btn primary small" href="/#check">Check my app free</a>
-    </div>
-    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
-  </div>
-</header>
-
-<main id="main">
-
-<section class="hero p-hero">
-  <div class="wrap hero-grid">
-    <div>
-      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/how-it-works">Product</a></li><li aria-current="page">Monitoring</li></ol></nav>
-      <p class="lab">Monitoring</p>
-      <h1>The next prompt can reopen the leak. Re-checks catch it.</h1>
-      <p class="lede">AI builders change your database every time you ask for a feature. PatchLabs re-checks each app on a schedule, compares the result with the last run, and tells your team only when something new can be read.</p>
-      <div class="row cta"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/app/login">Sign in to monitor</a></div>
-      <p class="meta-line">Monthly on Free · weekly or monthly on paid plans</p>
-    </div>
-    <figure class="figure">
-      <div class="mock">
-        <div class="mock-bar"><span>app · <b>you/your-app</b></span><span class="pill proven">no leaks found</span></div>
-        <div class="mock-body">
-          <p class="lab mb-2">Since the last check</p>
-          <div class="diff3">
-            <div><span class="k">New leaks</span><span class="v">none</span></div>
-            <div class="fixed"><span class="k">Fixed</span><span class="v">profiles</span></div>
-            <div><span class="k">Still leaking</span><span class="v">none</span></div>
-          </div>
-          <p class="lab mt-3 mb-1">History</p>
-          <ul class="tl">
-            <li><span class="d">re-check</span><span class="t">Scheduled<small>weekly</small></span><span class="pill proven">no leaks found</span></li>
-            <li><span class="d">run now</span><span class="t">Manual, after the fix was merged<small>you</small></span><span class="pill proven">no leaks found</span></li>
-            <li><span class="d">first check</span><span class="t">Leak in <code>profiles</code>, fix proven<small>after verification</small></span><span class="pill leak">leak found</span></li>
-          </ul>
-        </div>
-        <div class="mock-foot">Example app page · illustrative, not a real customer</div>
-      </div>
-      <figcaption>What the app page shows: the diff between the last two checks and the run history, each linking to its report and signed receipt.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- Schedule -->
-<section class="sec band" aria-labelledby="sch-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="lab">Schedule</p>
-      <h2 id="sch-h">Re-checks run on their own. Run one any time.</h2>
-      <p>Every verified app gets a schedule. Due checks are queued automatically, and “Run now” queues one immediately, for example right after you merge a fix.</p>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <caption class="sr-only">Re-check schedules and limits by plan</caption>
-        <thead><tr><th scope="col">Plan</th><th scope="col">Apps</th><th scope="col">Re-check schedule</th><th scope="col" class="num">Manual and API runs a month</th><th scope="col">Price</th></tr></thead>
-        <tbody>
-          <tr><th scope="row">Free</th><td>1</td><td>Monthly</td><td class="num">4</td><td>£0</td></tr>
-          <tr><th scope="row">Maker</th><td>3</td><td>Weekly or monthly</td><td class="num">30</td><td>£19 / month</td></tr>
-          <tr><th scope="row">Agency</th><td>10<span class="cell-note">+£8 per extra app</span></td><td>Weekly or monthly</td><td class="num">200</td><td>£99 / month</td></tr>
-          <tr><th scope="row">Enterprise</th><td colspan="3">Set with you</td><td>Custom</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="small muted mt-2">Weekly means every 7 days from the last scheduled run, monthly every 30. Scheduled re-checks don’t count towards the run limit and keep running if you reach it; manual and CI runs do count. Paid plans: request access and we reply within a day; card payments aren’t live yet. <a href="/pricing">Pricing</a>.</p>
-  </div>
-</section>
-
-<!-- Diff & alerts -->
-<section class="sec" aria-labelledby="diff-h">
-  <div class="wrap split top">
-    <div>
-      <p class="lab red">Alerts</p>
-      <h2 id="diff-h">An alert means something new. Not the same leak again.</h2>
-      <p class="lede">Each finished check is compared with the previous one, table by table. Your team hears about new leaks loudly and everything else quietly.</p>
-      <dl class="kv mt-4">
-        <dt><span class="pill leak">new</span></dt><dd>Readable now, not readable last time. The email subject says “New leak found”.</dd>
-        <dt><span class="pill proven">fixed</span></dt><dd>Readable last time, closed now.</dd>
-        <dt><span class="pill plain">still</span></dt><dd>Still readable. Listed, without a new-leak alert.</dd>
-        <dt><span class="pill neutral">intended</span></dt><dd>Your team marked these tables as meant to be readable. Never alerted on.</dd>
-      </dl>
-      <div class="callout note mt-3"><p><strong>Dismissals stick.</strong> Marking a table as intended is remembered for the app until someone approves the fix for it again. The decision, and who made it, goes into the signed receipt.</p></div>
-    </div>
-    <div class="stack">
-      <div class="code">
-        <div class="code-bar"><span class="name">email to every workspace member</span></div>
-<pre class="wrap-lines"><code><span class="kw">Subject:</span> New leak found in you/your-app (Client A)
-
-Your PatchLabs check of you/your-app (Client A) has finished:
-leaks found and a tested fix is ready.
-
-New leaks since the last check: bookings
-Fixed since the last check: profiles
-Marked as intended by your team (no alert): listings
-
-See the report and the fix:
-https://patchlabs.dev/check?id=…</code></pre>
-      </div>
-      <p class="small muted mb-0">Wording as the API sends it. Repo, client label and tables are examples.</p>
-    </div>
-  </div>
-</section>
-
-<!-- Webhooks -->
-<section class="sec band" aria-labelledby="wh-h">
-  <div class="wrap split top">
-    <div>
-      <p class="lab">Webhooks</p>
-      <h2 id="wh-h">Straight into Slack, or anything that takes a POST.</h2>
-      <p class="lede">Paste one https URL in workspace settings. Every finished check sends a JSON event with a <code>text</code> line, so a Slack incoming webhook works with no code at all.</p>
-      <ul class="ticks mt-3">
-        <li><span>A “Send test event” button in settings shows the status code you got back</span></li>
-        <li><span>Private and loopback addresses are refused</span></li>
-        <li><span>A broken webhook never loses the check: the email still goes out</span></li>
-      </ul>
-    </div>
-    <div class="code">
-      <div class="code-bar"><span class="name">POST your-webhook-url · check.finished</span><button class="copy" type="button" data-copy>Copy</button></div>
-<pre class="scroll"><code>{
-  <span class="s">"event"</span>: <span class="s">"check.finished"</span>,
-  <span class="s">"text"</span>: <span class="s">"PatchLabs: you/your-app (Client A): leaks found and a tested fix is ready. https://patchlabs.dev/check?id=…"</span>,
-  <span class="s">"check"</span>: {
-    <span class="s">"id"</span>: <span class="s">"…"</span>,
-    <span class="s">"app_id"</span>: <span class="s">"…"</span>,
-    <span class="s">"repo"</span>: <span class="s">"you/your-app"</span>,
-    <span class="s">"status"</span>: <span class="s">"done"</span>,
-    <span class="s">"tables_leaking"</span>: [<span class="s">"bookings"</span>],
-    <span class="s">"new_leaks"</span>: [<span class="s">"bookings"</span>],
-    <span class="s">"fixed"</span>: [<span class="s">"profiles"</span>],
-    <span class="s">"suppressed"</span>: [<span class="s">"listings"</span>],
-    <span class="s">"url"</span>: <span class="s">"https://patchlabs.dev/check?id=…"</span>
-  }
-}</code></pre>
-    </div>
-  </div>
-</section>
-
-<!-- CI -->
-<section class="sec" aria-labelledby="ci-h">
-  <div class="wrap split top">
-    <div>
-      <p class="lab">CI</p>
-      <h2 id="ci-h">Re-check every time a migration lands on main.</h2>
-      <p class="lede">Create an API key in workspace settings and add this workflow. It queues a check when a migration is merged, waits for the result and fails the build if anything is leaking.</p>
-      <div class="callout limit mt-3"><p>Checks read your default branch, so this runs after the merge, not on the pull request. Re-proving every pull request before merge needs our GitHub App, which is coming.</p></div>
-      <p class="small muted">API keys, webhooks and CI work on every plan, including Free. Each CI run counts as one of your monthly runs. <a href="/docs/api">API reference</a>.</p>
-    </div>
-    <div class="code">
-      <div class="code-bar"><span class="name">.github/workflows/patchlabs.yml</span><button class="copy" type="button" data-copy>Copy</button></div>
-<pre class="scroll"><code><span class="kw">name:</span> PatchLabs re-check
-<span class="kw">on:</span>
-  <span class="kw">push:</span>
-    <span class="kw">branches:</span> [main]
-    <span class="kw">paths:</span> [<span class="s">'supabase/migrations/**'</span>]
-<span class="kw">jobs:</span>
-  <span class="kw">recheck:</span>
-    <span class="kw">runs-on:</span> ubuntu-latest
-    <span class="kw">steps:</span>
-      - <span class="kw">name:</span> Queue a check and wait for it
-        <span class="kw">env:</span>
-          <span class="kw">PL_KEY:</span> $&#123;&#123; secrets.PATCHLABS_API_KEY &#125;&#125;
-          <span class="kw">PL_APP:</span> $&#123;&#123; vars.PATCHLABS_APP_ID &#125;&#125;
-          <span class="kw">API:</span> https://api.patchlabs.dev
-        <span class="kw">run:</span> |
-          <span class="c"># a few seconds so GitHub serves the new commit</span>
-          sleep 15
-          cid=$(curl -sf -X POST -H "X-API-Key: $PL_KEY" \
-            "$API/v1/apps/$PL_APP/checks" | jq -r .check_id)
-          for i in $(seq 1 60); do
-            sleep 30
-            r=$(curl -sf -H "X-API-Key: $PL_KEY" "$API/v1/checks/$cid")
-            [ "$(echo "$r" | jq -r .finished)" = "true" ] &amp;&amp; break
-          done
-          echo "$r" | jq '{status, tables_leaking, url}'
-          [ "$(echo "$r" | jq -r .leaks_found)" = "false" ]</code></pre>
-    </div>
-  </div>
-</section>
-
-<!-- History, badge -->
-<section class="sec band" aria-labelledby="hi-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="lab green">Evidence over time</p>
-      <h2 id="hi-h">A history you can show someone.</h2>
-    </div>
-    <div class="grid g3" data-reveal>
-      <div class="card"><span class="n-big">HISTORY</span><h3>The last 50 checks</h3><p class="small muted">Each with its trigger (scheduled, manual or API), result, and report link.</p></div>
-      <div class="card"><span class="n-big">RECEIPTS</span><h3>Signed, per check</h3><p class="small muted">Ed25519 receipts anyone can verify, including your team’s decisions and answers. <a href="/how-it-works#approval">How to verify</a>.</p></div>
-      <a class="card link" href="/product/badge"><span class="n-big">BADGE</span><h3>A public, dated status</h3><p class="small muted">Opt in to a badge for your README or site that shows the last check’s result and date.</p><div class="card-foot"><span class="link-arrow">Badge &amp; proof page</span></div></a>
-    </div>
-  </div>
-</section>
-
-<section class="sec" aria-labelledby="faq-h">
-  <div class="wrap split top">
-    <div><p class="lab">Questions</p><h2 id="faq-h">Monitoring FAQ.</h2></div>
-    <div>
-      <details class="acc"><summary>How do I start monitoring an app?</summary><div class="acc-body"><p><a href="/app/login">Sign in</a> with your email (no password), add the repo, and commit the <code>patchlabs-verify.txt</code> file the dashboard gives you. Once verified, the first check runs and the schedule starts.</p></div></details>
-      <details class="acc"><summary>What happens if a check is already running?</summary><div class="acc-body"><p>A second one isn’t queued; you’ll see a message saying one is in progress. Scheduled checks wait for the open one to finish.</p></div></details>
-      <details class="acc"><summary>Who gets the alerts?</summary><div class="acc-body"><p>Every member of the workspace, by email, plus the workspace webhook if you set one.</p></div></details>
-      <details class="acc"><summary>Can I turn re-checks off?</summary><div class="acc-body"><p>Yes. Set the app’s schedule to off and run checks only when you choose.</p></div></details>
-    </div>
-  </div>
-</section>
-
-<section class="sec tight" aria-labelledby="final-h">
-  <div class="wrap">
-    <div class="cta-panel">
-      <p class="lab">Free check</p>
-      <h2 id="final-h">Start with one check. Keep it closed with re-checks.</h2>
-      <p class="lede">Your first app is free, with a monthly re-check and email alerts.</p>
-      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
-        <div class="in"><label class="sr-only" for="repo-mon">Public GitHub repo</label><input id="repo-mon" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app"></div>
-        <div class="in"><label class="sr-only" for="email-mon">Your email</label><input id="email-mon" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
-        <button class="btn primary" type="submit">Check my app free</button>
-      </form>
-      <p class="err" role="alert" data-err></p>
-      <div class="form-meta"><span>Already checked an app? <a href="/app/login">Sign in to monitor it</a></span></div>
-    </div>
-  </div>
-</section>
-
+<main id="main" class="wrap narrow" style="padding-top:96px;padding-bottom:96px">
+  <p class="lab">Moved</p>
+  <h1 class="h2">Monitoring, now PatchLabs Watch, has moved.</h1>
+  <p class="lede">It now lives at <a href="/product/watch">patchlabs.dev/product/watch</a>. If you aren’t taken there automatically, use the link.</p>
 </main>
-
-<footer class="site-footer" id="site-footer">
-  <div class="wrap">
-    <div class="foot-top">
-      <div class="foot-brand">
-        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
-        <p>Find the leak. Prove the fix. Lab-proven fixes for apps built with AI.</p>
-        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
-      </div>
-      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul>
-        <li><a href="/product/leak-lab">Leak lab</a></li>
-        <li><a href="/product/key-scan">Key scan</a></li>
-        <li><a href="/product/monitoring">Monitoring</a></li>
-        <li><a href="/product/badge">Badge &amp; proof page</a></li>
-        <li><a href="/agencies">Agencies</a></li>
-        <li><a href="/how-it-works">How it works</a></li>
-        <li><a href="/pricing">Pricing</a></li>
-        <li><a href="/leaking-now">Leaking right now?</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-builders"><h2 id="f-builders">Builders</h2><ul>
-        <li><a href="/for/lovable">Lovable apps</a></li>
-        <li><a href="/for/supabase">Supabase apps</a></li>
-        <li><a href="/for/bolt">Bolt apps</a></li>
-        <li><a href="/for/replit">Replit apps</a></li>
-        <li><a href="/for/cursor">Cursor projects</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Research &amp; tools</h2><ul>
-        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
-        <li><a href="/research/methodology">Methodology</a></li>
-        <li><a href="/findings">Finding index</a></li>
-        <li><a href="/tools">Free tools</a></li>
-        <li><a href="/tools/rls-check">Free RLS check</a></li>
-        <li><a href="/tools/leak-cost">Leak cost calculator</a></li>
-        <li><a href="/sample-report">Sample report</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
-        <li><a href="/compare">All comparisons</a></li>
-        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
-        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
-        <li><a href="/compare/aikido">Aikido</a></li>
-        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
-        <li><a href="/compare/url-scanners">URL scanners</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
-        <li><a href="/about">About</a></li>
-        <li><a href="/changelog">Changelog</a></li>
-        <li><a href="/status">Status</a></li>
-        <li><a href="/security">Security</a></li>
-        <li><a href="/docs">Docs</a></li>
-        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
-      </ul></nav>
-      <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><ul>
-        <li><a href="/legal/terms">Terms</a></li>
-        <li><a href="/legal/privacy">Privacy</a></li>
-        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
-        <li><a href="/legal/dpa">Data processing</a></li>
-        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
-        <li><a href="/legal/cookies">Cookies (none)</a></li>
-      </ul></nav>
-    </div>
-    <div class="foot-bottom">
-      <span>© 2026 PatchLabs</span>
-      <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
-      <a href="/changelog.xml">Changelog feed</a>
-      <a href="/llms.txt">llms.txt</a>
-      <a href="/.well-known/security.txt">security.txt</a>
-      <span class="spacer"></span>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
-    </div>
-    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor. No cookies, no third-party analytics.</p>
-  </div>
-</footer>
 
 </body>
 </html>

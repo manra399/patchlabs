@@ -5,7 +5,7 @@ from helpers import A, STATE, claim, create_app, finish, link_param, outbox, sig
 def test_end_to_end_monitoring(client, local_webhooks):
     owner = sign_in(client, "owner@example.com")
     client.patch(f"/admin/workspaces/{owner.wid}", json={"plan": "maker"}, headers=A)
-    client.post(f"/workspaces/{owner.wid}/invites", json={"email": "dev@example.com"}, headers=owner.h)
+    client.post(f"/workspaces/{owner.wid}/invites", json={"email": "dev@example.com", "role": "admin"}, headers=owner.h)  # admins add apps
     dev = sign_in(client, "dev@example.com", invite=link_param(outbox("dev@example.com")[-1], "invite"))
     assert dev.finish["invite"]["accepted"]
     r = client.patch(f"/workspaces/{owner.wid}", json={"webhook_url": local_webhooks}, headers=owner.h)

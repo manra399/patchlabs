@@ -342,6 +342,7 @@ QUESTION = "Should sellers' emails be public?"
 
 def test_public_views_mask_emails_members_see_them(client):
     u, bob = team(client)
+    client.patch(f"/workspaces/{u.wid}/members/{bob.user['id']}", json={"role": "approver"}, headers=u.h)  # approvers decide
     a, cid = verified_app(client, u, wid=u.wid)
     claim(client)
     client.post(f"/worker/checks/{cid}/result", headers=W, json={"status": "done", "fix_sql": "x", "summary": {

@@ -29,7 +29,9 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
 <script>
 (function () {
   var esc = PL.esc, $ = PL.$;
-  var token = PL.qs('token'), invite = PL.qs('invite');
+  var token = PL.qs('token'), invite = PL.qs('invite'), inviteEmail = PL.qs('email');
+  // the invite email, when a link carries it or it was typed here before (e.g. the first link expired)
+  try { inviteEmail = inviteEmail || (invite && sessionStorage.getItem('pl_invite_email')) || ''; } catch (e) {}
   var safeNext = function (n) { return n && n.charAt(0) === '/' && n.charAt(1) !== '/' && n.indexOf('\\') < 0 ? n : null; };
   var next = safeNext(PL.qs('next'));
   var notice = PL.qs('signed_out') ? ['ok', 'You’re signed out.'] : PL.qs('deleted') ? ['ok', 'Your account and its data were deleted.'] : null;
@@ -60,6 +62,7 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
       var restore = PL.busy($('send'), 'Sending…'); $('err').textContent = '';
       try {
         var dest = invite ? '/app/login?invite=' + encodeURIComponent(invite) : next;
+        if (invite) { try { sessionStorage.setItem('pl_invite_email', email); } catch (e) {} }
         await api('/auth/start', { method: 'POST', auth: false, body: dest ? { email: email, next: dest } : { email: email } });
         sent(email);
       } catch (x) { restore(); $('err').textContent = x.status === 422 ? 'Enter a valid email address.' : x.message; }
@@ -101,7 +104,7 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
       session.set(r.session);
       var dest = next || safeNext(r.next) || '/app/';
       if (r.invite) {
-        if (r.invite.accepted) { PL.store.set('pl_ws', r.invite.workspace_id); flash('You joined ' + r.invite.workspace_name + '.'); }
+        if (r.invite.accepted) { PL.store.set('pl_ws', r.invite.workspace_id); flash('You joined ' + r.invite.workspace_name + '.'); try { sessionStorage.removeItem('pl_invite_email'); } catch (e) {} }
         else flash(r.invite.detail, 'warn');
       }
       go(dest);
@@ -131,7 +134,8 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
   }
 
   function inviteForm() {
-    form({ lab: 'Invitation', title: 'You’ve been invited to a workspace', lede: 'Sign in with the email address the invite was sent to. We’ll email you a one-time link, and you’ll join as soon as you open it.' });
+    form({ lab: 'Invitation', title: 'You’ve been invited to a workspace', email: inviteEmail,
+      lede: 'Sign in with the email address the invite was sent to' + (inviteEmail ? ' (<b class="ink">' + esc(inviteEmail) + '</b>)' : '') + '. We’ll email you a one-time link, and you’ll join the workspace as soon as you open it.' });
   }
 
   if (token) finish();

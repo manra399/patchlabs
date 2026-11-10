@@ -1,0 +1,86 @@
+title: What to do in the first hour after a data leak in your app
+description: A calm, ordered runbook for the first hour after a leaked key or exposed database in an AI-built app: contain, preserve logs, check for access, write it down, decide who to tell.
+h1: What to do in the first hour after a leak
+navtitle: The first hour after a leak
+topic: keys
+order: 2
+short: A calm, ordered runbook: contain, keep the evidence, check for access, decide who to tell.
+lede: In the first hour after you find a leak, contain it before you investigate it: revoke any exposed secret key, close the open table or bucket, then save the logs before they expire, check whether anyone used the hole, and write down a timeline. Decisions about telling users or a regulator come after you know what was exposed, but in the UK and EU the clock for reporting can start the moment you become aware.
+tldr: Minutes 0–15: contain. Rotate exposed secret keys; lock the open table with the narrowest change that works. || Minutes 15–30: preserve. Export API, auth and provider logs now; retention can be short. || Minutes 30–45: assess. What data, whose, how many rows, was it accessed, and since when. || Minutes 45–60: record and decide. A written timeline, who needs to know, and whether the breach is reportable.
+findings: PL-001, PL-002, PL-009, PL-010, PL-011
+---
+<p>This guide is the whole first hour: keys, data and people. For the hands-on SQL that closes an open Supabase table, use <a href="/leaking-now">Leaking right now?</a> alongside it.</p>
+
+<h2 id="triage">Minute 0: what kind of leak is it?</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">You found</th><th scope="col">It’s a</th><th scope="col">First move</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">A secret key in code, history or the browser bundle</th><td>Key leak (<a href="/findings/pl-009">PL-009</a>, <a href="/findings/pl-010">PL-010</a>, <a href="/findings/pl-011">PL-011</a>)</td><td>Rotate it</td></tr>
+    <tr><th scope="row">A table anyone (or any sign-up) can read</th><td>Data exposure (<a href="/findings/pl-001">PL-001</a>, <a href="/findings/pl-002">PL-002</a>, <a href="/findings/pl-008">PL-008</a>)</td><td>Close the policy</td></tr>
+    <tr><th scope="row">Files in a public or open bucket</th><td>Data exposure (<a href="/findings/pl-007">PL-007</a>, <a href="/findings/pl-015">PL-015</a>)</td><td>Make the bucket private</td></tr>
+    <tr><th scope="row">Someone tells you they downloaded your data</th><td>Confirmed breach</td><td>All of the above, and treat it as accessed</td></tr>
+  </tbody>
+</table></div>
+<p>Start a plain text file now and write the time you found it, how, and what you saw. You will rely on this later and memory is poor under stress.</p>
+
+<h2 id="contain">Minutes 0–15: contain</h2>
+<h3 id="contain-keys">Exposed secret keys</h3>
+<p>Rotate first, investigate second. A Supabase service role or secret key gives full access to your database, so it comes before everything else. AI keys run up bills; payment keys reach customer and payment data. <a href="/learn/rotate-leaked-key-git-history#rotate">Where to rotate each kind of key</a>.</p>
+<h3 id="contain-data">An open table</h3>
+<p>Make the narrowest change that stops outsiders reading it. If you’re not sure what the app needs, revoking the API roles’ read access to that one table stops the leak at the cost of breaking the pages that use it, which is usually the right trade for an hour:</p>
+[[CODE emergency-lock.sql]]
+-- Stop logged-out visitors and signed-in users reading this table via the API.
+-- Your server code using the service role key is unaffected.
+revoke select on public.customers from anon, authenticated;
+[[/CODE]]
+<p>Then save the same change as a migration so a later deploy doesn’t undo it. Once things are calm, replace it with proper owner policies and grant read access back (<a href="/learn/rls-policies-explained">RLS policies explained</a>).</p>
+<h3 id="contain-files">An open bucket</h3>
+[[CODE emergency-bucket.sql]]
+update storage.buckets set public = false where id = 'documents';
+[[/CODE]]
+<p>Broad policies on <code>storage.objects</code> also need dropping; see <a href="/learn/supabase-storage-policies">storage bucket policies</a>.</p>
+
+<h2 id="preserve">Minutes 15–30: preserve the evidence</h2>
+<p>Logs are how you find out whether anyone used the hole, and many hosts keep them only briefly. Export now, before you change much else:</p>
+<ul>
+  <li><strong>Supabase logs:</strong> in the dashboard’s logs explorer, look at API (edge) logs for requests to the exposed table’s path (<code>/rest/v1/customers</code>), auth logs for unusual sign-ups, and storage logs for downloads. Save the results; retention depends on your plan.</li>
+  <li><strong>Provider dashboards:</strong> usage and request logs for any rotated key (AI usage, Stripe’s request logs).</li>
+  <li><strong>Your host:</strong> Vercel, Netlify or similar request logs if they front your API routes.</li>
+  <li><strong>Git:</strong> the commit that introduced the problem and its date (<code>git log -S 'policy name' --all</code> finds when a string was added).</li>
+</ul>
+<p>Don’t delete the leaky policy’s history, rows or files to “clean up”: you need them to work out what was exposed.</p>
+
+<h2 id="assess">Minutes 30–45: assess what was exposed</h2>
+<p>Answer five questions and write each answer down with how you know it:</p>
+<ol>
+  <li><strong>What data?</strong> List the columns: emails, phone numbers, addresses, dates of birth, payment details, documents, messages.</li>
+  <li><strong>Whose, and how many?</strong> <code>select count(*) from public.customers;</code> gives the upper bound.</li>
+  <li><strong>To whom?</strong> Anyone with the public key, anyone who signed up, or someone with the repo.</li>
+  <li><strong>Since when?</strong> The date of the migration or commit that opened it.</li>
+  <li><strong>Was it used?</strong> Requests in the logs you didn’t make, sign-ups you don’t recognise, unexpected spend on a rotated key. No evidence of access is not proof of no access, especially if logs don’t reach back to the start date.</li>
+</ol>
+
+<h2 id="decide">Minutes 45–60: record and decide who to tell</h2>
+<p>Turn your notes into a short timeline: when it was introduced, when found, what you changed and when, what the logs show. Then decide, with advice if you can get it:</p>
+<ul>
+  <li><strong>Regulators.</strong> Under the UK GDPR and the EU GDPR, a personal data breach that is likely to put people at risk must be reported to the regulator (in the UK, the ICO) within 72 hours of becoming aware of it. Not every exposure is reportable; record your reasoning either way. Other countries and US states have their own rules.</li>
+  <li><strong>Affected people.</strong> If the risk to them is high (identity documents, financial data, anything enabling fraud), they generally need to be told directly, in plain language, with what to watch for.</li>
+  <li><strong>Partners and providers.</strong> Payment providers and some platforms have their own reporting expectations for leaked keys or card data.</li>
+  <li><strong>Your team and investors</strong>, briefly and factually.</li>
+</ul>
+<div class="callout limit"><p>This is general information, not legal advice. If personal data may have been accessed, get advice from a data-protection professional early; the ICO also runs a helpline for small organisations.</p></div>
+
+<h2 id="after">After the first hour</h2>
+<ul>
+  <li>Replace emergency changes with proper fixes, tested as a visitor, a stranger and the owner.</li>
+  <li>Look for the same mistake elsewhere: the pattern that opened one table usually opened others.</li>
+  <li>Add the check that would have caught it to your release routine, and re-check on a schedule.</li>
+  <li>Write a short, blameless note of what happened and what changed.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://ico.org.uk/for-organisations/report-a-breach/">ICO: report a breach</a></li>
+  <li><a href="https://supabase.com/docs/guides/telemetry/logs">Supabase: logging</a></li>
+  <li><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository">GitHub: removing sensitive data</a></li>
+</ul>

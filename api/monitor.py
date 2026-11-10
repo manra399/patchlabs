@@ -1,12 +1,14 @@
 """Monitored apps: verification, run-now, schedules, diffs between checks, notifications, badges, public status and CI."""
 import html, secrets, uuid
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
-from core import (FINISHED, NEXT_AT, SITE_URL, VERIFY_FILE, api_key, as_uuid, clean_text, current_user, db, event, leaking, limits,
-                  membership, notify, parse_repo, recent, record, repo_has_code, repo_lookup, scrub, send_webhook, usage, verify_info,
-                  webhook_secret)
+import alerts, audit, taxonomy
+from core import (FINISHED, NEXT_AT, SITE_URL, VERIFY_FILE, api_key, as_uuid, clean_text, client_apps, current_user, db, event, leaking,
+                  limits, may_see_app, membership, notify, parse_repo, recent, record, repo_has_code, repo_lookup, require, scrub, usage,
+                  verify_info)
 
 router = APIRouter()
 OPEN = ("queued", "running")
@@ -17,12 +19,47 @@ def check_url(cid):
     return f"{SITE_URL}/check?id={cid}"
 
 
-def app_for(c, user, aid):
+def app_for(c, user, aid, perm="view"):
+    """The app, if the user may see it (a client only sees apps shared with them; to anyone else it doesn't exist), and
+    their role allows `perm`."""
     a = c.execute("SELECT a.*, m.role FROM apps a JOIN workspace_members m ON m.workspace_id = a.workspace_id AND m.user_id = %s "
                   "WHERE a.id = %s", (user["id"], as_uuid(aid, "App not found."))).fetchone()
-    if not a:
+    if not a or not may_see_app(c, a["role"], a["workspace_id"], user["id"], a["id"]):
         raise HTTPException(404, "App not found.")
+    require(a["role"], perm)
     return a
+
+
+def app_target(a):
+    return {"type": "app", "id": a["id"], "label": a["repo"] + (f" ({a['client_label']})" if a.get("client_label") else "")}
+
+
+def key_actor(key):
+    return f"API key {key.get('name') or ''} ({key.get('prefix') or 'pl_live_'}…)".replace("  ", " ")
+
+
+def log_check(c, a, cid, trigger, user=None, key=None):
+    audit.log(c, a["workspace_id"], "check.started", user, kind="api_key" if key else "system", name=key_actor(key) if key else None,
+              target={"type": "check", "id": cid, "label": a["repo"]}, detail={"trigger": trigger, "app_id": a["id"]})
+
+
+# ---- freshness ---------------------------------------------------------------------------------------------------
+# A result goes stale when the last finished check is older than twice the schedule interval, or 45 days for apps
+# without a schedule. Stale results never claim "no known leaks".
+INTERVAL_DAYS = {"weekly": 7, "monthly": 30}
+MANUAL_STALE_DAYS = 45
+
+
+def stale_after(schedule):
+    return 2 * INTERVAL_DAYS[schedule] if schedule in INTERVAL_DAYS else MANUAL_STALE_DAYS
+
+
+def freshness(schedule, finished_at, now=None):
+    limit = stale_after(schedule)
+    if not finished_at:
+        return {"stale": False, "days_since_check": None, "stale_after_days": limit}
+    age = (now or datetime.now(timezone.utc)) - finished_at
+    return {"stale": age > timedelta(days=limit), "days_since_check": max(0, age.days), "stale_after_days": limit}
 
 
 def workspace_of(c, a):
@@ -40,6 +77,9 @@ def app_view(c, a):
                          "tables_leaking": leaking(last["summary"])} if last else None
     out["open_check_id"] = open_["id"] if open_ else None
     out["suppressed_tables"] = suppressed(c, a["id"])
+    fin = c.execute("SELECT max(finished_at) AS at FROM checks WHERE app_id = %s AND status IN ('done', 'no_leaks', 'needs_review')",
+                    (a["id"],)).fetchone()["at"]
+    out["freshness"] = freshness(a["schedule"], fin)
     if not out["verified"]:
         out["verify"] = verify_info(a["repo"], a["branch"], a["verify_code"])
     return out
@@ -73,16 +113,17 @@ def check_extras(c, k):
     return {"suppressed_tables": [t for t in cur if t in sup], "new_leaks": [t for t in cur if t not in before and t not in sup]}
 
 
-def queue_check(c, a, trigger, email=""):
+def queue_check(c, a, trigger, email="", user=None, key=None):
     cid = uuid.uuid4()
     c.execute("INSERT INTO checks (id, email, repo, verify_code, branch, status, verified_at, app_id, trigger) "
               "VALUES (%s, %s, %s, %s, %s, 'queued', now(), %s, %s)",
               (cid, email or "", a["repo"], a["verify_code"], a["branch"], a["id"], trigger))
     event(c, cid, "requested", trigger)
+    log_check(c, a, cid, trigger, user, key)
     return cid
 
 
-def run_now(c, a, trigger, email=""):
+def run_now(c, a, trigger, email="", user=None, key=None):
     c.execute("SELECT id FROM apps WHERE id = %s FOR UPDATE", (a["id"],))
     if not a["verified_at"]:
         raise HTTPException(409, "Verify the app before running checks.")
@@ -94,7 +135,7 @@ def run_now(c, a, trigger, email=""):
         n = lim["runs_per_month"]
         raise HTTPException(429, f"You've used {'your 1 run' if n == 1 else f'all {n} runs'} this month on the {w['plan']} plan. "
                                  "Scheduled re-checks still run; request an upgrade for more.")
-    cid = queue_check(c, a, trigger, email)
+    cid = queue_check(c, a, trigger, email, user, key)
     record(c, "run", w["id"])  # counted in a log, so deleting the app doesn't hand the runs back
     return {"check_id": cid, "status": "queued", "url": check_url(cid)}
 
@@ -116,7 +157,7 @@ HEADLINES = {"no_leaks": "no data leaks found", "done": "leaks found and a teste
 
 def notify_app_check(c, cid):
     k = c.execute("SELECT k.id, k.status, k.summary, a.id AS app_id, a.repo, a.client_label, a.workspace_id, w.webhook_url, "
-                  "w.webhook_secret, w.id AS wid "
+                  "w.webhook_secret, w.webhook_format, w.id AS wid "
                   "FROM checks k JOIN apps a ON a.id = k.app_id JOIN workspaces w ON w.id = a.workspace_id WHERE k.id = %s",
                   (cid,)).fetchone()
     if not k:
@@ -137,16 +178,19 @@ def notify_app_check(c, cid):
             lines.append("Marked as intended by your team (no alert): " + ", ".join(d["suppressed"]))
         lines += [f"See the report and the fix:\n{url}", f"Manage this app:\n{SITE_URL}/app/app?id={k['app_id']}", "PatchLabs"]
         for m in c.execute("SELECT u.email FROM workspace_members m JOIN users u ON u.id = m.user_id WHERE m.workspace_id = %s "
-                           "ORDER BY m.created_at", (k["workspace_id"],)).fetchall():
+                           "AND (m.role <> 'client' OR EXISTS (SELECT 1 FROM member_app_access x WHERE x.workspace_id = m.workspace_id "
+                           "AND x.user_id = m.user_id AND x.app_id = %s)) ORDER BY m.created_at", (k["workspace_id"], k["app_id"])).fetchall():
             notify(c, cid, m["email"], subject, "\n\n".join(lines))
     if k["webhook_url"]:
         payload = {"event": "check.finished", "text": f"PatchLabs: {name}: {headline}. {url}",
                    "check": {"id": str(cid), "app_id": str(k["app_id"]), "repo": k["repo"], "status": k["status"],
                              "tables_leaking": tables, "url": url, "new_leaks": d["new_leaks"], "fixed": d["fixed"],
                              "suppressed": d["suppressed"]}}
+        message = alerts.check_message(name, headline, k["status"], k["summary"], d, url, f"{SITE_URL}/app/app?id={k['app_id']}")
         try:
-            secret = webhook_secret(c, {"id": k["wid"], "webhook_secret": k["webhook_secret"]})
-            event(c, cid, "webhook_sent", str(send_webhook(k["webhook_url"], payload, secret)))
+            w = {"id": k["wid"], "webhook_url": k["webhook_url"], "webhook_secret": k["webhook_secret"], "webhook_format": k["webhook_format"]}
+            kind, code = alerts.deliver(c, w, payload, message)
+            event(c, cid, "webhook_sent", str(code) if kind == "json" else f"{code} ({kind})")
         except Exception as e:  # a broken webhook must never lose the check
             event(c, cid, "webhook_failed", str(e)[:300])
 
@@ -171,13 +215,16 @@ def allow_schedule(w, schedule):
 @router.get("/workspaces/{wid}/apps")
 def list_apps(wid: str, user=Depends(current_user), c=Depends(db)):
     w = membership(c, user, wid)
-    return {"apps": [app_view(c, a) for a in c.execute("SELECT * FROM apps WHERE workspace_id = %s ORDER BY created_at",
-                                                       (w["id"],)).fetchall()]}
+    rows = c.execute("SELECT * FROM apps WHERE workspace_id = %s ORDER BY created_at", (w["id"],)).fetchall()
+    if w["role"] == "client":
+        mine = set(client_apps(c, w["id"], user["id"]))
+        rows = [a for a in rows if a["id"] in mine]
+    return {"apps": [app_view(c, a) for a in rows]}
 
 
 @router.post("/workspaces/{wid}/apps", status_code=201)
 def create_app(wid: str, body: NewApp, user=Depends(current_user), c=Depends(db)):
-    w = membership(c, user, wid)
+    w = membership(c, user, wid, perm="manage")
     schedule, lim = body.schedule or "monthly", limits(w)
     allow_schedule(w, schedule)
     if usage(c, w["id"])["apps"] >= lim["apps"]:
@@ -191,18 +238,20 @@ def create_app(wid: str, body: NewApp, user=Depends(current_user), c=Depends(db)
                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *",
                   (aid, w["id"], repo, branch, clean_text(body.client_label) or None, "patchlabs-" + secrets.token_hex(8),
                    schedule, user["id"])).fetchone()
+    audit.log(c, w["id"], "app.added", user, target=app_target(a), detail={"repo": repo, "schedule": schedule})
     return app_view(c, a)
 
 
 @router.post("/apps/{aid}/verify")
 def verify_app(aid: str, user=Depends(current_user), c=Depends(db)):
-    a = app_for(c, user, aid)
+    a = app_for(c, user, aid, "manage")
     if a["verified_at"]:
         return {"verified": True, "check_id": None}
     if not repo_has_code(a["repo"], a["branch"], a["verify_code"]):
         raise HTTPException(409, f"We couldn't find {VERIFY_FILE} with your code on the default branch yet. "
                                  "GitHub can take a minute to update; try again shortly.")
     a = c.execute(f"UPDATE apps SET verified_at = now(), next_check_at = {NEXT_AT} WHERE id = %s RETURNING *", (a["id"],)).fetchone()
+    audit.log(c, a["workspace_id"], "app.verified", user, target=app_target(a))
     repo_key = f"{a['workspace_id']}:{a['repo'].lower()}"
     readded = recent(c, "verified_repo", repo_key, "100 years") > 0
     record(c, "verified_repo", repo_key)
@@ -212,7 +261,7 @@ def verify_app(aid: str, user=Depends(current_user), c=Depends(db)):
             return {"verified": True, "check_id": None,
                     "detail": "Verified. This month's runs are used up: run the first check next month, or wait for the scheduled one."}
         record(c, "run", w["id"])
-    return {"verified": True, "check_id": queue_check(c, a, "verify", user["email"])}
+    return {"verified": True, "check_id": queue_check(c, a, "verify", user["email"], user)}
 
 
 @router.get("/apps/{aid}")
@@ -225,46 +274,63 @@ def get_app(aid: str, user=Depends(current_user), c=Depends(db)):
                      for r in c.execute("SELECT id, status, trigger, created_at, finished_at, summary FROM checks WHERE app_id = %s "
                                         "ORDER BY created_at DESC LIMIT 50", (a["id"],)).fetchall()]
     out["diff"] = diff(c, a["id"])
+    out["findings"] = taxonomy.app_findings(c, a["id"])
     return out
 
 
 @router.patch("/apps/{aid}")
 def patch_app(aid: str, body: AppPatch, user=Depends(current_user), c=Depends(db)):
-    a = app_for(c, user, aid)
+    a = app_for(c, user, aid, "manage")
+    changed = {}
     if "client_label" in body.model_fields_set:
-        c.execute("UPDATE apps SET client_label = %s WHERE id = %s", (clean_text(body.client_label) or None, a["id"]))
+        label = clean_text(body.client_label) or None
+        c.execute("UPDATE apps SET client_label = %s WHERE id = %s", (label, a["id"]))
+        if label != a["client_label"]:
+            changed["client_label"] = {"from": a["client_label"], "to": label}
     if body.schedule and body.schedule != a["schedule"]:
         allow_schedule(workspace_of(c, a), body.schedule)
         c.execute("UPDATE apps SET schedule = %s WHERE id = %s", (body.schedule, a["id"]))
         c.execute(f"UPDATE apps SET next_check_at = CASE WHEN verified_at IS NULL THEN NULL ELSE {NEXT_AT} END WHERE id = %s", (a["id"],))
+        changed["schedule"] = {"from": a["schedule"], "to": body.schedule}
     if body.badge_public is not None:
         c.execute("UPDATE apps SET badge_public = %s WHERE id = %s", (body.badge_public, a["id"]))
+        if body.badge_public != a["badge_public"]:
+            changed["badge_public"] = {"from": a["badge_public"], "to": body.badge_public}
+    if changed:
+        audit.log(c, a["workspace_id"], "app.updated", user, target=app_target(a), detail=changed)
     return app_view(c, app_for(c, user, aid))
 
 
 @router.delete("/apps/{aid}")
 def delete_app(aid: str, user=Depends(current_user), c=Depends(db)):
-    c.execute("DELETE FROM apps WHERE id = %s", (app_for(c, user, aid)["id"],))
+    a = app_for(c, user, aid, "manage")
+    c.execute("DELETE FROM apps WHERE id = %s", (a["id"],))
+    audit.log(c, a["workspace_id"], "app.removed", user, target=app_target(a), detail={"repo": a["repo"]})
     return {"ok": True}
 
 
 @router.post("/apps/{aid}/checks", status_code=201)
 def run_app_check(aid: str, user=Depends(current_user), c=Depends(db)):
-    return run_now(c, app_for(c, user, aid), "manual", user["email"])
+    return run_now(c, app_for(c, user, aid, "run"), "manual", user["email"], user)
 
 
 # ---- public ------------------------------------------------------------------------------------------------------
 
-def public_state(c, aid):
+def public_state(c, a):
+    """(state, last finished check time, freshness). A stale result is reported as 'stale', never as its old status."""
     r = c.execute("SELECT status, finished_at FROM checks WHERE app_id = %s AND status IN ('done', 'no_leaks', 'needs_review') "
-                  "ORDER BY finished_at DESC LIMIT 1", (aid,)).fetchone()
+                  "ORDER BY finished_at DESC LIMIT 1", (a["id"],)).fetchone()
+    fresh = freshness(a["schedule"], r["finished_at"] if r else None)
     if not r:
-        return "not_checked_yet", None
-    return ("no_known_leaks" if r["status"] == "no_leaks" else "fix_in_progress"), r["finished_at"]
+        return "not_checked_yet", None, fresh
+    if fresh["stale"]:
+        return "stale", r["finished_at"], fresh
+    return ("no_known_leaks" if r["status"] == "no_leaks" else "fix_in_progress"), r["finished_at"], fresh
 
 
 BADGES = {"no_known_leaks": ("no known leaks", "#2ea44f"), "fix_in_progress": ("fix in progress", "#dfb317"),
-          "not_checked_yet": ("not checked yet", "#9f9f9f"), "private": ("private", "#9f9f9f")}
+          "not_checked_yet": ("not checked yet", "#9f9f9f"), "private": ("private", "#9f9f9f"),
+          "stale": ("last checked {n} days ago", "#9f9f9f")}
 
 
 def svg_badge(label, message, color):
@@ -284,15 +350,18 @@ def public_app(c, aid):
         aid = uuid.UUID(aid)
     except ValueError:
         return None
-    return c.execute("SELECT id, repo FROM apps WHERE id = %s AND badge_public AND verified_at IS NOT NULL", (aid,)).fetchone()
+    return c.execute("SELECT id, repo, schedule FROM apps WHERE id = %s AND badge_public AND verified_at IS NOT NULL", (aid,)).fetchone()
 
 
 @router.get("/badge/{aid}.svg")
 def badge(aid: str, c=Depends(db)):
     a = public_app(c, aid)
-    state, at = public_state(c, a["id"]) if a else ("private", None)
+    state, at, fresh = public_state(c, a) if a else ("private", None, None)
     message, color = BADGES[state]
-    if at:
+    if state == "stale":
+        n = fresh["days_since_check"]
+        message = message.format(n=n)  # stale means at least 14 days, so always "days"
+    elif at:
         message += f" · {at.day} {at:%b %Y}"
     return Response(svg_badge("PatchLabs", message, color), media_type="image/svg+xml",
                     headers={"Cache-Control": "public, max-age=3600"})
@@ -303,8 +372,8 @@ def public_status(aid: str, c=Depends(db)):
     a = public_app(c, aid)
     if not a:
         raise HTTPException(404, "This app's status isn't public.")
-    state, at = public_state(c, a["id"])
-    return {"repo": a["repo"], "status": state, "last_checked": at}
+    state, at, fresh = public_state(c, a)
+    return {"repo": a["repo"], "status": state, "last_checked": at, **fresh}
 
 
 @router.get("/stats")
@@ -326,7 +395,7 @@ def v1_run(aid: str, key=Depends(api_key), c=Depends(db)):
         raise HTTPException(404, "App not found.")
     if a["workspace_id"] != key["workspace_id"]:
         raise HTTPException(403, "This API key belongs to a different workspace.")
-    return run_now(c, a, "api")
+    return run_now(c, a, "api", key=key)
 
 
 @router.get("/v1/checks/{cid}")
@@ -341,5 +410,6 @@ def v1_check(cid: str, key=Depends(api_key), c=Depends(db)):
     return {"id": k["id"], "app_id": k["app_id"], "repo": k["repo"], "status": k["status"], "trigger": k["trigger"],
             "created_at": k["created_at"], "finished_at": k["finished_at"], "finished": k["status"] in FINISHED + ("failed",),
             "leaks_found": bool(leaking(k["summary"])), "tables_leaking": leaking(k["summary"]),
-            "lab_proof_passed": (summary or {}).get("lab_proof_passed"), "summary": summary, "url": check_url(k["id"]),
+            "lab_proof_passed": (summary or {}).get("lab_proof_passed"),
+            "summary": taxonomy.enrich_summary(c, summary, k) if summary else summary, "url": check_url(k["id"]),
             **check_extras(c, k)}

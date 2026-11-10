@@ -1,0 +1,134 @@
+title: user_metadata vs app_metadata: where to store roles in Supabase
+description: Users can edit their own Supabase user_metadata, so never use it for roles. How app_metadata and a roles table work, with policies, server code and a fix for existing apps.
+h1: user_metadata vs app_metadata: where to store roles in Supabase
+navtitle: user_metadata vs app_metadata
+topic: server
+order: 1
+short: Users can edit user_metadata. Where roles belong instead, with policies and server code.
+lede: Never store roles, plans or anything that grants access in Supabase’s <code>user_metadata</code>: every user can change their own with one call from the browser. Use <code>app_metadata</code>, which only your server can write, or a roles table that users can’t write, and check that in your policies.
+tldr: <code>user_metadata</code> (<code>raw_user_meta_data</code>) is set by the user, at sign-up and later with <code>updateUser</code>. Fine for a name or avatar. || <code>app_metadata</code> (<code>raw_app_meta_data</code>) needs the service role key to change. Fine for a role that rarely changes. || A roles table plus a <code>has_role()</code> helper takes effect immediately and is easier to audit. || Both metadata objects are in the JWT, so a policy can read either: make sure it reads the right one.
+findings: PL-019, PL-013, PL-020
+---
+<h2 id="difference">The difference in one table</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col"></th><th scope="col">user_metadata</th><th scope="col">app_metadata</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Stored as</th><td><code>auth.users.raw_user_meta_data</code></td><td><code>auth.users.raw_app_meta_data</code></td></tr>
+    <tr><th scope="row">Who can change it</th><td>The user: <code>signUp({ options: { data } })</code>, <code>updateUser({ data })</code></td><td>Your server, with the service role key: <code>auth.admin.updateUserById</code></td></tr>
+    <tr><th scope="row">In the JWT as</th><td><code>user_metadata</code></td><td><code>app_metadata</code></td></tr>
+    <tr><th scope="row">Use for</th><td>Display name, avatar URL, language</td><td>Role, tenant id, anything the user mustn’t choose</td></tr>
+  </tbody>
+</table></div>
+<p>The names are easy to mix up and both objects show up in <code>supabase.auth.getUser()</code> and in the access token, which is exactly why the wrong one gets used.</p>
+
+<h2 id="attack">What “users can edit it” means in practice</h2>
+<p>Suppose a policy grants admins access like this:</p>
+[[CODE supabase/migrations/…_admin_policy.sql (vulnerable)]]
+create policy "Admins read all profiles" on public.profiles
+  for select to authenticated
+  using ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+[[/CODE]]
+<p>Any signed-in user can open the browser console on your site and run:</p>
+[[CODE browser console]]
+await supabase.auth.updateUser({ data: { role: 'admin' } });
+await supabase.auth.refreshSession();  // the new token says role: admin
+[[/CODE]]
+<p>From then on the policy treats them as an admin. The same goes for frontend checks like <code>user.user_metadata.role === 'admin'</code> (<a href="/findings/pl-020">PL-020</a>), and for a sign-up trigger that copies <code>raw_user_meta_data -&gt;&gt; 'role'</code> into a profile’s role column, where the attacker simply passes <code>options: { data: { role: 'admin' } }</code> when signing up.</p>
+
+<h2 id="find">Find it in your project</h2>
+[[CODE find-user-metadata.sql]]
+-- Policies that read user_metadata
+select schemaname, tablename, policyname, qual, with_check
+from pg_policies
+where coalesce(qual, '') ilike '%user_metadata%'
+   or coalesce(with_check, '') ilike '%user_metadata%';
+
+-- Your functions and triggers that read raw_user_meta_data
+select n.nspname, p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname not in ('pg_catalog', 'information_schema', 'auth', 'storage')
+  and p.prosrc ilike '%raw_user_meta_data%';
+[[/CODE]]
+[[CODE find-in-code.sh]]
+grep -rnE "user_?metadata" src supabase/functions
+[[/CODE]]
+<p>Copying a name or avatar from metadata is fine. Look for role, admin, plan, tier, credits, permissions or anything shaped like them. Supabase’s Security Advisor flags the policy form as lint <code>0015 rls_references_user_metadata</code>.</p>
+
+<h2 id="option-a">Option A: app_metadata</h2>
+<p>Good for a small, stable set of roles. Set it from a server, never from the browser:</p>
+[[CODE scripts/make-admin.ts (run on your machine or a server)]]
+import { createClient } from '@supabase/supabase-js';
+
+const admin = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,  // server only
+);
+
+const userId = process.argv[2];
+const { error } = await admin.auth.admin.updateUserById(userId, {
+  app_metadata: { role: 'admin' },
+});
+if (error) throw error;
+console.log('role set; it reaches the token on the next refresh');
+[[/CODE]]
+[[CODE supabase/migrations/…_admin_policy.sql]]
+create policy "Admins read all profiles" on public.profiles
+  for select to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+[[/CODE]]
+<p>One trade-off: the role lives in the token, so a change (granting or removing admin) takes effect when the user’s token refreshes, which by default is within an hour. Signing the user out revokes their refresh tokens, but an access token already issued stays valid until it expires, so if you need removal to be instant, use Option B.</p>
+
+<h2 id="option-b">Option B: a roles table and has_role()</h2>
+<p>Better when roles change often or you need an audit trail, and it takes effect on the next query. The table must not be writable by users (that’s <a href="/findings/pl-013">PL-013</a>):</p>
+[[CODE supabase/migrations/…_roles.sql]]
+create type public.app_role as enum ('admin', 'moderator', 'user');
+
+create table public.user_roles (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  role public.app_role not null,
+  primary key (user_id, role)
+);
+alter table public.user_roles enable row level security;
+
+-- Users may see their own roles; nobody may write them through the API
+create policy "Users read own roles" on public.user_roles
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+-- A helper for policies. security definer so it can read user_roles
+-- without recursion; it only ever answers about the caller.
+create or replace function public.has_role(_role public.app_role)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = (select auth.uid()) and role = _role
+  );
+$$;
+revoke execute on function public.has_role(public.app_role) from public, anon;
+grant execute on function public.has_role(public.app_role) to authenticated;
+
+create policy "Admins read all profiles" on public.profiles
+  for select to authenticated
+  using ((select public.has_role('admin')));
+[[/CODE]]
+<p>Grant roles from the SQL editor or a server with the service role key: <code>insert into public.user_roles values ('&lt;user id&gt;', 'admin');</code>. In the app, decide what to show with <code>supabase.rpc('has_role', { _role: 'admin' })</code>, and remember that the database rule, not the UI, is the security.</p>
+
+<h2 id="migrate">Fixing an app that already uses user_metadata</h2>
+<ol>
+  <li>Create the roles table (or decide on <code>app_metadata</code>) and copy over the users who should really be admins, checked by hand. Don’t copy everyone with <code>role = 'admin'</code> in their metadata: some may have given it to themselves.</li>
+  <li>Replace every policy, trigger and function that reads a role from <code>user_metadata</code>.</li>
+  <li>Change the sign-up trigger to always create the default role.</li>
+  <li>Change frontend checks to use the new source.</li>
+  <li>Test as a normal user who has set <code>{ role: 'admin' }</code> in their own metadata: they should get nothing extra.</li>
+</ol>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/auth/managing-user-data">Supabase: user management and metadata</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac">Supabase: custom claims and role-based access control</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors (lint 0015)</a></li>
+</ul>

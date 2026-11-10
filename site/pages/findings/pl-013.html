@@ -1,0 +1,198 @@
+<!--
+title: PL-013 Users can make themselves admin | PatchLabs findings
+description: PL-013: users can give themselves the admin role in a Supabase app through a role column or roles table they can write to. How to check, the fix, and why it's critical.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-013: Users can make themselves admin","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Lab · database</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Code · repo</h2>
+      <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013" aria-current="page"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding is-coming">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-013</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-013</span><span class="pill sev-critical">critical</span><span class="pill pending">coming · not tested yet</span></div>
+        <h1>Users can make themselves admin</h1>
+        <p class="lede">A role column or roles table that users can write to. One request turns a normal account into an admin.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Critical</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Anyone who signs up</dd></div>
+          <div><dt>Found by</dt><dd>Not tested yet: coming to PatchLabs Lab</dd></div>
+          <div><dt>Status</dt><dd>Coming</dd></div>
+        </dl>
+      </header>
+      <div class="callout limit"><p><strong>PatchLabs does not test for this yet (coming).</strong> This page explains the problem, how to check your own project and how to fix it. The Lab’s live checks today are PL-001 to PL-008; this one is not part of any report until it ships. Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>Many apps keep each user's role in the database: a <code>role</code> column on <code>profiles</code>, or a separate <code>user_roles</code> table read by a helper such as <code>has_role()</code>. Every admin policy then trusts that value. PL-013 means a normal user can write it.</p>
+<p>Two shapes are common. In the first, users may update their own profile row and nothing limits which columns they change, so <code>update profiles set role = 'admin'</code> on their own row succeeds (the policy shape is <a href="/findings/pl-004">PL-004</a>). In the second, the roles table has an insert policy like <code>with check (auth.uid() = user_id)</code>, meant as "users can create their own role row", which also lets a user insert the row <em>(their id, 'admin')</em>.</p>
+      
+
+      <h2 id="why"><span class="lab" aria-hidden="true">Cause</span>Why AI builders produce it</h2>
+      <p>AI builders are good at producing a roles table, a <code>has_role</code> function and admin policies, which looks like a complete design. The write side gets less attention. The sign-up flow needs to create a role row, the quickest way to allow that is to let users insert their own, and nobody constrains the value. Profile edit forms add a generic "users can update own profile" policy that covers every column, including <code>role</code>.</p>
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_roles.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create type public.app_role as enum ('admin', 'user');
+
+create table public.user_roles (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  role public.app_role not null default 'user',
+  unique (user_id, role)
+);
+alter table public.user_roles enable row level security;
+
+create policy "Users can read own roles"
+  on public.user_roles for select to authenticated
+  using (auth.uid() = user_id);
+
+<span class="c">-- Meant for sign-up. Also lets a user insert (their id, 'admin').</span>
+create policy "Users can insert own role"
+  on public.user_roles for insert to authenticated
+  with check (auth.uid() = user_id);</code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-013.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- 1. Write policies on tables that hold roles or privileges</span>
+select p.tablename, p.policyname, p.cmd, p.with_check
+from pg_policies p
+where p.schemaname = 'public'
+  and p.cmd in ('INSERT', 'UPDATE', 'ALL')
+  and exists (
+    select 1 from information_schema.columns c
+    where c.table_schema = 'public' and c.table_name = p.tablename
+      and c.column_name in ('role', 'roles', 'is_admin', 'plan', 'credits', 'is_verified')
+  );
+
+<span class="c">-- 2. Can signed-in users write a role column directly?</span>
+select table_name, column_name, privilege_type
+from information_schema.column_privileges
+where table_schema = 'public' and grantee = 'authenticated'
+  and privilege_type in ('INSERT', 'UPDATE')
+  and column_name in ('role', 'is_admin');</code></pre>
+</div><p>Then try it. Use the id of a real, normal test user in your project (the foreign key needs one); the transaction is rolled back.</p><div class="code">
+  <div class="code-bar"><span class="name">try-pl-013.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>begin;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"&lt;a normal test user id&gt;","role":"authenticated"}', true);
+insert into public.user_roles (user_id, role)
+values ('&lt;a normal test user id&gt;', 'admin');<span class="c">  -- INSERT 0 1 means self-promotion works</span>
+rollback;</code></pre>
+</div>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
+      <p>Users shouldn't write roles at all. New users get the default role from a trigger, and admins are granted from the server (with the service role key) or the SQL editor.</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_fix_roles.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Users can insert own role" on public.user_roles;</span>
+<span class="add">create or replace function public.handle_new_user_role()</span>
+<span class="add">returns trigger</span>
+<span class="add">language plpgsql</span>
+<span class="add">security definer</span>
+<span class="add">set search_path = ''</span>
+<span class="add">as $$</span>
+<span class="add">begin</span>
+<span class="add">  insert into public.user_roles (user_id, role) values (new.id, 'user');</span>
+<span class="add">  return new;</span>
+<span class="add">end;</span>
+<span class="add">$$;</span>
+<span class="add">create trigger on_auth_user_created_role</span>
+<span class="add">  after insert on auth.users</span>
+<span class="add">  for each row execute function public.handle_new_user_role();</span></code></pre>
+</div><p>For a role column on <code>profiles</code>, limit which columns users may change. The column grant is what blocks the role change:</p><div class="code">
+  <div class="code-bar"><span class="name">variant: role column on profiles</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>revoke update on public.profiles from authenticated;
+grant update (full_name, avatar_url) on public.profiles to authenticated;</code></pre>
+</div>
+      <p class="small muted">PatchLabs doesn’t write this fix yet. Review the SQL with your engineer and add it as a new migration.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs will test it</h2>
+      
+      <p>When this check ships, the Lab will run it the way it runs PL-001 to PL-008 today: rebuild your database from <code>supabase/migrations</code> in a disposable Postgres, seed fake rows for two users, and try the exploit as an anonymous visitor, a signed-in stranger and the owner. Until then, the self-check above is the test.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p>Never for roles that unlock other people's data. A user choosing a harmless account type at sign-up ("buyer" or "seller") can be fine if neither type grants access to anything extra. Constrain the values so "admin" can't sneak in: <code>with check (auth.uid() = user_id and role in ('buyer', 'seller'))</code>.</p>
+
+      <h2 id="severity"><span class="lab" aria-hidden="true">Rate</span>Why it’s rated critical</h2>
+      <p>Critical. An admin role usually unlocks every admin policy and every admin screen at once, and getting it needs only a free account and one request.</p>
+
+      
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3><p class="small">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></a><a class="card link" href="/findings/pl-019"><span class="n-big">PL-019</span><h3>Access decided by user_metadata, which users can edit</h3><p class="small">Roles stored where users can rewrite them. One call from the browser and they're an admin.</p></a><a class="card link" href="/findings/pl-020"><span class="n-big">PL-020</span><h3>Admin check only in the browser</h3><p class="small">The admin page is hidden in the app, but nothing stops a normal user asking the database for the same data.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li></ul>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Check what PatchLabs does test today</h2>
+        <p>This check is coming. Today’s free check rebuilds your database from your migrations, tests it as a visitor, a stranger and the owner (PL-001 to PL-008), and reads your repo for keys and risky code.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f013">Public GitHub repo</label>
+            <input id="repo-f013" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f013">Your email</label>
+            <input id="email-f013" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-013">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-012"><span>Previous · PL-012</span>Strangers can change or delete other people's rows</a><a class="next" href="/findings/pl-014"><span>Next · PL-014</span>View skips row level security</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">How we test it</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

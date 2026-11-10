@@ -1,11 +1,12 @@
 # PatchLabs
 
-> PatchLabs finds personal-data leaks in apps built with AI (Lovable, Supabase, Bolt, Replit, Cursor-exported code). It rebuilds the app's database from the repo's own `supabase/migrations` in a disposable lab, tests what an anonymous visitor, a signed-in stranger and the owner can read, writes a fix (a SQL migration) and proves it in the lab before anyone ships it. It also scans the code and full git history for exposed AI, payment and database keys. It never connects to the customer's live app or database. The owner's engineer approves every change. Free for one app.
+> PatchLabs is a security platform for apps built with AI (Lovable, Supabase, Bolt, Replit, Cursor-exported code), in four product lines. Lab rebuilds the app's database from the repo's own `supabase/migrations` in a disposable lab and tests what an anonymous visitor, a signed-in stranger and the owner can read. Code reads the repo without running it: keys in code and full git history, Edge Functions, payment webhooks, CORS, browser-only admin checks, roles in user_metadata, raw HTML, Firebase rules and vulnerable npm dependencies (OSV). Fix writes a SQL migration and proves it in the lab before anyone ships it. Watch re-checks on a schedule and signs every result. It never connects to the customer's live app or database. The owner's engineer approves every change. Free for one app.
 
 Key facts:
 - Input: a public GitHub repo (private repos need a GitHub App, which is coming). Ownership is proven by committing `patchlabs-verify.txt` with a one-time code.
+- Findings: one format for every result (id, line lab|code, severity, object, file, line_no, evidence, proven, proof, fix, fixed_in_lab). Stable IDs PL-001 to PL-026; PL-012 to PL-016 are documented but not tested yet (coming).
 - Output: a report, a downloadable migration plus a one-click "commit this file on GitHub" link (automatic pull requests are coming), and an Ed25519-signed receipt.
-- Lab study (PatchLabs, Nov 2026): 318 public Lovable/Supabase repos rebuilt; 106 of 318 (33%) let the wrong people read personal data; about 1 in 4 (25-28%) after removing businesses' own public contact details. Autonomous fixes: 18 of 20 passed the strict lab proof with no human (n=20, 9 Nov 2026); median $0.46 model cost and 3.5 minutes per app.
+- Lab study (PatchLabs, Nov 2026): 318 public Lovable/Supabase repos rebuilt; 106 of 318 (33%) let the wrong people read personal data; about 1 in 4 (25-28%) after removing businesses' own public contact details. Autonomous fixes: 18 of 20 passed the strict lab proof with no human (n=20, 9 Nov 2026); median 3.5 minutes per app.
 - Plans: Free £0 (1 app), Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 per extra app), Enterprise custom. Card payments are not live; paid plans are by request.
 - API: https://api.patchlabs.dev (REST, JSON). Remote MCP server: POST https://api.patchlabs.dev/mcp (JSON-RPC 2.0; tools rls_check, start_check, get_check, list_apps, run_check).
 - Contact: manraj@patchlabs.dev (security reports: same address, subject "Security"). Founder: Manraj Singh Dhillon, London.
@@ -19,11 +20,15 @@ Key facts:
 - [Full text for language models](https://patchlabs.dev/llms-full.txt): everything below in one file
 
 ## Product
-- [Leak lab](https://patchlabs.dev/product/leak-lab): who can read your Supabase data, tested and fixed
-- [Key scan](https://patchlabs.dev/product/key-scan): exposed keys in code and full git history
-- [Monitoring](https://patchlabs.dev/product/monitoring): scheduled re-checks and alerts on new leaks
-- [Badge and proof page](https://patchlabs.dev/product/badge): a dated public record of the last check
-- [Agencies](https://patchlabs.dev/agencies): keep client apps checked after handover
+- [PatchLabs Lab](https://patchlabs.dev/product/lab): rebuilds the database from migrations and tests who can read what
+- [PatchLabs Code](https://patchlabs.dev/product/code): keys, risky AI-written code and vulnerable dependencies in the repo
+- [PatchLabs Fix](https://patchlabs.dev/product/fix): lab-proven migrations your engineer approves
+- [PatchLabs Watch](https://patchlabs.dev/product/watch): scheduled re-checks, alerts, badge and signed receipts
+- [Demo](https://patchlabs.dev/demo): the real app on a fake workspace, no sign-in
+- [Integrations](https://patchlabs.dev/integrations)
+- [For founders](https://patchlabs.dev/solutions/founders)
+- [For agencies](https://patchlabs.dev/solutions/agencies)
+- [For engineers](https://patchlabs.dev/solutions/engineers)
 - [Lovable apps](https://patchlabs.dev/for/lovable)
 - [Supabase apps](https://patchlabs.dev/for/supabase)
 - [Bolt apps](https://patchlabs.dev/for/bolt)
@@ -34,17 +39,49 @@ Key facts:
 ## Research
 - [The 1-in-4 study](https://patchlabs.dev/research/1-in-4): 318 rebuilt apps, exact counts
 - [Methodology](https://patchlabs.dev/research/methodology): selection, definitions, judging, costs, limits
-- [Finding index](https://patchlabs.dev/findings): stable PL-IDs with the SQL behind each check
-- [PL-001 Anonymous visitor can read personal data](https://patchlabs.dev/findings/pl-001)
-- [PL-002 Any signed-in user can read every row](https://patchlabs.dev/findings/pl-002)
-- [PL-003 RLS enabled but no policies](https://patchlabs.dev/findings/pl-003)
-- [PL-004 UPDATE policy missing WITH CHECK](https://patchlabs.dev/findings/pl-004)
-- [PL-005 Always-true policy](https://patchlabs.dev/findings/pl-005)
-- [PL-006 SECURITY DEFINER function exposed](https://patchlabs.dev/findings/pl-006)
-- [PL-007 Public storage bucket](https://patchlabs.dev/findings/pl-007)
-- [PL-008 Row level security not enabled](https://patchlabs.dev/findings/pl-008)
-- [PL-010 Service role key in client code](https://patchlabs.dev/findings/pl-010)
-- [PL-011 Key still in git history](https://patchlabs.dev/findings/pl-011)
+- [Finding index](https://patchlabs.dev/findings): stable PL-IDs, live and coming, with example code, a self-check and the fix
+- [PL-001 Anonymous visitor can read personal data](https://patchlabs.dev/findings/pl-001) (Lab)
+- [PL-002 Any signed-in user can read every row](https://patchlabs.dev/findings/pl-002) (Lab)
+- [PL-003 RLS enabled but no policies (owner locked out)](https://patchlabs.dev/findings/pl-003) (Lab)
+- [PL-004 UPDATE policy missing WITH CHECK](https://patchlabs.dev/findings/pl-004) (Lab)
+- [PL-005 Always-true policy](https://patchlabs.dev/findings/pl-005) (Lab)
+- [PL-006 SECURITY DEFINER function exposed](https://patchlabs.dev/findings/pl-006) (Lab)
+- [PL-007 Public storage bucket](https://patchlabs.dev/findings/pl-007) (Lab)
+- [PL-008 Row level security not enabled](https://patchlabs.dev/findings/pl-008) (Lab)
+- [PL-009 AI, payment or database key in the code](https://patchlabs.dev/findings/pl-009) (Code)
+- [PL-010 Service role key in client code](https://patchlabs.dev/findings/pl-010) (Code)
+- [PL-011 Key still in git history](https://patchlabs.dev/findings/pl-011) (Code)
+- [PL-012 Strangers can change or delete other people's rows](https://patchlabs.dev/findings/pl-012) (coming: not tested yet)
+- [PL-013 Users can make themselves admin](https://patchlabs.dev/findings/pl-013) (coming: not tested yet)
+- [PL-014 View skips row level security](https://patchlabs.dev/findings/pl-014) (coming: not tested yet)
+- [PL-015 Stored files readable or writable by anyone](https://patchlabs.dev/findings/pl-015) (coming: not tested yet)
+- [PL-016 Realtime sends private rows to subscribers](https://patchlabs.dev/findings/pl-016) (coming: not tested yet)
+- [PL-017 Edge function open without sign-in while using the service key](https://patchlabs.dev/findings/pl-017) (Code)
+- [PL-018 Sign-ups need no email confirmation](https://patchlabs.dev/findings/pl-018) (Code)
+- [PL-019 Access decided by user_metadata, which users can edit](https://patchlabs.dev/findings/pl-019) (Code)
+- [PL-020 Admin check only in the browser](https://patchlabs.dev/findings/pl-020) (Code)
+- [PL-021 Payment webhook doesn't verify its signature](https://patchlabs.dev/findings/pl-021) (Code)
+- [PL-022 Edge function trusts a user id sent in the request](https://patchlabs.dev/findings/pl-022) (Code)
+- [PL-023 Dependency with a known vulnerability](https://patchlabs.dev/findings/pl-023) (Code)
+- [PL-024 User content rendered as raw HTML](https://patchlabs.dev/findings/pl-024) (Code)
+- [PL-025 Firebase rules allow anyone](https://patchlabs.dev/findings/pl-025) (Code)
+- [PL-026 Any website can call a signed-in function](https://patchlabs.dev/findings/pl-026) (Code)
+
+## Learn
+- [All guides](https://patchlabs.dev/learn)
+- [How to secure a Lovable app’s Supabase database](https://patchlabs.dev/learn/secure-lovable-supabase-app)
+- [Supabase RLS policies explained, with owner and stranger tests](https://patchlabs.dev/learn/rls-policies-explained)
+- [Supabase views and security_invoker: stop views bypassing RLS](https://patchlabs.dev/learn/supabase-views-security-invoker)
+- [Supabase storage bucket policies: public, private and per-user folders](https://patchlabs.dev/learn/supabase-storage-policies)
+- [Supabase Realtime security: keep private rows out of subscriptions](https://patchlabs.dev/learn/supabase-realtime-security)
+- [user_metadata vs app_metadata: where to store roles in Supabase](https://patchlabs.dev/learn/user-metadata-vs-app-metadata)
+- [How to secure Supabase Edge Functions](https://patchlabs.dev/learn/secure-supabase-edge-functions)
+- [Verify Stripe webhook signatures in a Supabase Edge Function](https://patchlabs.dev/learn/stripe-webhook-supabase-edge-function)
+- [How to rotate a leaked API key and clean your git history](https://patchlabs.dev/learn/rotate-leaked-key-git-history)
+- [What to do in the first hour after a leak](https://patchlabs.dev/learn/first-hour-after-a-leak)
+- [Pre-launch security checklist for vibe-coded apps](https://patchlabs.dev/learn/vibe-coded-app-security-checklist)
+- [Firebase security rules basics: lock down Firestore and Storage](https://patchlabs.dev/learn/firebase-security-rules-basics)
+- [How to find and fix vulnerable npm dependencies](https://patchlabs.dev/learn/npm-dependency-vulnerabilities)
 
 ## Free tools
 - [All tools](https://patchlabs.dev/tools)
@@ -60,6 +97,8 @@ Key facts:
 
 ## Developers
 - [Docs](https://patchlabs.dev/docs): quickstart and guides
+- [Findings and product lines](https://patchlabs.dev/docs/findings): the finding format and the four lines
+- [Reading a report](https://patchlabs.dev/docs/reading-a-report)
 - [REST API](https://patchlabs.dev/docs/api)
 - [MCP server](https://patchlabs.dev/docs/mcp)
 - [Receipts](https://patchlabs.dev/docs/receipts): verifying signed results
@@ -71,7 +110,7 @@ Key facts:
 - [Status](https://patchlabs.dev/status): live API, database, worker and queue status
 - [Public proof page](https://patchlabs.dev/proof): an app's public record, and in-browser receipt verification
 - [About](https://patchlabs.dev/about)
-- [Changelog](https://patchlabs.dev/changelog)
+- [Changelog](https://patchlabs.dev/changelog): v3 shipped 10 Nov 2026
 - [security.txt](https://patchlabs.dev/.well-known/security.txt)
 
 ## Legal

@@ -1,0 +1,122 @@
+<!--
+title: PatchLabs for engineers: the SQL, the proof and the receipt | PatchLabs
+description: For the engineer who approves the change: every fix is a migration with before-and-after counts for anon, stranger and owner, a risk note and a signed receipt. Nothing ships without you.
+layout: marketing
+nav: sol_engineers
+head: <link rel="stylesheet" href="/assets/pages/platform.css">
+-->
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/#who-h">Solutions</a></li><li aria-current="page">Engineers</li></ol></nav>
+      <p class="lab">For engineers</p>
+      <h1>You approve the change. Here is everything you need to say yes.</h1>
+      <p class="lede">Each fix is a migration, re-tested in a rebuilt copy of the database as an anonymous visitor, a signed-in stranger and the owner. You get the SQL, the before-and-after counts, a risk note and a signed receipt. Nothing changes until you apply it.</p>
+      <div class="row"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/docs">Read the docs</a></div>
+    </div>
+    <figure class="figure"><div class="ui" role="img" aria-label="The fix for the demo app: a migration replacing the everyone-can-read policy with owner-only access, proven as anon, stranger and owner, with approve and commit buttons.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/check?id=sample</span><span class="ui-tag">Real fix · 9 Nov 2026</span></div>
+  <div class="ui-body">
+    <div class="ui-head"><div><p class="lab">Fix · PL-001</p><p class="ui-title" style="font-size:16px">public.profiles → owner-only read</p></div><span class="pill proven">lab proof passed</span></div>
+    <p class="ui-file">supabase/migrations/20261109165700_patchlabs_leak_fix.sql</p>
+<pre class="ui-code"><span class="c">-- Fix: replace "everyone can read" with owner-only access</span>
+<span class="del">DROP POLICY "Profiles are viewable by everyone" ON public.profiles;</span><span class="add">CREATE POLICY "Users can view own profile" ON public.profiles</span><span class="add">  FOR SELECT USING (auth.uid() = user_id);</span></pre>
+    <div class="proof3">
+      <div><span class="k">anon</span><span class="v">0 rows</span><span class="tok">DENIED</span></div>
+      <div><span class="k">stranger</span><span class="v">0 rows</span><span class="tok">DENIED</span></div>
+      <div><span class="k">owner</span><span class="v">1 row, their own</span><span class="tok">OK</span></div>
+    </div>
+    <div class="ui-actions" style="margin-top:14px"><span class="btn primary">Approve the fix</span><span class="btn secondary">Commit on GitHub</span><span class="btn secondary ui-hide-sm">Download .sql</span></div>
+  </div>
+</div><figcaption>The real fix from our demo app, 9 Nov 2026.</figcaption></figure>
+  </div>
+</section>
+<section class="sec" aria-labelledby="out-h">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">What you review</p><h2 id="out-h">Evidence, in the formats you already use.</h2></div><div class="sol-outcomes" data-reveal><div><span class="lab"><span class="n">01</span>SQL</span><h3>A migration, not advice</h3><p>A timestamped file for <code>supabase/migrations</code>, with comments on what changed and why. Download it, or commit it on GitHub.</p></div><div><span class="lab"><span class="n">02</span>Proof</span><h3>Counts for each identity</h3><p>Rows read before and after, as anon, a signed-in stranger and the owner, on a database rebuilt from your migrations.</p></div><div><span class="lab"><span class="n">03</span>Record</span><h3>A signed receipt</h3><p>Ed25519-signed: the result, the fix’s hash and every decision your team made. Verifiable by anyone with the public key.</p></div></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="proof-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">How the proof runs</p>
+        <h2 id="proof-h">The exact identities, simulated inside a disposable database.</h2>
+        <p class="lede">The lab applies your migrations to a local Postgres with Supabase’s roles, <code>auth.uid()</code> and default grants, seeds fake rows for two users, then sets the role and JWT claims for each identity.</p>
+        <ul class="ticks mt-3">
+          <li>Never connects to your project; we never need a password or service key</li>
+          <li>The smallest model writes first; spend capped per check</li>
+          <li>A fix that fails any identity goes to a person, never shipped as proven</li>
+        </ul>
+        <p class="mt-3"><a class="link-arrow" href="/docs/verification">How proof works</a></p>
+      </div>
+      <div class="stack-ui"><div class="code dark mb-0">
+  <div class="code-bar"><span class="name">lab: three-identity probe, simplified from the real run</span></div>
+<pre><code><span class="c">-- 1. anonymous visitor, with your public key</span>
+set local role anon;
+select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span>
+<span class="c">-- 2. signed-in stranger</span>
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"&lt;stranger&gt;"}', true);
+select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code></pre>
+</div>
+        <div class="code mb-0">
+          <div class="code-bar"><span class="name">verify a receipt · python, simplified</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>r = get(f"{API}/receipts/{check_id}")
+key = get(f"{API}/.well-known/patchlabs-receipt-key")
+msg = json.dumps(r["receipt"], sort_keys=True,
+                 separators=(",", ":")).encode()
+Ed25519PublicKey.from_public_bytes(
+    b64decode(key["public_key"])).verify(
+    b64decode(r["signature"]), msg)</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="wf-h">
+  <div class="wrap">
+<div class="sec-head split "><div><p class="lab">In your workflow</p><h2 id="wf-h">From your terminal, your agent or your CI.</h2></div><a class="link-arrow" href="/integrations">All integrations</a></div><div class="feats" data-reveal><div><span class="k"><span>CI</span><span class="live">live</span></span><h3>GitHub Action</h3><p>Re-check when a migration lands and fail the build while a leak is open. <a href="/docs/github-action">Setup</a>.</p></div><div><span class="k"><span>Agents</span><span class="live">live</span></span><h3>MCP server</h3><p>Claude Code, Cursor, VS Code, Windsurf. <a href="/docs/mcp">Setup</a>.</p></div><div><span class="k"><span>API</span><span class="live">live</span></span><h3>REST API and webhooks</h3><p>Signed events and a workspace key. <a href="/docs/api">Reference</a>.</p></div><div><span class="k"><span>Decide</span><span class="live">live</span></span><h3>Approve or mark intended</h3><p>Record decisions on each check; suppressions stop repeat alerts. <a href="/docs/decisions">Decisions</a>.</p></div><div><span class="k"><span>Findings</span><span class="live">live</span></span><h3>Stable IDs, 21 checks live</h3><p>PL-001 to PL-026, each with the pattern and the fix. <a href="/findings">Library</a>.</p></div><div><span class="k"><span>GitHub App</span><span class="soon">coming</span></span><h3>Pull requests</h3><p>Fixes as pull requests on your repo, and private repos. Coming.</p></div></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Engineer questions.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>What does the lab not model?</summary><div class="acc-body"><p>Anything outside your migrations: changes made by hand in the dashboard, extensions or settings not in the repo, and backends other than Supabase/Postgres. The report lists what it couldn’t rebuild.</p></div></details>
+<details class="acc"><summary>Does it understand intentionally public tables?</summary><div class="acc-body"><p>Mark them as intended once; later checks keep reporting them but stop alerting. Decisions go into the signed receipt.</p></div></details>
+<details class="acc"><summary>Can I see the raw findings?</summary><div class="acc-body"><p>Yes. Every finding has the same JSON shape across the report, API and webhooks: ID, severity, object, file, line, evidence, proof and fix.</p></div></details>
+<details class="acc"><summary>Is this a pentest?</summary><div class="acc-body"><p>No. It tests specific, documented things in depth. Use it alongside a pentest for a high-stakes launch.</p></div></details></div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Run it on a repo you know well.</h2>
+      <p class="lede">The fastest way to judge the proof is on code you understand. First app free.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo4">Public GitHub repo</label>
+          <input id="repo4" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email4">Your email</label>
+          <input id="email4" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/demo">Try the demo</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>

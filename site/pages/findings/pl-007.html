@@ -3,15 +3,15 @@ title: PL-007 Public storage bucket | PatchLabs findings
 description: PL-007: a Supabase storage bucket is set to public. When that exposes personal files, how to check, the fix PatchLabs writes and the test.
 layout: marketing
 nav: findings
-head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-007: Public storage bucket","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-007: Public storage bucket","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
 -->
 <main id="main">
   <div class="wrap wide docs">
     <nav class="docs-nav" aria-label="Findings">
       <details open><summary class="show-sm">All findings</summary>
       <h2>Overview</h2>
-      <ul><li><a href="/findings">Finding index</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
-      <h2>Data access</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Lab · database</h2>
       <ul>
         <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
         <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
@@ -22,17 +22,36 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <li><a href="/findings/pl-007" aria-current="page"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
         <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
       </ul>
-      <h2>Keys</h2>
+      <h2>Code · repo</h2>
       <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
         <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
         <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
       </ul>
       </details>
     </nav>
     <article class="docs-main prose finding">
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-007</li></ol></nav>
       <header class="f-head">
-        <div class="f-id"><span class="f-chip">PL-007</span><span class="pill sev-medium">medium</span></div>
+        <div class="f-id"><span class="f-chip">PL-007</span><span class="pill sev-medium">medium</span><span class="pill plain">Lab</span></div>
         <h1>Public storage bucket</h1>
         <p class="lede">Files in this bucket are served to anyone with the link. ID scans and invoices don't belong there.</p>
         <dl class="f-facts">
@@ -42,10 +61,13 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
           <div><dt>Lab proof</dt><dd>Listing test included for your engineer</dd></div>
         </dl>
       </header>
+      
 
       <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
       <p>A public bucket serves its files to anyone who has the URL, with no sign-in. That is right for avatars and product photos. It is a leak when the bucket holds personal files: ID documents, CVs, invoices, signed contracts, medical letters.</p>
 <p>It gets worse when a broad read policy on <code>storage.objects</code> also lets visitors list the bucket, because then nobody needs to guess the links.</p>
+      
+
       
 
       <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
@@ -104,11 +126,14 @@ where schemaname = 'storage' and tablename = 'objects';</code></pre>
       <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
       <p>Public buckets are right for files meant for everyone: avatars, product images, logos, blog images. Keep them public, and keep personal files in a separate private bucket. If a public bucket only holds public assets, there is nothing to fix.</p>
 
+      
+
       <h2 id="lint"><span class="lab" aria-hidden="true">Map</span>Supabase linter</h2>
 <dl class="lint"><dt>0025 public_bucket_allows_listing</dt><dd>Flags public buckets whose object policies let clients list their files.</dd></dl>
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3><p class="small">Anyone with your app's public key can read emails, phone numbers or addresses.</p></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3><p class="small">No rules at all. With API access granted, anyone with the public key can read and change every row.</p></a><a class="card link" href="/findings/pl-011"><span class="n-big">PL-011</span><h3>Key still in git history</h3><p class="small">You deleted the key. Every old commit still has it, and so does every clone and fork.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/secure-lovable-supabase-app">How to secure a Lovable app’s Supabase database</a></li><li><a href="/learn/supabase-storage-policies">Supabase storage bucket policies: public, private and per-user folders</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>

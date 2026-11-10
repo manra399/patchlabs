@@ -1,0 +1,149 @@
+<!--
+title: PatchLabs Code: keys, vulnerable dependencies and risky AI-written code | PatchLabs
+description: PatchLabs Code reads your repo and its full git history for exposed keys, dependencies with known vulnerabilities and the risky patterns AI-built apps get wrong.
+layout: marketing
+nav: code
+head: <link rel="stylesheet" href="/assets/pages/platform.css">
+-->
+<main id="main">
+<section class="p2-hero">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/#platform">Products</a></li><li aria-current="page">Code</li></ol></nav>
+      <div class="p2-kicker"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span><span>Product line</span><b>PatchLabs Code</b></span></div>
+      <h1>The risky code your AI assistant wrote, found first.</h1>
+      <p class="lede">PatchLabs Code reads your repo and every past commit: keys that should never have been committed, packages with published advisories, and the patterns AI-built apps get wrong, from open edge functions to unsigned payment webhooks. It reads; it never runs your code.</p>
+      <div class="row"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/demo">Try the demo</a></div>
+      <p class="meta-line">Never runs your code · never installs packages · works from the repo only</p>
+    </div>
+    <figure class="figure">
+      <div class="ui term" role="img" aria-label="A synthetic code finding: a payment webhook in an edge function reads the request body without verifying its signature, flagged as PL-021.">
+  <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">code scan · synthetic example</span></div>
+  <div class="cv">
+    <div class="cv-file"><b>supabase/functions/stripe-webhook/index.ts</b></div>
+    <div class="cv-lines">
+<span class="l"><i>1</i><span><span class="kw">import</span> Stripe <span class="kw">from</span> <span class="s">"npm:stripe"</span>;</span></span>
+<span class="l"><i>2</i><span></span></span>
+<span class="l"><i>3</i><span>Deno.serve(<span class="kw">async</span> (req) =&gt; {</span></span>
+<span class="l hit"><i>4</i><span>  <span class="kw">const</span> event = <span class="kw">await</span> req.json();</span></span>
+<span class="l"><i>5</i><span>  <span class="kw">if</span> (event.type === <span class="s">"checkout.session.completed"</span>) {</span></span>
+<span class="l"><i>6</i><span>    <span class="kw">await</span> markPaid(event.data.object.metadata.user_id);</span></span>
+<span class="l"><i>7</i><span>  }</span></span>
+    </div>
+    <div class="cv-note"><div class="h"><span class="id">PL-021</span><span class="sev high">high</span><b>Payment webhook doesn’t verify its signature</b></div>Anyone who finds this URL can post a fake “paid” event. Verify it first: <code>stripe.webhooks.constructEventAsync(body, sig, secret)</code>.</div>
+    <div class="cv-more">
+      <div class="r"><span class="id">PL-023</span><span class="t">Dependency with a known vulnerability<small>lodash 4.17.20 · advisory from OSV</small></span><span class="sev high">high</span></div>
+      <div class="r"><span class="id">PL-011</span><span class="t">Key still in git history<small>.env @ 81c0d4e · sk_live_51Ab…x9Q2 masked</small></span><span class="sev high">high</span></div>
+      <div class="r"><span class="id">PL-026</span><span class="t">Any website can call a signed-in function<small>supabase/functions/profile/index.ts</small></span><span class="sev med">medium</span></div>
+    </div>
+  </div>
+  <div class="ui-foot"><span>Synthetic example · not a real repo or key</span></div>
+</div>
+      <figcaption>A synthetic example of Code findings. Real reports name the file and line, and mask every secret.</figcaption>
+    </figure>
+  </div>
+</section>
+<section class="sec tight" aria-label="Product lines" style="padding-top:0">
+  <div class="wrap"><nav class="lines-strip" aria-label="Product lines"><a href="/product/lab"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><b>PatchLabs Lab</b><span class="d">Rebuilds the database and reproduces each leak.</span></a><a href="/product/code" aria-current="page"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><b>PatchLabs Code</b><span class="d">Keys, dependencies and risky AI-written code.</span></a><a href="/product/fix"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><b>PatchLabs Fix</b><span class="d">A migration proven as three identities.</span></a><a href="/product/watch"><span class="ico" aria-hidden="true"><svg class="ico-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><b>PatchLabs Watch</b><span class="d">Re-checks, alerts, badge and receipts.</span></a></nav></div>
+</section>
+<section class="sec" aria-labelledby="how-h">
+  <div class="wrap">
+<div class="sec-head "><p class="lab">How it works</p><h2 id="how-h">Read, match, look up, report.</h2><p>Pure static reading of the files in your repo, with a time budget, so a check never hangs on a large project.</p></div><ol class="flow" style="--n:4" data-reveal><li><h3>Read</h3><p>The working tree and the full git history, including commits that later deleted a key.</p><div class="art">working tree
++ every commit</div></li><li><h3>Match</h3><p>Provider-specific key patterns and checks written for AI-built apps: edge functions, webhooks, admin pages, CORS, Firebase rules.</p><div class="art">supabase/functions/**
+firestore.rules</div></li><li><h3>Look up</h3><p>Dependency versions from your lockfile, checked against the OSV advisory database. Offline, this step reports “skipped” instead of failing.</p><div class="art">lockfile → OSV
+querybatch</div></li><li><h3>Report</h3><p>Each finding gets an ID, file, line, short redacted evidence and a one-line fix.</p><div class="art">PL-021 · high
+index.ts:4</div></li></ol>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="caps-h">
+  <div class="wrap">
+<div class="sec-head split "><div><p class="lab">Capabilities</p><h2 id="caps-h">13 Code checks live today.</h2><p>Every check has a finding page with the vulnerable pattern and the fix.</p></div><a class="link-arrow" href="/findings">Findings library</a></div><div class="cap-list"><div class="cap-head" aria-hidden="true"><span>ID</span><span>Check</span><span>Who can exploit</span><span>Severity</span></div><a class="cap-row" href="/findings/pl-009"><span class="fid">PL-009</span><div><h3>AI, payment or database key in the code</h3><p>A live key for an AI provider, Stripe, AWS or a database sits in your current code. Values are masked in the report.</p></div><span class="who">anyone who can read the repo</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-010"><span class="fid">PL-010</span><div><h3>Service role key in client code</h3><p>The key that bypasses every rule is bundled into code that ships to the browser.</p></div><span class="who">anyone who opens your site</span><span class="st"><span class="pill sev-critical">critical</span></span></a><a class="cap-row" href="/findings/pl-011"><span class="fid">PL-011</span><div><h3>Key still in git history</h3><p>An AI, payment or database key was committed once. Deleting the line didn’t delete it.</p></div><span class="who">anyone who can read the repo</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-017"><span class="fid">PL-017</span><div><h3>Edge function open without sign-in while using the service key</h3><p>A function that skips the sign-in check but talks to the database with the key that bypasses every rule.</p></div><span class="who">anyone who finds the URL</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-018"><span class="fid">PL-018</span><div><h3>Sign-ups need no email confirmation</h3><p>Anyone can create accounts with addresses they don’t own, which turns PL-002 into a public leak.</p></div><span class="who">anyone</span><span class="st"><span class="pill sev-low">low</span></span></a><a class="cap-row" href="/findings/pl-019"><span class="fid">PL-019</span><div><h3>Access decided by user_metadata, which users can edit</h3><p>Code or SQL that grants access from user_metadata, which every user can change about themselves. Reproducing it in the lab is coming.</p></div><span class="who">anyone who signs up</span><span class="st"><span class="pill sev-critical">critical</span></span></a><a class="cap-row" href="/findings/pl-020"><span class="fid">PL-020</span><div><h3>Admin check only in the browser</h3><p>The admin page hides itself in the frontend, but the data behind it is open to any signed-in user.</p></div><span class="who">any signed-in user</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-021"><span class="fid">PL-021</span><div><h3>Payment webhook doesn’t verify its signature</h3><p>A Stripe-style webhook trusts the request body, so anyone can post a fake “paid” event.</p></div><span class="who">anyone who finds the URL</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-022"><span class="fid">PL-022</span><div><h3>Edge function trusts a user id sent in the request</h3><p>The function acts on whatever user id the caller sends instead of the signed-in user’s.</p></div><span class="who">any caller</span><span class="st"><span class="pill sev-high">high</span></span></a><a class="cap-row" href="/findings/pl-023"><span class="fid">PL-023</span><div><h3>Dependency with a known vulnerability (OSV)</h3><p>A package version in your lockfile with a published advisory, looked up in the OSV database.</p></div><span class="who">depends on the advisory</span><span class="st"><span class="pill sev-low">from advisory</span></span></a><a class="cap-row" href="/findings/pl-024"><span class="fid">PL-024</span><div><h3>User content rendered as raw HTML</h3><p>dangerouslySetInnerHTML or innerHTML fed with user input, without sanitising it.</p></div><span class="who">any user who can post content</span><span class="st"><span class="pill sev-medium">medium</span></span></a><a class="cap-row" href="/findings/pl-025"><span class="fid">PL-025</span><div><h3>Firebase rules allow anyone</h3><p>Firestore or Storage rules with allow read, write: if true, or open to every signed-in user.</p></div><span class="who">anyone on the internet</span><span class="st"><span class="pill sev-critical">critical</span></span></a><a class="cap-row" href="/findings/pl-026"><span class="fid">PL-026</span><div><h3>Any website can call a signed-in function</h3><p>A function answers CORS * while reading the caller’s auth, so other sites can act as your users.</p></div><span class="who">any website your users visit</span><span class="st"><span class="pill sev-medium">medium</span></span></a></div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="keys-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Keys</p>
+        <h2 id="keys-h">A deleted key is still in your git history.</h2>
+        <p class="lede">Git keeps every version of every file. If a key was ever committed to a public repo, anyone who clones it can find it, even after a later commit removed it. Every report links each key to the page where you revoke it.</p>
+        <div class="callout note mt-3"><p>Your Supabase anon key is public by design and isn’t flagged. What matters is the rules behind it, which <a href="/product/lab">PatchLabs Lab</a> tests.</p></div>
+      </div>
+      <div class="stack">
+        <div class="card"><p class="lab">AI providers · by key format</p><p class="small mb-0">Anthropic, OpenAI (including admin and service-account keys), OpenRouter, Google AI Studio and Cloud, Groq, Replicate, Hugging Face, Perplexity, xAI, Fireworks, ElevenLabs, DeepSeek, plus keys in variables named for about 30 more AI and data services.</p></div>
+        <div class="card"><p class="lab">Payments, database and platform</p><p class="small mb-0">Stripe live secret and restricted keys, Supabase service_role, AWS access keys, GitHub and Slack tokens, Resend, Railway, credentials inside URLs, private key blocks.</p></div>
+        <div class="card"><p class="lab">Files</p><p class="small mb-0"><code>.env</code> files committed now or ever. Example files such as <code>.env.example</code> and obvious placeholders are skipped.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="sample-h">
+  <div class="wrap">
+<div class="split top">
+      <div>
+        <p class="lab">Sample output</p>
+        <h2 id="sample-h">One finding, as the API returns it.</h2>
+        <p class="lede">Every product line shares one finding shape, so your report, the API, webhooks and your CI read Code findings the same way as Lab findings.</p>
+        <ul class="ticks mt-3">
+          <li>File and line, so your engineer goes straight to it</li>
+          <li>Evidence is short and redacted: never a full key, never personal data</li>
+          <li><code>advisory</code> is filled for dependency findings (PL-023)</li>
+        </ul>
+      </div>
+      <div class="code dark mb-0">
+        <div class="code-bar"><span class="name">finding · synthetic example</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  "id": "PL-021",
+  "line": "code",
+  "severity": "high",
+  "title": "Payment webhook doesn't verify its signature",
+  "object": "supabase/functions/stripe-webhook/index.ts",
+  "line_no": 4,
+  "evidence": "req.json() used without constructEvent",
+  "proven": false,
+  "fix": "Verify the Stripe-Signature header before trusting the body"
+}</code></pre>
+      </div>
+    </div><div class="callout limit mt-4"><p><strong>Static reading has limits.</strong> Code checks read patterns in your files; they don’t execute your app, so they can miss logic spread across services and can flag code that is safe for reasons outside the repo. Findings say what was matched so your engineer can judge. We don’t do dependency reachability analysis, DAST or pentests.</p></div>
+  </div>
+</section>
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap">
+<div class="split top">
+      <div><p class="lab">Questions</p><h2 id="faq-h">Questions about this product line.</h2><p class="muted">Something not covered? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p></div>
+      <div><details class="acc"><summary>Do you run or build my code?</summary><div class="acc-body"><p>No. Code checks only read files. We never run your code, never install your packages and never call your app. The whole scan has a 120-second budget.</p></div></details>
+<details class="acc"><summary>Where do dependency advisories come from?</summary><div class="acc-body"><p>From OSV, the open vulnerability database, queried with the package names and versions in your lockfile. If OSV can’t be reached, the check reports “skipped” rather than guessing.</p></div></details>
+<details class="acc"><summary>Is my Supabase anon key a finding?</summary><div class="acc-body"><p>No. It ships in your app on purpose. The service_role key is different: in client code it bypasses every rule, which is PL-010.</p></div></details>
+<details class="acc"><summary>Do Code findings get a lab-proven fix?</summary><div class="acc-body"><p>Lab findings get a migration proven as three identities. Code findings get a precise fix with the file and line; most are code changes your engineer makes, so they aren’t proven in the database lab. The report labels which is which.</p></div></details></div>
+    </div>
+  </div>
+</section>
+<section class="sec" aria-labelledby="final-h">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="final-h">Find what your AI assistant committed, before someone else does.</h2>
+      <p class="lede">Paste your public repo. Code and Lab run together in every check.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo3">Public GitHub repo</label>
+          <input id="repo3" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email3">Your email</label>
+          <input id="email3" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta">
+        <span>Prefer a person first? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span>
+        <span><a href="/demo">Try the demo</a></span>
+        <span><a href="/sample-report">See a sample proof report</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>

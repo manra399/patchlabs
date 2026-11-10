@@ -51,3 +51,18 @@ async function api(path, opts) {
   }
   return data;
 }
+
+// Public pages: when you're signed in, the header's "Sign in" becomes "Open the app". The session is checked once per
+// browser session with GET /me; a 401 clears it (api() does that) and the link goes back to "Sign in".
+document.addEventListener('DOMContentLoaded', function () {
+  var links = document.querySelectorAll('a.signin');
+  if (!links.length || !session.get()) return;
+  var set = function (on) {
+    links.forEach(function (a) { a.textContent = on ? 'Open the app' : 'Sign in'; a.setAttribute('href', on ? '/app/' : '/app/login'); });
+  };
+  set(true);
+  var ok; try { ok = sessionStorage.getItem('pl_session_ok') === session.get().slice(0, 12); } catch (e) {}
+  if (ok) return;
+  api('/me').then(function () { try { sessionStorage.setItem('pl_session_ok', session.get().slice(0, 12)); } catch (e) {} })
+    .catch(function (e) { if (e.status === 401) set(false); });
+});

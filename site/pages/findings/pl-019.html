@@ -1,0 +1,189 @@
+<!--
+title: PL-019 Access decided by user_metadata, which users can edit | PatchLabs findings
+description: PL-019: a Supabase app decides roles or access from user_metadata, which every user can change. user_metadata vs app_metadata, how to check, and the fix.
+layout: marketing
+nav: findings
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="stylesheet" href="/assets/pages/B-findings.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"PL-019: Access decided by user_metadata, which users can edit","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs">
+    <nav class="docs-nav" aria-label="Findings">
+      <details open><summary class="show-sm">All findings</summary>
+      <h2>Overview</h2>
+      <ul><li><a href="/findings">Finding index</a></li><li><a href="/learn">Guides</a></li><li><a href="/research/1-in-4">The 1-in-4 Report</a></li><li><a href="/leaking-now">Leaking right now?</a></li></ul>
+      <h2>Lab · database</h2>
+      <ul>
+        <li><a href="/findings/pl-001"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-001</span>Anonymous visitor can read personal data</a></li>
+        <li><a href="/findings/pl-002"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-002</span>Any signed-in user can read every row</a></li>
+        <li><a href="/findings/pl-003"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-003</span>RLS enabled but no policies (owner locked out)</a></li>
+        <li><a href="/findings/pl-004"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-004</span>UPDATE policy missing WITH CHECK</a></li>
+        <li><a href="/findings/pl-005"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-005</span>Always-true policy</a></li>
+        <li><a href="/findings/pl-006"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-006</span>SECURITY DEFINER function exposed</a></li>
+        <li><a href="/findings/pl-007"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-007</span>Public storage bucket</a></li>
+        <li><a href="/findings/pl-008"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-008</span>Row level security not enabled</a></li>
+      </ul>
+      <h2>Code · repo</h2>
+      <ul>
+        <li><a href="/findings/pl-009"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-009</span>AI, payment or database key in the code</a></li>
+        <li><a href="/findings/pl-010"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-010</span>Service role key in client code</a></li>
+        <li><a href="/findings/pl-011"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-011</span>Key still in git history</a></li>
+        <li><a href="/findings/pl-017"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-017</span>Edge function open without sign-in while using the service key</a></li>
+        <li><a href="/findings/pl-018"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-018</span>Sign-ups need no email confirmation</a></li>
+        <li><a href="/findings/pl-019" aria-current="page"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-019</span>Access decided by user_metadata, which users can edit</a></li>
+        <li><a href="/findings/pl-020"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-020</span>Admin check only in the browser</a></li>
+        <li><a href="/findings/pl-021"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-021</span>Payment webhook doesn't verify its signature</a></li>
+        <li><a href="/findings/pl-022"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-022</span>Edge function trusts a user id sent in the request</a></li>
+        <li><a href="/findings/pl-023"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-023</span>Dependency with a known vulnerability</a></li>
+        <li><a href="/findings/pl-024"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-024</span>User content rendered as raw HTML</a></li>
+        <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
+        <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
+      </ul>
+      <h2>Not tested yet · coming</h2>
+      <ul>
+        <li><a href="/findings/pl-012"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-012</span>Strangers can change or delete other people's rows</a></li>
+        <li><a href="/findings/pl-013"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-013</span>Users can make themselves admin</a></li>
+        <li><a href="/findings/pl-014"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-014</span>View skips row level security</a></li>
+        <li><a href="/findings/pl-015"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-015</span>Stored files readable or writable by anyone</a></li>
+        <li><a href="/findings/pl-016"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-016</span>Realtime sends private rows to subscribers</a></li>
+      </ul>
+      </details>
+    </nav>
+    <article class="docs-main prose finding">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-019</li></ol></nav>
+      <header class="f-head">
+        <div class="f-id"><span class="f-chip">PL-019</span><span class="pill sev-critical">critical (high for plans and credits)</span><span class="pill plain">Code</span></div>
+        <h1>Access decided by user_metadata, which users can edit</h1>
+        <p class="lede">Roles stored where users can rewrite them. One call from the browser and they're an admin.</p>
+        <dl class="f-facts">
+          <div><dt>Severity</dt><dd>Critical (high for plans and credits)</dd></div>
+          <div><dt>Who can exploit it</dt><dd>Anyone who signs up</dd></div>
+          <div><dt>Found by</dt><dd><a href="/product/code">PatchLabs Code</a>: SQL policies, triggers and app code</dd></div>
+          <div><dt>Lab proof</dt><dd>Not lab-proven: file and line in the report</dd></div>
+        </dl>
+      </header>
+      
+
+      <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
+      <p>Every Supabase user has two metadata objects. <code>user_metadata</code> (stored as <code>raw_user_meta_data</code>) is for profile details, and the user can set it: at sign-up through <code>options.data</code>, and at any time with <code>supabase.auth.updateUser({ data: … })</code>. <code>app_metadata</code> (<code>raw_app_meta_data</code>) can only be changed with the service role key, from a server.</p>
+<p>Both appear in the user's access token, so a policy can read either through <code>auth.jwt()</code>. PL-019 means something decides access from <code>user_metadata</code>: a policy such as <code>(auth.jwt() -&gt; 'user_metadata' -&gt;&gt; 'role') = 'admin'</code>, a sign-up trigger that copies <code>raw_user_meta_data -&gt;&gt; 'role'</code> into a role column, or frontend code that shows admin screens when <code>user.user_metadata.role === 'admin'</code>. Any user can give themselves that value.</p>
+      
+
+      <h2 id="why"><span class="lab" aria-hidden="true">Cause</span>Why AI builders produce it</h2>
+      <p>Sign-up forms collect a name and sometimes an account type, and the natural place for extra sign-up fields is <code>options.data</code>, which lands in <code>user_metadata</code>. When roles come up later, a role is already sitting there, readable from both the token and the frontend, so it gets used.</p>
+
+      <h2 id="example"><span class="lab red" aria-hidden="true">Exploit</span>Example of vulnerable code</h2>
+      <p>Simplified from the patterns we see in AI-built apps. Synthetic: not taken from any real app.</p>
+      <div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_auth.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- A policy that trusts a value the user controls</span>
+create policy "Admins read all profiles"
+  on public.profiles for select to authenticated
+  using ((auth.jwt() -&gt; 'user_metadata' -&gt;&gt; 'role') = 'admin');
+
+<span class="c">-- A sign-up trigger that copies the user's chosen role into the database</span>
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, full_name, role)
+  values (new.id, new.raw_user_meta_data -&gt;&gt; 'full_name',
+          coalesce(new.raw_user_meta_data -&gt;&gt; 'role', 'user'));
+  return new;
+end;
+$$;
+
+<span class="c">-- What any user can run in the browser:</span>
+<span class="c">--   await supabase.auth.updateUser({ data: { role: 'admin' } })</span>
+<span class="c">--   await supabase.auth.refreshSession()  -- the new token says admin</span></code></pre>
+</div>
+
+      <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
+      <div class="code">
+  <div class="code-bar"><span class="name">check-pl-019.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- 1. Policies that read user_metadata</span>
+select schemaname, tablename, policyname, qual, with_check
+from pg_policies
+where coalesce(qual, '') ilike '%user_metadata%'
+   or coalesce(with_check, '') ilike '%user_metadata%';
+
+<span class="c">-- 2. Your functions and triggers that read raw_user_meta_data</span>
+select n.nspname as schema, p.proname as function_name
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname not in ('pg_catalog', 'information_schema', 'auth', 'storage')
+  and p.prosrc ilike '%raw_user_meta_data%';</code></pre>
+</div><p>A function that copies <code>full_name</code> or an avatar is fine; look for role, plan, credits or anything like <code>is_admin</code>. In the frontend: <code>grep -rn "user_metadata" src</code>.</p>
+
+      <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
+      <p>Keep anything that grants access in <code>app_metadata</code>, which only your server can write, or in a roles table users can't write (see <a href="/findings/pl-013">PL-013</a>).</p><div class="code">
+  <div class="code-bar"><span class="name">supabase/migrations/…_fix_roles.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="del">drop policy "Admins read all profiles" on public.profiles;</span>
+<span class="add">create policy "Admins read all profiles"</span>
+<span class="add">  on public.profiles for select to authenticated</span>
+<span class="add">  using ((auth.jwt() -&gt; 'app_metadata' -&gt;&gt; 'role') = 'admin');</span>
+<span class="add">-- and in handle_new_user(): always insert role 'user', never the sign-up value</span></code></pre>
+</div><div class="code">
+  <div class="code-bar"><span class="name">granting a role from the server</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">// On a server or in an Edge Function, with the service role key</span>
+await admin.auth.admin.updateUserById(userId, {
+  app_metadata: { role: 'admin' },
+});
+<span class="c">// The user's token picks this up on its next refresh.</span></code></pre>
+</div>
+      <p class="small muted">Code findings come with the file, the line and a one-line fix in the report, for your engineer to make. PatchLabs never pushes to your repo.</p>
+
+      <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
+      <div class="window">
+  <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">code scan · report excerpt</span></div>
+<pre class="transcript lines">
+<span class="ln"><span class="step">[SCAN]</span>    supabase/migrations/…_auth.sql:4</span>
+<span class="ln">          user_metadata -&gt;&gt; 'role'    <span class="leak">LEAK</span></span>
+<span class="ln"><span class="dim">          src/components/AdminRoute.tsx:9</span></span>
+<span class="ln">          user_metadata.role === 'admin'</span>
+<span class="ln"><span class="step">[FIX]</span>     app_metadata or a roles table</span>
+</pre>
+  <div class="window-foot"><span class="pill plain">synthetic example</span><span>Report excerpt · read from the repo, not lab-proven</span></div>
+</div>
+      <p>PatchLabs Code reads your SQL (policies, triggers and functions in your migrations) and your app code, and flags any place where a role, admin flag, plan or credit balance is read from <code>user_metadata</code>. Role and admin checks are rated critical; plans and credits high. The report gives the file and line. A Lab test that signs a stranger in with an edited <code>user_metadata</code> and re-reads your tables is coming; until then this is a code finding, not a lab proof.</p>
+
+      <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
+      <p><code>user_metadata</code> is the right place for display details the user owns: name, avatar URL, preferred language. It is never the right place for anything that grants access, a plan or credits.</p>
+
+      <h2 id="severity"><span class="lab" aria-hidden="true">Rate</span>Why it’s rated critical (high for plans and credits)</h2>
+      <p>Critical: a one-line privilege escalation from the browser, needing only an account.</p>
+
+      <h2 id="lint"><span class="lab" aria-hidden="true">Map</span>Supabase linter</h2>
+<dl class="lint"><dt>0015 rls_references_user_metadata</dt><dd>Flags policies that read <code>user_metadata</code>. It doesn't look at triggers or frontend code.</dd></dl>
+
+      <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
+      <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-013"><span class="n-big">PL-013 · coming</span><h3>Users can make themselves admin</h3><p class="small">A role column or roles table that users can write to. One request turns a normal account into an admin.</p></a><a class="card link" href="/findings/pl-020"><span class="n-big">PL-020</span><h3>Admin check only in the browser</h3><p class="small">The admin page is hidden in the app, but nothing stops a normal user asking the database for the same data.</p></a><a class="card link" href="/findings/pl-018"><span class="n-big">PL-018</span><h3>Sign-ups need no email confirmation</h3><p class="small">Anyone can create a working account with any email address, including one they don't own.</p></a></div>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
+
+      <div class="f-cta">
+        <p class="lab">Free check</p>
+        <h2>Does your app have PL-019?</h2>
+        <p>Paste your public repo. PatchLabs Code reads it for this and every other code finding, and the Lab rebuilds your database to test who can read what.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-f019">Public GitHub repo</label>
+            <input id="repo-f019" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-f019">Your email</label>
+            <input id="email-f019" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+      </div>
+
+      <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-019">Tell us</a>.</p>
+      <div class="docs-pager"><a href="/findings/pl-018"><span>Previous · PL-018</span>Sign-ups need no email confirmation</a><a class="next" href="/findings/pl-020"><span>Next · PL-020</span>Admin check only in the browser</a></div>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What it is</a></li><li><a href="#why">Why AI builders produce it</a></li><li><a href="#example">Example</a></li><li><a href="#check">Check it yourself</a></li><li><a href="#fix">The fix</a></li><li><a href="#proof">The proof</a></li><li><a href="#intended">When it’s intended</a></li><li><a href="#severity">Severity</a></li><li><a href="#lint">Supabase linter</a></li><li><a href="#related">Related</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

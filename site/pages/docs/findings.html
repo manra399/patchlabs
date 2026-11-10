@@ -1,0 +1,125 @@
+<!--
+title: Findings and product lines | PatchLabs docs
+description: The four PatchLabs product lines (Lab, Code, Fix, Watch) and the one finding format every report, API response and alert uses: fields, severities, proof and finding IDs.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Findings and product lines","item":"https://patchlabs.dev/docs/findings"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/findings" aria-current="page">Findings and product lines</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Findings and product lines</li></ol></nav>
+<p class="lab">Reference</p>
+<h1>Findings and product lines</h1>
+<p class="lede">Every problem PatchLabs reports, whether the Lab reproduced it in a rebuilt database or Code found it in your repo, arrives in the same shape with a stable ID. This page explains the four product lines and each field of a finding.</p>
+<h2 id="lines">The four product lines</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Line</th><th scope="col">What it does</th><th scope="col">Produces</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><a href="/product/lab">Lab</a></th><td>Rebuilds your database from <code>supabase/migrations</code> in a disposable Postgres with Supabase’s roles and grants, seeds fake rows, and reads every table as an anonymous visitor, a signed-in stranger and the owner.</td><td>Findings with <code>line: "lab"</code>, proven by a real query</td></tr>
+    <tr><th scope="row"><a href="/product/code">Code</a></th><td>Reads the repo without running it: keys in the code and the full git history, Edge Functions and their config, webhooks, CORS, admin checks in the browser, <code>user_metadata</code> role checks, raw HTML, Firebase rules, and dependency versions checked against OSV.</td><td>Findings with <code>line: "code"</code>, with file and line</td></tr>
+    <tr><th scope="row"><a href="/product/fix">Fix</a></th><td>Writes the database fix as a migration, proves it in a fresh lab as the same three identities, asks you the business questions only you can answer, and hands it to your engineer to approve. Commit on GitHub in one click, or use MCP and CI.</td><td>The fix, the proof and <code>fixed_in_lab</code> on each finding. Automatic pull requests: coming with the GitHub App.</td></tr>
+    <tr><th scope="row"><a href="/product/watch">Watch</a></th><td>Re-checks on a schedule, shows what changed since last time, alerts by email and webhook, and signs every result.</td><td>Diffs, alerts, the badge and <a href="/docs/receipts">signed receipts</a></td></tr>
+  </tbody>
+</table></div>
+<p>Lab and Code run on every check; there is nothing to switch on. Both work from the repo and the rebuilt lab database only: PatchLabs never connects to your live app or database.</p>
+
+<h2 id="shape">One finding shape</h2>
+<p>Each finding, from either line, has the same fields. This one is from our deliberately leaky demo app (fake data):</p>
+<div class="code"><div class="code-bar"><span class="name">finding</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{"id": "PL-001", "line": "lab", "severity": "critical",
+ "title": "Anonymous visitor can read personal data",
+ "object": "public.profiles",
+ "file": "supabase/migrations/20261101090000_init.sql", "line_no": 12,
+ "evidence": "policy \"Profiles are viewable by everyone\" using (true); columns email, phone",
+ "proven": true,
+ "proof": "anonymous visitor read 2 rows with email and phone",
+ "fix": "Replace the open read policy with an owner-only policy",
+ "fixed_in_lab": true}</code></pre></div>
+<dl class="defs">
+  <dt id="f-id"><code>id</code></dt><dd>The stable finding ID, such as <code>PL-001</code>. Each has a page explaining it: <a href="/findings">the finding index</a>. IDs never change meaning and are never reused.</dd>
+  <dt id="f-line"><code>line</code></dt><dd><code>lab</code> or <code>code</code>: which product line found it. The report groups findings by line.</dd>
+  <dt id="f-severity"><code>severity</code></dt><dd><code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code> or <code>info</code>. See <a href="#severity">severity</a> below.</dd>
+  <dt id="f-title"><code>title</code></dt><dd>A plain-English summary. It can be more specific than the ID’s general title (for example naming the provider of a key).</dd>
+  <dt id="f-object"><code>object</code></dt><dd>What the finding is about: a table (<code>public.profiles</code>), a bucket, a function folder or a source file (<code>src/pages/Admin.tsx</code>).</dd>
+  <dt id="f-file"><code>file</code>, <code>line_no</code></dt><dd>Where to look in the repo. For Lab findings, the migration that created the rule; for Code findings, the exact line.</dd>
+  <dt id="f-evidence"><code>evidence</code></dt><dd>A short excerpt showing why. Keys are masked and no personal data is ever included.</dd>
+  <dt id="f-proven"><code>proven</code></dt><dd><code>true</code> when the Lab reproduced it with a real query against the rebuilt database. Code findings are <code>false</code>: they are read from the code, not reproduced, and say so.</dd>
+  <dt id="f-proof"><code>proof</code></dt><dd>For proven findings, what the lab did and saw, such as “signed-in stranger read 3 rows owned by another user”.</dd>
+  <dt id="f-fix"><code>fix</code></dt><dd>One line saying what to change. Database fixes also come as a full migration in the report.</dd>
+  <dt id="f-fixed"><code>fixed_in_lab</code></dt><dd><code>true</code> when PatchLabs Fix wrote a fix for this finding and it passed the lab proof.</dd>
+  <dt id="f-advisory"><code>advisory</code></dt><dd>Dependency findings (<code>PL-023</code>) only: the advisory id from OSV, such as a GHSA or CVE id.</dd>
+</dl>
+
+<h2 id="severity">Severity</h2>
+<p>Severity follows one question: who, outside the people meant to see it, can read or change the data?</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Level</th><th scope="col">Meaning</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><span class="pill sev-critical">critical</span></th><td>Anyone on the internet, or anyone who signs up, can read personal data, change a whole table or make themselves admin.</td></tr>
+    <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Anyone who signs up can read personal data, a privileged function or webhook is open, or a user can act on another user’s data.</td></tr>
+    <tr><th scope="row"><span class="pill sev-medium">medium</span></th><td>A real weakness that needs a specific situation to matter.</td></tr>
+    <tr><th scope="row"><span class="pill sev-low">low</span></th><td>Nothing exposed by itself.</td></tr>
+    <tr><th scope="row"><span class="pill plain">info</span></th><td>Worth knowing, not a problem as found, such as a function without the sign-in gate that checks its caller itself.</td></tr>
+  </tbody>
+</table></div>
+<p>Dependency findings take the severity of their published advisory. Key findings depend on what the key can do.</p>
+
+<h2 id="ids">Finding IDs</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Line</th><th scope="col">Live today</th><th scope="col">Coming (not tested yet)</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Lab</th><td><a href="/findings/pl-001">PL-001</a> to <a href="/findings/pl-008">PL-008</a>: who can read each table, RLS off or empty, open writes, exposed definer functions, public buckets</td><td><a href="/findings/pl-012">PL-012</a> to <a href="/findings/pl-016">PL-016</a>: strangers changing rows, self-made admins, views skipping RLS, open storage policies, Realtime streams</td></tr>
+    <tr><th scope="row">Code</th><td><a href="/findings/pl-009">PL-009</a>, <a href="/findings/pl-010">PL-010</a>, <a href="/findings/pl-011">PL-011</a> (keys in code and history), <a href="/findings/pl-017">PL-017</a> to <a href="/findings/pl-026">PL-026</a> (functions, sign-up, <code>user_metadata</code>, admin checks, webhooks, trusted ids, dependencies, raw HTML, Firebase rules, CORS)</td><td>None</td></tr>
+  </tbody>
+</table></div>
+<p>Coming checks have pages so you can check your own project, but they won’t appear in a report until they ship. The <a href="/changelog">changelog</a> records when each one does.</p>
+
+<h2 id="where">Where findings appear</h2>
+<ul>
+  <li><strong>The report page</strong> groups findings by line, most severe first, with the proof table for Lab findings. <a href="/docs/reading-a-report">Reading a report</a>.</li>
+  <li><strong>The API</strong>: a finished check’s <code>summary</code> carries <code>findings</code> (up to 200, in this shape) and <code>counts</code> by severity, next to the existing summary fields. <a href="/docs/api">REST API</a>.</li>
+  <li><strong>Alerts and webhooks</strong> count new findings since the last check. <a href="/docs/monitoring">Monitoring</a>.</li>
+  <li><strong>The free RLS check</strong> uses the same IDs for PL-001 to PL-008, from the migrations as written (no lab).</li>
+</ul>
+
+<h2 id="limits">Limits</h2>
+<div class="callout limit"><p>Lab findings are only as complete as the migrations in your repo: rules created only in the Supabase dashboard are invisible. Code findings are pattern checks: they point at a file and line for a person to judge, and a clean result doesn’t prove the absence of every bug. Dependency checks need the public OSV API; offline, they are reported as skipped, not clean. None of this is a penetration test.</p></div>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Findings%20and%20product%20lines">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/reading-a-report" rel="prev"><span>Previous</span>Reading a report</a><a class="next" href="/docs/applying-a-fix" rel="next"><span>Next</span>Applying a fix</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#lines">The four product lines</a></li><li><a href="#shape">One finding shape</a></li><li><a href="#severity">Severity</a></li><li><a href="#ids">Finding IDs</a></li><li><a href="#where">Where findings appear</a></li><li><a href="#limits">Limits</a></li></ul>
+</aside>
+</div>
+</main>
