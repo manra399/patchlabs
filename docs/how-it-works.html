@@ -464,7 +464,7 @@ print(<span class="s">"receipt is genuine:"</span>, r[<span class="s">"receipt"<
     </div>
     <div class="grid g2 top">
       <div class="callout limit"><p><strong>Missing or drifted migrations.</strong> Changes made in the dashboard and never written to <code>supabase/migrations</code> aren’t in the lab, so the proof can’t see them.</p></div>
-      <div class="callout limit"><p><strong>Non-Supabase backends.</strong> Firebase, a platform’s own built-in database, or an ORM with no Supabase migrations: we can’t rebuild those yet.</p></div>
+      <div class="callout limit"><p><strong>Non-Supabase backends.</strong> Firebase, a platform’s own built-in database, or an ORM with no Supabase migrations: we can’t rebuild those yet. For Firebase, the <a href="/tools/firebase-rules-check">free Firebase rules check</a> reads your security rules in your browser.</p></div>
       <div class="callout limit"><p><strong>Custom auth.</strong> Policies that rely on auth outside Supabase’s <code>auth.uid()</code> and JWT claims may not map onto our three identities. If that’s you, email us before relying on the result.</p></div>
       <div class="callout limit"><p><strong>Reads, not writes.</strong> The lab proof tests who can read personal data. Write rules (for example an UPDATE policy without <code>WITH CHECK</code>) are flagged by the <a href="/tools/rls-check">free RLS check</a>, which reads your migrations, not proven in the lab.</p></div>
       <div class="callout limit"><p><strong>Tables, not everything.</strong> Storage buckets, edge functions, API routes and business logic aren’t proven. The free RLS check flags public buckets.</p></div>
@@ -573,6 +573,7 @@ print(<span class="s">"receipt is genuine:"</span>, r[<span class="s">"receipt"<
         <li><a href="/tools/rls-check">Free RLS check</a></li>
         <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/tools/key-check">Free key check</a></li>
+        <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

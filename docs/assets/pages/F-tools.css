@@ -278,3 +278,11 @@
 @media (max-width: 640px) { .kc-in { min-height: 160px; } .kc-count { margin-left: 0; width: 100%; } }
 .finding .f-detail a { overflow-wrap: anywhere; }
 @media (min-width: 701px) { .tool-card.t-wide { grid-column: 1 / -1; } }
+
+/* Firebase rules check (/tools/firebase-rules-check) */
+.fc-prompt { margin: 0; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; font: 400 12.5px/1.65 var(--mono); color: var(--ink); white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; max-height: 320px; overflow-y: auto; }
+.fc-rules { table-layout: fixed; width: 100%; }
+.fc-rules th[scope="row"] { width: 46%; }
+.fc-rules th[scope="row"] code { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+.fc-rules td .pill { margin-right: 6px; }
+.fc-page code, .fc-page pre { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }

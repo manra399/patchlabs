@@ -118,6 +118,7 @@
   <url><loc>https://patchlabs.dev/status</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/cli</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/tools/firebase-rules-check</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/headers-check</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/key-check</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/leak-cost</loc><lastmod>2026-11-11</lastmod></url>

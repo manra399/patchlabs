@@ -1,6 +1,6 @@
 <!--
 title: Free security tools for AI-built apps | PatchLabs
-description: Free tools for Lovable and Supabase apps: an open-source CLI, an RLS check, a headers check, a key check and a leak cost calculator. No sign-up.
+description: Free tools for Lovable and Supabase apps: an open-source CLI, an RLS check, a headers check, a key check, a Firebase rules check and a leak cost calculator. No sign-up.
 layout: marketing
 nav: tools
 head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
@@ -74,6 +74,19 @@ low    PL-032 no nosniff
           <div class="tc-foot"><span>runs in your browser</span><span class="link-arrow">Check it</span></div>
         </div>
       </a>
+      <a class="card link tool-card" href="/tools/firebase-rules-check">
+<div class="tc-art" aria-hidden="true"><span class="d">$ rules-check firestore.rules</span>
+<span class="d">6 rules · 0 bytes sent</span>
+<span class="r">critical</span> test mode on /{document=**}
+<span class="r">high</span>     signed-in only: /orders
+<span class="g">owner</span>    write on /users/{userId}</div>
+        <div class="tc-body">
+          <span class="n-big">NO SIGN-UP · NOTHING UPLOADED</span>
+          <h3>Free Firebase rules check</h3>
+          <p>Paste your Firestore, Storage or Realtime Database rules. Your browser flags test mode, open access and rules that let any signed-in stranger read everyone’s data, with the fix.</p>
+          <div class="tc-foot"><span>runs in your browser</span><span class="link-arrow">Check it</span></div>
+        </div>
+      </a>
       <a class="card link tool-card" href="/tools/leak-cost">
 <div class="tc-art" aria-hidden="true"><span class="d">people exposed</span>       1,000
 <span class="d">× notify</span>             £0.50
@@ -88,7 +101,7 @@ low    PL-032 no nosniff
           <div class="tc-foot"><span>runs in your browser</span><span class="link-arrow">Work it out</span></div>
         </div>
       </a>
-      <a class="card link tool-card t-wide" href="/sample-report">
+      <a class="card link tool-card" href="/sample-report">
 <div class="tc-art" aria-hidden="true"><span class="d">[PROVE]</span> anon      0 rows <span class="g">DENIED</span>
         stranger  0 rows <span class="g">DENIED</span>
         owner     1 row  <span class="g">OK</span>
