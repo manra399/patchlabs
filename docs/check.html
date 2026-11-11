@@ -26,6 +26,8 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
 <link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<!-- GitHub Pages can't send frame-ancestors or X-Frame-Options, so pages refuse to show inside another site's frame (clickjacking on approve and settings). -->
+<script>if(window.top!==window.self){document.documentElement.style.display='none';try{window.top.location=window.self.location.href}catch(e){}}</script>
 <script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -145,6 +147,10 @@
   var id = new URLSearchParams(location.search).get('id');
   var STEPS = [['awaiting_verification', 'Prove it’s yours'], ['queued', 'In the queue'], ['running', 'Checking'], ['finished', 'Report ready']];
   var timer = null;
+  // Reports quote text from the scanned repo, so they are untrusted: plain formatting only. No images (tracking or fake
+  // content), forms, media or inline styles; links only to http(s), mailto or in-page anchors.
+  var REPORT_PURIFY = { FORBID_TAGS: ['img', 'svg', 'math', 'form', 'input', 'button', 'textarea', 'select', 'iframe', 'video', 'audio', 'source', 'picture', 'style'],
+    FORBID_ATTR: ['style', 'srcset'], ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|#)/i };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var $ = function (s) { return document.getElementById(s); };
 
@@ -222,7 +228,7 @@
         '<li>Merge and deploy as usual. In Lovable or Supabase, the migration applies on your next database push.</li></ol>';
     }
     html += '</div>' + (hasFindings ? '<section class="check-findings" id="findings" aria-labelledby="fh"><h2 id="fh">Every finding</h2><p class="sec-sub">Grouped by where we found it: the lab rebuild of your database, and your code with its git history.</p><div id="findings-body">' + PL.skeleton(4) + '</div></section>' : '') +
-      '<div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || '')) + '</article>';
+      '<div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || ''), REPORT_PURIFY) + '</article>';
     if (c.fix_sql) html += '<div class="code"><div class="code-bar"><span class="name">supabase/migrations/' + esc(name) + '</span><button class="copy" type="button" data-copy="#fixsql">Copy</button></div><pre class="scroll wrap-lines" id="fixsql">' + esc(c.fix_sql) + '</pre></div>';
     html += '<div id="record"></div><div id="receipt"></div>';
     html += '<p class="small muted mt-3">Questions about this report? Reply to the email we sent, or write to <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a>. <a href="/#check">Start another check</a>.</p>';
@@ -402,7 +408,7 @@
     <div class="foot-top">
       <div class="foot-brand">
         <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
-        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p>Find the leak. Prove the fix. Independent app verification for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
         <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
       </div>

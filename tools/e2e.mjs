@@ -340,7 +340,7 @@ await step('check page as a member: reject (with reason) one table, approve anot
   await sleep(800);
   assert(readdirSync(DL).some(f => f.startsWith('patchlabs-receipt-')), 'receipt downloaded');
   await p.shot('check-member');
-});
+}, { allow: ['HTTP 402'] });   // Free plan: the first approve answers 402 with the £29 price, then the approver confirms
 
 await step('app page shows the rejected table as "Marked as intended"', p, async () => {
   await p.goto('/app/app?id=' + S.aid);

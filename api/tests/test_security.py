@@ -387,3 +387,12 @@ def test_run_limit_message_is_pluralised(client):
     assert d.startswith("You've used your 1 run this month") and "1 runs" not in d
     client.patch(f"/admin/workspaces/{u.wid}", json={"run_limit": 0}, headers=A)
     assert "all 0 runs" in client.post(f"/apps/{a['id']}/checks", headers=u.h).json()["detail"]
+
+
+def test_every_response_carries_security_headers_and_no_schema(client):
+    for path in ("/health", "/nope"):
+        h = client.get(path).headers
+        assert h["x-content-type-options"] == "nosniff" and h["x-frame-options"] == "DENY"
+        assert "frame-ancestors 'none'" in h["content-security-policy"] and h["referrer-policy"] == "no-referrer"
+        assert h["strict-transport-security"].startswith("max-age=")
+    assert client.get("/openapi.json").status_code == 404   # route list (admin, worker) not published

@@ -41,7 +41,22 @@ async def lifespan(_):
     pool.close()
 
 
-app = FastAPI(title="PatchLabs API", lifespan=lifespan, docs_url=None, redoc_url=None)
+app = FastAPI(title="PatchLabs API", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+# The API serves JSON and SVG badges, never pages, so it can lock everything down. Found by running our own Live posture
+# check on api.patchlabs.dev (self-check, 11 Nov 2026).
+SECURITY_HEADERS = {"Strict-Transport-Security": "max-age=63072000; includeSubDomains", "X-Content-Type-Options": "nosniff",
+                    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+                    "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer"}
+
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    for k, v in SECURITY_HEADERS.items():
+        response.headers.setdefault(k, v)
+    return response
+
+
 app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
                    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Workspace"], expose_headers=["Content-Disposition"])
 app.include_router(accounts.router)

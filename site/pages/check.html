@@ -23,6 +23,10 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
   var id = new URLSearchParams(location.search).get('id');
   var STEPS = [['awaiting_verification', 'Prove it’s yours'], ['queued', 'In the queue'], ['running', 'Checking'], ['finished', 'Report ready']];
   var timer = null;
+  // Reports quote text from the scanned repo, so they are untrusted: plain formatting only. No images (tracking or fake
+  // content), forms, media or inline styles; links only to http(s), mailto or in-page anchors.
+  var REPORT_PURIFY = { FORBID_TAGS: ['img', 'svg', 'math', 'form', 'input', 'button', 'textarea', 'select', 'iframe', 'video', 'audio', 'source', 'picture', 'style'],
+    FORBID_ATTR: ['style', 'srcset'], ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|#)/i };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var $ = function (s) { return document.getElementById(s); };
 
@@ -100,7 +104,7 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
         '<li>Merge and deploy as usual. In Lovable or Supabase, the migration applies on your next database push.</li></ol>';
     }
     html += '</div>' + (hasFindings ? '<section class="check-findings" id="findings" aria-labelledby="fh"><h2 id="fh">Every finding</h2><p class="sec-sub">Grouped by where we found it: the lab rebuild of your database, and your code with its git history.</p><div id="findings-body">' + PL.skeleton(4) + '</div></section>' : '') +
-      '<div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || '')) + '</article>';
+      '<div id="owner"></div><article class="panel report">' + DOMPurify.sanitize(marked.parse(c.report_md || ''), REPORT_PURIFY) + '</article>';
     if (c.fix_sql) html += '<div class="code"><div class="code-bar"><span class="name">supabase/migrations/' + esc(name) + '</span><button class="copy" type="button" data-copy="#fixsql">Copy</button></div><pre class="scroll wrap-lines" id="fixsql">' + esc(c.fix_sql) + '</pre></div>';
     html += '<div id="record"></div><div id="receipt"></div>';
     html += '<p class="small muted mt-3">Questions about this report? Reply to the email we sent, or write to <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a>. <a href="/#check">Start another check</a>.</p>';
