@@ -2250,6 +2250,11 @@ def nav(cur):
     </nav>"""
 
 
+KEYCHECK_IDS = {"PL-009", "PL-010", "PL-011"}  # secret-key findings the in-browser key check covers
+KEYCHECK_NOTE = """
+      <p class="small">No terminal? Paste a file, a <code>.env</code> or your built JavaScript into the <a href="/tools/key-check">free key check</a>. It runs in your browser and sends nothing.</p>"""
+
+
 def page(f):
     i = ORDER.index(f["id"])
     prev_f = F[i - 1] if i > 0 else None
@@ -2353,6 +2358,8 @@ def page(f):
         </form>
         <div class="form-meta"><span>Free, no sign-up</span><span>Loads your public home page only</span><span><a href="/product/live-posture">How Live posture works</a></span></div>"""
     else:
+        alt_tool = ('<a href="/tools/key-check">Or paste code into the free key check</a>' if f["id"] in KEYCHECK_IDS
+                    else '<a href="/tools/rls-check">Or run the free static RLS check</a>')
         cta_form = f"""<form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
           <div class="in">
             <label class="sr-only" for="repo-f{n}">Public GitHub repo</label>
@@ -2365,7 +2372,7 @@ def page(f):
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>"""
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span>{alt_tool}</span></div>"""
     return f"""<!--
 title: {f["id"]} {f["title"]} | PatchLabs findings
 description: {f["desc"]}
@@ -2401,7 +2408,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       {f["vuln"]}
 
       <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
-      {f["check"]}
+      {f["check"]}{KEYCHECK_NOTE if f["id"] in KEYCHECK_IDS else ""}
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>{fix_h}</h2>
       {f["fix"]}

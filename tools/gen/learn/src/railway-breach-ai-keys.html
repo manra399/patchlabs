@@ -1,0 +1,66 @@
+title: Railway security incident: which keys to rotate and how to cap AI spend
+description: Railway says an attacker decrypted environment variables for up to about 100,000 workspaces in October 2026, hunting for AI keys. What to rotate, in what order, and how to cap the damage.
+h1: The Railway breach: rotate your keys, then cap what a stolen key can spend
+navtitle: The Railway breach and your AI keys
+topic: keys
+order: 3
+checked: 2026-11-11
+cta: keys
+short: An attacker decrypted stored environment variables looking for AI keys. What to rotate, in what order, and how to cap spend.
+lede: If your app ran on Railway before 21 October 2026, rotate every secret you stored there, starting with AI provider keys, because Railway says that is what the attacker was hunting for. Then put a spend limit on every AI key, so the next stolen key, from any host, has a ceiling.
+tldr: Railway says an attacker decrypted stored environment variables for at most 1.85% of workspaces (about 100,000) between 20 and 22 October 2026. || The attacker searched for AI provider key names; workspaces with many variables or many AI keys were the targets. || Rotate in this order: AI keys, payment keys, database credentials, GitHub and cloud tokens. A “your key was revoked” email still means you must issue a new one. || Set a spend limit on each AI provider account and give each app its own key, so a stolen key can only burn so much.
+findings: PL-009, PL-010, PL-011
+---
+<p>This guide is for founders whose app, or whose AI agent’s deploy, keeps secrets in Railway’s environment variables. Every fact about the incident below comes from <a href="https://blog.railway.com/p/preliminary-report-october-security-incident">Railway’s preliminary report</a> (22 October, updated 26 October). We have no inside information. Press reports have put dollar figures on the AI spend; we haven’t found those in a primary source, so they aren’t repeated here.</p>
+
+<h2 id="what-happened">What Railway says happened</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Question</th><th scope="col">Railway’s answer</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">When</th><td>From 20 October 13:58 UTC until the attacker was confirmed out on 22 October 03:32 UTC.</td></tr>
+    <tr><th scope="row">What was taken</th><td>Encrypted environment variables. Using credentials taken from Railway’s CI environment, the attacker decrypted a subset.</td></tr>
+    <tr><th scope="row">How many</th><td>At most 1.85% of workspaces, about 100,000, had some variables potentially exposed. Railway can’t tell which individual variables were decrypted.</td></tr>
+    <tr><th scope="row">What they wanted</th><td>AI and platform API keys. The attacker’s payload searched for specific AI key names, and workspaces with many variables or many AI keys were the high-risk group.</td></tr>
+    <tr><th scope="row">Accounts</th><td>Railway says user accounts were not logged into. It has not yet ruled out access to source code.</td></tr>
+    <tr><th scope="row">Who must act</th><td>Railway recommends that everyone who signed up before 21 October rotate the keys they stored on Railway.</td></tr>
+  </tbody>
+</table></div>
+<p>The lesson goes wider than one host. Wherever your secrets are stored, at your host, in CI, in an agent’s config or in your repo, that place can leak. You can’t control your host’s security. You can control how many copies of a key exist and how much damage one stolen key can do.</p>
+
+<h2 id="rotate">Rotate, in this order</h2>
+<ol>
+  <li><strong>AI provider keys</strong> (OpenAI, Anthropic, OpenRouter, Gemini and similar). They were the target, and a working key turns straight into spend on your bill.</li>
+  <li><strong>Payment keys.</strong> Roll the Stripe secret or restricted key. Stripe lets you set when the old one expires, so deploy the new one first.</li>
+  <li><strong>Database credentials.</strong> Change the database password or connection string, and a Supabase service role or secret key. These give full access to your data. Railway also advises removing public network access to databases you host there.</li>
+  <li><strong>GitHub, GitLab, registry and cloud tokens.</strong> Issue new ones with the narrowest scope that works. Check your GitHub audit log and installed apps, and your registry’s activity log (for example Docker Hub), as Railway suggests.</li>
+</ol>
+<p>Railway sent keys to GitHub, GitLab, Anthropic, OpenAI, OpenRouter, Stripe and other providers to revoke, in some cases every key it held. If you got a revocation email, your app may already be failing, and you still need to create a new key and put it back in your variables. The email alone doesn’t mean your key was among those decrypted. <a href="/learn/rotate-leaked-key-git-history#rotate">Where to rotate each kind of key</a>.</p>
+
+<h2 id="cap">Cap what a stolen key can spend</h2>
+<p>Rotation fixes this incident. A spend limit caps the next one, whoever leaks the key.</p>
+<ul>
+  <li><strong>Anthropic:</strong> set an organisation spend limit on the Console’s Billing page. Give each app its own workspace with its own spend limit (the default workspace can’t take one), and its own key inside it. Requests stop when the limit is reached.</li>
+  <li><strong>Other providers:</strong> look in billing settings for a monthly budget, a usage limit or usage alerts, and use per-project keys where the provider has them. Some budgets only send an alert, so check whether yours actually stops requests.</li>
+  <li><strong>One key per app and per environment.</strong> When one key leaks, you rotate it without taking everything else down, and its usage graph shows exactly when the abuse started.</li>
+</ul>
+
+<h2 id="copies">Keep fewer copies of each key</h2>
+<p>A key kept in your host’s variables and also committed to your repo, or bundled into your frontend, can leak from either place. Founders who build with AI tools often have both without knowing it: a <code>.env</code> committed early on, or a <code>VITE_</code> variable that copies a secret into the browser. Check your own code (findings <a href="/findings/pl-009">PL-009</a>, <a href="/findings/pl-010">PL-010</a> and <a href="/findings/pl-011">PL-011</a>):</p>
+[[CODE terminal]]
+# Secret-shaped strings in the current code
+grep -rnE "sk-proj-|sk-ant-|sk-or-|sk_live_|rk_live_" --exclude-dir=node_modules --exclude-dir=.git .
+# The same in every past commit (a deleted key still lives in history)
+git log -p --all | grep -nE "sk-proj-|sk-ant-|sk-or-|sk_live_|rk_live_" | head
+[[/CODE]]
+<p>Or paste the files into the <a href="/tools/key-check">free key check</a>, which runs in your browser.</p>
+
+<h2 id="spend">Check for spend you didn’t make</h2>
+<p>Open each AI provider’s usage page and look from 20 October onwards for models, volumes or hours that don’t match your app. Railway says it can’t refund spend made with stolen keys. It asks you to go to the AI provider first, then file a request at <a href="https://station.railway.com">station.railway.com</a> with timestamps, prompts and other proof, so Railway can escalate it for you. Keep a dated note of what you found and what you rotated (see <a href="/learn/first-hour-after-a-leak">the first hour after a leak</a>).</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://blog.railway.com/p/preliminary-report-october-security-incident">Railway: Preliminary Report, Oct 21st Security Incident</a> (22 Oct 2026, updated 26 Oct)</li>
+  <li><a href="https://blog.railway.com/p/security-disclosure-wednesday-october-21st">Railway: security disclosure</a> (21 Oct 2026)</li>
+  <li><a href="https://platform.claude.com/docs/en/api/rate-limits">Anthropic: spend limits and workspace limits</a></li>
+  <li><a href="https://docs.stripe.com/keys">Stripe: API keys and rolling them</a></li>
+</ul>

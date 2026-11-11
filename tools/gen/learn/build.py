@@ -11,7 +11,9 @@ Meta keys (one per line, `key: value`):
   short        one line for the hub card
   tldr         TL;DR bullets separated by " || " (HTML allowed)
   findings     comma-separated finding IDs, e.g. PL-001, PL-002 (also read by tools/gen/findings.py)
-  cta          optional: "headers" swaps the bottom repo-check CTA for the free headers check (/tools/headers-check)
+  cta          optional: "headers" swaps the bottom repo-check CTA for the free headers check (/tools/headers-check),
+               "keys" for the free in-browser key check (/tools/key-check)
+  checked      optional ISO date the guide's facts were last checked, when newer than UPDATED (e.g. 2026-11-11)
 Body: <h2 id="…"> sections (they become the table of contents), <h3> allowed. Use the site's .code / .callout / .table
 components. Code blocks: [[CODE name]] … [[/CODE]] is escaped and wrapped for you.
 """
@@ -159,8 +161,8 @@ def page(g, guides, ft):
         pager += f'<a class="next" href="/learn/{next_g["slug"]}" rel="next"><span>Next guide</span>{esc(next_g["h1"])}</a>'
     pager += "</nav>"
     ld = {"@context": "https://schema.org", "@graph": [
-        {"@type": "TechArticle", "headline": g["h1"], "description": g["description"], "datePublished": UPDATED_ISO,
-         "dateModified": UPDATED_ISO, "author": {"@type": "Person", "name": AUTHOR, "url": "https://patchlabs.dev/about"},
+        {"@type": "TechArticle", "headline": g["h1"], "description": g["description"], "datePublished": g.get("checked", UPDATED_ISO),
+         "dateModified": g.get("checked", UPDATED_ISO), "author": {"@type": "Person", "name": AUTHOR, "url": "https://patchlabs.dev/about"},
          "publisher": {"@type": "Organization", "name": "PatchLabs", "url": "https://patchlabs.dev"},
          "mainEntityOfPage": f"https://patchlabs.dev/learn/{g['slug']}"},
         {"@type": "BreadcrumbList", "itemListElement": [
@@ -174,7 +176,20 @@ def page(g, guides, ft):
       <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
       <div class="grid g3 not-prose l-rel">{cards}</div>"""
     toc_all = toc_items + ('<li><a href="#related-findings">Related findings</a></li>' if cards else "")
-    if g.get("cta") == "headers":
+    upd = UPDATED
+    if g.get("checked"):
+        import datetime
+        upd = datetime.date.fromisoformat(g["checked"]).strftime("%-d %b %Y")
+    if g.get("cta") == "keys":
+        extra_css = ""
+        cta = """<div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Are any of these keys also in your code?</h2>
+        <p>Paste code, a <code>.env</code> or your built JavaScript bundle into the free key check. It runs in your browser: no request is sent and nothing is stored. It flags secret keys (AI providers, Stripe, AWS, GitHub, database URLs), tells a Supabase anon key from a service role key, and links to where to rotate each one.</p>
+        <p><a class="btn primary" href="/tools/key-check">Open the free key check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/key-check?sample">See a sample result</a></span></div>
+      </div>"""
+    elif g.get("cta") == "headers":
         extra_css = '<link rel="stylesheet" href="/assets/pages/B-findings.css">'
         cta = f"""<div class="f-cta l-cta">
         <p class="lab">Free check</p>
@@ -205,13 +220,13 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="styleshe
       <p class="lab">{TOPIC_NAME[g["topic"]]}</p>
       <h1>{esc(g["h1"])}</h1>
       <p class="lede">{g["lede"]}</p>
-      <p class="l-byline"><span>By <a href="/about">{AUTHOR}</a>, technical founder</span><span>Checked {UPDATED}</span><span>{g["minutes"]} min read</span></p>
+      <p class="l-byline"><span>By <a href="/about">{AUTHOR}</a>, technical founder</span><span>Checked {upd}</span><span>{g["minutes"]} min read</span></p>
       <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul>{tldr}</ul></div>
       <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol>{toc_all}</ol></nav>
       {g["body"].strip()}
       {related}
       {cta}
-      <p class="small muted mt-4">Written by {AUTHOR}. Last checked {UPDATED}. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20{g["slug"]}">Tell us</a>.</p>
+      <p class="small muted mt-4">Written by {AUTHOR}. Last checked {upd}. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20{g["slug"]}">Tell us</a>.</p>
       {pager}
     </article>
     <aside class="toc" aria-label="On this page">

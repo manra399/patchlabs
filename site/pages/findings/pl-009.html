@@ -115,6 +115,7 @@ git ls-files | grep -E "(^|/)\.env($|\.)" | grep -v example
 <span class="c"># 3. Did a key reach the built site? (after npm run build)</span>
 grep -lE "sk-proj-|sk-ant-|sk_live_" dist/assets/*.js</code></pre>
 </div><p class="small muted"><code>AIza…</code> keys are Google API keys. In a Firebase web config that key is public by design and protected by your security rules; elsewhere (a Gemini or Maps server key) treat it as a secret.</p>
+      <p class="small">No terminal? Paste a file, a <code>.env</code> or your built JavaScript into the <a href="/tools/key-check">free key check</a>. It runs in your browser and sends nothing.</p>
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
       <p>No code change makes a published key safe again. In this order:</p>
@@ -170,7 +171,7 @@ echo "!.env.example" &gt;&gt; .gitignore</code></pre>
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3><p class="small">The key that ignores every access rule, shipped to every visitor's browser.</p></a><a class="card link" href="/findings/pl-011"><span class="n-big">PL-011</span><h3>Key still in git history</h3><p class="small">You deleted the key. Every old commit still has it, and so does every clone and fork.</p></a><a class="card link" href="/findings/pl-017"><span class="n-big">PL-017</span><h3>Edge function open without sign-in while using the service key</h3><p class="small">A server function holding the key that ignores every rule, with nothing checking who is calling it.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/first-hour-after-a-leak">What to do in the first hour after a leak</a></li><li><a href="/learn/rotate-leaked-key-git-history">How to rotate a leaked API key and clean your git history</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/first-hour-after-a-leak">What to do in the first hour after a leak</a></li><li><a href="/learn/railway-breach-ai-keys">The Railway breach: rotate your keys, then cap what a stolen key can spend</a></li><li><a href="/learn/rotate-leaked-key-git-history">How to rotate a leaked API key and clean your git history</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>
@@ -188,7 +189,7 @@ echo "!.env.example" &gt;&gt; .gitignore</code></pre>
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/key-check">Or paste code into the free key check</a></span></div>
       </div>
 
       <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-009">Tell us</a>.</p>

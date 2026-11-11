@@ -227,6 +227,7 @@ git log --all -p -G 'sk_live_|sk-proj-|sk-ant-|service_role|sb_secret_|AIza' \
 <span class="c"># 2. Was an env file ever committed?</span>
 git log --all --format='%h %ad %s' --date=short -- .env '*.env' '.env.*'</code></pre>
 </div>
+      <p class="small">No terminal? Paste a file, a <code>.env</code> or your built JavaScript into the <a href="/tools/key-check">free key check</a>. It runs in your browser and sends nothing.</p>
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
       <ol><li><strong>Rotate every key that was ever committed</strong>, at the provider (the report links to the right page for each). This is the fix. Forks, clones and caches keep old commits, so a key that has been public must be treated as known.</li>
@@ -272,7 +273,7 @@ git push --force --all</code></pre>
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-009"><span class="n-big">PL-009</span><h3>AI, payment or database key in the code</h3><p class="small">A secret key for an AI, payment or database service is sitting in your current code, readable by anyone who can read the repo.</p></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3><p class="small">The key that ignores every access rule, shipped to every visitor's browser.</p></a><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3><p class="small">Anyone with your app's public key can read emails, phone numbers or addresses.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/first-hour-after-a-leak">What to do in the first hour after a leak</a></li><li><a href="/learn/rotate-leaked-key-git-history">How to rotate a leaked API key and clean your git history</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/first-hour-after-a-leak">What to do in the first hour after a leak</a></li><li><a href="/learn/railway-breach-ai-keys">The Railway breach: rotate your keys, then cap what a stolen key can spend</a></li><li><a href="/learn/rotate-leaked-key-git-history">How to rotate a leaked API key and clean your git history</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>
@@ -290,7 +291,7 @@ git push --force --all</code></pre>
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+        <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/tools/key-check">Or paste code into the free key check</a></span></div>
       </div>
 
       <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-011">Tell us</a>.</p>
