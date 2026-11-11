@@ -29,7 +29,7 @@
 <script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
@@ -40,7 +40,7 @@
 
 <header class="site-header">
   <div class="wrap">
-    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
     <nav class="nav" id="site-nav" aria-label="Main">
       <details class="dd" data-mega>
         <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
@@ -299,7 +299,7 @@ create policy "Members read their team's projects"
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3><p class="small">Anyone with your app's public key can read emails, phone numbers or addresses.</p></a><a class="card link" href="/findings/pl-005"><span class="n-big">PL-005</span><h3>Always-true policy</h3><p class="small">A policy that says yes to everyone. On writes, anyone can change or delete your data.</p></a><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3><p class="small">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/firebase-security-rules-basics">Firebase security rules basics: lock down Firestore and Storage</a></li><li><a href="/learn/first-hour-after-a-leak">What to do in the first hour after a leak</a></li><li><a href="/learn/rls-policies-explained">Supabase RLS policies explained, with owner and stranger tests</a></li><li><a href="/learn/secure-lovable-supabase-app">How to secure a Lovable app’s Supabase database</a></li><li><a href="/learn/supabase-realtime-security">Supabase Realtime security: keep private rows out of subscriptions</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/ai-builder-scan-vs-independent-check">Your AI app builder’s security scan vs an independent check</a></li><li><a href="/learn/check-supabase-rls-every-table">How to check row level security is on for every Supabase table</a></li><li><a href="/learn/firebase-security-rules-basics">Firebase security rules basics: lock down Firestore and Storage</a></li><li><a href="/learn/first-hour-after-a-leak">What to do in the first hour after a leak</a></li><li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure? How to check in 10 minutes</a></li><li><a href="/learn/is-supabase-anon-key-safe">Is it safe to expose the Supabase anon key?</a></li><li><a href="/learn/rls-policies-explained">Supabase RLS policies explained, with owner and stranger tests</a></li><li><a href="/learn/secure-lovable-supabase-app">How to secure a Lovable app’s Supabase database</a></li><li><a href="/learn/supabase-realtime-security">Supabase Realtime security: keep private rows out of subscriptions</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li><li><a href="/learn/vibe-coding-security-risks">Security risks of vibe-coded apps, with data</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>
@@ -346,7 +346,7 @@ create policy "Members read their team's projects"
     </div>
     <div class="foot-top">
       <div class="foot-brand">
-        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
         <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
         <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>

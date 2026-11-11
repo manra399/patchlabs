@@ -1,0 +1,68 @@
+title: Is it safe to expose the Supabase anon key?
+description: Yes, if row level security is on for every table and the policies are right. Which Supabase keys are public, which never are, and how to check yours.
+h1: Is it safe to expose the Supabase anon key?
+navtitle: Is the anon key safe?
+topic: supabase
+order: 7
+short: Yes, if row level security is on for every table and the policies are right. Which Supabase keys are public, which never are, and how to check yours.
+lede: Yes, but only if row level security (RLS) is on for every table and its policies are right. The anon key, and the publishable key that replaces it, is built to sit in browser code because it reaches only what your RLS policies allow. The <code>service_role</code> key, now the secret key, is never safe to expose.
+tldr: The anon key is public by design. The rules on your tables, not the key, decide what it can read. || Supabase’s docs call the publishable key safe to expose online and describe the anon key as its legacy version. || The service_role (secret) key bypasses RLS. It must never be in a browser, a repo or a bundle. || In the PatchLabs study, 70 of 318 apps (22%) let anyone with the public key read personal data. The key was fine. The rules were missing.
+findings: PL-001, PL-002, PL-008, PL-009, PL-010, PL-011
+checked: 2026-11-11
+---
+<h2 id="why">Why is the anon key public by design?</h2>
+<p>A Supabase app talks to the database from the browser. To do that, the page needs your project URL and a key, so both end up in your JavaScript. Anyone can open the developer tools and copy them. Supabase designs for this. A request made with the key runs as the Postgres role <code>anon</code> for a visitor, or <code>authenticated</code> for a signed-in user, and RLS policies decide what those roles can see.</p>
+<p>So the key identifies your project and nothing more. It does not grant power. The policies grant power. Supabase’s docs say the publishable key only reaches what RLS allows, and tell you to enable RLS on every table before you deploy.</p>
+
+<h2 id="which">Which Supabase keys are safe to expose?</h2>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col">Key</th><th scope="col">In browser code?</th><th scope="col">What it does</th></tr></thead>
+<tbody>
+<tr><th scope="row">Publishable key (<code>sb_publishable_…</code>)</th><td>Yes. Supabase docs: safe to expose online</td><td>Runs as <code>anon</code> or <code>authenticated</code>. Reaches only what RLS allows</td></tr>
+<tr><th scope="row"><code>anon</code> key (legacy)</th><td>Yes, under the same condition. Supabase describes it as the legacy version of the publishable key</td><td>Runs as <code>anon</code>. Supabase says it is deprecating the anon and service_role keys by the end of 2026</td></tr>
+<tr><th scope="row">Secret key (<code>sb_secret_…</code>)</th><td>Never</td><td>Bypasses every RLS policy. Backend code only</td></tr>
+<tr><th scope="row"><code>service_role</code> key (legacy)</th><td>Never</td><td>The legacy version of the secret key. Same rule</td></tr>
+</tbody>
+</table></div>
+<p>The safe/unsafe line is simple. If the key can be used without RLS getting a say, it must stay on a server. Supabase lists the places a secret key must never appear: client-side code, browsers (including on <code>localhost</code>), chat, email, URLs, and source control.</p>
+
+<h2 id="what">What can a stranger do with your anon key?</h2>
+<p>They can send the same requests your app sends. Run this against your own project to see what they would get:</p>
+<div class="code"><div class="code-bar"><span class="name">what-a-stranger-sees.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c"># Run this against your own project only</span>
+curl "https://YOUR-PROJECT.supabase.co/rest/v1/profiles?select=*&amp;limit=5" \
+  -H "apikey: YOUR_PUBLIC_KEY"
+<span class="c"># [] or a permission error is what you want. Rows of personal data are a leak.</span></code></pre></div>
+<p>With RLS on and no matching policy, you get nothing back. With RLS off, or a policy that says yes to everyone, you get the rows. A second group is easy to miss: anyone can create a throwaway account, which gives them the <code>authenticated</code> role. In the <a href="/research/1-in-4">PatchLabs study</a>, 70 of 318 apps let anyone with the public key read personal data, and 36 more let anyone who signs up read it.</p>
+
+<h2 id="check">How do I check my key is safe to expose?</h2>
+<ol>
+  <li><strong>Find out which key you have.</strong> Paste your code or bundle into the free <a href="/tools/key-check">key check</a>. It tells an anon key from a <code>service_role</code> key and runs in your browser.</li>
+  <li><strong>Confirm RLS is on for every table.</strong> Run the query in <a href="/learn/check-supabase-rls-every-table">how to check RLS on every table</a>. (<a href="/findings/pl-008">PL-008</a>)</li>
+  <li><strong>Test as <code>anon</code> and as a stranger.</strong> Use the <a href="/learn/rls-policies-explained#test-sql">three-identity script</a>. Personal tables should return 0 rows. (<a href="/findings/pl-001">PL-001</a>, <a href="/findings/pl-002">PL-002</a>)</li>
+  <li><strong>Search for the secret key.</strong> Check the code, the built bundle and git history. (<a href="/findings/pl-010">PL-010</a>, <a href="/findings/pl-011">PL-011</a>)</li>
+  <li><strong>Rotate anything that leaked.</strong> Roll the key first, then clean up: <a href="/learn/rotate-leaked-key-git-history">rotate a leaked key</a>.</li>
+</ol>
+
+<h2 id="hide">Should I hide or rotate the anon key?</h2>
+<p>Hiding it does not work, because the browser needs it. Moving it to an environment variable keeps it out of your repo but not out of your built site. Rotating it is sensible if your team wants to, but it does not change what your policies allow. If a table leaks, the new key leaks it too.</p>
+<p>Spend the effort on the rules instead. A tested policy makes the public key harmless. A missing policy makes it a master key for that table.</p>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>Is the anon key the same as the publishable key?</h3>
+<p>Not exactly. Supabase’s API keys page describes the anon key as the legacy version of the publishable key and says Supabase is deprecating the anon and service_role keys by the end of 2026. Both work at the same time until you disable the legacy ones. The same rule applies to both: RLS decides what they can read.</p>
+<h3>Can someone read my whole database with the anon key?</h3>
+<p>Only the tables whose rules allow it. If RLS is off on a table, or a policy lets everyone read, they can read it. If RLS is on with owner-only policies, they get nothing. That is why every table needs testing.</p>
+<h3>Is it safe to commit the anon key to GitHub?</h3>
+<p>It is already public in your built site, so committing it is not a new exposure. Keeping it in an environment variable makes it easier to rotate. The service_role or secret key must never be committed.</p>
+<h3>Is the service_role key ever safe in the frontend?</h3>
+<p>No. Supabase says a secret key bypasses every RLS policy and must stay in backend code you control. If you find one in client code, treat it as leaked and rotate it.</p>
+<h3>Why do AI app builders put the key in the code?</h3>
+<p>Because the browser needs it to reach the database. That is normal. The risk is not the key. It is the rules behind it, and tables created quickly can end up with none.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase docs: API keys</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/api/securing-your-api">Supabase docs: Securing your API</a> (checked 11 Nov 2026)</li>
+</ul>

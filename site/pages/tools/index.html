@@ -1,6 +1,6 @@
 <!--
 title: Free security tools for AI-built apps | PatchLabs
-description: Free tools for Lovable and Supabase apps: a no-sign-up RLS check of your migrations, a security headers check, an in-browser key check, a leak cost calculator and a sample proof report.
+description: Free tools for Lovable and Supabase apps: an open-source CLI, a no-sign-up RLS check of your migrations, a security headers check, an in-browser key check, a leak cost calculator and a sample proof report.
 layout: marketing
 nav: tools
 head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
@@ -20,6 +20,18 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
   <div class="wrap">
     <h2 id="tools-h" class="sr-only">Tools</h2>
     <div class="grid g2">
+      <a class="card link tool-card t-wide" href="/tools/cli">
+<div class="tc-art" aria-hidden="true"><span class="d">$ pipx install git+https://github.com/manra399/patchlabs-cli</span>
+<span class="d">$ patchlabs scan .</span>
+<span class="r">critical</span> PL-001 supabase/migrations/0002_profiles.sql:14
+<span class="d">--json · --sarif · --fail-on high</span></div>
+        <div class="tc-body">
+          <span class="n-big">OPEN SOURCE · APACHE-2.0</span>
+          <h3>patchlabs CLI</h3>
+          <p>The static checks on your own machine or in CI: RLS policies in your Supabase SQL, risky code, vulnerable dependencies and your live site’s headers. SARIF output for GitHub code scanning.</p>
+          <div class="tc-foot"><span>local · no account</span><span class="link-arrow">Install it</span></div>
+        </div>
+      </a>
       <a class="card link tool-card" href="/tools/rls-check">
 <div class="tc-art" aria-hidden="true"><span class="d">$ rls-check manra399/patchlabs-demo-app</span>
 <span class="d">1 file · 2 tables</span>

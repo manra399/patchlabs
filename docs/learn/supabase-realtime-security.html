@@ -29,7 +29,7 @@
 <script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
@@ -40,7 +40,7 @@
 
 <header class="site-header">
   <div class="wrap">
-    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
     <nav class="nav" id="site-nav" aria-label="Main">
       <details class="dd" data-mega>
         <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
@@ -138,6 +138,9 @@
 <li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
 <li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
 <li><a href="/learn/supabase-realtime-security" aria-current="page">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
 </ul>
 <h2>Auth and server code</h2><ul>
 <li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
@@ -154,6 +157,9 @@
 <li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
 <li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
 <li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
 </ul>
 </details></nav>
     <article class="docs-main prose guide">
@@ -258,7 +264,7 @@ where schemaname = 'public' and cmd in ('SELECT', 'ALL')
         <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span></div>
       </div>
       <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20supabase-realtime-security">Tell us</a>.</p>
-      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/supabase-storage-policies" rel="prev"><span>Previous guide</span>Supabase storage bucket policies: public, private and per-user folders</a><a class="next" href="/learn/user-metadata-vs-app-metadata" rel="next"><span>Next guide</span>user_metadata vs app_metadata: where to store roles in Supabase</a></nav>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/supabase-storage-policies" rel="prev"><span>Previous guide</span>Supabase storage bucket policies: public, private and per-user folders</a><a class="next" href="/learn/is-my-lovable-app-secure" rel="next"><span>Next guide</span>Is my Lovable app secure? How to check in 10 minutes</a></nav>
     </article>
     <aside class="toc" aria-label="On this page">
       <h2>On this page</h2>
@@ -283,7 +289,7 @@ where schemaname = 'public' and cmd in ('SELECT', 'ALL')
     </div>
     <div class="foot-top">
       <div class="foot-brand">
-        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
         <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
         <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>

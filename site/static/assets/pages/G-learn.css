@@ -2,7 +2,7 @@
    Guides use the docs layout from style.css (+ E-docs.css for the sidebar); this file adds the guide furniture. Tokens only. */
 
 /* ---- guide ---- */
-.guide > h1 { font-size: clamp(32px, 4.2vw, 48px); letter-spacing: -.032em; line-height: 1.06; margin-bottom: 14px; }
+.guide > h1 { font-size: clamp(32px, 4.2vw, 48px); letter-spacing: -.012em; line-height: 1.06; margin-bottom: 14px; }
 .guide > .lede { font-size: 19px; margin-bottom: 18px; color: var(--text); }
 .l-byline { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0 0 26px; padding: 0 0 18px; border-bottom: 1px solid var(--line); font: 500 12.5px/1.5 var(--mono); color: var(--muted); }
 .l-byline a { color: var(--ink); }

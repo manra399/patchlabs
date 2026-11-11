@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 import audit
-from core import FINISHED, as_uuid, current_user, db, event, leaking, mask_email, may_see_app, require
+from core import FINISHED, as_uuid, current_user, db, event, leaking, limits, mask_email, may_see_app, require
 
 router = APIRouter()
 
@@ -83,6 +83,7 @@ class Decision(BaseModel):
     action: str = Field(pattern=r"^(approve|reject)$")
     reason: str | None = Field(default=None, max_length=2000)
     tables: list[str] | None = Field(default=None, max_length=500)
+    accept_charge_gbp: int | None = Field(default=None, ge=0, le=10000)  # the per-fix price the approver agreed to (Free plan)
 
 
 class Answer(BaseModel):
@@ -102,12 +103,20 @@ def decide(cid: str, body: Decision, user=Depends(current_user), c=Depends(db)):
     unknown = [t for t in tables if t not in found]
     if unknown:
         raise HTTPException(422, "This check didn't flag " + ", ".join(unknown) + ".")
+    charge = 0
+    if body.action == "approve" and tables:
+        w = c.execute("SELECT plan, app_limit, run_limit, seat_limit FROM workspaces WHERE id = %s", (k["workspace_id"],)).fetchone()
+        charge = limits(w)["fix_price_gbp"] if w else 0
+        if charge and body.accept_charge_gbp != charge:
+            raise HTTPException(402, f"Approving a fix on the Free plan is £{charge}, invoiced to the workspace owner. "
+                                     "Confirm to approve, or upgrade to Maker or Agency where approved fixes are included.")
     did = uuid.uuid4()
     c.execute("INSERT INTO decisions (id, check_id, user_id, by_label, action, tables, reason) VALUES (%s, %s, %s, %s, %s, %s, %s)",
               (did, k["id"], user["id"], by_label(user), body.action, tables, (body.reason or "").strip() or None))
     target = {"type": "check", "id": k["id"], "label": k["app_repo"]}
     audit.log(c, k["workspace_id"], "decision.made", user, target=target,
-              detail={"action": body.action, "tables": tables, "app_id": k["app_id"], "decision_id": did})
+              detail={"action": body.action, "tables": tables, "app_id": k["app_id"], "decision_id": did,
+                      **({"charge_gbp": charge} if charge else {})})
     if body.action == "reject":
         for t in tables:
             new = c.execute("INSERT INTO finding_suppressions (app_id, table_name, decision_id) VALUES (%s, %s, %s) "

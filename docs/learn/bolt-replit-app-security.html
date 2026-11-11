@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to secure an app built with Bolt or Replit | PatchLabs</title>
+<meta name="description" content="Find where your Bolt or Replit app keeps its access rules, then run the checks that fit: row level security, server-side checks, secrets and headers.">
+<link rel="canonical" href="https://patchlabs.dev/learn/bolt-replit-app-security">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="How to secure an app built with Bolt or Replit | PatchLabs">
+<meta property="og:description" content="Find where your Bolt or Replit app keeps its access rules, then run the checks that fit: row level security, server-side checks, secrets and headers.">
+<meta property="og:url" content="https://patchlabs.dev/learn/bolt-replit-app-security">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to secure an app built with Bolt or Replit | PatchLabs">
+<meta name="twitter:description" content="Find where your Bolt or Replit app keeps its access rules, then run the checks that fit: row level security, server-side checks, secrets and headers.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to secure an app built with Bolt or Replit","description":"Find where your Bolt or Replit app keeps its access rules, then run the checks that fit: row level security, server-side checks, secrets and headers.","datePublished":"2026-11-11","dateModified":"2026-11-11","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/bolt-replit-app-security"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to secure an app built with Bolt or Replit","item":"https://patchlabs.dev/learn/bolt-replit-app-security"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Bolt use Supabase?","acceptedAnswer":{"@type":"Answer","text":"Bolt’s help centre lists Supabase as a database option, selectable at project creation on a Pro or Teams plan, and also describes a built-in database. The page we read does not say what the built-in database runs on, so check which one your project uses."}},{"@type":"Question","name":"Does Replit use Supabase?","acceptedAnswer":{"@type":"Answer","text":"Replit’s docs describe its own database, backed by a fully-managed PostgreSQL database, and a connector for an external PostgreSQL database. Some Replit apps use Supabase anyway, and then Supabase’s row level security applies."}},{"@type":"Question","name":"Are secrets in Replit safe?","acceptedAnswer":{"@type":"Answer","text":"Replit’s Secrets tool stores and encrypts them. Hard-coding them into a public project or repo can expose them, and collaborators can see their values. Keep them in the tool, not in code."}},{"@type":"Question","name":"Can PatchLabs check my Replit app?","acceptedAnswer":{"@type":"Answer","text":"The key and code scan runs on any public repo. The database lab needs Supabase migrations, so it cannot run on Replit’s built-in database yet. PatchLabs does not test API routes."}},{"@type":"Question","name":"Is a Bolt app less secure than a Lovable app?","acceptedAnswer":{"@type":"Answer","text":"We have no data to say so. The study sampled Lovable and Supabase repos only. A Bolt app on Supabase relies on the same row level security rules and has the same ways to leak."}}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn" aria-current="page"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security" aria-current="page">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Secure a Bolt or Replit app</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>How to secure an app built with Bolt or Replit</h1>
+      <p class="lede">First find out where your app’s access rules live. If the browser talks to Supabase, row level security decides who can read what, so check it on every table. If a server sits in front of the database, your server code decides, so check that every route verifies the caller. In both cases, keep secrets out of the code and the git history.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 11 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Bolt offers a built-in database or Supabase. Replit documents a built-in managed PostgreSQL database. Check which one you use.</li><li>Supabase from the browser means RLS is the control. A server in front of the database means your route code is the control.</li><li>Secrets belong in each platform’s secret store, never in code. Replit warns that hard-coded secrets can be exposed through public projects and repos.</li><li>PatchLabs has no Bolt-specific or Replit-specific study numbers. Its study sampled Lovable and Supabase repos.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#stacks">Which database does a Bolt or Replit app use?</a></li><li><a href="#map">Which checks apply to which stack?</a></li><li><a href="#bolt">How do I secure a Bolt app?</a></li><li><a href="#replit">How do I secure a Replit app?</a></li><li><a href="#covered">What can PatchLabs check on a Bolt or Replit app?</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="stacks">Which database does a Bolt or Replit app use?</h2>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col">Builder</th><th scope="col">Database options in its own docs</th><th scope="col">Check first</th></tr></thead>
+<tbody>
+<tr><th scope="row">Bolt</th><td>A built-in database that Bolt creates when a project needs one, or Supabase. Bolt’s help centre says Supabase can be selected when creating a project on a Pro or Teams plan, and describes claiming a Bolt database in your own Supabase account.</td><td>Which database your project uses. If it is Supabase, RLS.</td></tr>
+<tr><th scope="row">Replit</th><td>Replit Database, which its docs describe as backed by a fully-managed PostgreSQL database. App Storage for files is backed by Google Cloud Storage. Agent integrations include a connector for an external PostgreSQL database.</td><td>Server-side checks and secrets. Some Replit apps use Supabase instead (see <a href="/for/replit">Replit apps</a>).</td></tr>
+</tbody>
+</table></div>
+<p>Bolt’s page we read does not say what its built-in database runs on, so we do not assume. Look in your project, or for a <code>supabase/migrations</code> folder in the exported repo.</p>
+
+<h2 id="map">Which checks apply to which stack?</h2>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col">Where access is decided</th><th scope="col">Typical setup</th><th scope="col">Checks</th></tr></thead>
+<tbody>
+<tr><th scope="row">In database rules (RLS)</th><td>The browser talks to Supabase with a public key</td><td>RLS on every table, three-identity test, no secret key in the client. <a href="/findings/pl-001">PL-001</a>, <a href="/findings/pl-002">PL-002</a>, <a href="/findings/pl-008">PL-008</a>, <a href="/findings/pl-010">PL-010</a></td></tr>
+<tr><th scope="row">In server code</th><td>A server or API sits between the browser and the database</td><td>Every route checks the caller. The user id comes from the session, never the request. Every read or write by id checks ownership. It is the same pattern as <a href="/findings/pl-017">PL-017</a>, <a href="/findings/pl-022">PL-022</a>, which PatchLabs checks in Supabase Edge Functions.</td></tr>
+<tr><th scope="row">Either</th><td>Any app</td><td>Secrets and git history, payment webhook signatures, dependencies, HTTPS and cookies. <a href="/findings/pl-009">PL-009</a>, <a href="/findings/pl-011">PL-011</a>, <a href="/findings/pl-021">PL-021</a>, <a href="/findings/pl-023">PL-023</a>, <a href="/findings/pl-033">PL-033</a></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="bolt">How do I secure a Bolt app?</h2>
+<ol>
+  <li><strong>Find your database.</strong> Check Bolt’s database settings and its <a href="https://support.bolt.new/cloud/database">help page</a>.</li>
+  <li><strong>If it is Supabase, use the Supabase checks.</strong> The rules are the same as for any Supabase app: <a href="/learn/check-supabase-rls-every-table">RLS on every table</a>, then test as anon, a stranger and the owner. Run Supabase’s Security Advisor too.</li>
+  <li><strong>Run Bolt’s Security Audit, and know its scope.</strong> Bolt’s help centre says it looks for issues such as an open permission or a missing RLS policy, and checks your database only, not your whole project. Keys, server code and headers still need checking.</li>
+  <li><strong>Consider claiming a Bolt database in Supabase.</strong> Bolt says claiming migrates an existing Bolt database to Supabase and needs a Pro or Teams plan. Once it is in Supabase, Supabase’s own tools apply to it.</li>
+  <li><strong>Search for secrets.</strong> Look for <code>service_role</code>, <code>sb_secret_</code> and payment or AI keys in the code and the history. <a href="/learn/rotate-leaked-key-git-history">Rotate</a> anything that leaked.</li>
+</ol>
+
+<h2 id="replit">How do I secure a Replit app?</h2>
+<ol>
+  <li><strong>Check authorisation in every route.</strong> For each route that returns or changes data by id, confirm the signed-in user owns that record. Test it: sign up a second account and request the first account’s record ids.</li>
+  <li><strong>Use the Secrets tool.</strong> Replit’s docs say it stores and encrypts secrets and exposes them as environment variables, and warn that hard-coding secrets can expose them through a public Replit project or a public repository. Replit also says remixers can see secret names but not values, while collaborators see both. Add collaborators carefully, and rotate keys when someone leaves.</li>
+  <li><strong>Review file access.</strong> Replit’s docs say Agent can set up App Storage with authentication and access controls. Check that they cover your private files.</li>
+  <li><strong>Push to GitHub and scan the history.</strong> A key deleted from the code can still sit in old commits (<a href="/findings/pl-011">PL-011</a>).</li>
+  <li><strong>Grade the deployed site.</strong> Use the <a href="/tools/headers-check">headers check</a> and read <a href="/learn/security-headers-ai-built-apps">security headers for AI-built apps</a>.</li>
+</ol>
+<p>If your Replit app uses Supabase, treat the database part like any Supabase app and follow the <a href="/learn/is-my-lovable-app-secure">10-minute check</a>.</p>
+
+<h2 id="covered">What can PatchLabs check on a Bolt or Replit app?</h2>
+<ul class="ticks">
+  <li><strong>Lab</strong> runs when the app uses Supabase and its migrations are in <code>supabase/migrations</code> in a public GitHub repo. See <a href="/for/bolt">Bolt apps</a> and <a href="/for/replit">Replit apps</a>.</li>
+  <li><strong>Code</strong> reads any public repo and its whole git history for leaked keys and risky patterns.</li>
+  <li><strong>Live posture</strong> grades the public home page’s HTTPS, headers and cookies daily, on a domain your team has verified.</li>
+</ul>
+<div class="callout limit"><p><strong>Not covered yet.</strong> PatchLabs does not test API routes or non-Supabase databases, and private repos wait for its GitHub App. For a server-side database, the checklist above is your check. We publish no Bolt or Replit numbers, because the study did not sample them.</p></div>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>Does Bolt use Supabase?</h3>
+<p>Bolt’s help centre lists Supabase as a database option, selectable at project creation on a Pro or Teams plan, and also describes a built-in database. The page we read does not say what the built-in database runs on, so check which one your project uses.</p>
+<h3>Does Replit use Supabase?</h3>
+<p>Replit’s docs describe its own database, backed by a fully-managed PostgreSQL database, and a connector for an external PostgreSQL database. Some Replit apps use Supabase anyway, and then Supabase’s row level security applies.</p>
+<h3>Are secrets in Replit safe?</h3>
+<p>Replit’s Secrets tool stores and encrypts them. Hard-coding them into a public project or repo can expose them, and collaborators can see their values. Keep them in the tool, not in code.</p>
+<h3>Can PatchLabs check my Replit app?</h3>
+<p>The key and code scan runs on any public repo. The database lab needs Supabase migrations, so it cannot run on Replit’s built-in database yet. PatchLabs does not test API routes.</p>
+<h3>Is a Bolt app less secure than a Lovable app?</h3>
+<p>We have no data to say so. The study sampled Lovable and Supabase repos only. A Bolt app on Supabase relies on the same row level security rules and has the same ways to leak.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://support.bolt.new/cloud/database">Bolt help centre: Add and manage a built-in database in your Bolt project</a> (checked 11 Nov 2026)</li>
+<li><a href="https://support.bolt.new/integrations/supabase">Bolt help centre: Supabase for databases</a> (checked 11 Nov 2026)</li>
+<li><a href="https://docs.replit.com/misc/database">Replit docs: Storage and Databases</a> (checked 11 Nov 2026)</li>
+<li><a href="https://docs.replit.com/replit-workspace/workspace-features/secrets">Replit docs: Secrets</a> (checked 11 Nov 2026)</li>
+<li><a href="https://docs.replit.com/replitai/integrations">Replit docs: Agent Integrations</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a> (checked 11 Nov 2026)</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3></a><a class="card link" href="/findings/pl-009"><span class="n-big">PL-009</span><h3>AI, payment or database key in the code</h3></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3></a><a class="card link" href="/findings/pl-017"><span class="n-big">PL-017</span><h3>Edge function open without sign-in while using the service key</h3></a><a class="card link" href="/findings/pl-022"><span class="n-big">PL-022</span><h3>Edge function trusts a user id sent in the request</h3></a><a class="card link" href="/findings/pl-033"><span class="n-big">PL-033</span><h3>Cookie set without Secure, or a session cookie without HttpOnly</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-bolt-replit-app-se">Public GitHub repo</label>
+            <input id="repo-l-bolt-replit-app-se" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-bolt-replit-app-se">Your email</label>
+            <input id="email-l-bolt-replit-app-se" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 11 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20bolt-replit-app-security">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/vibe-coding-security-risks" rel="prev"><span>Previous guide</span>Security risks of vibe-coded apps, with data</a><a class="next" href="/learn/ai-builder-scan-vs-independent-check" rel="next"><span>Next guide</span>Your AI app builder’s security scan vs an independent check</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#stacks">Which database does a Bolt or Replit app use?</a></li><li><a href="#map">Which checks apply to which stack?</a></li><li><a href="#bolt">How do I secure a Bolt app?</a></li><li><a href="#replit">How do I secure a Replit app?</a></li><li><a href="#covered">What can PatchLabs check on a Bolt or Replit app?</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/tools/key-check">Free key check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!--
+title: Is my Lovable app secure? How to check in 10 minutes | PatchLabs
+description: A Lovable app is secure only if its database rules, keys and sign-up settings are right. Six checks you can run in 10 minutes, with SQL and free tools.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Is my Lovable app secure? How to check in 10 minutes","description":"A Lovable app is secure only if its database rules, keys and sign-up settings are right. Six checks you can run in 10 minutes, with SQL and free tools.","datePublished":"2026-11-11","dateModified":"2026-11-11","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/is-my-lovable-app-secure"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Is my Lovable app secure? How to check in 10 minutes","item":"https://patchlabs.dev/learn/is-my-lovable-app-secure"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is Lovable safe for a production app?","acceptedAnswer":{"@type":"Answer","text":"Lovable generates the code, and the app’s security depends on its database rules, keys and sign-up settings. Lovable’s docs say its scans cannot guarantee complete security, so check the six items above before real users arrive."}},{"@type":"Question","name":"Does Lovable’s security scan guarantee my app is secure?","acceptedAnswer":{"@type":"Answer","text":"No, and Lovable’s docs say so. The Quick scan runs a fixed set of checks in seconds. The Deep scan reads all application code. Neither is a substitute for testing who can read your tables as an outsider."}},{"@type":"Question","name":"How do I know if my Lovable app’s database is public?","acceptedAnswer":{"@type":"Answer","text":"Run the anon test in step 4 on every table that holds personal data. If it returns rows, anyone with your public key can read them. About 22% of the apps in the PatchLabs study (70 of 318) were readable that way."}},{"@type":"Question","name":"Can I check a Lovable app without sharing my code?","acceptedAnswer":{"@type":"Answer","text":"Yes. The SQL checks run inside your own Supabase project, and the free key check runs in your browser without uploading anything. The free RLS check reads a public GitHub repo."}}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure" aria-current="page">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Is my Lovable app secure?</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>Is my Lovable app secure? How to check in 10 minutes</h1>
+      <p class="lede">You cannot tell from how a Lovable app looks. It is secure if three things are true: row level security is on for every table in its Supabase database, no secret key sits in the code or git history, and a stranger who signs up cannot read other people’s data. In the PatchLabs lab study (Nov 2026) of 318 public Lovable and Supabase apps, 106 (33%) let the wrong people read personal data, so ten minutes of checking is worth it.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 11 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>A working app tells you nothing about its database rules. The checks below test the rules, not the screens.</li><li>Start with Lovable’s security scan and Supabase’s Security Advisor. Both are quick, and both have limits their own docs state.</li><li>Then settle the three things only a test can show: RLS on every table, no table readable by a stranger who signs up, and no secret key in the code.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#how">How does a Lovable app keep its data private?</a></li><li><a href="#steps">What are the six checks?</a></li><li><a href="#step-1">Step 1: What does Lovable’s own scan say? (2 minutes)</a></li><li><a href="#step-2">Step 2: What does Supabase’s Security Advisor say? (1 minute)</a></li><li><a href="#step-3">Step 3: Is RLS on for every table? (2 minutes)</a></li><li><a href="#step-4">Step 4: Can a stranger read your data? (3 minutes)</a></li><li><a href="#step-5">Step 5: Is a secret key in your code? (1 minute)</a></li><li><a href="#step-6">Step 6: Who can sign up, and who is an admin? (1 minute)</a></li><li><a href="#pass">What does a pass look like?</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="how">How does a Lovable app keep its data private?</h2>
+<p>Lovable’s docs describe a built-in backend, enabled by default, and the option to connect your own Supabase project. This guide is about the database rules in Supabase-style projects, which is what PatchLabs tests. In these apps the browser code reads the database directly, using a public key. Row level security (RLS) is the set of per-table rules that decides what that key can read.</p>
+<p>Lovable’s own docs call missing RLS policies the most common way app data gets exposed. So the question is whether the rules exist and whether they work. Lovable says schema migrations are saved as files under <code>supabase/migrations/</code> in your project.</p>
+
+<h2 id="steps">What are the six checks?</h2>
+<p>The times add up to about ten minutes.</p>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col">Step</th><th scope="col">Time</th><th scope="col">What it catches</th></tr></thead>
+<tbody>
+<tr><th scope="row">1. Lovable security scan</th><td>2 min</td><td>Database access rule issues, vulnerable npm packages, MCP servers without authentication</td></tr>
+<tr><th scope="row">2. Supabase Security Advisor</th><td>1 min</td><td>Tables with RLS off, always-true policies, unsafe functions</td></tr>
+<tr><th scope="row">3. RLS on every table</th><td>2 min</td><td>Tables with no row rules at all (<a href="/findings/pl-008">PL-008</a>)</td></tr>
+<tr><th scope="row">4. Test as a stranger</th><td>3 min</td><td>Tables a visitor or a new sign-up can read (<a href="/findings/pl-001">PL-001</a>, <a href="/findings/pl-002">PL-002</a>)</td></tr>
+<tr><th scope="row">5. Keys</th><td>1 min</td><td>A secret key in the code or history (<a href="/findings/pl-010">PL-010</a>, <a href="/findings/pl-011">PL-011</a>)</td></tr>
+<tr><th scope="row">6. Sign-up and admin</th><td>1 min</td><td>Roles users can edit, admin checks only in the browser (<a href="/findings/pl-019">PL-019</a>, <a href="/findings/pl-020">PL-020</a>)</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="step-1">Step 1: What does Lovable’s own scan say? (2 minutes)</h2>
+<p>Open the Security view in your project. Lovable’s docs say the Quick scan runs when you open the publish dialog and finishes in seconds. It reviews your database access rules and settings, npm dependency vulnerabilities and MCP servers exposed without authentication. The Deep scan reviews all application code and is started by you. Findings are marked Critical, Warning or Info. Fix the Critical ones first.</p>
+<p>Lovable’s docs say the scans cannot guarantee complete security and suggest an additional professional review for sensitive data. That is why steps 2 to 6 exist.</p>
+
+<h2 id="step-2">Step 2: What does Supabase’s Security Advisor say? (1 minute)</h2>
+<p>In the Supabase dashboard, open the Security Advisor. You can also run <code>supabase db advisors</code> in the CLI. Supabase describes advisors as deterministic checks that ship with the platform. They flag tables without RLS and policies that are always true. Supabase’s docs add that some findings may be intentional, so read each one against what the table is for.</p>
+
+<h2 id="step-3">Step 3: Is RLS on for every table? (2 minutes)</h2>
+<p>Run this in the SQL editor to list every table in <code>public</code> and whether RLS is on.</p>
+<div class="code"><div class="code-bar"><span class="name">rls-status.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Tables in public, with row level security on or off</span>
+select c.relname as table_name, c.relrowsecurity as rls_on
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relkind in ('r', 'p')
+order by c.relrowsecurity, c.relname;</code></pre></div>
+<p>Any <code>false</code> is a table with no row rules. The full guide, <a href="/learn/check-supabase-rls-every-table">how to check RLS on every Supabase table</a>, explains how to read every result.</p>
+
+<h2 id="step-4">Step 4: Can a stranger read your data? (3 minutes)</h2>
+<p>RLS being on is not enough. A policy that says <code>using (true)</code> turns it back into an open door. Test the tables that hold personal data (profiles, customers, orders, messages, leads) as someone with no rights.</p>
+<p>In the app, sign up a second account and look for the first account’s data. In SQL, run each table as the <code>anon</code> role, then as a signed-in stranger.</p>
+<div class="code"><div class="code-bar"><span class="name">test-as-anon.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>begin;
+set local role anon;
+select count(*) as anon_rows from public.profiles;  -- repeat for each table
+rollback;</code></pre></div>
+<p>You want <code>0</code> for personal tables. A plain <code>select</code> in the editor is not a test: it usually runs as the <code>postgres</code> role, which owns your tables, and PostgreSQL’s docs say table owners normally bypass row security. The <a href="/learn/rls-policies-explained#test-sql">three-identity script</a> covers the signed-in stranger and the owner.</p>
+
+<h2 id="step-5">Step 5: Is a secret key in your code? (1 minute)</h2>
+<p>Your Supabase URL and public key can be in the frontend. The <code>service_role</code> (or <code>sb_secret_</code>) key cannot, because it ignores every policy. Search the code and the history:</p>
+<div class="code"><div class="code-bar"><span class="name">check-keys.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rnE "service_role|SERVICE_ROLE|sb_secret_" --exclude-dir=node_modules .
+git log --all --oneline -S"service_role"
+<span class="c"># Any hit in src/ or in a VITE_ variable means it ships to the browser</span></code></pre></div>
+<p>You can also paste code into the free <a href="/tools/key-check">key check</a>, which runs in your browser. If a secret key reached GitHub, <a href="/learn/rotate-leaked-key-git-history">rotate it first</a>. Which keys are public: <a href="/learn/is-supabase-anon-key-safe">is the anon key safe?</a></p>
+
+<h2 id="step-6">Step 6: Who can sign up, and who is an admin? (1 minute)</h2>
+<ul class="ticks">
+  <li>Email confirmation is on, so nobody signs up with an address they don’t own (<a href="/findings/pl-018">PL-018</a>).</li>
+  <li>No policy decides access from <code>user_metadata</code>, which users can edit (<a href="/findings/pl-019">PL-019</a>).</li>
+  <li>The admin screen is backed by database rules, not only hidden in the browser (<a href="/findings/pl-020">PL-020</a>).</li>
+</ul>
+
+<h2 id="pass">What does a pass look like?</h2>
+<p>Every table in <code>public</code> shows <code>rls_on = true</code>. Tables with personal data return 0 rows to <code>anon</code> and to a stranger, and the owner still sees their own rows. No secret key appears in the code, the bundle or the history. If something fails, fix it in a new migration and test again. Be precise when you ask Lovable, because a vague request can hide an error without closing the leak. The fix is in <a href="/learn/secure-lovable-supabase-app">how to secure a Lovable app’s Supabase database</a>.</p>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>Is Lovable safe for a production app?</h3>
+<p>Lovable generates the code, and the app’s security depends on its database rules, keys and sign-up settings. Lovable’s docs say its scans cannot guarantee complete security, so check the six items above before real users arrive.</p>
+<h3>Does Lovable’s security scan guarantee my app is secure?</h3>
+<p>No, and Lovable’s docs say so. The Quick scan runs a fixed set of checks in seconds. The Deep scan reads all application code. Neither is a substitute for testing who can read your tables as an outsider.</p>
+<h3>How do I know if my Lovable app’s database is public?</h3>
+<p>Run the <code>anon</code> test in step 4 on every table that holds personal data. If it returns rows, anyone with your public key can read them. About 22% of the apps in the PatchLabs study (70 of 318) were readable that way.</p>
+<h3>Can I check a Lovable app without sharing my code?</h3>
+<p>Yes. The SQL checks run inside your own Supabase project, and the free key check runs in your browser without uploading anything. The free RLS check reads a public GitHub repo.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://docs.lovable.dev/features/security">Lovable docs: Security overview</a> (checked 11 Nov 2026)</li>
+<li><a href="https://docs.lovable.dev/integrations/supabase">Lovable docs: Connect to Supabase</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase docs: database advisors</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase docs: API keys</a> (checked 11 Nov 2026)</li>
+<li><a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">PostgreSQL docs: Row Security Policies</a> (checked 11 Nov 2026)</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3></a><a class="card link" href="/findings/pl-018"><span class="n-big">PL-018</span><h3>Sign-ups need no email confirmation</h3></a><a class="card link" href="/findings/pl-019"><span class="n-big">PL-019</span><h3>Access decided by user_metadata, which users can edit</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-is-my-lovable-app-">Public GitHub repo</label>
+            <input id="repo-l-is-my-lovable-app-" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-is-my-lovable-app-">Your email</label>
+            <input id="email-l-is-my-lovable-app-" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 11 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20is-my-lovable-app-secure">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/supabase-realtime-security" rel="prev"><span>Previous guide</span>Supabase Realtime security: keep private rows out of subscriptions</a><a class="next" href="/learn/is-supabase-anon-key-safe" rel="next"><span>Next guide</span>Is it safe to expose the Supabase anon key?</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#how">How does a Lovable app keep its data private?</a></li><li><a href="#steps">What are the six checks?</a></li><li><a href="#step-1">Step 1: What does Lovable’s own scan say? (2 minutes)</a></li><li><a href="#step-2">Step 2: What does Supabase’s Security Advisor say? (1 minute)</a></li><li><a href="#step-3">Step 3: Is RLS on for every table? (2 minutes)</a></li><li><a href="#step-4">Step 4: Can a stranger read your data? (3 minutes)</a></li><li><a href="#step-5">Step 5: Is a secret key in your code? (1 minute)</a></li><li><a href="#step-6">Step 6: Who can sign up, and who is an admin? (1 minute)</a></li><li><a href="#pass">What does a pass look like?</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

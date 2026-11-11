@@ -75,7 +75,7 @@ def test_reject_suppresses_tables_in_diff_and_alerts(client, setup, local_webhoo
     assert outbox("owner@example.com")[-1]["subject"] == "PatchLabs check finished for acme/shop"
 
     # approving un-suppresses
-    client.post(f"/checks/{third}/decision", json={"action": "approve", "tables": ["sellers"]}, headers=u.h)
+    client.post(f"/checks/{third}/decision", json={"action": "approve", "tables": ["sellers"], "accept_charge_gbp": 29}, headers=u.h)
     assert client.get(f"/apps/{a['id']}", headers=u.h).json()["suppressed_tables"] == ["messages"]
 
 
@@ -109,7 +109,7 @@ def test_signed_receipt_verifies_with_published_key(client, setup):
     claim(client)
     finish_q(client, cid)
     client.patch("/me", json={"name": "Olive Owner"}, headers=u.h)
-    client.post(f"/checks/{cid}/decision", json={"action": "approve", "reason": "Ship it"}, headers=u.h)
+    client.post(f"/checks/{cid}/decision", json={"action": "approve", "reason": "Ship it", "accept_charge_gbp": 29}, headers=u.h)
     client.post(f"/checks/{cid}/answers", json={"answers": [{"question": QUESTIONS[0], "answer": "No"}]}, headers=u.h)
 
     r = client.get(f"/receipts/{cid}").json()
@@ -155,7 +155,7 @@ def test_deleted_member_decisions_are_relabelled(client, setup):
     bob = sign_in(client, "bob@example.com", invite=link_param(outbox("bob@example.com")[-1], "invite"))
     claim(client)
     finish_q(client, cid)
-    client.post(f"/checks/{cid}/decision", json={"action": "approve"}, headers=bob.h)
+    client.post(f"/checks/{cid}/decision", json={"action": "approve", "accept_charge_gbp": 29}, headers=bob.h)
     client.post(f"/checks/{cid}/answers", json={"answers": [{"question": QUESTIONS[0], "answer": "No"}]}, headers=bob.h)
     assert client.get(f"/receipts/{cid}").json()["receipt"]["decisions"][0]["by"] == "b\u2022\u2022\u2022@example.com"
     client.delete("/me", headers=bob.h)
@@ -175,3 +175,18 @@ def test_receipt_lists_v3_findings_by_id_only(client, setup):
     assert rec["findings"] == [{"id": "PL-001", "line": "lab", "severity": "critical", "proven": True, "fixed_in_lab": True},
                                {"id": "PL-021", "line": "code", "severity": "high", "proven": False, "fixed_in_lab": False}]
     assert "supabase/functions" not in json.dumps(rec) and "JSON.parse" not in json.dumps(rec)
+
+
+def test_free_plan_approval_needs_the_per_fix_charge_agreed(client, setup):
+    u, a, cid = setup
+    claim(client)
+    finish_q(client, cid)
+    r = client.post(f"/checks/{cid}/decision", json={"action": "approve"}, headers=u.h)
+    assert r.status_code == 402 and "£29" in r.json()["detail"]
+    assert client.post(f"/checks/{cid}/decision", json={"action": "approve", "accept_charge_gbp": 5}, headers=u.h).status_code == 402
+    assert client.post(f"/checks/{cid}/decision", json={"action": "reject", "tables": ["sellers"], "reason": "public"}, headers=u.h).status_code == 201
+    r = client.post(f"/checks/{cid}/decision", json={"action": "approve", "accept_charge_gbp": 29}, headers=u.h)
+    assert r.status_code == 201
+    log = client.get(f"/workspaces/{u.wid}/audit", headers=u.h).json()
+    made = [e for e in log["events"] if e["action"] == "decision.made" and e["detail"].get("action") == "approve"]
+    assert made and made[0]["detail"]["charge_gbp"] == 29

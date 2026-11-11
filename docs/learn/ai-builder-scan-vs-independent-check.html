@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your AI app builder’s security scan vs an independent check | PatchLabs</title>
+<meta name="description" content="Run your builder’s scan and Supabase’s Security Advisor, then add an independent check that rebuilds the database and re-tests the fix. What each one does.">
+<link rel="canonical" href="https://patchlabs.dev/learn/ai-builder-scan-vs-independent-check">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Your AI app builder’s security scan vs an independent check | PatchLabs">
+<meta property="og:description" content="Run your builder’s scan and Supabase’s Security Advisor, then add an independent check that rebuilds the database and re-tests the fix. What each one does.">
+<meta property="og:url" content="https://patchlabs.dev/learn/ai-builder-scan-vs-independent-check">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Your AI app builder’s security scan vs an independent check | PatchLabs">
+<meta name="twitter:description" content="Run your builder’s scan and Supabase’s Security Advisor, then add an independent check that rebuilds the database and re-tests the fix. What each one does.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Your AI app builder’s security scan vs an independent check","description":"Run your builder’s scan and Supabase’s Security Advisor, then add an independent check that rebuilds the database and re-tests the fix. What each one does.","datePublished":"2026-11-11","dateModified":"2026-11-11","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/ai-builder-scan-vs-independent-check"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Your AI app builder’s security scan vs an independent check","item":"https://patchlabs.dev/learn/ai-builder-scan-vs-independent-check"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is Lovable’s security scan enough?","acceptedAnswer":{"@type":"Answer","text":"It is a good first check and runs in seconds. Lovable’s docs say it cannot guarantee complete security and suggest an additional professional review for apps with sensitive data. An independent check tests who can read your data as an outsider."}},{"@type":"Question","name":"Is Supabase’s Security Advisor enough?","acceptedAnswer":{"@type":"Answer","text":"It is free, built in and worth running. It checks your live database against documented rules, and Supabase says some findings may be intentional. It does not show which rows a stranger gets back, or test a fix."}},{"@type":"Question","name":"Do I need an independent check if I use both?","acceptedAnswer":{"@type":"Answer","text":"Not for every app. If yours holds personal data and has real users, a second check that tests behaviour and re-tests the fix is worth having. The 1-in-4 study found 106 of 318 public apps (33%) exposing personal data."}},{"@type":"Question","name":"Is an independent check a penetration test?","acceptedAnswer":{"@type":"Answer","text":"No. It tests who can read which rows in a database rebuilt from your migrations, and reads your code and git history for keys. It does not attack your live app."}},{"@type":"Question","name":"Does PatchLabs connect to my live database?","acceptedAnswer":{"@type":"Answer","text":"No. Lab works on a throwaway copy rebuilt from your repo’s migrations, with fake rows. Live posture only loads your public home page, on a domain your team has verified."}}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn" aria-current="page"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check" aria-current="page">Builder scan vs independent check</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Builder scan vs independent check</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>Your AI app builder’s security scan vs an independent check</h1>
+      <p class="lede">Run your builder’s security scan. It is quick and useful. An independent check adds what a scan does not set out to do: it rebuilds your database, queries it as an outsider, and re-tests the fix. Lovable’s own docs say its scans cannot guarantee complete security, and suggest an additional professional review for sensitive data.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 11 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Builder scans and Supabase’s Security Advisor are fast, free or included, and worth running on every change.</li><li>A scan reads configuration against rules. It does not tell you which rows a stranger actually gets back, and its docs say some findings may be intentional.</li><li>An independent check rebuilds the database in a copy, queries it as an anonymous visitor, a signed-in stranger and the owner, and re-tests the fix as the same three people.</li><li>Use both. They answer different questions.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#good">What do builder and database scans do well?</a></li><li><a href="#limits">What can a scan not tell you?</a></li><li><a href="#why">Why does an independent check matter?</a></li><li><a href="#compare">How do they compare side by side?</a></li><li><a href="#which">Which should I use, and what are the limits?</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <h2 id="good">What do builder and database scans do well?</h2>
+<p><strong>Lovable’s scans.</strong> Lovable’s docs say the Quick scan runs when you open the publish dialog and finishes in seconds, reviewing database access rules, npm dependency vulnerabilities and MCP servers exposed without authentication. The Deep scan reviews all application code and is started on demand. Auto-fix can resolve a few eligible Critical Quick scan findings. Optional integrations add Wiz and Aikido. See <a href="/compare/lovable-security-scan">PatchLabs vs Lovable’s scan</a>.</p>
+<p><strong>Supabase’s Security Advisor.</strong> Supabase describes advisors as deterministic checks that ship with the platform. The Security Advisor flags tables without RLS, always-true policies, policies that reference <code>user_metadata</code>, views that bypass RLS and unsafe functions. You can run it in the dashboard, with <code>supabase db advisors</code>, or through the MCP server. It reads your live project, so it sees changes made in the dashboard. See <a href="/compare/supabase-security-advisor">PatchLabs vs the Advisor</a>.</p>
+<p>Both are sensible first checks. Run them after every round of changes.</p>
+
+<h2 id="limits">What can a scan not tell you?</h2>
+<ul>
+  <li><strong>Intent.</strong> Supabase’s docs say some findings may be intentional, and that an always-true policy may be correct on a public read-only table. Only you know which tables are meant to be public.</li>
+  <li><strong>Behaviour.</strong> A lint reads configuration. It does not run the query as a stranger and show which rows come back. Supabase notes that its sensitive-column check matches name patterns, so it can miss data with other names.</li>
+  <li><strong>The fix.</strong> Lovable’s auto-fix covers a few Quick scan findings and does not apply to Deep scan findings. The Security overview page does not describe testing a fix as different users. We checked on 11 Nov 2026.</li>
+</ul>
+<p>None of this is a criticism. A scan inside a tool is built to be fast and broad. Depth on one question is a different job.</p>
+
+<h2 id="why">Why does an independent check matter?</h2>
+<ol>
+  <li><strong>A second party.</strong> Someone other than the builder and the database host reads the result. A second pair of eyes catches what the first set of checks did not.</li>
+  <li><strong>Observed behaviour, not policy text.</strong> PatchLabs rebuilds the database from its own <code>supabase/migrations</code> in a throwaway copy with fake rows, then queries it as an anonymous visitor, a signed-in stranger and the owner. It never touches the live database. The answer is “this stranger got rows back”, not “this policy looks permissive”.</li>
+  <li><strong>The fix is tested.</strong> An AI fix can hide an error without closing the leak, or close it by locking out the owner (<a href="/findings/pl-003">PL-003</a>). PatchLabs re-tests every fix as all three people. Only when the visitor and stranger are denied and the owner still reads their own rows does it count as proven.</li>
+  <li><strong>A person approves.</strong> The fix is a migration your own engineer can read. Nothing changes until they approve it.</li>
+  <li><strong>A record.</strong> Every result gets an Ed25519-signed receipt that anyone can verify. See <a href="/docs/receipts">signed receipts</a>.</li>
+  <li><strong>It repeats.</strong> Each AI edit can change a policy. <a href="/product/watch">Watch</a> re-checks on a schedule.</li>
+</ol>
+
+<h2 id="compare">How do they compare side by side?</h2>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col"></th><th scope="col">Lovable security scan</th><th scope="col">Supabase Security Advisor</th><th scope="col">PatchLabs</th></tr></thead>
+<tbody>
+<tr><th scope="row">Runs</th><td>Inside Lovable</td><td>Inside Supabase (dashboard, CLI, MCP)</td><td>On a copy built from your repo</td></tr>
+<tr><th scope="row">Reads</th><td>Database access rules and settings, dependencies, MCP servers. Deep scan: all app code</td><td>Your live project’s database</td><td>Your migrations, code and full git history</td></tr>
+<tr><th scope="row">Decides by</th><td>A fixed set of checks</td><td>Deterministic lints</td><td>Real queries as anon, stranger and owner on fake rows</td></tr>
+<tr><th scope="row">The fix</th><td>Auto-fix for a few eligible Quick scan findings</td><td>Docs suggest SQL; you apply it</td><td>Writes a migration, re-tests as all three, waits for your engineer</td></tr>
+<tr><th scope="row">Live database</th><td>Database checks run on a connected project</td><td>Reads your live project</td><td>Never touched</td></tr>
+<tr><th scope="row">Result</th><td>Findings marked Critical, Warning or Info</td><td>Lint results</td><td>Findings plus an Ed25519-signed receipt</td></tr>
+</tbody>
+</table></div>
+<p>Facts about Lovable and Supabase are from their public docs, read on 11 Nov 2026. They can change, so check their docs.</p>
+
+<h2 id="which">Which should I use, and what are the limits?</h2>
+<p>Use all of them. Run the builder scan and the Advisor on every change, because they take seconds. Run an independent check before launch and then on a schedule, especially if the app holds personal data.</p>
+<div class="callout limit"><p><strong>PatchLabs has limits too.</strong> It reads what is in your repo. A rule changed only in the Supabase dashboard is invisible to it, which the Advisor can see. The proof covers the access rules PatchLabs tests, not the whole app, and it is not a penetration test. PatchLabs is independent and not affiliated with Lovable or Supabase.</p></div>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>Is Lovable’s security scan enough?</h3>
+<p>It is a good first check and runs in seconds. Lovable’s docs say it cannot guarantee complete security and suggest an additional professional review for apps with sensitive data. An independent check tests who can read your data as an outsider.</p>
+<h3>Is Supabase’s Security Advisor enough?</h3>
+<p>It is free, built in and worth running. It checks your live database against documented rules, and Supabase says some findings may be intentional. It does not show which rows a stranger gets back, or test a fix.</p>
+<h3>Do I need an independent check if I use both?</h3>
+<p>Not for every app. If yours holds personal data and has real users, a second check that tests behaviour and re-tests the fix is worth having. The <a href="/research/1-in-4">1-in-4 study</a> found 106 of 318 public apps (33%) exposing personal data.</p>
+<h3>Is an independent check a penetration test?</h3>
+<p>No. It tests who can read which rows in a database rebuilt from your migrations, and reads your code and git history for keys. It does not attack your live app.</p>
+<h3>Does PatchLabs connect to my live database?</h3>
+<p>No. Lab works on a throwaway copy rebuilt from your repo’s migrations, with fake rows. Live posture only loads your public home page, on a domain your team has verified.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://docs.lovable.dev/features/security">Lovable docs: Security overview</a> (checked 11 Nov 2026)</li>
+<li><a href="https://docs.lovable.dev/integrations/supabase">Lovable docs: Connect to Supabase</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase docs: database advisors</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a> (checked 11 Nov 2026)</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3></a><a class="card link" href="/findings/pl-003"><span class="n-big">PL-003</span><h3>RLS enabled but no policies (owner locked out)</h3></a><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3></a><a class="card link" href="/findings/pl-005"><span class="n-big">PL-005</span><h3>Always-true policy</h3></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-ai-builder-scan-vs">Public GitHub repo</label>
+            <input id="repo-l-ai-builder-scan-vs" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-ai-builder-scan-vs">Your email</label>
+            <input id="email-l-ai-builder-scan-vs" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free for your first app</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 11 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20ai-builder-scan-vs-independent-check">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/bolt-replit-app-security" rel="prev"><span>Previous guide</span>How to secure an app built with Bolt or Replit</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#good">What do builder and database scans do well?</a></li><li><a href="#limits">What can a scan not tell you?</a></li><li><a href="#why">Why does an independent check matter?</a></li><li><a href="#compare">How do they compare side by side?</a></li><li><a href="#which">Which should I use, and what are the limits?</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/tools/key-check">Free key check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

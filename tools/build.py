@@ -66,6 +66,8 @@ def render(rel, text):
     html = "\n".join(parts)
     values = {"title": meta.get("title", "PatchLabs"), "description": meta.get("description", ""),
               "canonical": BASE + url_for(rel), "head": meta.get("head", ""), "year": str(datetime.date.today().year)}
+    # {{svg:name}} inlines site/illustrations/name.svg, so illustrations follow the page theme (light, dark, toggle)
+    html = re.sub(r"\{\{svg:([\w-]+)\}\}", lambda m: open(os.path.join(SITE, "illustrations", m.group(1) + ".svg")).read().strip(), html)
     html = re.sub(r"\{\{nav_(\w+)\}\}", lambda m: ' aria-current="page"' if m.group(1) == meta.get("nav") else "", html)
     html = re.sub(r"\{\{(\w+)\}\}", lambda m: values.get(m.group(1), m.group(0)), html)
     in_sitemap = meta.get("sitemap", "yes" if layout == "marketing" else "no") == "yes"

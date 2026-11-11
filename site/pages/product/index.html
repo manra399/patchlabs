@@ -1,6 +1,6 @@
 <!--
 title: PatchLabs products: Lab, Code, Fix, Watch and Live posture | PatchLabs
-description: The PatchLabs platform for apps built with Lovable, Supabase, Bolt, Replit or Cursor: Lab reproduces leaks, Code reads the repo, Fix writes a proven fix your engineer approves, Watch re-checks and Live posture grades your live site.
+description: Independent app verification for apps built with Lovable, Supabase, Bolt, Replit or Cursor: Lab reproduces leaks, Code reads the repo, Fix writes a proven fix your engineer approves, Watch re-checks and Live posture grades your live site.
 layout: marketing
 nav: product
 head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
@@ -12,7 +12,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Products</li></ol></nav>
     <p class="lab">Products</p>
     <h1>Four product lines, one report.</h1>
-    <p class="lede">Lab and Code find the problem, Fix writes a change that has been tested and waits for your engineer to approve it, and Watch keeps checking. Every plan includes all four, free for your first app.</p>
+    <p class="lede">Lab and Code find the problem, Fix writes a change that has been tested and waits for your engineer to approve it, and Watch keeps checking. Every plan includes all four, free for your first app; on Free you pay £29 only for a fix you approve.</p>
   </div>
 </section>
 
@@ -21,11 +21,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css">
     <h2 id="prod-h" class="sr-only">Product lines</h2>
     <div class="grid g2">
       <a class="card link tool-card" href="/product/lab">
-<div class="tc-art" aria-hidden="true"><span class="d">$ lab rebuild supabase/migrations</span>
-<span class="d">disposable Postgres · fake rows</span>
-anon      12 rows <span class="r">LEAK</span>
-stranger  12 rows <span class="r">LEAK</span>
-owner      1 row  <span class="g">OK</span></div>
+<div class="tc-art tc-ill">{{svg:spot-lab}}</div>
         <div class="tc-body">
           <span class="n-big">LAB · 8 CHECKS</span>
           <h3>Lab</h3>
@@ -34,11 +30,7 @@ owner      1 row  <span class="g">OK</span></div>
         </div>
       </a>
       <a class="card link tool-card" href="/product/code">
-<div class="tc-art" aria-hidden="true"><span class="d">$ code scan repo + git history</span>
-<span class="r">critical</span> PL-010 service_role in client
-<span class="r">high</span>     PL-021 webhook not verified
-<span class="d">low</span>      PL-023 advisory (OSV)
-<span class="d">nothing run or installed</span></div>
+<div class="tc-art tc-ill">{{svg:spot-code}}</div>
         <div class="tc-body">
           <span class="n-big">CODE · 13 CHECKS</span>
           <h3>Code</h3>
@@ -47,12 +39,7 @@ owner      1 row  <span class="g">OK</span></div>
         </div>
       </a>
       <a class="card link tool-card" href="/product/fix">
-<div class="tc-art" aria-hidden="true"><span class="d">$ fix PL-001 profiles</span>
-<span class="d">migration written · re-tested</span>
-anon      0 rows  <span class="g">DENIED</span>
-stranger  0 rows  <span class="g">DENIED</span>
-owner     1 row   <span class="g">OK</span>
-<b>waiting for your engineer</b></div>
+<div class="tc-art tc-ill">{{svg:spot-fix}}</div>
         <div class="tc-body">
           <span class="n-big">FIX · YOUR ENGINEER APPROVES</span>
           <h3>Fix</h3>
@@ -61,11 +48,7 @@ owner     1 row   <span class="g">OK</span>
         </div>
       </a>
       <a class="card link tool-card" href="/product/watch">
-<div class="tc-art" aria-hidden="true"><span class="d">$ watch · weekly re-check</span>
-<span class="d">no change since 3 Nov</span>
-<span class="r">new</span>  PL-007 public bucket
-<span class="d">alert sent · email + webhook</span>
-<span class="g">badge</span> updated, dated</div>
+<div class="tc-art tc-ill">{{svg:spot-watch}}</div>
         <div class="tc-body">
           <span class="n-big">WATCH · RE-CHECKS AND ALERTS</span>
           <h3>Watch</h3>
@@ -74,10 +57,7 @@ owner     1 row   <span class="g">OK</span>
         </div>
       </a>
       <a class="card link tool-card t-wide" href="/product/live-posture">
-<div class="tc-art" aria-hidden="true"><span class="d">$ live-posture https://your-app.com</span>
-<span class="d">1 page load a day · domain verified</span>
-<b>grade C</b>  65/100
-medium PL-030 no Content-Security-Policy</div>
+<div class="tc-art tc-ill">{{svg:spot-live}}</div>
         <div class="tc-body">
           <span class="n-big">PART OF WATCH · 10 CHECKS</span>
           <h3>Live posture</h3>

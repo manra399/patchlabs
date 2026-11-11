@@ -1,14 +1,22 @@
 # PatchLabs: full description for language models
 
-Last updated 10 November 2026 (v3). Short index: https://patchlabs.dev/llms.txt
+Last updated 11 November 2026 (v3.1). Short index: https://patchlabs.dev/llms.txt
 
 ## What PatchLabs is
 
-PatchLabs is a security platform for apps built with AI tools such as Lovable, Supabase, Bolt, Replit and Cursor, in four product lines (Lab, Code, Fix, Watch; see below). It finds personal-data leaks, exposed keys and risky AI-written code, and proves database fixes before anyone ships them. Positioning: "Find the leak. Prove the fix." Lab-proven fixes for apps built with AI.
+PatchLabs does independent app verification for apps built with AI tools such as Lovable, Supabase, Bolt, Replit and Cursor, in four product lines (Lab, Code, Fix, Watch; see below). It finds personal-data leaks, exposed keys and risky AI-written code, and proves database fixes before anyone ships them. Positioning: "Find the leak. Prove the fix." Lab-proven fixes for apps built with AI.
 
 A scanner gives you a list of findings. PatchLabs gives you a fix you have watched work: every fix is tested in a lab against three identities.
 
-PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Replit or Cursor; it works with apps built on them.
+PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Replit or Cursor; it works with apps built on them. App builders increasingly scan their own platforms; PatchLabs is the independent second check that rebuilds the database to prove who can read what, and re-tests every fix.
+
+## Pricing (11 November 2026)
+
+Free for one app: every finding, every fix written and proven, monthly re-checks; approving a fix costs £29 (the approval records the client's engineer on a signed receipt). Maker £19/month (3 apps) and Agency £99/month (10 apps, +£8 per extra app) include approved fixes. Enterprise is custom. Card payments are not live yet; paid plans are by request.
+
+## Open-source CLI
+
+`patchlabs` is a free, open-source (Apache-2.0) command-line scanner: `patchlabs scan .` runs the static code, dependency and Supabase RLS checks locally; `patchlabs headers https://your-app.com` grades one public page. It outputs a table, JSON or SARIF for GitHub code scanning. Source: https://github.com/manra399/patchlabs-cli. The lab rebuild, Fix and Watch are hosted at patchlabs.dev.
 
 ## How a check works
 

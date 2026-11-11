@@ -22,7 +22,7 @@ def test_admin_workspaces_and_plan_editor(client):
     w = r.json()
     assert w["plan"] == "agency" and w["limits"]["apps"] == 25 and w["limits"]["seats"] == 10 and w["app_limit"] == 25
     r = client.patch(f"/admin/workspaces/{u.wid}", json={"plan": "enterprise", "run_limit": 5000, "seat_limit": 3}, headers=A).json()
-    assert r["limits"] == {"apps": 25, "runs_per_month": 5000, "seats": 3, "schedules": ["off", "weekly", "monthly"]}
+    assert r["limits"] == {"apps": 25, "runs_per_month": 5000, "seats": 3, "schedules": ["off", "weekly", "monthly"], "fix_price_gbp": 0}
     r = client.patch(f"/admin/workspaces/{u.wid}", json={"app_limit": None}, headers=A).json()
     assert r["limits"]["apps"] == 50 and r["plan"] == "enterprise"
     assert client.patch(f"/admin/workspaces/{u.wid}", json={"plan": "gold"}, headers=A).status_code == 422

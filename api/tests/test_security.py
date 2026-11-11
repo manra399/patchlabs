@@ -347,7 +347,7 @@ def test_public_views_mask_emails_members_see_them(client):
     claim(client)
     client.post(f"/worker/checks/{cid}/result", headers=W, json={"status": "done", "fix_sql": "x", "summary": {
         "tables_leaking": ["sellers"], "lab_proof_passed": True, "questions_for_owner": [QUESTION]}})
-    r = client.post(f"/checks/{cid}/decision", json={"action": "approve"}, headers=bob.h).json()
+    r = client.post(f"/checks/{cid}/decision", json={"action": "approve", "accept_charge_gbp": 29}, headers=bob.h).json()
     assert r["decisions"][0]["by_email"] == "bob@example.com" and r["decisions"][0]["by_user_id"] == bob.user["id"]
     client.patch("/me", json={"name": "Olive"}, headers=u.h)
     client.post(f"/checks/{cid}/answers", json={"answers": [{"question": QUESTION, "answer": "No"}]}, headers=u.h)

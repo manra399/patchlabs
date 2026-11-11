@@ -1,0 +1,72 @@
+title: Your AI app builder’s security scan vs an independent check
+description: Run your builder’s scan and Supabase’s Security Advisor, then add an independent check that rebuilds the database and re-tests the fix. What each one does.
+h1: Your AI app builder’s security scan vs an independent check
+navtitle: Builder scan vs independent check
+topic: launch
+order: 7
+short: Run your builder’s scan and Supabase’s Security Advisor, then add an independent check that rebuilds the database and re-tests the fix. What each one does.
+lede: Run your builder’s security scan. It is quick and useful. An independent check adds what a scan does not set out to do: it rebuilds your database, queries it as an outsider, and re-tests the fix. Lovable’s own docs say its scans cannot guarantee complete security, and suggest an additional professional review for sensitive data.
+tldr: Builder scans and Supabase’s Security Advisor are fast, free or included, and worth running on every change. || A scan reads configuration against rules. It does not tell you which rows a stranger actually gets back, and its docs say some findings may be intentional. || An independent check rebuilds the database in a copy, queries it as an anonymous visitor, a signed-in stranger and the owner, and re-tests the fix as the same three people. || Use both. They answer different questions.
+findings: PL-001, PL-002, PL-003, PL-004, PL-005, PL-008
+checked: 2026-11-11
+---
+<h2 id="good">What do builder and database scans do well?</h2>
+<p><strong>Lovable’s scans.</strong> Lovable’s docs say the Quick scan runs when you open the publish dialog and finishes in seconds, reviewing database access rules, npm dependency vulnerabilities and MCP servers exposed without authentication. The Deep scan reviews all application code and is started on demand. Auto-fix can resolve a few eligible Critical Quick scan findings. Optional integrations add Wiz and Aikido. See <a href="/compare/lovable-security-scan">PatchLabs vs Lovable’s scan</a>.</p>
+<p><strong>Supabase’s Security Advisor.</strong> Supabase describes advisors as deterministic checks that ship with the platform. The Security Advisor flags tables without RLS, always-true policies, policies that reference <code>user_metadata</code>, views that bypass RLS and unsafe functions. You can run it in the dashboard, with <code>supabase db advisors</code>, or through the MCP server. It reads your live project, so it sees changes made in the dashboard. See <a href="/compare/supabase-security-advisor">PatchLabs vs the Advisor</a>.</p>
+<p>Both are sensible first checks. Run them after every round of changes.</p>
+
+<h2 id="limits">What can a scan not tell you?</h2>
+<ul>
+  <li><strong>Intent.</strong> Supabase’s docs say some findings may be intentional, and that an always-true policy may be correct on a public read-only table. Only you know which tables are meant to be public.</li>
+  <li><strong>Behaviour.</strong> A lint reads configuration. It does not run the query as a stranger and show which rows come back. Supabase notes that its sensitive-column check matches name patterns, so it can miss data with other names.</li>
+  <li><strong>The fix.</strong> Lovable’s auto-fix covers a few Quick scan findings and does not apply to Deep scan findings. The Security overview page does not describe testing a fix as different users. We checked on 11 Nov 2026.</li>
+</ul>
+<p>None of this is a criticism. A scan inside a tool is built to be fast and broad. Depth on one question is a different job.</p>
+
+<h2 id="why">Why does an independent check matter?</h2>
+<ol>
+  <li><strong>A second party.</strong> Someone other than the builder and the database host reads the result. A second pair of eyes catches what the first set of checks did not.</li>
+  <li><strong>Observed behaviour, not policy text.</strong> PatchLabs rebuilds the database from its own <code>supabase/migrations</code> in a throwaway copy with fake rows, then queries it as an anonymous visitor, a signed-in stranger and the owner. It never touches the live database. The answer is “this stranger got rows back”, not “this policy looks permissive”.</li>
+  <li><strong>The fix is tested.</strong> An AI fix can hide an error without closing the leak, or close it by locking out the owner (<a href="/findings/pl-003">PL-003</a>). PatchLabs re-tests every fix as all three people. Only when the visitor and stranger are denied and the owner still reads their own rows does it count as proven.</li>
+  <li><strong>A person approves.</strong> The fix is a migration your own engineer can read. Nothing changes until they approve it.</li>
+  <li><strong>A record.</strong> Every result gets an Ed25519-signed receipt that anyone can verify. See <a href="/docs/receipts">signed receipts</a>.</li>
+  <li><strong>It repeats.</strong> Each AI edit can change a policy. <a href="/product/watch">Watch</a> re-checks on a schedule.</li>
+</ol>
+
+<h2 id="compare">How do they compare side by side?</h2>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col"></th><th scope="col">Lovable security scan</th><th scope="col">Supabase Security Advisor</th><th scope="col">PatchLabs</th></tr></thead>
+<tbody>
+<tr><th scope="row">Runs</th><td>Inside Lovable</td><td>Inside Supabase (dashboard, CLI, MCP)</td><td>On a copy built from your repo</td></tr>
+<tr><th scope="row">Reads</th><td>Database access rules and settings, dependencies, MCP servers. Deep scan: all app code</td><td>Your live project’s database</td><td>Your migrations, code and full git history</td></tr>
+<tr><th scope="row">Decides by</th><td>A fixed set of checks</td><td>Deterministic lints</td><td>Real queries as anon, stranger and owner on fake rows</td></tr>
+<tr><th scope="row">The fix</th><td>Auto-fix for a few eligible Quick scan findings</td><td>Docs suggest SQL; you apply it</td><td>Writes a migration, re-tests as all three, waits for your engineer</td></tr>
+<tr><th scope="row">Live database</th><td>Database checks run on a connected project</td><td>Reads your live project</td><td>Never touched</td></tr>
+<tr><th scope="row">Result</th><td>Findings marked Critical, Warning or Info</td><td>Lint results</td><td>Findings plus an Ed25519-signed receipt</td></tr>
+</tbody>
+</table></div>
+<p>Facts about Lovable and Supabase are from their public docs, read on 11 Nov 2026. They can change, so check their docs.</p>
+
+<h2 id="which">Which should I use, and what are the limits?</h2>
+<p>Use all of them. Run the builder scan and the Advisor on every change, because they take seconds. Run an independent check before launch and then on a schedule, especially if the app holds personal data.</p>
+<div class="callout limit"><p><strong>PatchLabs has limits too.</strong> It reads what is in your repo. A rule changed only in the Supabase dashboard is invisible to it, which the Advisor can see. The proof covers the access rules PatchLabs tests, not the whole app, and it is not a penetration test. PatchLabs is independent and not affiliated with Lovable or Supabase.</p></div>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>Is Lovable’s security scan enough?</h3>
+<p>It is a good first check and runs in seconds. Lovable’s docs say it cannot guarantee complete security and suggest an additional professional review for apps with sensitive data. An independent check tests who can read your data as an outsider.</p>
+<h3>Is Supabase’s Security Advisor enough?</h3>
+<p>It is free, built in and worth running. It checks your live database against documented rules, and Supabase says some findings may be intentional. It does not show which rows a stranger gets back, or test a fix.</p>
+<h3>Do I need an independent check if I use both?</h3>
+<p>Not for every app. If yours holds personal data and has real users, a second check that tests behaviour and re-tests the fix is worth having. The <a href="/research/1-in-4">1-in-4 study</a> found 106 of 318 public apps (33%) exposing personal data.</p>
+<h3>Is an independent check a penetration test?</h3>
+<p>No. It tests who can read which rows in a database rebuilt from your migrations, and reads your code and git history for keys. It does not attack your live app.</p>
+<h3>Does PatchLabs connect to my live database?</h3>
+<p>No. Lab works on a throwaway copy rebuilt from your repo’s migrations, with fake rows. Live posture only loads your public home page, on a domain your team has verified.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://docs.lovable.dev/features/security">Lovable docs: Security overview</a> (checked 11 Nov 2026)</li>
+<li><a href="https://docs.lovable.dev/integrations/supabase">Lovable docs: Connect to Supabase</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase docs: database advisors</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a> (checked 11 Nov 2026)</li>
+</ul>

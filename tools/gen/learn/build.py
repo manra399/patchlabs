@@ -169,6 +169,12 @@ def page(g, guides, ft):
             {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://patchlabs.dev/"},
             {"@type": "ListItem", "position": 2, "name": "Learn", "item": "https://patchlabs.dev/learn"},
             {"@type": "ListItem", "position": 3, "name": g["h1"], "item": f"https://patchlabs.dev/learn/{g['slug']}"}]}]}
+    faq = re.search(r'<h2 id="faq"[^>]*>.*?</h2>(.*?)(?=<h2 |\Z)', g["body"], flags=re.S)
+    if faq:  # an FAQ section of <h3>question</h3><p>answer</p> pairs also becomes FAQPage data, which AI answers quote
+        qa = re.findall(r"<h3[^>]*>(.*?)</h3>\s*<p>(.*?)</p>", faq.group(1), flags=re.S)
+        if qa:
+            ld["@graph"].append({"@type": "FAQPage", "mainEntity": [
+                {"@type": "Question", "name": strip(q), "acceptedAnswer": {"@type": "Answer", "text": strip(a)}} for q, a in qa]})
     ld_s = json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     related = ""
     if cards:

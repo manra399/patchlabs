@@ -29,7 +29,7 @@
 <script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
@@ -40,7 +40,7 @@
 
 <header class="site-header">
   <div class="wrap">
-    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
     <nav class="nav" id="site-nav" aria-label="Main">
       <details class="dd" data-mega>
         <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
@@ -299,7 +299,7 @@ app.use(session({ secret, cookie: { httpOnly: true, secure: true, sameSite: 'lax
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-026"><span class="n-big">PL-026</span><h3>Any website can call a signed-in function</h3><p class="small">The endpoint tells browsers that any website may send your users' cookies to it and read the answer.</p></a><a class="card link" href="/findings/pl-030"><span class="n-big">PL-030</span><h3>No Content-Security-Policy</h3><p class="small">Your page sends no Content-Security-Policy, so any script that gets onto it can run and send data anywhere.</p></a><a class="card link" href="/findings/pl-027"><span class="n-big">PL-027</span><h3>Site doesn’t force HTTPS</h3><p class="small">The plain http:// address of your site serves the page instead of redirecting to https://.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/security-headers-ai-built-apps">Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/bolt-replit-app-security">How to secure an app built with Bolt or Replit</a></li><li><a href="/learn/security-headers-ai-built-apps">Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>
@@ -341,7 +341,7 @@ app.use(session({ secret, cookie: { httpOnly: true, secure: true, sameSite: 'lax
     </div>
     <div class="foot-top">
       <div class="foot-brand">
-        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
         <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
         <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>

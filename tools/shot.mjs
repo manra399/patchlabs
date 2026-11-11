@@ -1,5 +1,6 @@
 // Full-page screenshot of a URL with headless Chrome, at any width (CDP device metrics, so 390px phones work).
-//   node tools/shot.mjs <url> <out.png> [width=1440] [--dark | --light]
+//   node tools/shot.mjs <url> <out.png> [width=1440] [--dark | --light] [--clip=Y:H]
+// --clip saves only H pixels starting at Y (for looking at one section of a long page).
 // Pages taller than 16,000px are saved as out.png + out-part2.png, … (12,000px each).
 // --dark / --light force prefers-color-scheme (this Mac defaults to dark, so pass --light for the light theme).
 // Prints the page's console errors and failed requests, so a broken script or missing file shows up too.
@@ -43,6 +44,13 @@ await send('Runtime.evaluate', { expression: 'window.scrollTo(0, 0)' });
 await sleep(400);
 // Chrome repeats content past ~16,384px in one capture, so very tall pages are saved in parts: out.png, out-part2.png, …
 const PART = 12000;
+const clipFlag = flags.find(f => f.startsWith('--clip='));
+if (clipFlag) {
+  const [cy, ch] = clipFlag.slice(7).split(':').map(Number);
+  const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: cy, width, height: ch, scale: 1 } });
+  writeFileSync(out, Buffer.from(shot.data, 'base64'));
+  console.log('clip saved'); ws.close(); chrome.kill(); await sleep(300); try { rmSync(profile, { recursive: true, force: true }); } catch {} process.exit(0);
+}
 const fullH = (await send('Runtime.evaluate', { expression: 'document.documentElement.scrollHeight', returnByValue: true })).result.value;
 if (fullH <= 16000) {
   const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });

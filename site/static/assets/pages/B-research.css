@@ -127,7 +127,7 @@
 .f-head { padding-bottom: 28px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
 .f-id { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 .f-chip { font: 600 13px/1 var(--mono); letter-spacing: .04em; padding: 7px 10px; border-radius: 7px; background: var(--ink); color: var(--bg); }
-.docs-main.finding > h1, .f-head h1 { font-size: clamp(32px, 4.2vw, 48px); letter-spacing: -.032em; line-height: 1.06; margin-bottom: 14px; }
+.docs-main.finding > h1, .f-head h1 { font-size: clamp(32px, 4.2vw, 48px); letter-spacing: -.012em; line-height: 1.06; margin-bottom: 14px; }
 .f-head .lede { font-size: 19px; margin-bottom: 22px; }
 .f-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--r); background: var(--card); margin: 0; }
 .f-facts > div { padding: 14px 16px; min-width: 0; }

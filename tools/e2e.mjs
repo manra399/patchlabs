@@ -326,6 +326,8 @@ await step('check page as a member: reject (with reason) one table, approve anot
   // approve "profiles"
   await p.eval(`document.querySelector('[data-tbl][value=profiles]').click(); document.querySelector('[data-tbl][value=orders]').click()`);
   await p.click('#approve');
+  await p.waitText('£29', '#dec-err');   // Free plan: the per-fix price is confirmed before the approval is recorded
+  await p.click('#approve-pay');
   await p.waitText('approved the fix for', '#own-rec');
   await p.type('#qa1', 'No: only the buyer and the seller.');
   await p.click('#qa-go');

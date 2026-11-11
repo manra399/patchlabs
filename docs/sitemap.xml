@@ -72,8 +72,13 @@
   <url><loc>https://patchlabs.dev/integrations</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/leaking-now</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/ai-builder-scan-vs-independent-check</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/bolt-replit-app-security</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/check-supabase-rls-every-table</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/firebase-security-rules-basics</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/first-hour-after-a-leak</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/is-my-lovable-app-secure</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/is-supabase-anon-key-safe</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/npm-dependency-vulnerabilities</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/railway-breach-ai-keys</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/rls-policies-explained</loc><lastmod>2026-11-11</lastmod></url>
@@ -87,6 +92,7 @@
   <url><loc>https://patchlabs.dev/learn/supabase-views-security-invoker</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/user-metadata-vs-app-metadata</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/vibe-coded-app-security-checklist</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/vibe-coding-security-risks</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/legal/acceptable-use</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/legal/cookies</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/legal/disclosure-policy</loc><lastmod>2026-11-11</lastmod></url>
@@ -110,6 +116,7 @@
   <url><loc>https://patchlabs.dev/solutions/founders</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/status</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://patchlabs.dev/tools/cli</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/headers-check</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/key-check</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/leak-cost</loc><lastmod>2026-11-11</lastmod></url>

@@ -141,6 +141,7 @@ head: <link rel="stylesheet" href="/assets/pages/A-product.css">
     </div>
     <div class="idents" data-reveal>
       <div class="ident">
+        <div class="ident-face">{{svg:persona-anon}}</div>
         <div class="who"><b>Anonymous visitor</b><span class="pill plain">anon key</span></div>
         <pre class="q">set role anon;
 -- no JWT claims at all
@@ -148,6 +149,7 @@ select * from public.profiles;</pre>
         <p>Anyone holding your public key, which ships inside every page of your app.</p>
       </div>
       <div class="ident">
+        <div class="ident-face">{{svg:persona-stranger}}</div>
         <div class="who"><b>Signed-in stranger</b><span class="pill plain">user 2</span></div>
         <pre class="q">set role authenticated;
 -- request.jwt.claim.sub = user 2
@@ -155,6 +157,7 @@ select * from public.profiles;</pre>
         <p>A real account that owns none of the rows. Anyone can sign up, so signing up must not unlock other people’s data.</p>
       </div>
       <div class="ident">
+        <div class="ident-face">{{svg:persona-owner}}</div>
         <div class="who"><b>Owner</b><span class="pill plain">user 1</span></div>
         <pre class="q">set role authenticated;
 -- request.jwt.claim.sub = user 1

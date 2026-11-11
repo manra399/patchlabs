@@ -180,16 +180,25 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
       $('own-rec').innerHTML = '<h3 class="h4 mt-4 mb-2">Recorded so far</h3>' + recordHtml(c);
       PL.toast(msg, 'ok'); receipt(c);
     };
-    var decide = async function (btn, action, reason) {
+    var decide = async function (btn, action, reason, charge) {
       var tables = picked(); $('dec-err').textContent = '';
       if (!tables.length) { $('dec-err').textContent = 'Pick at least one table.'; return; }
       var restore = PL.busy(btn, 'Saving…');
       try {
-        var body = { action: action, tables: tables }; if (reason) body.reason = reason;
+        var body = { action: action, tables: tables }; if (reason) body.reason = reason; if (charge) body.accept_charge_gbp = charge;
         var r = await api('/checks/' + encodeURIComponent(id) + '/decision', { method: 'POST', body: body });
         restore(); $('rej-box').hidden = true;
         updated('decisions', r.decisions, action === 'approve' ? 'Fix approved' : 'Marked as intended: no more alerts for ' + tables.join(', '));
-      } catch (x) { restore(); $('dec-err').textContent = x.status === 401 ? 'Your session has ended. Sign in again to record a decision.' : x.message; }
+      } catch (x) {
+        restore();
+        var price = x.status === 402 && /£(\d+)/.exec(x.message || '');
+        if (price) {   // Free plan: approving a fix has a per-fix price; the approver confirms it before anything is recorded
+          $('dec-err').innerHTML = esc(x.message) + ' <button class="btn small primary" type="button" id="approve-pay">Approve for £' + price[1] + '</button> <a href="/pricing">See plans</a>';
+          $('approve-pay').onclick = function () { decide(this, 'approve', reason, +price[1]); };
+          return;
+        }
+        $('dec-err').textContent = x.status === 401 ? 'Your session has ended. Sign in again to record a decision.' : x.message;
+      }
     };
     if ($('approve')) {
       $('approve').onclick = function () { decide(this, 'approve'); };

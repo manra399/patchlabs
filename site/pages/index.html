@@ -1,19 +1,20 @@
 <!--
 title: PatchLabs: find the leak, prove the fix. Security for apps built with AI
-description: The security platform for AI-built apps. PatchLabs rebuilds your database, reads your code, reproduces each leak, then writes the fix and proves it in a lab. Free for one app.
+description: Independent app verification for apps built with Lovable, Supabase, Bolt, Replit or Cursor. PatchLabs rebuilds your database, reproduces each leak, then proves the fix before your engineer approves it. Free for one app.
 layout: marketing
 nav: home
-head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev","logo":"https://patchlabs.dev/assets/favicon.svg","email":"manraj@patchlabs.dev","founder":{"@type":"Person","name":"Manraj Singh Dhillon"},"address":{"@type":"PostalAddress","addressLocality":"London","addressCountry":"GB"}}</script>
+head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://patchlabs.dev/#org","name":"PatchLabs","url":"https://patchlabs.dev","logo":"https://patchlabs.dev/assets/favicon.svg","email":"manraj@patchlabs.dev","description":"Independent app verification for apps built with Lovable, Supabase, Bolt, Replit or Cursor: rebuilds the database in a throwaway copy, reproduces each leak, and proves the fix before the client's engineer approves it.","founder":{"@type":"Person","name":"Manraj Singh Dhillon"},"address":{"@type":"PostalAddress","addressLocality":"London","addressCountry":"GB"},"sameAs":["https://github.com/manra399/patchlabs","https://github.com/manra399/patchlabs-cli","https://registry.modelcontextprotocol.io/v0/servers?search=dev.patchlabs"],"knowsAbout":["Supabase row level security","Lovable app security","AI-built app security","leaked API keys in git history","security headers"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"PatchLabs","applicationCategory":"SecurityApplication","operatingSystem":"Web","url":"https://patchlabs.dev","publisher":{"@id":"https://patchlabs.dev/#org"},"description":"Finds data leaks in apps built with AI app builders by rebuilding the database from its migrations and testing it as an anonymous visitor, a signed-in stranger and the owner, then writes a fix and proves it.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"GBP","description":"One app; £29 per approved fix"},{"@type":"Offer","name":"Maker","price":"19","priceCurrency":"GBP","description":"3 apps, per month, approved fixes included"},{"@type":"Offer","name":"Agency","price":"99","priceCurrency":"GBP","description":"10 apps, per month, approved fixes included"}]}</script>
 -->
 <main id="main">
 
 <!-- Hero -->
 <section class="hero2" id="check">
   <div class="wrap">
+    <div class="hero3">
     <div class="hero2-copy">
-      <a class="announce-pill" href="#platform"><span class="lab">New</span>PatchLabs is now four product lines: Lab, Code, Fix and Watch <span aria-hidden="true">→</span></a>
-      <h1>Find the <span class="r">leak</span>.<br>Prove the <span class="g">fix</span>.</h1>
-      <p class="lede">The security platform for apps built with Lovable, Supabase, Bolt, Replit or Cursor. We rebuild your database from its migrations, read your code and its history, reproduce each leak as a stranger, then write the fix and <strong>prove it works</strong> before you ship. Your engineer approves every change.</p>
+      <p class="lab">Independent app verification</p>
+      <h1>Find the <em class="r">leak</em>.<br>Prove the <em class="g">fix</em>.</h1>
+      <p class="lede">Your app builder checks its own platform. PatchLabs is the independent check for apps built with Lovable, Supabase, Bolt, Replit or Cursor: we rebuild your database in a throwaway copy, try it as a stranger, then write the fix and <strong>prove it works</strong>. Your engineer approves every change.</p>
       <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
         <div class="in">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -39,13 +40,15 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
         <a class="link-arrow" href="/sample-report">See a sample proof report</a>
       </div>
     </div>
+    <div class="hero-art"><div class="hero-art-wide">{{svg:hero-lab}}</div><div class="hero-art-tall">{{svg:hero-lab-m}}</div></div>
+    </div>
     <figure class="figure hero-shot">
       <div class="float f1" aria-hidden="true"><span class="k">anon</span> → 0 rows <span class="tok">DENIED</span></div>
       <div class="float f2" aria-hidden="true">public.profiles · email, phone <span class="tok leak">LEAK</span></div>
       <div class="float f3" aria-hidden="true">receipt signed · Ed25519 <span class="tok">OK</span></div>
       <div class="ui" role="img" aria-label="The PatchLabs app showing the demo app: one critical finding, PL-001 on public.profiles, with a lab-proven fix waiting for approval.">
   <div class="ui-chrome"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-url">patchlabs.dev/demo</span><span class="ui-tag">Demo workspace · fake data</span></div>
-  <div class="ui-appbar"><span class="ui-logo"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ui-hide-sm">PatchLabs</span></span><span class="ui-ws">Demo workspace</span><span class="ui-nav"><span class="on">Apps</span><span>Settings</span><span>Docs</span></span><span class="sp"></span><span class="ui-avatar" aria-hidden="true">D</span></div>
+  <div class="ui-appbar"><span class="ui-logo"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ui-hide-sm">PatchLabs</span></span><span class="ui-ws">Demo workspace</span><span class="ui-nav"><span class="on">Apps</span><span>Settings</span><span>Docs</span></span><span class="sp"></span><span class="ui-avatar" aria-hidden="true">D</span></div>
   <div class="ui-body">
     <p class="ui-crumbs">Apps / <b>manra399/patchlabs-demo-app</b></p>
     <div class="ui-head">
@@ -106,8 +109,24 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
     </div>
   </div>
 </div>
+      <p class="scribble hero-note"><svg viewBox="0 0 46 30" aria-hidden="true"><path d="M3 24c10-2 22-8 34-20"/><path d="M28 4.5l9-.5-1.5 8.5"/></svg>the real app, on our own leaky demo</p>
       <figcaption>The PatchLabs app on our deliberately leaky demo app, after its real check on 9 Nov 2026. Fake data. <a href="/demo">Open the demo</a>.</figcaption>
     </figure>
+  </div>
+</section>
+
+<!-- How it works: six steps, drawn -->
+<section class="sec tight how6" aria-labelledby="how6-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">How it works</p>
+        <h2 id="how6-h">From your repo to a signed receipt, <em>in six steps</em>.</h2>
+      </div>
+      <a class="link-arrow" href="/how-it-works">The full method</a>
+    </div>
+    <div class="how6-art how6-wide">{{svg:pipeline}}</div>
+    <div class="how6-art how6-tall">{{svg:pipeline-v}}</div>
   </div>
 </section>
 
@@ -118,6 +137,7 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
       <div>
         <p class="lab">Evidence</p>
         <h2 id="proof-h" class="h-md">Numbers from our own lab, with the sample sizes.</h2>
+        <p class="scribble">misses included, small samples labelled</p>
       </div>
       <a class="link-arrow" href="/research/methodology">How we measured</a>
     </div>
@@ -141,7 +161,7 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
     <div class="sec-head split">
       <div>
         <p class="lab">Platform</p>
-        <h2 id="platform-h">Everything an AI-built app tends to get wrong, in one check.</h2>
+        <h2 id="platform-h">Everything an AI‑built app tends to get wrong, in one check.</h2>
         <p>Four product lines share one finding format, one report and one proof. Every check runs all of them, on every plan.</p>
       </div>
       <a class="link-arrow" href="/demo">Click through the demo</a>
@@ -278,7 +298,7 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
         <li><span class="d red"></span><span><b>First check</b> · 1 table leaking: <code>profiles</code> · lab proof passed</span><span class="w">9 Nov 16:57</span></li>
       </ul>
     </div>
-    <div class="msg"><span class="av"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>PatchLabs</b><span class="w">webhook · example</span><p>manra399/patchlabs-demo-app: 1 table leaking (profiles). A lab-proven fix is ready.</p></div></div>
+    <div class="msg"><span class="av"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>PatchLabs</b><span class="w">webhook · example</span><p>manra399/patchlabs-demo-app: 1 table leaking (profiles). A lab-proven fix is ready.</p></div></div>
   </div>
 </div>
       </div>
@@ -414,9 +434,12 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
 <!-- Personas -->
 <section class="sec" aria-labelledby="who-h">
   <div class="wrap">
-    <div class="sec-head">
-      <p class="lab">Who it’s for</p>
-      <h2 id="who-h">For the person who shipped it, and the one who signs it off.</h2>
+    <div class="sec-head split who-head">
+      <div>
+        <p class="lab">Who it’s for</p>
+        <h2 id="who-h">For the person who shipped it, and the one who signs it off.</h2>
+      </div>
+      <div class="who-art">{{svg:two-people}}</div>
     </div>
     <div class="personas" data-reveal>
       <a class="persona2" href="/solutions/founders">
@@ -456,6 +479,7 @@ select count(*) from public.profiles;   <span class="c">-- 2: LEAK</span></code>
       </div>
       <div class="row"><a class="btn secondary" href="/research/1-in-4">Read the study</a><a class="btn ghost" href="/research/methodology">Methodology</a></div>
     </div>
+    <figure class="card study-art" data-reveal>{{svg:study-318}}</figure>
     <div class="evidence-grid">
       <div class="card" data-reveal>
         <p class="lab">Who could read personal data · n=318</p>

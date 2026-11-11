@@ -151,3 +151,7 @@
 @media (max-width: 560px) { .draft-note { border-radius: 10px; align-items: baseline; } }
 .legal .table th code { white-space: nowrap; overflow-wrap: normal; word-break: normal; }
 .notcov li.x::before { color: var(--muted); }
+
+/* Signed receipt drawing under the receipts copy */
+.receipt-art { max-width: 300px; margin-top: 32px; }
+@media (max-width: 1040px) { .receipt-art { display: none; } }

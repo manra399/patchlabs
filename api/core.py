@@ -283,10 +283,12 @@ def may_see_app(c, role, wid, uid, aid):
 # ---- plans -------------------------------------------------------------------------------------------------------
 
 ALL_SCHEDULES = ["off", "weekly", "monthly"]
-PLANS = {"free": {"apps": 1, "runs_per_month": 4, "seats": 1, "schedules": ["off", "monthly"]},
-         "maker": {"apps": 3, "runs_per_month": 30, "seats": 2, "schedules": ALL_SCHEDULES},
-         "agency": {"apps": 10, "runs_per_month": 200, "seats": 10, "schedules": ALL_SCHEDULES},
-         "enterprise": {"apps": 50, "runs_per_month": 1000, "seats": 50, "schedules": ALL_SCHEDULES}}
+# fix_price_gbp: charged per approved fix (decided 11 Nov 2026: £29 on Free, included on paid plans). Invoiced until card
+# payments are live; the approval records the charge in the audit log.
+PLANS = {"free": {"apps": 1, "runs_per_month": 4, "seats": 1, "schedules": ["off", "monthly"], "fix_price_gbp": 29},
+         "maker": {"apps": 3, "runs_per_month": 30, "seats": 2, "schedules": ALL_SCHEDULES, "fix_price_gbp": 0},
+         "agency": {"apps": 10, "runs_per_month": 200, "seats": 10, "schedules": ALL_SCHEDULES, "fix_price_gbp": 0},
+         "enterprise": {"apps": 50, "runs_per_month": 1000, "seats": 50, "schedules": ALL_SCHEDULES, "fix_price_gbp": 0}}
 NEXT_AT = "CASE schedule WHEN 'weekly' THEN now() + interval '7 days' WHEN 'monthly' THEN now() + interval '30 days' END"
 
 

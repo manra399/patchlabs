@@ -1,0 +1,46 @@
+<!--
+title: patchlabs CLI: free, open-source security scanner for Supabase and AI-built apps | PatchLabs
+description: Run PatchLabs' static checks locally or in CI: Supabase RLS policies, risky AI-written code, vulnerable dependencies and live security headers. Apache-2.0, no account.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"patchlabs CLI","applicationCategory":"DeveloperApplication","operatingSystem":"macOS, Linux, Windows (Python 3.9+)","license":"https://www.apache.org/licenses/LICENSE-2.0","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"codeRepository":"https://github.com/manra399/patchlabs-cli","url":"https://patchlabs.dev/tools/cli","publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">CLI</li></ol></nav>
+    <p class="lab">Open source · Apache-2.0</p>
+    <h1>The PatchLabs checks, <em>on your own machine</em>.</h1>
+    <p class="lede"><code>patchlabs</code> is a free command-line scanner for apps built with Lovable, Supabase, Bolt, Replit or Cursor. It reads your Supabase SQL, your code and your dependency list, and can grade one live page. It never connects to a database and never runs your code.</p>
+    <div class="row mt-3"><a class="btn primary large" href="https://github.com/manra399/patchlabs-cli">View on GitHub</a><a class="btn secondary large" href="/#check">Run the full lab check</a></div>
+  </div>
+</section>
+
+<section class="sec tight" aria-labelledby="install-h" style="padding-top:0">
+  <div class="wrap narrow prose">
+    <h2 id="install-h">Install and run</h2>
+    <p>You need Python 3.9 or later and nothing else: the CLI has no dependencies.</p>
+    <div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy="#cli-install">Copy</button></div>
+<pre id="cli-install"><code>pipx install git+https://github.com/manra399/patchlabs-cli
+patchlabs scan .                         # your repo: Supabase SQL, code, dependencies
+patchlabs headers https://your-app.com   # one page load, graded A to F</code></pre></div>
+    <p>No install at all: <code>uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .</code></p>
+
+    <h2>What it checks</h2>
+    <ul>
+      <li><strong>Supabase row level security</strong> (<a href="/findings/pl-001">PL-001</a> to <a href="/findings/pl-008">PL-008</a>): tables without RLS, policies that let anyone or any signed-in user read every row, always-true conditions, UPDATE policies without <code>WITH CHECK</code>, exposed <code>SECURITY DEFINER</code> functions and public buckets.</li>
+      <li><strong>Risky code</strong> (<a href="/findings/pl-010">PL-010</a>, <a href="/findings/pl-017">PL-017</a> to <a href="/findings/pl-026">PL-026</a>): service role keys in browser code, open edge functions, unsigned payment webhooks, access decided by <code>user_metadata</code>, browser-only admin checks, raw HTML, Firebase rules and CORS.</li>
+      <li><strong>Dependencies</strong> (<a href="/findings/pl-023">PL-023</a>): npm packages with a published advisory, from OSV. Only package names and versions are sent; <code>--offline</code> skips it.</li>
+      <li><strong>Live headers</strong> (<a href="/findings/pl-027">PL-027</a> to <a href="/findings/pl-036">PL-036</a>): HTTPS redirect, certificate, HSTS, CSP, framing, cookies, mixed content, version headers and referrer policy, from one ordinary page load.</li>
+    </ul>
+
+    <h2>In CI</h2>
+    <p>Exit code 1 means a finding at or above <code>--fail-on</code> (default <code>high</code>). <code>--sarif results.sarif</code> writes SARIF 2.1.0, so GitHub code scanning shows each finding on the line it came from. The README has a ready-made GitHub Actions workflow.</p>
+
+    <h2>What it doesn’t do</h2>
+    <p>The CLI reads text, so it reports patterns, not proof. It can’t tell you who can actually read a table. The hosted <a href="/product/lab">Lab</a> does that: it rebuilds your database in a throwaway copy and queries it as an anonymous visitor, a signed-in stranger and the owner. Then <a href="/product/fix">Fix</a> writes the migration and re-tests it before your engineer approves. That part stays hosted, and it is free for your first app.</p>
+  </div>
+</section>
+
+</main>

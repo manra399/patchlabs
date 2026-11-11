@@ -173,3 +173,6 @@
 .lp-mock-list li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink); }
 .lp-mock-list li:last-child { border-bottom: 0; }
 .lp-mock-list code { font: 600 11.5px var(--mono); color: var(--muted); white-space: nowrap; }
+
+/* Persona badge drawings on the three identity cards (site/illustrations/persona-*.svg) */
+.ident-face { width: 64px; height: 64px; margin-bottom: 12px; }

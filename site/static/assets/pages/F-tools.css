@@ -21,6 +21,8 @@
 .tool-card .tc-body p { flex: 1; }
 .tool-card .tc-art { background: var(--bg-2); border-bottom: 1px solid var(--line); padding: 20px 22px; font: 400 12.5px/1.7 var(--mono); color: var(--text); white-space: pre; overflow: hidden; height: 192px; }
 .tool-card .tc-art b { color: var(--ink); font-weight: 700; }
+.tool-card .tc-art.tc-ill { white-space: normal; height: auto; padding: 18px 22px 10px; display: grid; place-items: center; }
+.tool-card .tc-art.tc-ill .ill { max-height: 220px; width: auto; max-width: 100%; }
 .tool-card .tc-art .r { color: var(--red); font-weight: 700; } .tool-card .tc-art .g { color: var(--green); font-weight: 700; } .tool-card .tc-art .d { color: var(--muted); }
 .tool-card .tc-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font: 500 12.5px var(--mono); color: var(--muted); }
 .tool-card.link:hover .link-arrow::after { transform: translateX(3px); }
@@ -105,7 +107,7 @@
 
 /* ---------- /sample-report ---------- */
 .rep-top { padding: 48px 0 40px; border-bottom: 1px solid var(--line); }
-.rep-top h1 { font-size: clamp(30px, 4.6vw, 52px); letter-spacing: -.035em; margin: 0 0 14px; word-break: break-word; }
+.rep-top h1 { font-size: clamp(30px, 4.6vw, 52px); letter-spacing: -.012em; margin: 0 0 14px; word-break: break-word; }
 .rep-top .lede { margin-bottom: 24px; }
 .rep-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .rep-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 56px; padding-top: 48px; padding-bottom: 40px; align-items: start; }

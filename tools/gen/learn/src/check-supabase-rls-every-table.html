@@ -1,0 +1,98 @@
+title: How to check row level security is on for every Supabase table
+description: Run one SQL query to list every Supabase table with row level security on or off and its policy count, then read the result. Includes the pg_class query.
+h1: How to check row level security is on for every Supabase table
+navtitle: RLS on every table
+topic: supabase
+order: 8
+short: Run one SQL query to list every Supabase table with row level security on or off and its policy count, then read the result. Includes the pg_class query.
+lede: Run a query on <code>pg_class</code> that lists each table in the <code>public</code> schema with its <code>relrowsecurity</code> flag and its policy count. A row where <code>rls_on</code> is false is a table with no row rules. A row where it is true but the policy count is 0 is locked to everyone.
+tldr: Query <code>pg_class</code> (or <code>pg_tables</code>) for every table in <code>public</code>. <code>false</code> means RLS is off. || Join <code>pg_policy</code> to see policy counts. RLS on with 0 policies blocks the API roles. RLS on with policies still needs its policies read and tested. || Repeat for every schema you expose through the API. || Do not test from the SQL editor’s default role. Table owners normally bypass RLS.
+findings: PL-008, PL-003, PL-001, PL-002, PL-005, PL-014
+checked: 2026-11-11
+---
+<h2 id="meaning">What does “RLS enabled” mean in Postgres?</h2>
+<p>Row level security is a per-table switch. PostgreSQL stores it as <code>relrowsecurity</code> in the <code>pg_class</code> catalog: true if the table has row-level security enabled. The <code>pg_tables</code> view shows the same flag as <code>rowsecurity</code>. Once it is on, every normal read or write needs a policy to allow it, and with no policy a default-deny applies: no rows are visible or can be changed.</p>
+<p>For a Supabase app this is the whole boundary. Requests from the browser run as <code>anon</code> or <code>authenticated</code>. If RLS is off and those roles have been granted access, they can read and change every row. Supabase’s docs say to enable RLS on every table in an exposed schema.</p>
+
+<h2 id="query">Which query lists every table and its RLS status?</h2>
+<p>The short version uses <code>pg_tables</code>:</p>
+<div class="code"><div class="code-bar"><span class="name">rls-status-short.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>select schemaname, tablename, rowsecurity
+from pg_tables
+where schemaname = 'public'
+order by rowsecurity, tablename;</code></pre></div>
+<p>The better version uses <code>pg_class</code>. It also covers partitioned tables, shows whether RLS is forced on the owner, and counts policies:</p>
+<div class="code"><div class="code-bar"><span class="name">rls-status-full.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Every table in public: RLS flag, forced flag, number of policies</span>
+select c.relname as table_name,
+       c.relrowsecurity as rls_on,
+       c.relforcerowsecurity as rls_forced,
+       count(p.polname) as policies
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+left join pg_policy p on p.polrelid = c.oid
+where n.nspname = 'public' and c.relkind in ('r', 'p')
+group by c.relname, c.relrowsecurity, c.relforcerowsecurity
+order by c.relrowsecurity, c.relname;</code></pre></div>
+<p>Run it in the Supabase SQL editor, or locally with <code>psql</code> against a copy built from your migrations. It only reads the catalogs, so it changes nothing. Here <code>relkind</code> <code>'r'</code> is an ordinary table and <code>'p'</code> a partitioned table.</p>
+
+<h2 id="read">How do I read the result?</h2>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col">rls_on</th><th scope="col">policies</th><th scope="col">What it means</th><th scope="col">Finding</th></tr></thead>
+<tbody>
+<tr><th scope="row"><code>false</code></th><td>any</td><td>No row rules. If the API roles have grants, anyone with your public key can read and change every row. Switch RLS on and add policies.</td><td><a href="/findings/pl-008">PL-008</a></td></tr>
+<tr><th scope="row"><code>true</code></th><td>0</td><td>Locked to the API roles. Safe, but the app shows empty results, and the quick fix people reach for is often a leak.</td><td><a href="/findings/pl-003">PL-003</a></td></tr>
+<tr><th scope="row"><code>true</code></th><td>1 or more</td><td>Protected only as well as the policies. Read them, then test the table as anon, a stranger and the owner.</td><td><a href="/findings/pl-001">PL-001</a>, <a href="/findings/pl-002">PL-002</a>, <a href="/findings/pl-005">PL-005</a></td></tr>
+</tbody>
+</table></div>
+<p>Some tables are meant to be public, such as a product list. A <code>false</code> there still deserves a decision, not an accident. A table full of emails or phone numbers with <code>rls_on = false</code> is the one to fix today.</p>
+
+<h2 id="enough">Is RLS on enough?</h2>
+<p>No. RLS on only means a policy decides. A policy that says <code>using (true)</code> decides yes for everyone. List the read policies and look at the roles and conditions:</p>
+<div class="code"><div class="code-bar"><span class="name">list-policies.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>select tablename, policyname, roles, cmd, qual
+from pg_policies
+where schemaname = 'public' and cmd in ('SELECT', 'ALL')
+order by tablename;</code></pre></div>
+<p>Look for <code>{public}</code> or <code>{anon}</code> in <code>roles</code>, and for a <code>qual</code> of <code>true</code> or one that never mentions <code>auth.uid()</code>. Then test each table as the three people who matter. <a href="/learn/rls-policies-explained">RLS policies explained</a> has the script.</p>
+
+<h2 id="gaps">What does this query miss?</h2>
+<ul>
+  <li><strong>Other schemas.</strong> Change <code>'public'</code> to any other schema you expose through the API.</li>
+  <li><strong>Views.</strong> A view has no RLS flag and runs as its owner unless it uses <code>security_invoker</code> (<a href="/findings/pl-014">PL-014</a>, <a href="/learn/supabase-views-security-invoker">guide</a>).</li>
+  <li><strong>Functions.</strong> Supabase’s docs say RLS doesn’t apply to functions, so grant <code>execute</code> only to the roles that need it (<a href="/findings/pl-006">PL-006</a>).</li>
+  <li><strong>Files.</strong> Storage has its own policies on <code>storage.objects</code> (<a href="/findings/pl-015">PL-015</a>, <a href="/learn/supabase-storage-policies">guide</a>).</li>
+  <li><strong>Owner bypass.</strong> The table owner, and any role with <code>BYPASSRLS</code>, skips RLS unless the owner is forced with <code>FORCE ROW LEVEL SECURITY</code>. The SQL editor usually runs as such a role, so never judge a table by what you see there.</li>
+</ul>
+
+<h2 id="enable">How do I switch RLS on without breaking the app?</h2>
+<p>Put the change in a new migration, so it is versioned and can be rebuilt:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_enable_rls_orders.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alter table public.orders enable row level security;
+
+create policy "Users read own orders" on public.orders
+  for select to authenticated
+  using ((select auth.uid()) = user_id);</code></pre></div>
+<p>Enabling RLS with no policy blocks everything, which breaks the page that reads the table. Add the policies in the same migration, then test as the owner to confirm they still see their rows. Supabase’s docs also describe event triggers that enable RLS automatically on new tables. If you use one, still re-run the query after each AI change.</p>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>What is the difference between <code>rowsecurity</code> in <code>pg_tables</code> and <code>relrowsecurity</code> in <code>pg_class</code>?</h3>
+<p>They are the same flag. The <code>pg_tables</code> view reads it from <code>pg_class.relrowsecurity</code> and calls it <code>rowsecurity</code>. Use <code>pg_class</code> when you also want partitioned tables, the forced flag or a join to policies.</p>
+<h3>Does RLS on mean my table is private?</h3>
+<p>No. It means policies decide. A table with RLS on and a policy of <code>using (true)</code> is readable by everyone that policy covers. Check the policies, then test as anon, a stranger and the owner.</p>
+<h3>Why can I see every row when I query in the SQL editor?</h3>
+<p>The editor usually connects as the <code>postgres</code> role, which owns your tables. PostgreSQL’s docs say table owners normally bypass row security, and superusers and roles with BYPASSRLS always do. Use <code>set local role anon</code> inside a transaction to test.</p>
+<h3>What does FORCE ROW LEVEL SECURITY do?</h3>
+<p>It makes a table’s owner subject to its policies as well. The API roles are not owners, so it does not change what your public key can read. It matters for server code that connects as the owner.</p>
+<h3>Does Supabase turn on RLS automatically for new tables?</h3>
+<p>Do not assume it. For tables created with SQL, Supabase’s docs tell you to enable RLS yourself, and describe event triggers that can do it for you. Run the query above after each change to be sure.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/api/securing-your-api">Supabase docs: Securing your API</a> (checked 11 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase docs: database advisors</a> (checked 11 Nov 2026)</li>
+<li><a href="https://www.postgresql.org/docs/current/catalog-pg-class.html">PostgreSQL docs: pg_class</a> (checked 11 Nov 2026)</li>
+<li><a href="https://www.postgresql.org/docs/current/view-pg-tables.html">PostgreSQL docs: pg_tables</a> (checked 11 Nov 2026)</li>
+<li><a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">PostgreSQL docs: Row Security Policies</a> (checked 11 Nov 2026)</li>
+</ul>

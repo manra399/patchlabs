@@ -29,7 +29,7 @@
 <script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
@@ -40,7 +40,7 @@
 
 <header class="site-header">
   <div class="wrap">
-    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
     <nav class="nav" id="site-nav" aria-label="Main">
       <details class="dd" data-mega>
         <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
@@ -302,16 +302,25 @@
       $('own-rec').innerHTML = '<h3 class="h4 mt-4 mb-2">Recorded so far</h3>' + recordHtml(c);
       PL.toast(msg, 'ok'); receipt(c);
     };
-    var decide = async function (btn, action, reason) {
+    var decide = async function (btn, action, reason, charge) {
       var tables = picked(); $('dec-err').textContent = '';
       if (!tables.length) { $('dec-err').textContent = 'Pick at least one table.'; return; }
       var restore = PL.busy(btn, 'Saving…');
       try {
-        var body = { action: action, tables: tables }; if (reason) body.reason = reason;
+        var body = { action: action, tables: tables }; if (reason) body.reason = reason; if (charge) body.accept_charge_gbp = charge;
         var r = await api('/checks/' + encodeURIComponent(id) + '/decision', { method: 'POST', body: body });
         restore(); $('rej-box').hidden = true;
         updated('decisions', r.decisions, action === 'approve' ? 'Fix approved' : 'Marked as intended: no more alerts for ' + tables.join(', '));
-      } catch (x) { restore(); $('dec-err').textContent = x.status === 401 ? 'Your session has ended. Sign in again to record a decision.' : x.message; }
+      } catch (x) {
+        restore();
+        var price = x.status === 402 && /£(\d+)/.exec(x.message || '');
+        if (price) {   // Free plan: approving a fix has a per-fix price; the approver confirms it before anything is recorded
+          $('dec-err').innerHTML = esc(x.message) + ' <button class="btn small primary" type="button" id="approve-pay">Approve for £' + price[1] + '</button> <a href="/pricing">See plans</a>';
+          $('approve-pay').onclick = function () { decide(this, 'approve', reason, +price[1]); };
+          return;
+        }
+        $('dec-err').textContent = x.status === 401 ? 'Your session has ended. Sign in again to record a decision.' : x.message;
+      }
     };
     if ($('approve')) {
       $('approve').onclick = function () { decide(this, 'approve'); };
@@ -391,7 +400,7 @@
     </div>
     <div class="foot-top">
       <div class="foot-brand">
-        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="var(--bg)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
         <p>Find the leak. Prove the fix. A security platform for apps built with AI: Lab, Code, Fix and Watch.</p>
         <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK</p>
         <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
