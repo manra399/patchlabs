@@ -897,3 +897,27 @@ sup.fn a:hover { color: var(--ink); }
   .site-header, .site-footer, .announce, .btn, .copy, .theme-toggle { display: none !important; }
   body { background: #fff; color: #000; }
 }
+
+/* ---------- 9. Polish pass (11 Nov 2026, v4) ----------
+   Plans: serif prices and a brand-coloured recommended plan. CTA panel: one strong ultramarine moment per page.
+   Cards and buttons: slightly rounder, with brand-tinted hover. */
+:root { --r-lg: 18px; }
+.btn { border-radius: 12px; }
+.btn.secondary:hover, .btn:not(.primary):not(.ghost):not(.danger):hover { border-color: var(--brand-line); }
+.card.link:hover { border-color: var(--brand-line); box-shadow: 0 24px 50px -36px color-mix(in srgb, var(--brand) 70%, transparent); }
+.plan { border-radius: 22px; }
+.plan .price b { font-family: var(--display); font-weight: 520; letter-spacing: -.02em; }
+.plan h3 { font: 560 22px/1.2 var(--display); letter-spacing: -.01em; }
+.plan.featured { border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-soft), 0 30px 70px -40px color-mix(in srgb, var(--brand) 70%, transparent); }
+.plan .badge { background: var(--brand); color: #fff; }
+.cta-panel { background: radial-gradient(ellipse 80% 120% at 50% -20%, #5563ff 0%, #3341d6 45%, #232fa8 100%); border: 0; color: rgba(255,255,255,.82);
+  box-shadow: 0 50px 100px -50px rgba(51,65,214,.7); }
+.cta-panel::before { background-image: radial-gradient(rgba(255,255,255,.22) 1px, transparent 1px); opacity: .5; }
+.cta-panel h2 { color: #fff; }
+.cta-panel .lede, .cta-panel p, .cta-panel .muted { color: rgba(255,255,255,.82); }
+.cta-panel .lab { color: #fff; } .cta-panel .lab::before, .cta-panel .lab::after { color: rgba(255,255,255,.5); }
+.cta-panel a:not(.btn) { color: #fff; text-decoration-color: rgba(255,255,255,.45); }
+.cta-panel .repo-form { border-color: transparent; box-shadow: 0 20px 50px -20px rgba(10,14,60,.6); }
+.cta-panel .repo-form .btn.primary { background: #15171b; border-color: #15171b; color: #fff; }
+.cta-panel .repo-form .btn.primary:hover { background: #000; }
+.cta-panel .form-meta, .cta-panel .form-meta span, .cta-panel .cta-links, .cta-panel .cta-links span { color: rgba(255,255,255,.78); }
