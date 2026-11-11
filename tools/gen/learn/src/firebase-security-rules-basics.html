@@ -8,6 +8,8 @@ short: Why test-mode rules leak, owner-only rules to copy, and emulator tests as
 lede: Firebase security rules are the only thing deciding who can read and write your Firestore, Realtime Database and Cloud Storage data, because your app’s Firebase config is public by design. Replace any <code>if true</code> or test-mode <code>request.time &lt; …</code> rule with rules that compare <code>request.auth.uid</code> with the document’s owner, and test them in the emulator as a visitor, a stranger and the owner before deploying.
 tldr: Your <code>apiKey</code> and <code>projectId</code> are public. Rules are your security. || Test mode opens everything for 30 days. <code>if request.auth != null</code> opens everything to anyone who signs up. || Match on ownership: <code>request.auth.uid == userId</code>, or <code>resource.data.ownerId == request.auth.uid</code>. || Test with <code>@firebase/rules-unit-testing</code> and the emulator; keep the rules in your repo and deploy from there.
 findings: PL-025, PL-002
+cta: firebase
+checked: 2026-11-11
 ---
 <h2 id="why">Why rules are your whole security model</h2>
 <p>A Firebase web app talks to Firestore, Realtime Database and Cloud Storage directly from the browser using a config object with an <code>apiKey</code>. That key identifies your project; it doesn’t grant access, and it isn’t secret. Anyone can copy it from your site and use the Firebase SDK against your project. What they can do is decided entirely by your security rules, evaluated by Google’s servers on every request.</p>
@@ -26,6 +28,7 @@ allow read, write: if request.auth != null;
 [[/CODE]]
 <p>Test mode is what the Firebase console offers when you create a database, so you can build without rules for 30 days. Apps ship with it, or the date gets pushed forward when it expires and the app stops working. The third form is Firebase’s version of <a href="/findings/pl-002">PL-002</a>: if anyone can create an account, “signed in” means anyone.</p>
 <p>Realtime Database uses JSON rules; the equivalent of rule 1 is <code>{"rules": {".read": true, ".write": true}}</code>.</p>
+<p class="small">To find these in your own project, paste your rules file into the <a href="/tools/firebase-rules-check">free Firebase rules check</a>. It runs in your browser and sends nothing.</p>
 
 <h2 id="how">How rules evaluate</h2>
 <ul>

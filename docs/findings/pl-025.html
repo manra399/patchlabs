@@ -256,6 +256,7 @@ await assertSucceeds(getDoc(doc(owner, 'users/owner')));
 console.log('visitor and stranger denied, owner reads');
 await env.cleanup();</code></pre>
 </div>
+      <p class="small">Paste <code>firestore.rules</code>, <code>storage.rules</code> or <code>database.rules.json</code> into the <a href="/tools/firebase-rules-check">free Firebase rules check</a>. It runs in your browser and sends nothing.</p>
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
       <div class="code">
@@ -333,7 +334,7 @@ service cloud.firestore {
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/tools/firebase-rules-check">Or paste your rules into the free Firebase rules check</a></span></div>
       </div>
 
       <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-025">Tell us</a>.</p>
