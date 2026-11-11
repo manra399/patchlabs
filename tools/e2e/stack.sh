@@ -23,7 +23,7 @@ up() {
   docker run -d --name pl-e2e-db --network "$NET" -e POSTGRES_PASSWORD=e2e -e POSTGRES_DB=patchlabs postgres:17 >/dev/null
   docker run -d --name pl-e2e-stub --network "$NET" -p 127.0.0.1:9298:8080 -v "$ROOT/tools/e2e/stub.py:/stub.py:ro" python:3.13-slim python -u /stub.py >/dev/null
   for _ in $(seq 1 60); do docker exec pl-e2e-db pg_isready -U postgres -d patchlabs -h 127.0.0.1 >/dev/null 2>&1 && break; sleep 1; done
-  docker run -d --name pl-e2e-api --network "$NET" --user root -p 8001:8000 \
+  docker run -d --name pl-e2e-api --network "$NET" --user root -p 127.0.0.1:8001:8000 \
     -v "$ROOT/tools/e2e/e2e_main.py:/app/e2e_main.py:ro" -v "$OUT:/outbox" \
     -e DATABASE_URL=postgresql://postgres:e2e@pl-e2e-db:5432/patchlabs -e WORKER_TOKEN=e2e-worker-token -e ADMIN_TOKEN=e2e-admin-token \
     -e SITE_URL="http://localhost:$SITE_PORT" -e CORS_ORIGINS="http://localhost:$SITE_PORT,http://127.0.0.1:$SITE_PORT" \
