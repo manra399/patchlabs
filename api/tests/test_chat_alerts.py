@@ -5,7 +5,7 @@ import pytest
 
 import alerts
 import core
-from helpers import A, STATE, STUB, claim, finish_with, sign_in, verified_app
+from helpers import A, STATE, STUB, claim, finish_with, outbox, sign_in, verified_app
 
 FINDINGS = [{"id": "PL-023", "line": "code", "severity": "high", "title": "lodash 4.17.15 has a known vulnerability", "object": "package.json"},
             {"id": "PL-001", "line": "lab", "severity": "critical", "title": "Anyone can read profiles", "object": "public.profiles"},
@@ -164,3 +164,28 @@ def test_failed_check_alert_has_no_findings(client, chat_dns):
     client.post(f"/worker/checks/{cid}/result", headers={"Authorization": "Bearer worker-test-token"}, json={"status": "failed", "error": "x"})
     body = STATE.hooks[-1]["body"]
     assert "could not finish" in body["text"] and all(b["type"] != "section" or "Top findings" not in str(b) for b in body["blocks"])
+
+
+def test_failed_and_needs_review_checks_email_the_founder(client, chat_dns):
+    u = sign_in(client, "owner@example.com")
+    a, cid = verified_app(client, u)
+    claim(client)
+    client.post(f"/worker/checks/{cid}/result", headers={"Authorization": "Bearer worker-test-token"}, json={"status": "failed", "error": "lab timeout"})
+    m = [x for x in outbox() if x["subject"].startswith("Check failed:")]
+    assert m and "lab timeout" in m[-1]["text"] and cid in m[-1]["text"]
+
+
+def test_watchdog_emails_once_when_worker_stops_with_work_waiting(client):
+    import watchdog
+    from helpers import sql
+    u = sign_in(client, "owner@example.com")
+    verified_app(client, u)  # leaves a queued check
+    sql("DELETE FROM kv WHERE key IN ('worker_heartbeat', 'watchdog_alert')")
+    with core.pool.connection() as c:
+        assert watchdog.check_once(c)            # no heartbeat ever, a check waiting: alert
+        assert watchdog.check_once(c) is None    # same stall: no second email inside the gap
+    assert [m for m in outbox() if m["subject"].startswith("PatchLabs worker has stopped")]
+    sql("UPDATE kv SET updated_at = now() - interval '1 day' WHERE key = 'watchdog_alert'")
+    sql("INSERT INTO kv (key, value) VALUES ('worker_heartbeat', 'ok') ON CONFLICT (key) DO UPDATE SET updated_at = now()")
+    with core.pool.connection() as c:
+        assert watchdog.check_once(c) is None    # worker alive again: quiet

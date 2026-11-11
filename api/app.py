@@ -15,13 +15,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field
 
-import accounts, audit, mcp_server, monitor, posture, receipts, rls, support, taxonomy
-from core import (ADMIN_TOKEN, EMAIL_RE, ORIGINS, SITE_URL, VERIFY_FILE, WORKER_TOKEN, bearer, clean_report, db, event, ip_hash, notify,
+import accounts, audit, mcp_server, monitor, posture, receipts, rls, support, taxonomy, watchdog
+from core import (ADMIN_TOKEN, EMAIL_RE, FOUNDER_EMAIL, ORIGINS, SITE_URL, VERIFY_FILE, WORKER_TOKEN, bearer, clean_report, db, event, ip_hash, mail, notify,
                   parse_repo, pool, repo_has_code, repo_lookup, scrub, send_email, verify_info)  # noqa: F401 (send_email re-exported)
 
 MAX_OPEN_PER_EMAIL = 3
 MAX_PER_IP_PER_DAY = 10
 POSTURE_EVERY = int(os.environ.get("POSTURE_EVERY", "600"))  # seconds between live posture sweeps; 0 turns them off
+WATCHDOG_EVERY = int(os.environ.get("WATCHDOG_EVERY", "300"))  # seconds between worker-stall checks (watchdog.py); 0 turns it off
 SCHEMA = os.environ.get("SCHEMA_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql"))
 
 
@@ -32,8 +33,11 @@ async def lifespan(_):
         c.execute(open(SCHEMA).read())
     if POSTURE_EVERY > 0:
         posture.start_loop(POSTURE_EVERY)
+    if WATCHDOG_EVERY > 0:
+        watchdog.start_loop(WATCHDOG_EVERY)
     yield
     posture.stop_loop()
+    watchdog.stop_loop()
     pool.close()
 
 
@@ -176,6 +180,11 @@ def result(cid: str, body: Result, c=Depends(db)):
               "WHERE id = %s", (body.status, Jsonb(body.summary) if body.summary else None, body.report_md, body.fix_sql,
                                 body.cost_usd, body.error, cid))
     event(c, cid, body.status)
+    if body.status in ("failed", "needs_review"):  # the customer is told "a person is on it": make that true
+        mail(FOUNDER_EMAIL, f"Check {body.status.replace('_', ' ')}: {row['repo']}",
+             f"Check {cid} for {row['repo']} finished as {body.status}.\n\n"
+             + (f"Error: {(body.error or '')[:1000]}\n\n" if body.error else "")
+             + f"Report: {SITE_URL}/check?id={cid}\nAdmin: {SITE_URL}/admin\n")
     if row["app_id"]:
         monitor.notify_app_check(c, cid)
     elif body.status != "failed":

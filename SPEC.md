@@ -38,12 +38,15 @@ the public home page of a domain the team verified.
 Local dev: API at `http://localhost:8001` (the site's `app.js` switches automatically on localhost).
 
 ## Plans and limits (enforced by the API; set by admin until payments are connected)
-| Plan | Price shown | Apps | Re-check schedule | Manual runs | Team seats |
-|---|---|---|---|---|---|
-| free | £0 | 1 | monthly | 4 per month | 1 |
-| maker | £19 / month | 3 | weekly or monthly | 30 per month | 2 |
-| agency | £99 / month (10 apps), +£8 per extra app | 10 (admin can raise) | weekly or monthly | 200 per month | 10 |
-| enterprise | Custom | admin-set | admin-set | admin-set | admin-set |
+| Plan | Price shown | Apps | Re-check schedule | Manual runs | Team seats | Approving a proven fix |
+|---|---|---|---|---|---|---|
+| free | £0 | 1 | monthly | 4 per month | 1 | £29 per fix (`fix_price_gbp`), invoiced |
+| maker | £19 / month | 3 | weekly or monthly | 30 per month | 2 | included |
+| agency | £99 / month (10 apps), +£8 per extra app | 10 (admin can raise) | weekly or monthly | 200 per month | 10 | included |
+| enterprise | Custom | admin-set | admin-set | admin-set | admin-set | included |
+Per-fix price (decided 11 Nov 2026): writing and proving fixes is free on every plan. On Free, `POST /checks/{id}/decision`
+with `action: approve` returns 402 with the price until the body carries `accept_charge_gbp` equal to it; the audit log
+records `charge_gbp`. A fix that failed proof is never charged. Every page that says "free" must say "£29 per approved fix".
 Clients (the `client` role) never count as team seats, on any plan; every other role does. API keys, webhooks, badges and client
 labels are available on every plan. Upgrading: `POST .../upgrade-request` records the
 request and emails manraj@patchlabs.dev; admin sets the plan. Stripe comes later (needs the founder's account).

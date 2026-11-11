@@ -184,6 +184,7 @@ def test_free_plan_approval_needs_the_per_fix_charge_agreed(client, setup):
     r = client.post(f"/checks/{cid}/decision", json={"action": "approve"}, headers=u.h)
     assert r.status_code == 402 and "£29" in r.json()["detail"]
     assert client.post(f"/checks/{cid}/decision", json={"action": "approve", "accept_charge_gbp": 5}, headers=u.h).status_code == 402
+    assert client.post(f"/checks/{cid}/decision", json={"action": "approve", "tables": []}, headers=u.h).status_code == 422  # no free approvals
     assert client.post(f"/checks/{cid}/decision", json={"action": "reject", "tables": ["sellers"], "reason": "public"}, headers=u.h).status_code == 201
     r = client.post(f"/checks/{cid}/decision", json={"action": "approve", "accept_charge_gbp": 29}, headers=u.h)
     assert r.status_code == 201

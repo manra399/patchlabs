@@ -209,7 +209,7 @@ def page(g, guides, ft):
         <p class="lab">Free check</p>
         <h2>Check your app for this, free.</h2>
         <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
-        {form("l-" + g["slug"][:18], '<span>Free for your first app</span><span>Never touches your database</span>')}
+        {form("l-" + g["slug"][:18], '<span>Free for your first app (£29 per approved fix)</span><span>Never touches your database</span>')}
       </div>"""
     return f"""<!--
 title: {g["title"]} | PatchLabs
@@ -264,7 +264,7 @@ def hub(guides):
                     ensure_ascii=False, separators=(",", ":"))
     jump = "".join(f'<li><a href="#{k}">{n}</a></li>' for k, n, _ in TOPICS)
     return f"""<!--
-title: Learn: security guides for AI-built apps (Supabase, Lovable, Firebase) | PatchLabs
+title: Security guides for AI-built apps | PatchLabs
 description: In-depth, tested guides to securing apps built with AI tools: Supabase RLS, Edge Functions, storage, webhooks, leaked keys, Firebase rules and a pre-launch checklist.
 layout: marketing
 nav: learn
@@ -307,7 +307,7 @@ head: <link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="appl
         <p class="lab">Free check</p>
         <h2>Rather have it checked for you?</h2>
         <p class="lede">Paste your public repo. You get every finding, the fix and the proof on one page.</p>
-        {form("lh", '<span>Free for your first app</span><span><a href="/findings">Browse every finding</a></span>')}
+        {form("lh", '<span>Free for your first app (£29 per approved fix)</span><span><a href="/findings">Browse every finding</a></span>')}
       </div>
     </div>
   </section>

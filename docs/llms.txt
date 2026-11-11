@@ -87,6 +87,12 @@ Key facts:
 
 ## Learn
 - [All guides](https://patchlabs.dev/learn)
+- [Is my Lovable app secure? How to check in 10 minutes](https://patchlabs.dev/learn/is-my-lovable-app-secure)
+- [Is it safe to expose the Supabase anon key?](https://patchlabs.dev/learn/is-supabase-anon-key-safe)
+- [How to check row level security is on for every Supabase table](https://patchlabs.dev/learn/check-supabase-rls-every-table)
+- [Security risks of vibe-coded apps, with data](https://patchlabs.dev/learn/vibe-coding-security-risks)
+- [How to secure an app built with Bolt or Replit](https://patchlabs.dev/learn/bolt-replit-app-security)
+- [Your AI app builder's security scan vs an independent check](https://patchlabs.dev/learn/ai-builder-scan-vs-independent-check)
 - [How to secure a Lovable app’s Supabase database](https://patchlabs.dev/learn/secure-lovable-supabase-app)
 - [Supabase RLS policies explained, with owner and stranger tests](https://patchlabs.dev/learn/rls-policies-explained)
 - [Supabase views and security_invoker: stop views bypassing RLS](https://patchlabs.dev/learn/supabase-views-security-invoker)
@@ -102,6 +108,8 @@ Key facts:
 - [How to find and fix vulnerable npm dependencies](https://patchlabs.dev/learn/npm-dependency-vulnerabilities)
 
 ## Free tools
+
+- [patchlabs CLI (open source, Apache-2.0)](https://patchlabs.dev/tools/cli): the static checks locally or in CI; SARIF output
 - [All tools](https://patchlabs.dev/tools)
 - [Free RLS check](https://patchlabs.dev/tools/rls-check): static analysis of a public repo's migrations, no sign-up
 - [Free security headers check](https://patchlabs.dev/tools/headers-check): one public page load, graded A to F for HTTPS, certificate, headers, cookies and mixed content; no sign-up, result not stored

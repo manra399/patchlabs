@@ -3,7 +3,7 @@ title: Your leak check | PatchLabs
 description: Your PatchLabs leak check: verification, progress and the proof report.
 layout: marketing
 sitemap: no
-head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets/pages/app.css"><script src="/assets/app-ui.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" integrity="sha512-pmjEJQ7CveksANaAKdCJZMig7eAcCFFzE1b5XnlnxdB/vU3AOStJ5SF7w4tFuqskuU31ETnAaWTYRQOYg2WHKw==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha512-jB0TkTBeQC9ZSkBqDhdmfTv1qdfbWpGE72yJ/01Srq6hEzZIz2xkz1e57p9ai7IeHMwEG7HpzG6NdptChif5Pg==" crossorigin="anonymous"></script>
 -->
 <main id="main">
   <div class="wrap narrow check-head">
@@ -154,6 +154,7 @@ head: <meta name="robots" content="noindex"><link rel="stylesheet" href="/assets
         return '<label class="check"><input type="checkbox" value="' + esc(x) + '" checked data-tbl> ' + esc(x) + '</label>';
       }).join('') + '</div></fieldset>' +
         '<div class="row"><button class="btn primary" type="button" id="approve">Approve the fix</button><button class="btn secondary" type="button" id="rej-open">These are meant to be readable…</button></div>' +
+        '<p class="small muted">On the Free plan, approving a fix is £29, invoiced to the workspace owner. Included on Maker and Agency. A fix that failed proof is never charged.</p>' +
         '<div id="rej-box" hidden class="mt-3"><div class="field"><label for="rej-why">Why should these tables be readable?</label><textarea class="input" id="rej-why" maxlength="2000" placeholder="e.g. sellers choose to publish their business email"></textarea><span class="hint">We stop alerting on these tables for this app. Approving the fix later turns alerts back on.</span></div>' +
         '<div class="row"><button class="btn danger" type="button" id="reject">Reject: mark as intended</button><button class="btn ghost" type="button" id="rej-cancel">Cancel</button></div></div>' +
         '<p class="err" role="alert" id="dec-err"></p>';

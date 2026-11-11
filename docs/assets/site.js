@@ -247,14 +247,15 @@
     } else start();
   });
 
-  /* ---- live counters: [data-live-stats] > [data-k="checks_completed"] .v ; shown only for values above zero ---- */
+  /* ---- live counters: [data-live-stats] > [data-k="checks_completed"] .v ; shown only once a value reaches MIN_SHOWN (small numbers read as "nobody uses this") ---- */
+  var MIN_SHOWN = 100;
   $$('[data-live-stats]').forEach(function (box) {
     var base = window.API || ((location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:8001' : 'https://api.patchlabs.dev');
     fetch(base + '/stats', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (j) {
       var any = false;
       $$('[data-k]', box).forEach(function (el) {
         var v = j[el.getAttribute('data-k')];
-        if (typeof v === 'number' && v > 0) { any = true; el.hidden = false; var o = el.querySelector('.v'); if (o) o.textContent = v.toLocaleString('en-GB'); }
+        if (typeof v === 'number' && v >= MIN_SHOWN) { any = true; el.hidden = false; var o = el.querySelector('.v'); if (o) o.textContent = v.toLocaleString('en-GB'); }
         else el.hidden = true;
       });
       box.hidden = !any;

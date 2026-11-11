@@ -103,8 +103,10 @@ def decide(cid: str, body: Decision, user=Depends(current_user), c=Depends(db)):
     unknown = [t for t in tables if t not in found]
     if unknown:
         raise HTTPException(422, "This check didn't flag " + ", ".join(unknown) + ".")
+    if body.action == "approve" and not tables:  # an approval always covers at least one flagged table (and is charged on Free)
+        raise HTTPException(422, "Pick at least one table to approve.")
     charge = 0
-    if body.action == "approve" and tables:
+    if body.action == "approve":
         w = c.execute("SELECT plan, app_limit, run_limit, seat_limit FROM workspaces WHERE id = %s", (k["workspace_id"],)).fetchone()
         charge = limits(w)["fix_price_gbp"] if w else 0
         if charge and body.accept_charge_gbp != charge:

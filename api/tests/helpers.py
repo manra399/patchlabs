@@ -84,7 +84,7 @@ os.environ.update(
     DATABASE_URL=os.environ.get("DATABASE_URL", "postgresql://postgres:test@localhost:5432/patchlabs"),
     WORKER_TOKEN="worker-test-token", ADMIN_TOKEN="admin-test-token", SITE_URL="https://patchlabs.test",
     GITHUB_API=f"{STUB}/gh", RAW_GITHUB=f"{STUB}/raw", SCHEMA_PATH=os.path.join(ROOT, "db", "schema.sql"),
-    EMAIL_OUTBOX=OUTBOX, AUTH_PER_IP_PER_HOUR="100000", FOUNDER_EMAIL="manraj@patchlabs.dev",
+    EMAIL_OUTBOX=OUTBOX, AUTH_PER_IP_PER_HOUR="100000", FOUNDER_EMAIL="manraj@patchlabs.dev", WATCHDOG_EVERY="0",
     CORS_ORIGINS="https://patchlabs.dev,https://www.patchlabs.dev",
     RECEIPT_PRIVATE_KEY="AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",  # bytes 0..31, test only
     PATCHLABS_DEV="1", POSTURE_EVERY="0")

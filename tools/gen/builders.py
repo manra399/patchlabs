@@ -221,6 +221,15 @@ supabase db push</code></pre>
 OTHERS = [("lovable", "Lovable"), ("supabase", "Supabase"), ("bolt", "Bolt"), ("replit", "Replit"), ("cursor", "Cursor")]
 
 
+GUIDES = {
+    "lovable": [("is-my-lovable-app-secure", "Is my Lovable app secure? Six checks in 10 minutes"), ("is-supabase-anon-key-safe", "Is it safe to expose the Supabase anon key?"), ("ai-builder-scan-vs-independent-check", "Your builder’s scan vs an independent check")],
+    "supabase": [("check-supabase-rls-every-table", "Check RLS is on for every Supabase table"), ("is-supabase-anon-key-safe", "Is it safe to expose the Supabase anon key?"), ("rls-policies-explained", "Supabase RLS policies explained")],
+    "bolt": [("bolt-replit-app-security", "How to secure an app built with Bolt or Replit"), ("vibe-coding-security-risks", "Security risks of vibe-coded apps, with data"), ("ai-builder-scan-vs-independent-check", "Your builder’s scan vs an independent check")],
+    "replit": [("bolt-replit-app-security", "How to secure an app built with Bolt or Replit"), ("vibe-coding-security-risks", "Security risks of vibe-coded apps, with data"), ("check-supabase-rls-every-table", "Check RLS is on for every Supabase table")],
+    "cursor": [("vibe-coding-security-risks", "Security risks of vibe-coded apps, with data"), ("check-supabase-rls-every-table", "Check RLS is on for every Supabase table"), ("is-supabase-anon-key-safe", "Is it safe to expose the Supabase anon key?")],
+}
+
+
 def page(slug, d):
     works = "".join(f"<li><span>{w}</span></li>" for w in d["works"])
     notyet = "".join(f'<li class="x"><span>{w}</span></li>' for w in d["notyet"])
@@ -228,6 +237,7 @@ def page(slug, d):
     faq = "\n      ".join(f'<details class="acc"><summary>{q}</summary><div class="acc-body"><p>{a}</p></div></details>' for q, a in d["faq"])
     others = "".join(f'<a class="link-arrow" href="/for/{s}">{n} apps</a>' for s, n in OTHERS if s != slug)
     sql = FIX_SQL.format(title=d["sql_title"], body=d["sql"])
+    guides = "".join(f'<li><a href="/learn/{g}">{t}</a></li>' for g, t in GUIDES.get(slug, []))
     return f"""<!--
 title: {d['title']} | PatchLabs
 description: {d['desc']}
@@ -250,7 +260,7 @@ head: <link rel="stylesheet" href="/assets/pages/A-product.css">
         <button class="btn primary" type="submit">Check my app free</button>
       </form>
       <p class="err" role="alert" data-err></p>
-      <div class="form-meta"><span>Free for your first app</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <div class="form-meta"><span>Free for your first app (£29 per approved fix)</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
       <p class="indep">Independent: PatchLabs is not affiliated with {d['name']}.</p>
     </div>
     <figure class="figure">
@@ -307,6 +317,8 @@ head: <link rel="stylesheet" href="/assets/pages/A-product.css">
       <h2 id="faq-h">{d['name']} questions.</h2>
       <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
       <div class="other-builders mt-3" aria-label="Other builders">{others}</div>
+      <h3 class="h4 mt-4">Guides</h3>
+      <ul class="small">{guides}</ul>
     </div>
     <div>
       {faq}

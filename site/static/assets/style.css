@@ -96,7 +96,7 @@ kbd { border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 
 /* ---------- 3. Type ---------- */
 h1, h2, h3, h4, h5 { color: var(--ink); margin: 0 0 .5em; font-weight: 650; text-wrap: balance; }
 /* Display headings: Fraunces (variable serif) at large optical size, slightly soft. Body and h3 down stay Inter. */
-h1, .h1, h2, .h2, .h-xl { font-family: var(--display); font-optical-sizing: auto; font-variation-settings: "SOFT" 30, "WONK" 0; }
+h1, .h1, h2, .h2, .h-xl { font-family: var(--display); font-optical-sizing: auto; }
 h1, .h1 { font-size: clamp(42px, 6.4vw, 80px); line-height: 1.04; letter-spacing: -.014em; font-weight: 560; }
 h2, .h2 { font-size: clamp(31px, 4vw, 48px); line-height: 1.1; letter-spacing: -.01em; font-weight: 560; }
 h1 em, h2 em, .h1 em, .h2 em { font-style: italic; font-weight: 480; }
