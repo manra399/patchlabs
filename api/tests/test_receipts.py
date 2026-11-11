@@ -2,6 +2,8 @@
 import base64, hashlib, json
 
 import pytest
+
+import core
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
@@ -177,7 +179,19 @@ def test_receipt_lists_v3_findings_by_id_only(client, setup):
     assert "supabase/functions" not in json.dumps(rec) and "JSON.parse" not in json.dumps(rec)
 
 
-def test_free_plan_approval_needs_the_per_fix_charge_agreed(client, setup):
+def test_early_access_free_plan_approves_without_a_charge(client, setup):
+    u, a, cid = setup
+    claim(client)
+    finish_q(client, cid)
+    r = client.post(f"/checks/{cid}/decision", json={"action": "approve"}, headers=u.h)
+    assert r.status_code == 201
+    log = client.get(f"/workspaces/{u.wid}/audit", headers=u.h).json()
+    made = [e for e in log["events"] if e["action"] == "decision.made" and e["detail"].get("action") == "approve"]
+    assert made and "charge_gbp" not in made[0]["detail"]
+
+
+def test_a_per_fix_price_needs_the_charge_agreed(client, setup, monkeypatch):
+    monkeypatch.setitem(core.PLANS["free"], "fix_price_gbp", 29)   # off during early access; kept for paid plans
     u, a, cid = setup
     claim(client)
     finish_q(client, cid)

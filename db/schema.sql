@@ -358,3 +358,19 @@ CREATE TABLE IF NOT EXISTS posture_checks (
     created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS posture_checks_app ON posture_checks (app_id, created_at DESC);
+
+-- Early access (11 Nov 2026): pre-launch, paid plans are not on sale. Clicking a plan opens a short form instead of a
+-- checkout, so we learn who would pay, for what, before setting up payments.
+CREATE TABLE IF NOT EXISTS interest (
+    id          uuid PRIMARY KEY,
+    email       text NOT NULL,
+    name        text,
+    company     text,
+    plan        text NOT NULL,
+    apps        text,
+    note        text,
+    source      text,
+    ip_hash     text,
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS interest_created ON interest (created_at DESC);

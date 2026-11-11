@@ -260,7 +260,7 @@ head: <link rel="stylesheet" href="/assets/pages/A-product.css">
         <button class="btn primary" type="submit">Check my app free</button>
       </form>
       <p class="err" role="alert" data-err></p>
-      <div class="form-meta"><span>Free for your first app (£29 per approved fix)</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
+      <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/sample-report">See a sample report</a></span></div>
       <p class="indep">Independent: PatchLabs is not affiliated with {d['name']}.</p>
     </div>
     <figure class="figure">

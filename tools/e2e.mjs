@@ -325,9 +325,7 @@ await step('check page as a member: reject (with reason) one table, approve anot
   await p.waitText('marked as meant to be readable', '#own-rec');
   // approve "profiles"
   await p.eval(`document.querySelector('[data-tbl][value=profiles]').click(); document.querySelector('[data-tbl][value=orders]').click()`);
-  await p.click('#approve');
-  await p.waitText('£29', '#dec-err');   // Free plan: the per-fix price is confirmed before the approval is recorded
-  await p.click('#approve-pay');
+  await p.click('#approve');            // early access: approving is free on every plan, so there is no price step
   await p.waitText('approved the fix for', '#own-rec');
   await p.type('#qa1', 'No: only the buyer and the seller.');
   await p.click('#qa-go');
@@ -340,7 +338,7 @@ await step('check page as a member: reject (with reason) one table, approve anot
   await sleep(800);
   assert(readdirSync(DL).some(f => f.startsWith('patchlabs-receipt-')), 'receipt downloaded');
   await p.shot('check-member');
-}, { allow: ['HTTP 402'] });   // Free plan: the first approve answers 402 with the £29 price, then the approver confirms
+});
 
 await step('app page shows the rejected table as "Marked as intended"', p, async () => {
   await p.goto('/app/app?id=' + S.aid);

@@ -14,7 +14,7 @@ Key facts:
 - Findings: one format for every result (id, line lab|code|live, severity, object, file, line_no, evidence, proven, proof, fix, fixed_in_lab). Stable IDs PL-001 to PL-036; PL-027 to PL-036 are Live posture checks; PL-012 to PL-016 are documented but not tested yet (coming).
 - Output: a report, a downloadable migration plus a one-click "commit this file on GitHub" link (automatic pull requests are coming), and an Ed25519-signed receipt.
 - Lab study (PatchLabs, Nov 2026): 318 public Lovable/Supabase repos rebuilt; 106 of 318 (33%) let the wrong people read personal data; about 1 in 4 (25-28%) after removing businesses' own public contact details. Autonomous fixes: 18 of 20 passed the strict lab proof with no human (n=20, 9 Nov 2026); median 3.5 minutes per app.
-- Plans: Free £0 (1 app; fixes written and proven free, £29 per fix the owner approves), Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 per extra app), Enterprise custom. Approved fixes are included on paid plans. Card payments are not live; paid plans are by request.
+- Plans: Free £0 (1 app; fixes written, proven and approved free in early access), Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 per extra app), Enterprise custom. Approved fixes are included on paid plans. Card payments are not live; paid plans are by request.
 - API: https://api.patchlabs.dev (REST, JSON). Remote MCP server: POST https://api.patchlabs.dev/mcp (JSON-RPC 2.0; tools rls_check, start_check, get_check, list_apps, run_check).
 - Contact: manraj@patchlabs.dev (security reports: same address, subject "Security"). Founder: Manraj Singh Dhillon, London.
 - Independent: not affiliated with Lovable, Supabase, Bolt, Replit or Cursor.

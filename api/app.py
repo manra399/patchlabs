@@ -3,7 +3,7 @@ worker and serves the results. Accounts and workspaces live in accounts.py, moni
 signed receipts in receipts.py, the free RLS tool in rls.py, live posture and the free headers tool in posture.py
 and the MCP server in mcp_server.py.
 
-Public:  POST /checks, GET /checks/{id}, POST /checks/{id}/verify, GET /health
+Public:  POST /checks, GET /checks/{id}, POST /checks/{id}/verify, GET /health; early access in interest.py
 Worker:  POST /worker/claim, POST /worker/heartbeat, POST /worker/checks/{id}/result   (Bearer WORKER_TOKEN)
 Admin:   GET /admin/checks                                                          (Bearer ADMIN_TOKEN)
 """
@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field
 
-import accounts, audit, mcp_server, monitor, posture, receipts, rls, support, taxonomy, watchdog
+import accounts, audit, interest, mcp_server, monitor, posture, receipts, rls, support, taxonomy, watchdog
 from core import (ADMIN_TOKEN, EMAIL_RE, FOUNDER_EMAIL, ORIGINS, SITE_URL, VERIFY_FILE, WORKER_TOKEN, bearer, clean_report, db, event, ip_hash, mail, notify,
                   parse_repo, pool, repo_has_code, repo_lookup, scrub, send_email, verify_info)  # noqa: F401 (send_email re-exported)
 
@@ -68,6 +68,7 @@ app.include_router(support.router)
 app.include_router(audit.router)
 app.include_router(taxonomy.router)
 app.include_router(posture.router)
+app.include_router(interest.router)
 
 
 class NewCheck(BaseModel):

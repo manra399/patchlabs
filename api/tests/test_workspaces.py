@@ -8,7 +8,7 @@ def test_get_workspace_shape(client):
     u = sign_in(client, "owner@example.com")
     w = client.get(f"/workspaces/{u.wid}", headers=u.h).json()
     assert w["plan"] == "free" and w["role"] == "owner" and w["webhook_url"] is None
-    assert w["limits"] == {"apps": 1, "runs_per_month": 4, "seats": 1, "schedules": ["off", "monthly"], "fix_price_gbp": 29}
+    assert w["limits"] == {"apps": 1, "runs_per_month": 4, "seats": 1, "schedules": ["off", "monthly"], "fix_price_gbp": 0}
     assert w["usage"] == {"apps": 0, "runs_this_month": 0, "members": 1, "clients": 0}
     assert w["members"][0]["email"] == "owner@example.com" and w["members"][0]["role"] == "owner"
     assert w["invites"] == []

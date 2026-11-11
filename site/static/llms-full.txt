@@ -12,7 +12,7 @@ PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Rep
 
 ## Pricing (11 November 2026)
 
-Free for one app: every finding, every fix written and proven, monthly re-checks; approving a fix costs £29 (the approval records the client's engineer on a signed receipt). Maker £19/month (3 apps) and Agency £99/month (10 apps, +£8 per extra app) include approved fixes. Enterprise is custom. Card payments are not live yet; paid plans are by request.
+Free for one app: every finding, every fix written and proven, monthly re-checks; approving a fix is included (the approval records the client's engineer on a signed receipt). PatchLabs is in early access: free for the first 1,000 users, and Maker and Agency prices are planned launch prices. Maker £19/month (3 apps) and Agency £99/month (10 apps, +£8 per extra app) include approved fixes. Enterprise is custom. Card payments are not live yet; paid plans are by request.
 
 ## Open-source CLI
 
