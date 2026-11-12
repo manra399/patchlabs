@@ -1,0 +1,140 @@
+<!--
+title: Fake AI crawlers are requesting your .env file: check your site in two minutes | PatchLabs
+description: GreyNoise saw scanners posing as ClaudeBot, GPTBot and Googlebot request /.env and cloud credentials from 824 addresses. How an AI-built app ends up serving its .env, and how to check.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Bots posing as AI crawlers are asking for your .env file","description":"GreyNoise saw scanners posing as ClaudeBot, GPTBot and Googlebot request /.env and cloud credentials from 824 addresses. How an AI-built app ends up serving its .env, and how to check.","datePublished":"2026-11-12","dateModified":"2026-11-12","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/fake-ai-crawlers-env-files"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Bots posing as AI crawlers are asking for your .env file","item":"https://patchlabs.dev/learn/fake-ai-crawlers-env-files"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files" aria-current="page">Fake AI crawlers and your .env</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Fake AI crawlers and your .env</li></ol></nav>
+      <p class="lab">Keys and incidents</p>
+      <h1>Bots posing as AI crawlers are asking for your .env file</h1>
+      <p class="lede">Scanners are requesting <code>/.env</code>, <code>/.git/config</code> and <code>/.aws/credentials</code> from websites while calling themselves ClaudeBot, GPTBot or Googlebot. The name proves nothing. What matters is whether your site answers, and an app built with AI tools can answer without its founder knowing. Check your own site with the command below, then make sure nothing in your code lets a bot skip a control because of its name.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 12 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>GreyNoise reported on 28 August 2026 that one scanner fingerprint, using six AI crawler names, requested credential files from 824 addresses on 795 networks (28 July to 23 August). None of the addresses were on the crawlers’ published lists.</li><li>Paths requested include <code>/.env</code>, <code>/.env.production</code>, <code>/.env.bak</code>, <code>/api/.env</code>, <code>/.git/config</code> and <code>/.aws/credentials</code>.</li><li>AI-built apps serve these files when the repo root is published, a <code>.env</code> sits in <code>public/</code>, or a Vite dev server is left open to the internet.</li><li>A 200 response isn’t proof: single-page apps answer every path with the home page. Look at what came back.</li><li>Never let a user agent grant access. Check the address against the crawler owner’s published list.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#what-greynoise-saw">What GreyNoise saw</a></li><li><a href="#how-it-leaks">How an AI-built app ends up serving its .env</a></li><li><a href="#check">Check your own site</a></li><li><a href="#if-exposed">If a file came back</a></li><li><a href="#user-agents">Never let a bot’s name unlock anything</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for founders whose app is live on its own domain, built with Lovable, Bolt, Replit, Cursor, Claude Code or similar. The facts about the scanning come from <a href="https://www.greynoise.io/blog/threat-actors-posing-as-ai-crawlers">GreyNoise’s report</a> (28 August 2026). GreyNoise saw requests only. It says nothing shows a file was returned or that any organisation was affected, and it doesn’t say who is behind the scanning.</p>
+
+<h2 id="what-greynoise-saw">What GreyNoise saw</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Question</th><th scope="col">GreyNoise’s answer</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Names used</th><td>13 AI crawler names from eight companies. Six of them, belonging to Anthropic, OpenAI, Google and Perplexity, arrived on one HTTP client fingerprint in matched volume.</td></tr>
+    <tr><th scope="row">How many</th><td>824 addresses across 795 separate /24 networks, so blocking by network doesn’t work. Requests for credential paths on that fingerprint ran into the millions.</td></tr>
+    <tr><th scope="row">When</th><td>28 July to 23 August 2026, mostly in August. The biggest day was 23 August.</td></tr>
+    <tr><th scope="row">What they asked for</th><td><code>/.env</code>, <code>/.env.local</code>, <code>/.env.production</code>, <code>/.env.old</code>, <code>/.env.bak</code>, <code>/.env.swp</code>, <code>/app/.env</code>, <code>/api/.env</code>, <code>/backend/.env</code>, <code>/.aws/credentials</code>, <code>/.git/config</code>, plus private keys and password stores.</td></tr>
+    <tr><th scope="row">How they knew it was fake</th><td>None of the 824 addresses were on the lists Anthropic, OpenAI, Google, Perplexity and Amazon publish. The fake crawlers never asked for <code>/robots.txt</code>. The real ClaudeBot asked for it more than any other path and never asked for a credential file.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="how-it-leaks">How an AI-built app ends up serving its .env</h2>
+<p>A well-built app never has a <code>.env</code> file in the folder the web server hands out. It usually gets there in one of four ways:</p>
+<ol>
+  <li><strong>The whole repo is published.</strong> The host’s publish directory is set to the project root (<code>.</code>) instead of the build output (<code>dist</code>, <code>build</code>, <code>out</code>), or the repo was cloned straight into a server’s web root. Every file is then a URL, including <code>.env</code> and the <code>.git</code> folder, which holds the full history.</li>
+  <li><strong>A .env file in public/.</strong> Vite and Next.js copy everything in <code>public/</code> into the site unchanged. A <code>.env</code> placed there to “make the variables load” is public the moment you deploy.</li>
+  <li><strong>The dev server is the live site.</strong> <code>vite</code> or <code>npm run dev</code> started on a server with <code>--host</code>, instead of building and serving <code>dist/</code>. The dev server is not made to face the internet: Vite versions before 6.2.3, 6.1.2, 6.0.12, 5.4.15 and 4.5.10 let anyone read files outside the allowed list (<a href="https://github.com/vitejs/vite/security/advisories/GHSA-x574-m823-4x7w">CVE-2025-30208</a>), and GreyNoise lists the upgrade in its advice.</li>
+  <li><strong>The secret is already in the bundle.</strong> A key in a <code>VITE_</code> or <code>NEXT_PUBLIC_</code> variable is copied into the JavaScript every visitor downloads. No one needs <code>/.env</code> to get it (finding <a href="/findings/pl-010">PL-010</a>).</li>
+</ol>
+
+<h2 id="check">Check your own site</h2>
+<p>Run this against a site you own. It asks for the same paths the scanners did and prints the status, the content type and the start of what came back, with anything after an <code>=</code> hidden so a real key doesn’t land in your terminal history.</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>site=https://yourapp.com
+for p in /.env /.env.local /.env.production /.env.bak /app/.env /api/.env /backend/.env /.git/config /.aws/credentials; do
+  printf '%-20s ' "$p"
+  curl -s -m 10 -o /tmp/pl-body -w '%{http_code} %{content_type}  ' "$site$p"
+  head -c 300 /tmp/pl-body | sed 's/=.*/=…/' | tr '\n' ' ' | cut -c1-70; echo
+done
+rm -f /tmp/pl-body</code></pre></div>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">What you see</th><th scope="col">What it means</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><code>404</code> or <code>403</code></th><td>Not served. Good.</td></tr>
+    <tr><th scope="row"><code>200 text/html</code> and <code>&lt;!doctype html&gt;</code></th><td>Your host sends the home page for every unknown path, which single-page apps do. Not a leak, but it means a 200 alone tells you nothing.</td></tr>
+    <tr><th scope="row"><code>200</code> and lines like <code>OPENAI_API_KEY=…</code></th><td>Your environment file is public. Go to <a href="#if-exposed">if a file came back</a> now.</td></tr>
+    <tr><th scope="row"><code>200</code> and <code>[core]</code> or <code>[remote "origin"]</code></th><td>Your <code>.git</code> folder is public. Anyone can download the full history, including keys you deleted long ago (finding <a href="/findings/pl-011">PL-011</a>).</td></tr>
+    <tr><th scope="row"><code>200</code> and <code>[default]</code> with <code>aws_access_key_id</code></th><td>Cloud credentials are public. Treat the AWS account as compromised.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="if-exposed">If a file came back</h2>
+<ol>
+  <li><strong>Rotate first, then fix.</strong> Assume every key in the file was copied. Issue new keys and revoke the old ones, AI provider and payment keys first (<a href="/learn/rotate-leaked-key-git-history#rotate">where to rotate each kind of key</a>). Removing the file doesn’t un-copy it.</li>
+  <li><strong>Stop serving it.</strong> Point the host’s publish directory at the build output, delete any <code>.env</code> from <code>public/</code>, and serve <code>vite build</code> output instead of the dev server. If you run your own nginx, refuse every dotfile except <code>.well-known</code>:</li>
+</ol>
+<div class="code"><div class="code-bar"><span class="name">nginx</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>location ~ /\.(?!well-known/) {
+    return 404;
+}</code></pre></div>
+<ol start="3">
+  <li><strong>Look for use you didn’t make.</strong> Check each provider’s usage page and your server logs for requests to these paths that got a 200, and keep a dated note of what you found and what you rotated (<a href="/learn/first-hour-after-a-leak">the first hour after a leak</a>).</li>
+</ol>
+
+<h2 id="user-agents">Never let a bot’s name unlock anything</h2>
+<p>A user agent is a line of text the caller writes. Apps built for AI search sometimes let anything calling itself GPTBot, ClaudeBot or Googlebot skip a login wall, a paywall, a rate limit or bot protection, so the crawler can read the page. Anyone can send that name. Search your code for it:</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rniE "gptbot|claudebot|claude-user|perplexitybot|googlebot|google-extended|bingbot" --exclude-dir=node_modules --exclude-dir=.git .</code></pre></div>
+<p>If a match changes what the request is allowed to do, either serve the same public page to everyone, or check the connecting address against the list the crawler’s owner publishes (<a href="https://developers.google.com/search/docs/crawling-indexing/verifying-googlebot">Google explains how</a>; OpenAI and Anthropic publish their crawler addresses too). GreyNoise found requests named ClaudeBot coming both from Anthropic’s published ranges and from impostors, so the name alone can’t tell them apart.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://www.greynoise.io/blog/threat-actors-posing-as-ai-crawlers">GreyNoise: threat actors posing as AI crawlers</a> (28 Aug 2026)</li>
+  <li><a href="https://github.com/vitejs/vite/security/advisories/GHSA-x574-m823-4x7w">Vite: server.fs.deny bypassed when using ?raw?? (CVE-2025-30208)</a> (24 Mar 2025)</li>
+  <li><a href="https://developers.google.com/search/docs/crawling-indexing/verifying-googlebot">Google Search Central: verifying Googlebot and other Google crawlers</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-009"><span class="n-big">PL-009</span><h3>AI, payment or database key in the code</h3></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3></a><a class="card link" href="/findings/pl-011"><span class="n-big">PL-011</span><h3>Key still in git history</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Are any of these keys also in your code?</h2>
+        <p>Paste code, a <code>.env</code> or your built JavaScript bundle into the free key check. It runs in your browser: no request is sent and nothing is stored. It flags secret keys (AI providers, Stripe, AWS, GitHub, database URLs), tells a Supabase anon key from a service role key, and links to where to rotate each one.</p>
+        <p><a class="btn primary" href="/tools/key-check">Open the free key check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/key-check?sample">See a sample result</a></span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 12 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20fake-ai-crawlers-env-files">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/railway-breach-ai-keys" rel="prev"><span>Previous guide</span>The Railway breach: rotate your keys, then cap what a stolen key can spend</a><a class="next" href="/learn/vibe-coded-app-security-checklist" rel="next"><span>Next guide</span>Pre-launch security checklist for vibe-coded apps</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what-greynoise-saw">What GreyNoise saw</a></li><li><a href="#how-it-leaks">How an AI-built app ends up serving its .env</a></li><li><a href="#check">Check your own site</a></li><li><a href="#if-exposed">If a file came back</a></li><li><a href="#user-agents">Never let a bot’s name unlock anything</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
