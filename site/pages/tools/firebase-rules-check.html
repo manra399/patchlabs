@@ -29,7 +29,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
       <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>No upload, no network request</span>
       <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Firestore, Storage and Realtime Database</span>
       <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Never contacts your project</span>
-      <span>Nothing to paste? <button type="button" class="t-try" id="fc-demo">Try a sample</button></span>
+      <span>Nothing to paste? <button type="button" class="t-try" id="fc-demo">Try a sample</button> or <a href="?sample=flutterflow#fc-out">a FlutterFlow one</a></span>
     </div>
 
     <div class="rls-out" id="fc-out" aria-live="polite"></div>
@@ -73,6 +73,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
         <tr><th scope="row">Open write</th><td><code>allow write</code> with no condition, anywhere. Anyone can change or delete your data.</td><td><span class="pill sev-critical">critical</span></td></tr>
         <tr><th scope="row">Signed-in only</th><td>A condition that only checks <code>request.auth != null</code>, so every account can reach every user’s documents.</td><td><span class="pill sev-high">high</span></td></tr>
         <tr><th scope="row">Open read</th><td>Public read on a collection. Fine for a product list; flagged critical when the name looks personal (users, orders, messages, uploads…).</td><td><span class="pill sev-medium">medium</span> or <span class="pill sev-critical">critical</span></td></tr>
+        <tr><th scope="row">Open create</th><td><code>allow create: if true</code>. Nobody can read or change existing data through it, but anyone can script fake records with any field set, including the owner. FlutterFlow starts every new collection this way. Signed-in-only create is flagged low.</td><td><span class="pill sev-high">high</span> or <span class="pill sev-low">low</span></td></tr>
         <tr><th scope="row">Expired test mode</th><td>The date has passed, so every request is denied and your app fails with <code>permission-denied</code>.</td><td><span class="pill sev-low">low</span></td></tr>
       </tbody>
     </table></div>
@@ -91,6 +92,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
       <details class="acc"><summary>Is it safe to paste my rules here?</summary><div class="acc-body"><p>Rules aren’t secret, but you don’t have to trust us: the check is a script on this page that reads the text box and draws the result. It makes no network request and stores nothing. Open your browser’s developer tools, go to the Network tab, and run a check to see for yourself.</p></div></details>
       <details class="acc"><summary>Isn’t my Firebase API key the real problem?</summary><div class="acc-body"><p>No. The Firebase web API key is meant to be in your app and only identifies the project. Your rules decide what that key can do. Keys for other services (AI providers, Stripe, a service account JSON) are a different story: paste those files into the <a href="/tools/key-check">free key check</a>.</p></div></details>
       <details class="acc"><summary>Nothing flagged. Am I safe?</summary><div class="acc-body"><p>None of the risky patterns appear in what you pasted, and every <code>allow</code> line checks who is asking. This is a reading of the rules text, not a test against your project, so a condition can still be wrong in a way only a test shows (an owner field the client can set, say). Firebase’s Rules Playground in the console lets you try a request as a signed-out user and as another user.</p></div></details>
+      <details class="acc"><summary>I built my app in FlutterFlow. Where are my rules?</summary><div class="acc-body"><p>FlutterFlow writes them for you from Settings › Firestore and deploys them when you press Deploy there; you can copy the live result from the Rules tab in the Firebase console. Every new collection starts with Create and Read set to Everyone, so a collection you never revisited is readable by anyone. The check spots FlutterFlow’s rule format and tells you which setting to change.</p></div></details>
       <details class="acc"><summary>Do you check Firebase apps in the lab?</summary><div class="acc-body"><p>Not yet. The full PatchLabs check rebuilds Supabase databases from their migrations and tests them as three people. For Firebase, this rules check and the key check are what we offer today. <a href="/early-access">Tell us</a> if you’d use a full Firebase check.</p></div></details>
     </div>
   </div>
@@ -168,6 +170,9 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
       h += '<h3 class="h4 mt-4 mb-2">Rules that check who is asking</h3><ul class="hc-passed">' +
         r.passed.map(function (p) { return '<li><span><strong>' + esc(p.methods.join(', ')) + '</strong> on <code>' + esc(p.path) + '</code> <span class="mono small muted">line ' + esc(p.line) + '</span></span></li>'; }).join('') + '</ul>';
     }
+    if (r.flutterflow && r.findings.length) {
+      h += '<div class="callout note mt-3"><p><strong>These look like FlutterFlow rules.</strong> FlutterFlow writes them from Settings &rsaquo; Firestore, one row per collection. New collections start with Create and Read set to Everyone. Set each row to Users Collection, Tagged Users or No One (Authenticated Users only checks that someone is signed in, not who), then press Deploy. To write a rule by hand instead, set that collection to Exclude first, then edit it in the Firebase console.</p></div>';
+    }
     if (r.findings.length) {
       h += '<div class="callout limit mt-3"><p><strong>Fix it with your AI builder.</strong> Copy this prompt into Lovable, Bolt, Cursor or Claude, check the rules it writes, then publish them from the Rules tab.</p>' +
         '<pre class="mt-2 fc-prompt" id="fc-prompt">' + esc(FC.prompt(r)) + '</pre><p class="mt-2"><button class="btn ghost" type="button" id="fc-copy">Copy the prompt</button></p></div>';
@@ -198,6 +203,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
   form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
   $('fc-clear').addEventListener('click', function () { input.value = ''; out.innerHTML = ''; count.textContent = ''; errEl.textContent = ''; input.focus(); });
   $('fc-demo').addEventListener('click', function () { input.value = FC.sample(); input.dispatchEvent(new Event('input')); run(); });
-  if (/[?&]sample\b/.test(location.search)) { input.value = FC.sample(); input.dispatchEvent(new Event('input')); run(true); }
+  if (/[?&]sample=flutterflow\b/.test(location.search)) { input.value = FC.sampleFlutterflow(); input.dispatchEvent(new Event('input')); run(true); }
+  else if (/[?&]sample\b/.test(location.search)) { input.value = FC.sample(); input.dispatchEvent(new Event('input')); run(true); }
 })();
 </script>

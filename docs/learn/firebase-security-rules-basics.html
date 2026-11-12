@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/site.js" defer></script>
-<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Firebase security rules basics: lock down Firestore and Storage","description":"How Firestore and Cloud Storage security rules work, why test-mode rules leak, owner-only rules you can copy, and how to test them with the emulator before you deploy.","datePublished":"2026-11-11","dateModified":"2026-11-11","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/firebase-security-rules-basics"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Firebase security rules basics: lock down Firestore and Storage","item":"https://patchlabs.dev/learn/firebase-security-rules-basics"}]}]}</script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Firebase security rules basics: lock down Firestore and Storage","description":"How Firestore and Cloud Storage security rules work, why test-mode rules leak, owner-only rules you can copy, and how to test them with the emulator before you deploy.","datePublished":"2026-11-12","dateModified":"2026-11-12","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/firebase-security-rules-basics"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Firebase security rules basics: lock down Firestore and Storage","item":"https://patchlabs.dev/learn/firebase-security-rules-basics"}]}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -169,9 +169,9 @@
       <p class="lab">Launch and other stacks</p>
       <h1>Firebase security rules basics: lock down Firestore and Storage</h1>
       <p class="lede">Firebase security rules are the only thing deciding who can read and write your Firestore, Realtime Database and Cloud Storage data, because your app’s Firebase config is public by design. Replace any <code>if true</code> or test-mode <code>request.time &lt; …</code> rule with rules that compare <code>request.auth.uid</code> with the document’s owner, and test them in the emulator as a visitor, a stranger and the owner before deploying.</p>
-      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 11 Nov 2026</span><span>4 min read</span></p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 12 Nov 2026</span><span>4 min read</span></p>
       <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Your <code>apiKey</code> and <code>projectId</code> are public. Rules are your security.</li><li>Test mode opens everything for 30 days. <code>if request.auth != null</code> opens everything to anyone who signs up.</li><li>Match on ownership: <code>request.auth.uid == userId</code>, or <code>resource.data.ownerId == request.auth.uid</code>.</li><li>Test with <code>@firebase/rules-unit-testing</code> and the emulator; keep the rules in your repo and deploy from there.</li></ul></div>
-      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why">Why rules are your whole security model</a></li><li><a href="#dangerous">The rules that leak</a></li><li><a href="#how">How rules evaluate</a></li><li><a href="#owner-rules">Owner-only rules to start from</a></li><li><a href="#test">Test the rules before you deploy</a></li><li><a href="#deploy">Keep rules in the repo, deploy from the repo</a></li><li><a href="#app-check">App Check is not a rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why">Why rules are your whole security model</a></li><li><a href="#dangerous">The rules that leak</a></li><li><a href="#how">How rules evaluate</a></li><li><a href="#owner-rules">Owner-only rules to start from</a></li><li><a href="#flutterflow">If you built the app in FlutterFlow</a></li><li><a href="#test">Test the rules before you deploy</a></li><li><a href="#deploy">Keep rules in the repo, deploy from the repo</a></li><li><a href="#app-check">App Check is not a rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
       <h2 id="why">Why rules are your whole security model</h2>
 <p>A Firebase web app talks to Firestore, Realtime Database and Cloud Storage directly from the browser using a config object with an <code>apiKey</code>. That key identifies your project; it doesn’t grant access, and it isn’t secret. Anyone can copy it from your site and use the Firebase SDK against your project. What they can do is decided entirely by your security rules, evaluated by Google’s servers on every request.</p>
 <p>Firebase Admin SDKs on servers bypass rules, the same way Supabase’s service role key bypasses RLS, so admin credentials must never reach the browser either.</p>
@@ -243,6 +243,15 @@ service firebase.storage {
   }
 }</code></pre></div>
 
+<h2 id="flutterflow">If you built the app in FlutterFlow</h2>
+<p>FlutterFlow writes your Firestore rules for you from Settings › Firestore, one row per collection with a setting for Create, Read, Write and Delete, and publishes them when you press Deploy there. Two defaults matter:</p>
+<ul>
+  <li>Every new collection starts with <strong>Create</strong> and <strong>Read</strong> set to <strong>Everyone</strong>. Read on Everyone becomes <code>allow read: if true;</code>, so a collection you never went back to is readable by anyone with your public config.</li>
+  <li><strong>Authenticated Users</strong> becomes <code>request.auth != null</code>, the signed-in-only rule above.</li>
+</ul>
+<p>Use <strong>Users Collection</strong> for the <code>users</code> collection (it compares the signed-in user with the document ID), <strong>Tagged Users</strong> for documents with an owner field such as <code>created_by</code>, and <strong>No One</strong> for anything the app never writes from the client. Press Deploy after every change and check the diff it shows. To write a rule by hand, set that collection to <strong>Exclude</strong> first, then edit it in the Firebase console. If you launched in test mode, also delete the <code>request.time &lt; timestamp.date(…)</code> rule before you publish.</p>
+<p class="small">Paste the live rules from the console’s Rules tab into the <a href="/tools/firebase-rules-check">rules check</a>; it recognises FlutterFlow’s format and names the setting to change.</p>
+
 <h2 id="test">Test the rules before you deploy</h2>
 <p>The emulator runs your rules locally, and <code>@firebase/rules-unit-testing</code> lets you act as any user. This test seeds one private document, then checks a visitor and a stranger are refused while the owner can still read:</p>
 <div class="code"><div class="code-bar"><span class="name">rules.test.mjs</span><button class="copy" type="button" data-copy>Copy</button></div>
@@ -286,6 +295,7 @@ await env.cleanup();</code></pre></div>
   <li><a href="https://firebase.google.com/docs/rules">Firebase: Security Rules</a></li>
   <li><a href="https://firebase.google.com/docs/firestore/security/get-started">Firebase: get started with Cloud Firestore rules</a></li>
   <li><a href="https://firebase.google.com/docs/rules/unit-tests">Firebase: build unit tests for rules</a></li>
+  <li><a href="https://docs.flutterflow.io/integrations/database/cloud-firestore/firestore-rules/">FlutterFlow: Firestore rules</a></li>
 </ul>
       <h2 id="related-findings" class="l-rel-h">Related findings</h2>
       <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
@@ -297,12 +307,12 @@ await env.cleanup();</code></pre></div>
         <p><a class="btn primary" href="/tools/firebase-rules-check">Open the free rules check</a></p>
         <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/firebase-rules-check?sample">See a sample result</a></span></div>
       </div>
-      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 11 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20firebase-security-rules-basics">Tell us</a>.</p>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 12 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20firebase-security-rules-basics">Tell us</a>.</p>
       <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/vibe-coded-app-security-checklist" rel="prev"><span>Previous guide</span>Pre-launch security checklist for vibe-coded apps</a><a class="next" href="/learn/security-headers-ai-built-apps" rel="next"><span>Next guide</span>Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></nav>
     </article>
     <aside class="toc" aria-label="On this page">
       <h2>On this page</h2>
-      <ul><li><a href="#why">Why rules are your whole security model</a></li><li><a href="#dangerous">The rules that leak</a></li><li><a href="#how">How rules evaluate</a></li><li><a href="#owner-rules">Owner-only rules to start from</a></li><li><a href="#test">Test the rules before you deploy</a></li><li><a href="#deploy">Keep rules in the repo, deploy from the repo</a></li><li><a href="#app-check">App Check is not a rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+      <ul><li><a href="#why">Why rules are your whole security model</a></li><li><a href="#dangerous">The rules that leak</a></li><li><a href="#how">How rules evaluate</a></li><li><a href="#owner-rules">Owner-only rules to start from</a></li><li><a href="#flutterflow">If you built the app in FlutterFlow</a></li><li><a href="#test">Test the rules before you deploy</a></li><li><a href="#deploy">Keep rules in the repo, deploy from the repo</a></li><li><a href="#app-check">App Check is not a rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
     </aside>
   </div>
   <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>

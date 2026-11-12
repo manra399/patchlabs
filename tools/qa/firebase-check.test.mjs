@@ -45,5 +45,31 @@ assert.deepEqual(db.findings.map(f => [f.line, f.kind, f.severity, f.path]), [
 assert.equal(db.passed.length, 1);
 assert.match(FC.scan('{ "rules": { ".read": true, }', today).error, /valid JSON/);
 
+// FlutterFlow-style rules: open create is high (not "change or delete"), signed-in create is low, reference owner checks pass, format detected.
+const ffr = FC.scan(`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /orders/{document} {
+      allow create: if true;
+      allow read: if true;
+      allow write: if false;
+      allow delete: if false;
+    }
+    match /chats/{document} {
+      allow create: if request.auth != null;
+      allow read: if resource.data.users.hasAny([/databases/$(database)/documents/users/$(request.auth.uid)]);
+      allow write: if resource.data.created_by == /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+  }
+}`, today);
+assert.equal(ffr.flutterflow, true);
+assert.deepEqual(ffr.findings.map(f => [f.line, f.kind, f.severity]), [[6, 'open', 'critical'], [5, 'open', 'high'], [11, 'signedin', 'low']]);
+assert.match(ffr.findings[1].title, /add new documents to orders/);
+assert.match(ffr.findings[2].title, /someone else's user ID/);
+assert.match(ffr.findings[1].fix, /request\.resource\.data\.ownerId == request\.auth\.uid/);
+assert.match(FC.prompt(ffr), /line 5 .*only signed-in users can create/);
+assert.deepEqual(ffr.passed.map(p => p.line), [12, 13]);
+assert.equal(r.flutterflow, false);
+
 assert.equal(FC.scan('', today).findings.length, 0);
 console.log('firebase-check: all checks pass');

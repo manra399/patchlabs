@@ -9,7 +9,7 @@ lede: Firebase security rules are the only thing deciding who can read and write
 tldr: Your <code>apiKey</code> and <code>projectId</code> are public. Rules are your security. || Test mode opens everything for 30 days. <code>if request.auth != null</code> opens everything to anyone who signs up. || Match on ownership: <code>request.auth.uid == userId</code>, or <code>resource.data.ownerId == request.auth.uid</code>. || Test with <code>@firebase/rules-unit-testing</code> and the emulator; keep the rules in your repo and deploy from there.
 findings: PL-025, PL-002
 cta: firebase
-checked: 2026-11-11
+checked: 2026-11-12
 ---
 <h2 id="why">Why rules are your whole security model</h2>
 <p>A Firebase web app talks to Firestore, Realtime Database and Cloud Storage directly from the browser using a config object with an <code>apiKey</code>. That key identifies your project; it doesn’t grant access, and it isn’t secret. Anyone can copy it from your site and use the Firebase SDK against your project. What they can do is decided entirely by your security rules, evaluated by Google’s servers on every request.</p>
@@ -85,6 +85,15 @@ service firebase.storage {
 }
 [[/CODE]]
 
+<h2 id="flutterflow">If you built the app in FlutterFlow</h2>
+<p>FlutterFlow writes your Firestore rules for you from Settings › Firestore, one row per collection with a setting for Create, Read, Write and Delete, and publishes them when you press Deploy there. Two defaults matter:</p>
+<ul>
+  <li>Every new collection starts with <strong>Create</strong> and <strong>Read</strong> set to <strong>Everyone</strong>. Read on Everyone becomes <code>allow read: if true;</code>, so a collection you never went back to is readable by anyone with your public config.</li>
+  <li><strong>Authenticated Users</strong> becomes <code>request.auth != null</code>, the signed-in-only rule above.</li>
+</ul>
+<p>Use <strong>Users Collection</strong> for the <code>users</code> collection (it compares the signed-in user with the document ID), <strong>Tagged Users</strong> for documents with an owner field such as <code>created_by</code>, and <strong>No One</strong> for anything the app never writes from the client. Press Deploy after every change and check the diff it shows. To write a rule by hand, set that collection to <strong>Exclude</strong> first, then edit it in the Firebase console. If you launched in test mode, also delete the <code>request.time &lt; timestamp.date(…)</code> rule before you publish.</p>
+<p class="small">Paste the live rules from the console’s Rules tab into the <a href="/tools/firebase-rules-check">rules check</a>; it recognises FlutterFlow’s format and names the setting to change.</p>
+
 <h2 id="test">Test the rules before you deploy</h2>
 <p>The emulator runs your rules locally, and <code>@firebase/rules-unit-testing</code> lets you act as any user. This test seeds one private document, then checks a visitor and a stranger are refused while the owner can still read:</p>
 [[CODE rules.test.mjs]]
@@ -130,4 +139,5 @@ firebase deploy --only firestore:rules,storage
   <li><a href="https://firebase.google.com/docs/rules">Firebase: Security Rules</a></li>
   <li><a href="https://firebase.google.com/docs/firestore/security/get-started">Firebase: get started with Cloud Firestore rules</a></li>
   <li><a href="https://firebase.google.com/docs/rules/unit-tests">Firebase: build unit tests for rules</a></li>
+  <li><a href="https://docs.flutterflow.io/integrations/database/cloud-firestore/firestore-rules/">FlutterFlow: Firestore rules</a></li>
 </ul>

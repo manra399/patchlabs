@@ -75,7 +75,11 @@
 
   var READ = { read: 1, get: 1, list: 1 }, WRITE = { write: 1, create: 1, update: 1, delete: 1 };
 
+  // create alone adds new documents; it cannot read, change or delete existing ones.
+  function createOnly(methods) { return methods.length > 0 && methods.every(function (m) { return m === 'create'; }); }
+
   function sevFor(kind, methods, path) {
+    if ((kind === 'open' || kind === 'signedin') && createOnly(methods) && !isRecursive(path)) return kind === 'open' ? 'high' : 'low';
     var writes = methods.some(function (m) { return WRITE[m]; });
     var reads = methods.some(function (m) { return READ[m]; });
     var broad = isRecursive(path), sens = SENSITIVE.test(lastLiteral(path));
@@ -87,6 +91,10 @@
   }
 
   function title(kind, methods, path, product, until) {
+    if ((kind === 'open' || kind === 'signedin') && createOnly(methods) && !isRecursive(path)) {
+      var into = product === 'Storage' ? 'upload new files under ' + path : 'add new documents to ' + (lastLiteral(path) || path);
+      return (kind === 'open' ? 'Anyone, signed in or not, can ' : 'Any signed-in user can ') + into + (kind === 'signedin' ? ' with any content, including someone else\'s user ID' : '');
+    }
     var verb = methods.some(function (m) { return WRITE[m]; }) ? (methods.some(function (m) { return READ[m]; }) ? 'read and change' : 'change or delete') : 'read';
     var where = isRecursive(path) ? 'everything in your ' + product : (lastLiteral(path) ? 'every document in ' + lastLiteral(path) : path);
     if (product === 'Storage' && !isRecursive(path)) where = 'every file under ' + path;
@@ -99,6 +107,9 @@
 
   function fixFor(kind, methods, path, product) {
     var v = lastVar(path), lit = lastLiteral(path);
+    if ((kind === 'open' || kind === 'signedin') && createOnly(methods) && !isRecursive(path) && product !== 'Storage') {
+      return 'Only let signed-in users create, and only with their own user ID in the owner field:\nallow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;\n(FlutterFlow stores the owner as a user reference; compare with /databases/$(database)/documents/users/$(request.auth.uid) instead)';
+    }
     if (kind === 'expired') return 'Replace the date rule with real rules before you ship, or your app keeps failing with permission-denied.';
     var publicRead = kind === 'open' && !methods.some(function (m) { return WRITE[m]; }) && !isRecursive(path) && !SENSITIVE.test(lit);
     if (publicRead) return 'If this is meant to be public (a product list, published posts), leave read open and make sure writes are limited, for example:\nallow write: if request.auth != null && request.auth.token.admin == true;\nIf it holds anything personal, check the owner instead:\nallow read: if request.auth != null && resource.data.ownerId == request.auth.uid;';
@@ -119,8 +130,14 @@
     return 'allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;\nallow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;\n(use the field that stores the owner\'s user ID)';
   }
 
-  function detailFor(kind, path, product, overrides) {
+  function detailFor(kind, path, product, overrides, methods) {
     var d = [];
+    if ((kind === 'open' || kind === 'signedin') && methods && createOnly(methods) && !isRecursive(path)) {
+      d.push(kind === 'open'
+        ? 'Create cannot read or change existing documents, but anyone with your public Firebase config can script thousands of fake records (orders, sign-ups, messages) and set any field, including the owner and price.'
+        : 'Usually acceptable, but without a check on the owner field a user can create documents that claim to belong to someone else.');
+      return d.join(' ');
+    }
     if (kind === 'testmode') d.push('This is the rule Firebase writes when you start in test mode. Until that date every request is allowed, including from people who never open your app.');
     if (kind === 'open') d.push(isRecursive(path) ? 'No condition at all, on every path.' : 'Fine only if this data is meant to be public, like a product list. Not fine for anything personal.');
     if (kind === 'signedin') d.push('Checking only that someone is signed in does not check who they are. Anyone who can create an account in your app, which on most apps is anyone, gets this access to every user\'s data, not just their own.');
@@ -157,7 +174,7 @@
           if (sev) {
             rec.severity = sev; rec.kind = j2.kind;
             rec.title = title(j2.kind, methods, path, product, j2.until);
-            rec.detail = detailFor(j2.kind, path, product, isRecursive(path) && j2.kind !== 'expired');
+            rec.detail = detailFor(j2.kind, path, product, isRecursive(path) && j2.kind !== 'expired', methods);
             rec.fix = fixFor(j2.kind, methods, path, product);
             findings.push(rec);
           } else if (j2.kind === 'restricted') {
@@ -170,7 +187,10 @@
       else if (c === '}') { if (depthAt.length && depthAt[depthAt.length - 1] === depth) { depthAt.pop(); stack.pop(); } depth--; }
       i++;
     }
-    return { product: product, findings: findings, passed: passed, rules: allows };
+    // FlutterFlow writes one match /<collection>/{document} block per collection.
+    var flutterflow = product === 'Firestore' && /match\s+\/\w+\/\{document\}\s*\{/.test(s);
+    if (!flutterflow) findings.forEach(function (f) { f.fix = f.fix.replace(/\n\(FlutterFlow stores[\s\S]*$/, ''); });
+    return { product: product, findings: findings, passed: passed, rules: allows, flutterflow: flutterflow };
   }
 
   function scanRtdb(raw, today) {
@@ -220,7 +240,7 @@
     var lines = ['My Firebase ' + r.product + ' security rules (' + file + ') let the wrong people in. Please rewrite them so that:'];
     r.findings.forEach(function (f) {
       var w = f.methods.some(function (m) { return WRITE[m]; });
-      var fix = f.kind === 'open' && f.severity === 'medium' ? 'keep it public only if it is meant to be (no personal data), and keep writes limited' : 'only the owner can ' + (w ? 'change' : 'read') + ' their own data';
+      var fix = createOnly(f.methods) && !isRecursive(f.path) ? 'only signed-in users can create, and only with their own user ID as the owner' : f.kind === 'open' && f.severity === 'medium' ? 'keep it public only if it is meant to be (no personal data), and keep writes limited' : 'only the owner can ' + (w ? 'change' : 'read') + ' their own data';
       lines.push('- line ' + f.line + ' (' + f.path + '): ' + f.title + '. Fix: ' + fix + '.');
     });
     lines.push('Rules: never use a catch-all match like {document=**} that allows access; never allow on request.auth != null alone; check request.auth.uid against the document ID or an owner field; keep public data (if any) read-only. Show me the full new file and list what each user can and cannot do after the change.');
@@ -259,6 +279,38 @@
     ].join('\n');
   }
 
-  var api = { scan: scan, sample: sample, prompt: prompt };
+  // What FlutterFlow deploys for a users collection on Users Collection, a new collection left on its defaults, and a chats collection on Tagged Users.
+  function sampleFlutterflow() {
+    return [
+      "rules_version = '2';",
+      '',
+      'service cloud.firestore {',
+      '  match /databases/{database}/documents {',
+      '    match /users/{document} {',
+      '      allow create: if request.auth.uid == document;',
+      '      allow read: if request.auth.uid == document;',
+      '      allow write: if request.auth.uid == document;',
+      '      allow delete: if false;',
+      '    }',
+      '',
+      '    match /bookings/{document} {',
+      '      allow create: if true;',
+      '      allow read: if true;',
+      '      allow write: if false;',
+      '      allow delete: if false;',
+      '    }',
+      '',
+      '    match /chats/{document} {',
+      '      allow create: if request.auth != null;',
+      '      allow read: if resource.data.users.hasAny([/databases/$(database)/documents/users/$(request.auth.uid)]);',
+      '      allow write: if resource.data.created_by == /databases/$(database)/documents/users/$(request.auth.uid);',
+      '      allow delete: if false;',
+      '    }',
+      '  }',
+      '}'
+    ].join('\n');
+  }
+
+  var api = { scan: scan, sample: sample, sampleFlutterflow: sampleFlutterflow, prompt: prompt };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PLFirebaseCheck = api;
 })(this);
