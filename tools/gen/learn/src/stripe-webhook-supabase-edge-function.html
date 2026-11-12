@@ -8,6 +8,8 @@ short: A working Deno function that verifies the signature, reads the raw body a
 lede: To verify a Stripe webhook in a Supabase Edge Function, read the request body as raw text, then pass it with the <code>Stripe-Signature</code> header and your webhook signing secret to <code>stripe.webhooks.constructEventAsync()</code> using Stripe’s Web Crypto provider; reject the request if that throws. Without this check, anyone who finds the URL can send a fake “payment succeeded” event.
 tldr: Stripe signs every webhook. Unverified handlers let anyone fake payments (<a href="/findings/pl-021">PL-021</a>). || Read the body with <code>req.text()</code>. Parsing JSON first breaks the signature check. || In Deno, use <code>constructEventAsync</code> with <code>Stripe.createSubtleCryptoProvider()</code>. || Set <code>verify_jwt = false</code> for this one function (Stripe has no Supabase token), and record event ids, because Stripe can deliver the same event more than once.
 findings: PL-021, PL-017
+cta: edge
+checked: 2026-11-12
 ---
 <h2 id="why">Why the signature matters</h2>
 <p>A webhook endpoint is a public URL that changes your database: “checkout completed, give this user Pro”. If the handler trusts the JSON it receives, anyone can send:</p>

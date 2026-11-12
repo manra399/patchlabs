@@ -13,7 +13,8 @@ Meta keys (one per line, `key: value`):
   findings     comma-separated finding IDs, e.g. PL-001, PL-002 (also read by tools/gen/findings.py)
   cta          optional: "headers" swaps the bottom repo-check CTA for the free headers check (/tools/headers-check),
                "keys" for the free in-browser key check (/tools/key-check),
-               "firebase" for the free in-browser Firebase rules check (/tools/firebase-rules-check)
+               "firebase" for the free in-browser Firebase rules check (/tools/firebase-rules-check),
+               "edge" for the free in-browser Edge Function check (/tools/edge-function-check)
   checked      optional ISO date the guide's facts were last checked, when newer than UPDATED (e.g. 2026-11-11)
 Body: <h2 id="…"> sections (they become the table of contents), <h3> allowed. Use the site's .code / .callout / .table
 components. Code blocks: [[CODE name]] … [[/CODE]] is escaped and wrapped for you.
@@ -204,6 +205,15 @@ def page(g, guides, ft):
         <p>Paste <code>firestore.rules</code>, <code>storage.rules</code> or <code>database.rules.json</code> into the free Firebase rules check. It runs in your browser: no request is sent and nothing is stored. It flags test-mode dates, catch-all matches, open writes and “any signed-in user” rules, with the line, the fix and a prompt to paste into your AI builder.</p>
         <p><a class="btn primary" href="/tools/firebase-rules-check">Open the free rules check</a></p>
         <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/firebase-rules-check?sample">See a sample result</a></span></div>
+      </div>"""
+    elif g.get("cta") == "edge":
+        extra_css = ""
+        cta = """<div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Paste your function, see who can call it.</h2>
+        <p>Paste a function’s <code>index.ts</code> into the free Edge Function check. It runs in your browser: no request is sent and nothing is stored. It flags the service role key with no check on the caller, Stripe webhooks without a signature check, user ids taken from the body and keys written into the code, with the line, the fix and a prompt for your AI builder.</p>
+        <p><a class="btn primary" href="/tools/edge-function-check">Open the free Edge Function check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/edge-function-check?sample">See a sample result</a></span></div>
       </div>"""
     elif g.get("cta") == "headers":
         extra_css = '<link rel="stylesheet" href="/assets/pages/B-findings.css">'

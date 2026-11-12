@@ -237,6 +237,7 @@ Deno.serve(async (req) =&gt; {
 grep -rnE "(userId|user_id|uid|profileId)" supabase/functions src/app app/api pages/api 2&gt;/dev/null \
   | grep -E "req(uest)?\.json|searchParams|req\.body|req\.query"</code></pre>
 </div><p>Then run the function locally, sign in as test user A, and send test user B's id. If you get B's data back, or change B's rows, the function trusts the request.</p>
+      <p class="small">Paste a function’s <code>index.ts</code> into the <a href="/tools/edge-function-check">free Edge Function check</a>. It runs in your browser and sends nothing.</p>
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
       <p>The simplest fix is to stop using the service key here: make a client that carries the caller's own token, so row level security applies exactly as it does in the browser.</p><div class="code">
@@ -270,7 +271,7 @@ Deno.serve(async (req) =&gt; {
   <div class="code-bar"><span class="name">Prompt for your AI builder</span><button class="copy" type="button" data-copy>Copy</button></div>
 <pre class="wrap-lines"><code>One of my edge functions acts on a user id taken from the request body or query, so any user can act as another. Get the user from the verified auth token instead (supabase.auth.getUser() with the request's Authorization header), and ignore any user id the client sends. Show me the exact change before you apply it, and don't change anything else.</code></pre>
 </div>
-      <p class="small">Then <a href="/#check">run the free check</a> on your repo again to confirm it’s gone.</p>
+      <p class="small">Then check again with the <a href="/tools/edge-function-check">free Edge Function check</a>, or <a href="/#check">run the full free check</a> on your repo.</p>
 
       <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
       <div class="window">
@@ -313,7 +314,7 @@ Deno.serve(async (req) =&gt; {
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/tools/edge-function-check">Or paste a function into the free Edge Function check</a></span></div>
       </div>
 
       <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-022">Tell us</a>.</p>
@@ -389,6 +390,7 @@ Deno.serve(async (req) =&gt; {
         <li><a href="/tools/headers-check">Free headers check</a></li>
         <li><a href="/tools/key-check">Free key check</a></li>
         <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
+        <li><a href="/tools/edge-function-check">Free Edge Function check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

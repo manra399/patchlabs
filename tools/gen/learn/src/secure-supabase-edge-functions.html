@@ -8,10 +8,14 @@ short: Verify the caller, use the service key safely, never trust ids from the b
 lede: To secure a Supabase Edge Function, verify who is calling inside the function by passing the request’s token to <code>supabase.auth.getUser()</code>, take the user’s id from that result rather than from the request body, and use the service role key only after those checks, or not at all. Functions that can’t require a sign-in, like webhooks and cron jobs, need another proof of origin: a signature or a shared secret.
 tldr: A function’s URL is public and in your bundle. Anyone can call it with any body. || The platform’s JWT check (<code>verify_jwt</code>) accepts the public anon key on projects using legacy keys, so it isn’t proof of a signed-in user. Check with <code>getUser()</code>. || Prefer a client built with the caller’s token, so your RLS policies apply. Use the service key only when you must. || CORS headers control which sites can read responses. They are not access control.
 findings: PL-017, PL-022, PL-026, PL-010
+cta: edge
+checked: 2026-11-12
 ---
 <h2 id="threat">What you’re defending against</h2>
 <p>Every Edge Function is reachable at <code>https://&lt;project&gt;.supabase.co/functions/v1/&lt;name&gt;</code>. The name is in your frontend code, so assume anyone can find it and call it with whatever headers and body they like. A function is only as safe as the checks it runs before doing something.</p>
 <p>Functions are also where the service role key lives, as an automatically provided secret (<code>SUPABASE_SERVICE_ROLE_KEY</code>). That key bypasses every row level security policy. A function that uses it without checking the caller turns your database’s rules off for anyone who finds the URL (<a href="/findings/pl-017">PL-017</a>).</p>
+
+<p class="small">To check a function you already have, paste its <code>index.ts</code> into the <a href="/tools/edge-function-check">free Edge Function check</a>. It runs in your browser and sends nothing.</p>
 
 <h2 id="verify-jwt">What verify_jwt does and doesn’t do</h2>
 <p>By default the platform rejects calls to a function that don’t carry a valid JWT in the <code>Authorization</code> header. You can switch that off per function in <code>supabase/config.toml</code>:</p>

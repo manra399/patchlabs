@@ -1,0 +1,204 @@
+<!--
+title: Free Supabase Edge Function security check: no sign-up | PatchLabs
+description: Paste a Supabase Edge Function. Your browser flags the service role key used with no check on the caller, Stripe webhooks without a signature check, user ids trusted from the body and hard-coded keys, with the fix. Nothing is uploaded.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PatchLabs free Supabase Edge Function check","url":"https://patchlabs.dev/tools/edge-function-check","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main" class="fc-page">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">Free Edge Function check</li></ol></nav>
+    <p class="lab">Free tool · runs in your browser</p>
+    <h1>Who can call your Edge Function?</h1>
+    <p class="lede">Paste a Supabase Edge Function. Your browser reads the code and flags what lets a stranger use it: the service role key with no check on who is calling, a Stripe webhook that never checks Stripe’s signature, a user id taken from the request body, keys written into the file. Each one comes with the line, the fix and a prompt for your AI builder. Nothing you paste leaves this page.</p>
+
+    <form class="kc-form" id="ec-form" novalidate>
+      <label class="sr-only" for="ec-in">Edge Function code to check</label>
+      <textarea class="input kc-in" id="ec-in" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Deno.serve(async (req) => {&#10;  …&#10;});&#10;&#10;paste supabase/functions/&lt;name&gt;/index.ts, and its [functions.&lt;name&gt;] block from config.toml if you have one" aria-describedby="ec-help"></textarea>
+      <div class="kc-bar">
+        <button class="btn primary" type="submit" id="ec-go">Check my function <span class="arrow" aria-hidden="true">→</span></button>
+        <button class="btn ghost" type="button" id="ec-clear">Clear</button>
+        <span class="kc-count mono small muted" id="ec-count" aria-live="polite"></span>
+      </div>
+    </form>
+    <p class="err" role="alert" id="ec-err"></p>
+    <noscript><p class="small muted mt-1">This tool runs entirely in your browser, so it needs JavaScript.</p></noscript>
+    <div class="form-meta" id="ec-help">
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>No upload, no network request</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>TypeScript or JavaScript, Deno</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Keys masked in the result</span>
+      <span>Nothing to paste? <button type="button" class="t-try" id="ec-demo">Try a sample</button></span>
+    </div>
+
+    <div class="rls-out" id="ec-out" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="why-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Why functions matter</p>
+      <h2 id="why-h" class="h-md">The function’s URL is public. Its code is the only lock.</h2>
+      <p class="muted">Every Edge Function answers at <code>https://&lt;project&gt;.supabase.co/functions/v1/&lt;name&gt;</code>, and the name is in the JavaScript your app ships. Anyone can call it with any headers and any body, without opening your app.</p>
+      <p class="muted">Functions are also where the service role key lives, and that key skips every row level security policy. So a function that uses it is your access rule. If it never asks who is calling, your database rules are off for whoever finds the URL.</p>
+    </div>
+    <div class="cov">
+      <div class="table-wrap"><table class="table fc-rules">
+        <thead><tr><th scope="col">The function…</th><th scope="col">Who can use it</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">uses the service role key, never checks the caller</th><td><span class="pill leak">anyone</span> Every row, every table, no policy applies.</td></tr>
+          <tr><th scope="row">handles Stripe events without checking the signature</th><td><span class="pill leak">anyone</span> A fake “paid” event unlocks what customers pay for.</td></tr>
+          <tr><th scope="row">reads <code>user_id</code> from the body</th><td><span class="pill sev-high">any account</span> Send someone else’s id, act on their account.</td></tr>
+          <tr><th scope="row">calls <code>getUser</code> and uses <code>user.id</code></th><td><span class="pill proven">the owner</span> What you want.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="looks-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">What it looks for</p>
+      <h2 id="looks-h">The function mistakes AI builders write most.</h2>
+      <p>The check reads the code line by line, skips comments, and looks at the function as a whole: a service role key is fine after a caller check, a signature check or a shared secret, and only flagged without one.</p>
+    </div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th scope="col">Pattern</th><th scope="col">What it means</th><th scope="col">Severity</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Service role with no caller check</th><td>The admin key is used and nothing checks who is calling: no <code>getUser</code>, no signature, no shared secret. <a href="/findings/pl-017">PL&#8209;017</a></td><td><span class="pill sev-critical">critical</span></td></tr>
+        <tr><th scope="row">Unsigned Stripe webhook</th><td>Stripe events handled without <code>constructEventAsync</code>. Also flags the sync <code>constructEvent</code>, which throws in Deno, and a body parsed as JSON before the check. <a href="/findings/pl-021">PL&#8209;021</a></td><td><span class="pill sev-critical">critical</span> or <span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row">Key written in the code</th><td>Stripe, OpenAI, Anthropic, Resend and Supabase secret keys, and <code>service_role</code> JWTs (decoded, so the public anon key isn’t flagged). <a href="/findings/pl-009">PL&#8209;009</a></td><td><span class="pill sev-critical">critical</span></td></tr>
+        <tr><th scope="row">User id from the request</th><td><code>user_id</code>, <code>userId</code>, <code>owner_id</code> and similar read from the body or query string instead of the signed-in user. <a href="/findings/pl-022">PL&#8209;022</a></td><td><span class="pill sev-high">high</span></td></tr>
+        <tr><th scope="row">SQL built from input</th><td>Values pasted into query text for a direct Postgres connection. The tagged <code>sql`…`</code> form of postgres.js is safe and not flagged.</td><td><span class="pill sev-high">high</span></td></tr>
+        <tr><th scope="row">verify_jwt off, no check</th><td>The platform check is switched off in <code>config.toml</code> and the code doesn’t check anything either.</td><td><span class="pill sev-high">high</span></td></tr>
+        <tr><th scope="row"><code>.or()</code> filter from input</th><td>A search term pasted into an <code>.or()</code> filter string can add conditions of its own.</td><td><span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row">CORS echoes any origin</th><td>The request’s <code>Origin</code> sent back with <code>Allow-Credentials: true</code>. Plain <code>*</code> with bearer tokens isn’t flagged. <a href="/findings/pl-026">PL&#8209;026</a></td><td><span class="pill sev-medium">medium</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h" class="h-md">About the Edge Function check</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>Where do I find my function’s code?</summary><div class="acc-body"><p>In your repo at <code>supabase/functions/&lt;name&gt;/index.ts</code>. If you built with Lovable or Bolt, open the code view and look for the <code>supabase/functions</code> folder. In the Supabase dashboard, Edge Functions lists each function and shows its code. Paste one function at a time.</p></div></details>
+      <details class="acc"><summary>Is it safe to paste code with keys in it?</summary><div class="acc-body"><p>The check is a script on this page. It makes no network request and stores nothing, and keys are masked in the result. Open your browser’s developer tools, go to the Network tab, and run a check to see for yourself. If it finds a key, rotate it anyway: it has been in your code.</p></div></details>
+      <details class="acc"><summary>Isn’t verify_jwt enough?</summary><div class="acc-body"><p>No. On projects with legacy keys, the platform check accepts any valid project JWT, and your public anon key is one. It stops nobody who has opened your app. Check the caller in the code with <code>supabase.auth.getUser(token)</code> and use the id it returns. The <a href="/learn/secure-supabase-edge-functions">Edge Function guide</a> walks through it.</p></div></details>
+      <details class="acc"><summary>Nothing flagged. Am I safe?</summary><div class="acc-body"><p>None of the risky patterns appear in what you pasted. This is a reading of the code, not a test of your deployed function, so logic it can’t see (an admin check that reads the wrong field, say) can still be wrong. Call the function yourself with no token and with a second account’s token to confirm.</p></div></details>
+      <details class="acc"><summary>Does the full check cover functions?</summary><div class="acc-body"><p>Yes. The full PatchLabs check reads every function in your repo with these rules and more, scans the whole git history for keys, and rebuilds your database to test your RLS policies as three people. Free in early access.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="final-h" id="full-check">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab green">The full check</p>
+      <h2 id="final-h">Check every function, your keys and your database rules, free.</h2>
+      <p class="lede">The full check scans your code and full git history for keys, rebuilds your Supabase database in our lab, tests it as three identities, writes the fix and proves it works. Free in early access, fixes included.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-full">Public GitHub repo</label>
+          <input id="repo-full" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-full">Your email</label>
+          <input id="email-full" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/tools/key-check">Free key check</a></span><span><a href="/learn/secure-supabase-edge-functions">Edge Function guide</a></span><span><a href="/tools/rls-check">Free Supabase RLS check</a></span><span><a href="/sample-report">See a sample proof report</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<script src="/assets/edge-check.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var EC = window.PLEdgeCheck;
+  var form = $('ec-form'), input = $('ec-in'), out = $('ec-out'), errEl = $('ec-err'), count = $('ec-count');
+  var SEV = ['critical', 'high', 'medium', 'low'];
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  var pillFor = function (s) { return 'pill ' + ({ critical: 'sev-critical', high: 'sev-high', medium: 'sev-medium' }[s] || 'sev-low'); };
+  var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); };
+  var last = null;
+  var FINDINGS = '/findings/';
+
+  function findingHtml(f) {
+    return '<article class="finding s-' + esc(f.severity) + '">' +
+      '<div class="f-top"><span class="' + pillFor(f.severity) + '">' + esc(f.severity) + '</span><a class="f-id" href="' + FINDINGS + esc(f.id.toLowerCase()) + '">' + esc(f.id) + '</a><span class="small muted">line ' + esc(f.line) + '</span></div>' +
+      '<h4>' + esc(f.title) + '</h4>' +
+      '<pre>' + esc(f.code) + '</pre>' +
+      '<p class="f-detail">' + esc(f.detail) + '</p>' +
+      '<p class="f-detail"><strong>Fix:</strong></p><pre>' + esc(f.fix) + '</pre></article>';
+  }
+
+  function render(r) {
+    if (r.error) { out.innerHTML = ''; errEl.textContent = r.error; return; }
+    var counts = { critical: 0, high: 0, medium: 0, low: 0 };
+    r.findings.forEach(function (f) { counts[f.severity]++; });
+    var h = '<div class="rls-head"><div><p class="tag mb-1">Result · checked in your browser</p><h2>' +
+      (r.findings.length ? plural(r.findings.length, 'problem') + ' to fix' : 'No risky patterns found') +
+      '</h2><ul class="t-meta"><li>' + plural(r.lines, 'line') + ' read</li><li>' + (r.admin ? 'uses the service role key' : 'no service role key') + '</li><li>0 bytes sent</li></ul></div></div>';
+    h += '<div class="sev-strip">' +
+      '<div class="crit' + (counts.critical ? '' : ' zero') + '"><b>' + counts.critical + '</b><span>Critical</span></div>' +
+      '<div class="high' + (counts.high ? '' : ' zero') + '"><b>' + counts.high + '</b><span>High</span></div>' +
+      '<div class="med' + (counts.medium ? '' : ' zero') + '"><b>' + counts.medium + '</b><span>Medium</span></div>' +
+      '<div' + (counts.low ? '' : ' class="zero"') + '><b>' + counts.low + '</b><span>Low</span></div>' +
+      '<div class="' + (r.passed.length ? 'ok' : 'zero') + '"><b>' + r.passed.length + '</b><span>Done right</span></div></div>';
+    SEV.forEach(function (s) {
+      var list = r.findings.filter(function (f) { return f.severity === s; });
+      if (!list.length) return;
+      h += '<div class="sev-group"><h3>' + cap(s) + ' <span class="ct">' + list.length + '</span></h3>' + list.map(findingHtml).join('') + '</div>';
+    });
+    if (r.passed.length) {
+      h += '<h3 class="h4 mt-4 mb-2">What the function gets right</h3><ul class="hc-passed">' +
+        r.passed.map(function (p) { return '<li><span><strong>' + esc(p.label) + '</strong> <span class="mono small muted">line ' + esc(p.line) + '</span></span></li>'; }).join('') + '</ul>';
+    }
+    if (r.findings.length) {
+      h += '<div class="callout limit mt-3"><p><strong>Fix it with your AI builder.</strong> Copy this prompt into Lovable, Bolt, Cursor or Claude with your function open, read the code it writes, then deploy it.</p>' +
+        '<pre class="mt-2 fc-prompt" id="ec-prompt">' + esc(EC.prompt(r)) + '</pre><p class="mt-2"><button class="btn ghost" type="button" id="ec-copy">Copy the prompt</button></p></div>';
+    } else {
+      h += '<div class="callout note mt-3"><p><strong>Nothing risky in what you pasted.</strong> This reads the code; it doesn’t call your function. To be sure, call it with no token and with a second account’s token and check what comes back.</p></div>';
+    }
+    h += '<div class="row mt-3"><a class="btn primary" href="#full-check">Check every function free</a><a class="link-arrow" href="/learn/secure-supabase-edge-functions">Read the Edge Function guide</a></div>';
+    out.innerHTML = h;
+    var copy = $('ec-copy');
+    if (copy) copy.addEventListener('click', function () {
+      var t = EC.prompt(last);
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copy.textContent = 'Copied'; }, function () {
+        var range = document.createRange(); range.selectNodeContents($('ec-prompt')); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); copy.textContent = 'Selected: press Ctrl+C';
+      });
+    });
+  }
+
+  function run(noScroll) {
+    errEl.textContent = '';
+    if (!input.value.trim()) { errEl.textContent = 'Paste your function’s code first.'; input.focus(); return; }
+    last = EC.scan(input.value);
+    render(last);
+    if (!noScroll && !last.error) out.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  input.addEventListener('input', function () { var n = input.value.split('\n').length; count.textContent = input.value ? plural(n, 'line') : ''; });
+  form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
+  $('ec-clear').addEventListener('click', function () { input.value = ''; out.innerHTML = ''; count.textContent = ''; errEl.textContent = ''; input.focus(); });
+  $('ec-demo').addEventListener('click', function () { input.value = EC.sample(); input.dispatchEvent(new Event('input')); run(); });
+  if (/[?&]sample\b/.test(location.search)) { input.value = EC.sample(); input.dispatchEvent(new Event('input')); run(true); }
+})();
+</script>

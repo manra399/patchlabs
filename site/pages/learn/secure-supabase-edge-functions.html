@@ -3,7 +3,7 @@ title: How to secure Supabase Edge Functions | PatchLabs
 description: Verify the caller in a Supabase Edge Function, use the service role key safely, never trust a user id from the body, set verify_jwt correctly and handle CORS, with Deno code.
 layout: marketing
 nav: learn
-head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to secure Supabase Edge Functions","description":"Verify the caller in a Supabase Edge Function, use the service role key safely, never trust a user id from the body, set verify_jwt correctly and handle CORS, with Deno code.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/secure-supabase-edge-functions"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to secure Supabase Edge Functions","item":"https://patchlabs.dev/learn/secure-supabase-edge-functions"}]}]}</script>
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to secure Supabase Edge Functions","description":"Verify the caller in a Supabase Edge Function, use the service role key safely, never trust a user id from the body, set verify_jwt correctly and handle CORS, with Deno code.","datePublished":"2026-11-12","dateModified":"2026-11-12","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/secure-supabase-edge-functions"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to secure Supabase Edge Functions","item":"https://patchlabs.dev/learn/secure-supabase-edge-functions"}]}]}</script>
 -->
 <main id="main">
   <div class="wrap wide docs learn">
@@ -45,12 +45,14 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="styleshe
       <p class="lab">Auth and server code</p>
       <h1>How to secure Supabase Edge Functions</h1>
       <p class="lede">To secure a Supabase Edge Function, verify who is calling inside the function by passing the request’s token to <code>supabase.auth.getUser()</code>, take the user’s id from that result rather than from the request body, and use the service role key only after those checks, or not at all. Functions that can’t require a sign-in, like webhooks and cron jobs, need another proof of origin: a signature or a shared secret.</p>
-      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 12 Nov 2026</span><span>4 min read</span></p>
       <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>A function’s URL is public and in your bundle. Anyone can call it with any body.</li><li>The platform’s JWT check (<code>verify_jwt</code>) accepts the public anon key on projects using legacy keys, so it isn’t proof of a signed-in user. Check with <code>getUser()</code>.</li><li>Prefer a client built with the caller’s token, so your RLS policies apply. Use the service key only when you must.</li><li>CORS headers control which sites can read responses. They are not access control.</li></ul></div>
       <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#threat">What you’re defending against</a></li><li><a href="#verify-jwt">What verify_jwt does and doesn’t do</a></li><li><a href="#pattern">The safe default: act as the caller</a></li><li><a href="#service-key">When you need the service key</a></li><li><a href="#ids">Never trust a user id from the request</a></li><li><a href="#no-session">Functions without a signed-in user</a></li><li><a href="#cors">CORS: what it is and isn’t</a></li><li><a href="#secrets">Secrets</a></li><li><a href="#checklist">Checklist for every function</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
       <h2 id="threat">What you’re defending against</h2>
 <p>Every Edge Function is reachable at <code>https://&lt;project&gt;.supabase.co/functions/v1/&lt;name&gt;</code>. The name is in your frontend code, so assume anyone can find it and call it with whatever headers and body they like. A function is only as safe as the checks it runs before doing something.</p>
 <p>Functions are also where the service role key lives, as an automatically provided secret (<code>SUPABASE_SERVICE_ROLE_KEY</code>). That key bypasses every row level security policy. A function that uses it without checking the caller turns your database’s rules off for anyone who finds the URL (<a href="/findings/pl-017">PL-017</a>).</p>
+
+<p class="small">To check a function you already have, paste its <code>index.ts</code> into the <a href="/tools/edge-function-check">free Edge Function check</a>. It runs in your browser and sends nothing.</p>
 
 <h2 id="verify-jwt">What verify_jwt does and doesn’t do</h2>
 <p>By default the platform rejects calls to a function that don’t carry a valid JWT in the <code>Authorization</code> header. You can switch that off per function in <code>supabase/config.toml</code>:</p>
@@ -159,23 +161,12 @@ if (!expected || req.headers.get('x-cron-secret') !== expected) {
       <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-017"><span class="n-big">PL-017</span><h3>Edge function open without sign-in while using the service key</h3></a><a class="card link" href="/findings/pl-022"><span class="n-big">PL-022</span><h3>Edge function trusts a user id sent in the request</h3></a><a class="card link" href="/findings/pl-026"><span class="n-big">PL-026</span><h3>Any website can call a signed-in function</h3></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3></a></div>
       <div class="f-cta l-cta">
         <p class="lab">Free check</p>
-        <h2>Check your app for this, free.</h2>
-        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
-        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
-          <div class="in">
-            <label class="sr-only" for="repo-l-secure-supabase-ed">Public GitHub repo</label>
-            <input id="repo-l-secure-supabase-ed" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
-          </div>
-          <div class="in">
-            <label class="sr-only" for="email-l-secure-supabase-ed">Your email</label>
-            <input id="email-l-secure-supabase-ed" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
-          </div>
-          <button class="btn primary" type="submit">Check my app free</button>
-        </form>
-        <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+        <h2>Paste your function, see who can call it.</h2>
+        <p>Paste a function’s <code>index.ts</code> into the free Edge Function check. It runs in your browser: no request is sent and nothing is stored. It flags the service role key with no check on the caller, Stripe webhooks without a signature check, user ids taken from the body and keys written into the code, with the line, the fix and a prompt for your AI builder.</p>
+        <p><a class="btn primary" href="/tools/edge-function-check">Open the free Edge Function check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/edge-function-check?sample">See a sample result</a></span></div>
       </div>
-      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20secure-supabase-edge-functions">Tell us</a>.</p>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 12 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20secure-supabase-edge-functions">Tell us</a>.</p>
       <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/user-metadata-vs-app-metadata" rel="prev"><span>Previous guide</span>user_metadata vs app_metadata: where to store roles in Supabase</a><a class="next" href="/learn/stripe-webhook-supabase-edge-function" rel="next"><span>Next guide</span>Verify Stripe webhook signatures in a Supabase Edge Function</a></nav>
     </article>
     <aside class="toc" aria-label="On this page">
