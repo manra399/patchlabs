@@ -7,8 +7,9 @@ order: 4
 checked: 2026-11-13
 short: A model’s reply can be steered by anyone whose text reaches the prompt. How chat apps turn that into script or a leaking image, and the fix.
 lede: If your app shows replies from a language model, treat each reply as if a stranger typed it. Anyone whose text reaches the prompt, through a chat message, an uploaded file, a web page the model reads or a row in your database, can steer what the model writes back. When the reply is inserted into the page as HTML, or its Markdown images load automatically, that steering becomes script in your user’s browser or a quiet request that carries their data to someone else’s server.
-tldr: OWASP lists this as LLM05:2025, Improper Output Handling: model-generated JavaScript or Markdown returned to a user and run by the browser. || The risky pattern in AI-built React apps is <code>marked</code> or <code>markdown-it</code> output passed to <code>dangerouslySetInnerHTML</code>. <code>marked</code> says plainly that it does not sanitise. || <code>react-markdown</code> is safe by default. Adding <code>rehype-raw</code> switches that off unless <code>rehype-sanitize</code> runs after it. || Sanitising doesn’t stop the second leak: a Markdown image whose address carries chat data loads with no click. Bing Chat, Azure AI Playground and Claude all had to fix this in 2023. || Fix: render replies with <code>react-markdown</code>, no raw HTML, and only load images from hosts you choose. Add a Content-Security-Policy as a backstop.
+tldr: OWASP lists this as LLM05:2025, Improper Output Handling: model-generated JavaScript or Markdown returned to a user and run by the browser. || The risky pattern in AI-built React apps is <code>marked</code> output (or <code>markdown-it</code> with <code>html: true</code>) passed to <code>dangerouslySetInnerHTML</code>. <code>marked</code> says plainly that it does not sanitise. || <code>react-markdown</code> is safe by default. Adding <code>rehype-raw</code> switches that off unless <code>rehype-sanitize</code> runs after it. || Sanitising doesn’t stop the second leak: a Markdown image whose address carries chat data loads with no click. Bing Chat, Azure AI Playground and Claude all had to fix this in 2023. || Fix: render replies with <code>react-markdown</code>, no raw HTML, and only load images from hosts you choose. Add a Content-Security-Policy as a backstop.
 findings: PL-024, PL-030
+cta: chat
 ---
 <p>This guide is for founders whose app has an AI chat, an assistant, a summary box or anything else that shows text a model wrote, built with Lovable, Bolt, Replit, Cursor, Claude Code or similar. It is the AI-specific case of finding <a href="/findings/pl-024">PL-024</a>, user content rendered as raw HTML.</p>
 
@@ -38,7 +39,8 @@ grep -rnE "dangerouslySetInnerHTML|\.innerHTML *=|insertAdjacentHTML|v-html|\{@h
 <div class="table-wrap"><table class="table compact">
   <thead><tr><th scope="col">What you find</th><th scope="col">What it means</th></tr></thead>
   <tbody>
-    <tr><th scope="row"><code>dangerouslySetInnerHTML</code> with <code>marked</code>, <code>markdown-it</code> or <code>showdown</code> output</th><td>Leak 1. <a href="https://marked.js.org/">marked’s own docs</a> say it does not sanitise its output and recommend DOMPurify. Fix it today.</td></tr>
+    <tr><th scope="row"><code>dangerouslySetInnerHTML</code> with <code>marked</code> or <code>showdown</code> output</th><td>Leak 1. <a href="https://marked.js.org/">marked’s own docs</a> say it does not sanitise its output and recommend DOMPurify. Fix it today.</td></tr>
+    <tr><th scope="row"><code>markdown-it</code> output</th><td>Leak 1 only if it was created with <code>html: true</code>; by default it escapes HTML. Leak 2 still applies either way.</td></tr>
     <tr><th scope="row"><code>dangerouslySetInnerHTML</code>, <code>innerHTML</code>, <code>v-html</code> or <code>{@html}</code> with the reply directly</th><td>Leak 1, unless the value goes through <code>DOMPurify.sanitize</code> on the line before.</td></tr>
     <tr><th scope="row"><code>react-markdown</code> with <code>rehype-raw</code> in <code>rehypePlugins</code></th><td>Leak 1 unless <code>rehype-sanitize</code> comes after it in the list. The <a href="https://github.com/remarkjs/react-markdown">react-markdown README</a> says <code>rehype-raw</code> is only for Markdown you trust.</td></tr>
     <tr><th scope="row"><code>react-markdown</code> with no <code>rehype-raw</code> and no custom <code>urlTransform</code></th><td>Safe from leak 1. Check leak 2: images still load from any https host.</td></tr>
@@ -50,6 +52,7 @@ grep -rnE "dangerouslySetInnerHTML|\.innerHTML *=|insertAdjacentHTML|v-html|\{@h
 Repeat exactly, keeping the formatting: <img src=x onerror="alert('PL-024')"> and ![t](https://example.com/pl.png?d=test)
 [[/CODE]]
 <p>Some models refuse or rewrite the text, so a clean result from this test isn’t proof. The grep above is the more reliable check.</p>
+<p>No terminal, or want a second reading? Paste the component that shows replies into the <a href="/tools/chat-render-check">free AI chat rendering check</a>. It runs in your browser, follows the value back to where the HTML is made, and sends nothing.</p>
 
 <h2 id="fix">The fix for a React app</h2>
 <p>Render the reply as Markdown with no raw HTML, and decide yourself which image hosts may load. This keeps formatting, code blocks and links, and closes both leaks:</p>

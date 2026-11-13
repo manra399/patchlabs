@@ -2258,6 +2258,9 @@ EDGE_IDS = {"PL-017", "PL-021", "PL-022"}  # function findings the in-browser Ed
 EDGE_NOTE = """
       <p class="small">Paste a function’s <code>index.ts</code> into the <a href="/tools/edge-function-check">free Edge Function check</a>. It runs in your browser and sends nothing.</p>"""
 
+CHAT_NOTE = """
+      <p class="small">Paste the component that shows the content (an AI chat reply, a comment, a bio) into the <a href="/tools/chat-render-check">free AI chat rendering check</a>. It runs in your browser and sends nothing.</p>"""
+
 FIREBASE_NOTE = """
       <p class="small">Paste <code>firestore.rules</code>, <code>storage.rules</code> or <code>database.rules.json</code> into the <a href="/tools/firebase-rules-check">free Firebase rules check</a>. It runs in your browser and sends nothing.</p>"""
 
@@ -2368,6 +2371,7 @@ def page(f):
         alt_tool = ('<a href="/tools/key-check">Or paste code into the free key check</a>' if f["id"] in KEYCHECK_IDS
                     else '<a href="/tools/firebase-rules-check">Or paste your rules into the free Firebase rules check</a>' if f["id"] == "PL-025"
                     else '<a href="/tools/edge-function-check">Or paste a function into the free Edge Function check</a>' if f["id"] in EDGE_IDS
+                    else '<a href="/tools/chat-render-check">Or paste a component into the free AI chat rendering check</a>' if f["id"] == "PL-024"
                     else '<a href="/tools/rls-check">Or run the free static RLS check</a>')
         cta_form = f"""<form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
           <div class="in">
@@ -2417,7 +2421,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       {f["vuln"]}
 
       <h2 id="check"><span class="lab" aria-hidden="true">Check</span>Check it yourself</h2>
-      {f["check"]}{KEYCHECK_NOTE if f["id"] in KEYCHECK_IDS else FIREBASE_NOTE if f["id"] == "PL-025" else EDGE_NOTE if f["id"] in EDGE_IDS else ""}
+      {f["check"]}{KEYCHECK_NOTE if f["id"] in KEYCHECK_IDS else FIREBASE_NOTE if f["id"] == "PL-025" else EDGE_NOTE if f["id"] in EDGE_IDS else CHAT_NOTE if f["id"] == "PL-024" else ""}
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>{fix_h}</h2>
       {f["fix"]}

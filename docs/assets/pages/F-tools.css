@@ -23,7 +23,7 @@
 .tool-card .tc-art b { color: var(--ink); font-weight: 700; }
 .tool-card .tc-art.tc-ill { white-space: normal; height: auto; padding: 18px 22px 10px; display: grid; place-items: center; }
 .tool-card .tc-art.tc-ill .ill { max-height: 220px; width: auto; max-width: 100%; }
-.tool-card .tc-art .r { color: var(--red); font-weight: 700; } .tool-card .tc-art .g { color: var(--green); font-weight: 700; } .tool-card .tc-art .d { color: var(--muted); }
+.tool-card .tc-art .r { color: var(--red); font-weight: 700; } .tool-card .tc-art .g { color: var(--green); font-weight: 700; } .tool-card .tc-art .d { color: var(--muted); } .tool-card .tc-art .a { color: var(--amber); font-weight: 700; }
 .tool-card .tc-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font: 500 12.5px var(--mono); color: var(--muted); }
 .tool-card.link:hover .link-arrow::after { transform: translateX(3px); }
 .t-ladder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; background: var(--card); }

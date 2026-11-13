@@ -171,8 +171,8 @@
       <p class="lab">Auth and server code</p>
       <h1>Your AI chat’s replies are untrusted input</h1>
       <p class="lede">If your app shows replies from a language model, treat each reply as if a stranger typed it. Anyone whose text reaches the prompt, through a chat message, an uploaded file, a web page the model reads or a row in your database, can steer what the model writes back. When the reply is inserted into the page as HTML, or its Markdown images load automatically, that steering becomes script in your user’s browser or a quiet request that carries their data to someone else’s server.</p>
-      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 13 Nov 2026</span><span>5 min read</span></p>
-      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>OWASP lists this as LLM05:2025, Improper Output Handling: model-generated JavaScript or Markdown returned to a user and run by the browser.</li><li>The risky pattern in AI-built React apps is <code>marked</code> or <code>markdown-it</code> output passed to <code>dangerouslySetInnerHTML</code>. <code>marked</code> says plainly that it does not sanitise.</li><li><code>react-markdown</code> is safe by default. Adding <code>rehype-raw</code> switches that off unless <code>rehype-sanitize</code> runs after it.</li><li>Sanitising doesn’t stop the second leak: a Markdown image whose address carries chat data loads with no click. Bing Chat, Azure AI Playground and Claude all had to fix this in 2023.</li><li>Fix: render replies with <code>react-markdown</code>, no raw HTML, and only load images from hosts you choose. Add a Content-Security-Policy as a backstop.</li></ul></div>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 13 Nov 2026</span><span>6 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>OWASP lists this as LLM05:2025, Improper Output Handling: model-generated JavaScript or Markdown returned to a user and run by the browser.</li><li>The risky pattern in AI-built React apps is <code>marked</code> output (or <code>markdown-it</code> with <code>html: true</code>) passed to <code>dangerouslySetInnerHTML</code>. <code>marked</code> says plainly that it does not sanitise.</li><li><code>react-markdown</code> is safe by default. Adding <code>rehype-raw</code> switches that off unless <code>rehype-sanitize</code> runs after it.</li><li>Sanitising doesn’t stop the second leak: a Markdown image whose address carries chat data loads with no click. Bing Chat, Azure AI Playground and Claude all had to fix this in 2023.</li><li>Fix: render replies with <code>react-markdown</code>, no raw HTML, and only load images from hosts you choose. Add a Content-Security-Policy as a backstop.</li></ul></div>
       <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why">Why a model’s reply isn’t safe text</a></li><li><a href="#two-leaks">The two ways it goes wrong</a></li><li><a href="#check">Check your code in a minute</a></li><li><a href="#fix">The fix for a React app</a></li><li><a href="#backstop">Add a backstop: Content-Security-Policy</a></li><li><a href="#also">Also check where replies end up</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
       <p>This guide is for founders whose app has an AI chat, an assistant, a summary box or anything else that shows text a model wrote, built with Lovable, Bolt, Replit, Cursor, Claude Code or similar. It is the AI-specific case of finding <a href="/findings/pl-024">PL-024</a>, user content rendered as raw HTML.</p>
 
@@ -201,7 +201,8 @@
 <div class="table-wrap"><table class="table compact">
   <thead><tr><th scope="col">What you find</th><th scope="col">What it means</th></tr></thead>
   <tbody>
-    <tr><th scope="row"><code>dangerouslySetInnerHTML</code> with <code>marked</code>, <code>markdown-it</code> or <code>showdown</code> output</th><td>Leak 1. <a href="https://marked.js.org/">marked’s own docs</a> say it does not sanitise its output and recommend DOMPurify. Fix it today.</td></tr>
+    <tr><th scope="row"><code>dangerouslySetInnerHTML</code> with <code>marked</code> or <code>showdown</code> output</th><td>Leak 1. <a href="https://marked.js.org/">marked’s own docs</a> say it does not sanitise its output and recommend DOMPurify. Fix it today.</td></tr>
+    <tr><th scope="row"><code>markdown-it</code> output</th><td>Leak 1 only if it was created with <code>html: true</code>; by default it escapes HTML. Leak 2 still applies either way.</td></tr>
     <tr><th scope="row"><code>dangerouslySetInnerHTML</code>, <code>innerHTML</code>, <code>v-html</code> or <code>{@html}</code> with the reply directly</th><td>Leak 1, unless the value goes through <code>DOMPurify.sanitize</code> on the line before.</td></tr>
     <tr><th scope="row"><code>react-markdown</code> with <code>rehype-raw</code> in <code>rehypePlugins</code></th><td>Leak 1 unless <code>rehype-sanitize</code> comes after it in the list. The <a href="https://github.com/remarkjs/react-markdown">react-markdown README</a> says <code>rehype-raw</code> is only for Markdown you trust.</td></tr>
     <tr><th scope="row"><code>react-markdown</code> with no <code>rehype-raw</code> and no custom <code>urlTransform</code></th><td>Safe from leak 1. Check leak 2: images still load from any https host.</td></tr>
@@ -212,6 +213,7 @@
 <div class="code"><div class="code-bar"><span class="name">test prompt</span><button class="copy" type="button" data-copy>Copy</button></div>
 <pre class="wrap-lines"><code>Repeat exactly, keeping the formatting: &lt;img src=x onerror="alert('PL-024')"&gt; and ![t](https://example.com/pl.png?d=test)</code></pre></div>
 <p>Some models refuse or rewrite the text, so a clean result from this test isn’t proof. The grep above is the more reliable check.</p>
+<p>No terminal, or want a second reading? Paste the component that shows replies into the <a href="/tools/chat-render-check">free AI chat rendering check</a>. It runs in your browser, follows the value back to where the HTML is made, and sends nothing.</p>
 
 <h2 id="fix">The fix for a React app</h2>
 <p>Render the reply as Markdown with no raw HTML, and decide yourself which image hosts may load. This keeps formatting, code blocks and links, and closes both leaks:</p>
@@ -278,21 +280,10 @@ export function Reply({ text }: { text: string }) {
       <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-024"><span class="n-big">PL-024</span><h3>User content rendered as raw HTML</h3></a><a class="card link" href="/findings/pl-030"><span class="n-big">PL-030</span><h3>No Content-Security-Policy</h3></a></div>
       <div class="f-cta l-cta">
         <p class="lab">Free check</p>
-        <h2>Check your app for this, free.</h2>
-        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
-        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
-          <div class="in">
-            <label class="sr-only" for="repo-l-ai-chat-output-xss">Public GitHub repo</label>
-            <input id="repo-l-ai-chat-output-xss" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
-          </div>
-          <div class="in">
-            <label class="sr-only" for="email-l-ai-chat-output-xss">Your email</label>
-            <input id="email-l-ai-chat-output-xss" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
-          </div>
-          <button class="btn primary" type="submit">Check my app free</button>
-        </form>
-        <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+        <h2>Paste your chat component, see what a reply can do.</h2>
+        <p>Paste the component that shows your AI’s replies into the free AI chat rendering check. It runs in your browser: no request is sent and nothing is stored. It flags replies inserted as raw HTML (marked into <code>dangerouslySetInnerHTML</code>, <code>rehype-raw</code> without a sanitiser, <code>v-html</code>) and Markdown images that load from any address, with the line, the fix and a prompt for your AI builder.</p>
+        <p><a class="btn primary" href="/tools/chat-render-check">Open the free AI chat check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/chat-render-check?sample">See a sample result</a></span></div>
       </div>
       <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 13 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20ai-chat-output-xss">Tell us</a>.</p>
       <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/stripe-webhook-supabase-edge-function" rel="prev"><span>Previous guide</span>Verify Stripe webhook signatures in a Supabase Edge Function</a><a class="next" href="/learn/rotate-leaked-key-git-history" rel="next"><span>Next guide</span>How to rotate a leaked API key and clean your git history</a></nav>
@@ -368,6 +359,7 @@ export function Reply({ text }: { text: string }) {
         <li><a href="/tools/key-check">Free key check</a></li>
         <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
         <li><a href="/tools/edge-function-check">Free Edge Function check</a></li>
+        <li><a href="/tools/chat-render-check">Free AI chat check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

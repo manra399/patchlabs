@@ -234,6 +234,7 @@ grep -rnE "dangerouslySetInnerHTML|\.innerHTML *=|insertAdjacentHTML|v-html" src
 <span class="c">#   &lt;img src=x onerror="alert(document.domain)"&gt;</span>
 <span class="c"># An alert box means user content runs as code.</span></code></pre>
 </div>
+      <p class="small">Paste the component that shows the content (an AI chat reply, a comment, a bio) into the <a href="/tools/chat-render-check">free AI chat rendering check</a>. It runs in your browser and sends nothing.</p>
 
       <h2 id="fix"><span class="lab" aria-hidden="true">Fix</span>The fix</h2>
       <div class="code">
@@ -255,7 +256,7 @@ export function Comment({ body }: { body: string }) {
   <div class="code-bar"><span class="name">Prompt for your AI builder</span><button class="copy" type="button" data-copy>Copy</button></div>
 <pre class="wrap-lines"><code>My app renders text that users wrote as raw HTML (for example with dangerouslySetInnerHTML, v-html or innerHTML), so it can run scripts in other users' browsers. Render user text as plain text instead. If formatting is needed, sanitise it with DOMPurify before rendering. Show me the exact change before you apply it, and don't change anything else.</code></pre>
 </div>
-      <p class="small">Then <a href="/#check">run the free check</a> on your repo again to confirm it’s gone.</p>
+      <p class="small">Then check again with the <a href="/tools/chat-render-check">free AI chat rendering check</a>, or <a href="/#check">run the full free check</a> on your repo.</p>
 
       <h2 id="proof"><span class="lab green" aria-hidden="true">Prove</span>How PatchLabs finds it</h2>
       <div class="window">
@@ -298,7 +299,7 @@ export function Comment({ body }: { body: string }) {
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/tools/rls-check">Or run the free static RLS check</a></span></div>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span><a href="/tools/chat-render-check">Or paste a component into the free AI chat rendering check</a></span></div>
       </div>
 
       <p class="small muted mt-4">Last reviewed 10 Nov 2026. Finding IDs are stable: link to them freely. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Finding%20PL-024">Tell us</a>.</p>
@@ -375,6 +376,7 @@ export function Comment({ body }: { body: string }) {
         <li><a href="/tools/key-check">Free key check</a></li>
         <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
         <li><a href="/tools/edge-function-check">Free Edge Function check</a></li>
+        <li><a href="/tools/chat-render-check">Free AI chat check</a></li>
         <li><a href="/status">Status</a></li>
       </ul></nav>
       <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>

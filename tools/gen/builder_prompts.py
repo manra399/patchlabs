@@ -57,6 +57,7 @@ RETEST_BY_ID = {
     "PL-017": ("/tools/edge-function-check", "free Edge Function check"),
     "PL-021": ("/tools/edge-function-check", "free Edge Function check"),
     "PL-022": ("/tools/edge-function-check", "free Edge Function check"),
+    "PL-024": ("/tools/chat-render-check", "free AI chat rendering check"),
     "PL-025": ("/tools/firebase-rules-check", "free Firebase rules check"),
 }
 
