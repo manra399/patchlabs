@@ -1,0 +1,168 @@
+title: Supabase SECURITY DEFINER functions: when rpc() skips RLS
+description: Why a security definer function in Supabase bypasses row level security and is callable by anyone by default, how to find them, and the grants that close it.
+h1: Supabase SECURITY DEFINER functions: when rpc() skips RLS
+navtitle: SECURITY DEFINER functions
+topic: supabase
+order: 9
+short: Why a definer function ignores your policies, is callable by visitors by default, and the two revokes that fix it.
+lede: A <code>security definer</code> function runs with the rights of the role that created it, which in Supabase is usually a role that RLS doesn’t apply to. Postgres lets everyone execute a new function, Supabase also grants it to <code>anon</code>, and every function in <code>public</code> is served at <code>/rest/v1/rpc/&lt;name&gt;</code>. Put together, one helper written for a policy or an AI-generated migration can hand any visitor rows your policies were built to hide.
+tldr: Postgres grants <code>EXECUTE</code> on new functions to <code>PUBLIC</code>, and Supabase also grants new functions in <code>public</code> to <code>anon</code> and <code>authenticated</code>. || So <code>revoke … from anon</code> alone leaves the <code>PUBLIC</code> grant, and <code>revoke … from public</code> alone leaves the <code>anon</code> grant. Revoke both. || Pin the search path: <code>set search_path = ''</code> and schema-qualify every name inside. || Better still: switch to <code>security invoker</code>, or move helpers to a schema the API doesn’t expose.
+findings: PL-006, PL-013
+checked: 2026-11-13
+---
+<h2 id="problem">The problem in one example</h2>
+<p>An AI builder was asked to “show the seller’s email on the order page”. The <code>auth.users</code> table isn’t readable through the API, so it wrote a function that is:</p>
+[[CODE supabase/migrations/…_seller_email.sql]]
+create or replace function public.get_user_email(uid uuid)
+returns text
+language sql
+security definer
+as $$
+  select email from auth.users where id = uid;
+$$;
+[[/CODE]]
+<p>The order page works. So does this, from any browser, with the public key that ships in your frontend and no sign-in:</p>
+[[CODE any visitor]]
+curl -X POST 'https://<project>.supabase.co/rest/v1/rpc/get_user_email' \
+  -H 'apikey: <your public anon key>' \
+  -H 'Content-Type: application/json' \
+  -d '{"uid": "<any user id>"}'
+[[/CODE]]
+<p>User ids are not secrets: they appear in URLs, in other tables’ rows and in Realtime messages. Anyone who collects them can now turn each one into an email address.</p>
+
+<h2 id="why">Why it skips RLS and why anyone can call it</h2>
+<p>Three defaults line up:</p>
+<ol>
+  <li><strong>Definer rights.</strong> A <code>security definer</code> function runs as its owner. Migrations and the SQL editor run as <code>postgres</code>, which owns your tables and isn’t subject to their row level security, so the function sees every row. Supabase’s advisor puts it plainly: security definer bypasses RLS.</li>
+  <li><strong>Everyone can execute it.</strong> Postgres grants <code>EXECUTE</code> on every new function to <code>PUBLIC</code>, which means every role. Supabase additionally grants new functions in <code>public</code> to <code>anon</code>, <code>authenticated</code> and <code>service_role</code> through default privileges.</li>
+  <li><strong>The API serves it.</strong> Functions in an exposed schema (by default <code>public</code>) are callable at <code>/rest/v1/rpc/&lt;name&gt;</code>, and <code>supabase.rpc('name', args)</code> in your frontend is the same call.</li>
+</ol>
+<p>A <code>security invoker</code> function (the default when you write neither) is fine on all three counts: it runs as the caller, so the caller’s policies apply to every table it reads.</p>
+<h3 id="search-path">The second problem: a search path anyone can shadow</h3>
+<p>Inside a function, an unqualified name like <code>profiles</code> is looked up along the <code>search_path</code>. The PostgreSQL manual warns that a definer function whose path includes a schema untrusted users can write to, notably the temporary schema, which is searched first by default, can be made to use a look-alike table or function. Supabase reports functions with no fixed path as lint <code>0011 function_search_path_mutable</code>.</p>
+
+<h2 id="find">Find definer functions anyone can call</h2>
+<p>Run this in the SQL editor. It lists every definer function in <code>public</code>, who can execute it, and whether its search path is pinned:</p>
+[[CODE find-definer-functions.sql]]
+select p.oid::regprocedure as function,
+       has_function_privilege('anon', p.oid, 'execute')          as visitors_can_call,
+       has_function_privilege('authenticated', p.oid, 'execute') as signed_in_can_call,
+       coalesce(array_to_string(p.proconfig, ', '), 'not set')    as settings,
+       p.prorettype = 'trigger'::regtype                          as is_trigger
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.prosecdef
+order by visitors_can_call desc, signed_in_can_call desc;
+[[/CODE]]
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">What you see</th><th scope="col">What it means</th></tr></thead>
+<tbody>
+<tr><td><code>visitors_can_call</code> true</td><td>Anyone with your public key can run it. Read the body: if it returns or changes data for an id passed in, that is a leak. High.</td></tr>
+<tr><td><code>signed_in_can_call</code> true only</td><td>Anyone who signs up can run it. With open sign-ups that is nearly the same as anyone. Read the body the same way.</td></tr>
+<tr><td><code>settings</code> has no <code>search_path=</code></td><td>The path isn’t pinned. Fix it even if the grants are right.</td></tr>
+<tr><td><code>is_trigger</code> true</td><td>A trigger function. The API can’t call it directly, so the grants don’t matter; still pin the path.</td></tr>
+</tbody></table></div>
+<p>Supabase’s Security Advisor reports the same functions as <code>0028 anon_security_definer_function_executable</code> and <code>0029 authenticated_security_definer_function_executable</code>. Then confirm what a visitor gets, inside a transaction that changes nothing:</p>
+[[CODE call-as-anon.sql]]
+begin;
+set local role anon;
+select public.get_user_email('00000000-0000-0000-0000-000000000000');
+-- "permission denied for function get_user_email" means visitors are locked out.
+-- A result (even null) means they can call it.
+rollback;
+[[/CODE]]
+
+<h2 id="fix">The fix</h2>
+<p>Ask first whether the function needs owner rights at all. Most AI-written definer functions don’t; they were made definer to get past a “permission denied” during development. In order of preference:</p>
+<h3 id="invoker">1. Make it run as the caller</h3>
+[[CODE supabase/migrations/…_invoker.sql]]
+alter function public.get_order_totals(uuid) security invoker;
+[[/CODE]]
+<p>Now the function only sees rows the caller’s policies allow. If it then returns nothing for a legitimate user, the gap is in your policies, and that is where it should be fixed.</p>
+<h3 id="narrow">2. If it must be definer: narrow it to the caller, pin the path, grant it on purpose</h3>
+<p>Take the user from <code>auth.uid()</code> inside the function instead of trusting an id in the arguments, and set the grants in the same migration that creates it:</p>
+[[CODE supabase/migrations/…_fix_seller_email.sql]]
+drop function if exists public.get_user_email(uuid);
+
+create or replace function public.get_my_seller_email(order_id bigint)
+returns text
+language sql
+security definer
+set search_path = ''
+as $$
+  select u.email
+  from public.orders o
+  join auth.users u on u.id = o.seller_id
+  where o.id = order_id
+    and o.buyer_id = (select auth.uid());   -- only the buyer of this order
+$$;
+
+revoke execute on function public.get_my_seller_email(bigint) from public, anon;
+grant execute on function public.get_my_seller_email(bigint) to authenticated;
+[[/CODE]]
+<div class="callout"><p><strong>Revoke from both.</strong> <code>revoke … from anon</code> alone leaves the <code>PUBLIC</code> grant, which <code>anon</code> inherits. <code>revoke … from public</code> alone leaves the direct grant Supabase gave <code>anon</code>. The call test above tells you which one you missed.</p></div>
+<p>With <code>search_path = ''</code>, every table and function in the body must be schema-qualified (<code>public.orders</code>, <code>auth.users</code>). Built-ins like <code>now()</code> still work, because <code>pg_catalog</code> is always searched.</p>
+<h3 id="private">3. Helpers used only by policies: move them out of the API</h3>
+<p>A definer helper such as <code>is_admin()</code> or <code>has_role()</code>, written to avoid recursive policies, doesn’t need to be callable through <code>/rpc</code> at all. Put it in a schema the API doesn’t expose:</p>
+[[CODE supabase/migrations/…_private_helpers.sql]]
+create schema if not exists private;
+
+create or replace function private.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = (select auth.uid()) and role = 'admin'
+  );
+$$;
+
+revoke execute on function private.is_admin() from public, anon;
+grant usage on schema private to authenticated;
+grant execute on function private.is_admin() to authenticated;
+-- Policies call it as (select private.is_admin()).
+[[/CODE]]
+<p>Policies run as the caller, so the caller still needs <code>execute</code> on the helper and <code>usage</code> on the schema; what changes is that the API no longer serves it.</p>
+
+<h2 id="defaults">Stop the next one</h2>
+<p>New functions keep getting the default grants. If your app calls few functions from the browser, flip the default so each one is granted on purpose:</p>
+[[CODE supabase/migrations/…_function_defaults.sql]]
+-- 1. Remove the PUBLIC default. It is global, so this line has no "in schema".
+alter default privileges revoke execute on functions from public;
+-- 2. Remove Supabase's schema-level grant to visitors.
+alter default privileges in schema public revoke execute on functions from anon;
+[[/CODE]]
+<div class="callout"><p><strong>You need both lines.</strong> The one-line version you will often see, <code>alter default privileges in schema public revoke execute on functions from anon, public;</code>, does not stop visitors. Postgres adds schema-level defaults on top of the global ones and can’t take a global grant away inside a schema, so new functions still reach <code>anon</code> through <code>PUBLIC</code>. We tested both forms on Postgres 18 on 13 Nov 2026: with the one-liner a new function was still callable as <code>anon</code>; with the two lines above it wasn’t.</p></div>
+<p>Default privileges are per creating role: run them as the same role your migrations use (normally <code>postgres</code>). They don’t touch existing functions, so after it, grant the ones your frontend calls to <code>authenticated</code> (or <code>anon</code> where visitors genuinely need them), and test the app’s sign-in and logged-out flows.</p>
+<p>If an AI builder writes your migrations, give it the rule up front:</p>
+[[CODE prompt for your AI builder]]
+For every Postgres function you create in Supabase:
+- Use SECURITY INVOKER unless owner rights are essential; say why if not.
+- Add SET search_path = '' and schema-qualify every table and function.
+- Never take a user id as an argument to decide whose data to return;
+  use (select auth.uid()) inside the function.
+- In the same migration, REVOKE EXECUTE ... FROM public, anon, then GRANT
+  EXECUTE only to the roles that call it.
+- Helpers used only inside RLS policies go in a "private" schema.
+[[/CODE]]
+
+<h2 id="intended">When a definer function is the right tool</h2>
+<p>Owner rights are the correct choice in a few common places, and they are safe when the path is pinned and the grants are narrow:</p>
+<ul>
+  <li>a policy helper that returns only true or false about the caller, kept in a private schema as above;</li>
+  <li>the trigger that creates a <code>profiles</code> row when someone signs up (trigger functions can’t be called through <code>/rpc</code>);</li>
+  <li>a deliberate public summary, such as a count of listings per city, that returns only data meant for everyone. Leave a comment in the migration saying so, because the advisor will keep flagging it and the next edit needs to know it was a decision.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY">PostgreSQL: CREATE FUNCTION, Writing SECURITY DEFINER Functions Safely</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/ddl-priv.html">PostgreSQL: Privileges (default EXECUTE for PUBLIC)</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/database-advisors">Supabase: database advisors (lints 0011, 0028, 0029)</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/functions">Supabase: database functions</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/sql-alterdefaultprivileges.html">PostgreSQL: ALTER DEFAULT PRIVILEGES (per-schema defaults add to global ones)</a></li>
+</ul>

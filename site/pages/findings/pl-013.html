@@ -186,7 +186,7 @@ grant update (full_name, avatar_url) on public.profiles to authenticated;</code>
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-004"><span class="n-big">PL-004</span><h3>UPDATE policy missing WITH CHECK</h3><p class="small">Users may edit their own row, and nothing stops them changing its role, plan or owner.</p></a><a class="card link" href="/findings/pl-019"><span class="n-big">PL-019</span><h3>Access decided by user_metadata, which users can edit</h3><p class="small">Roles stored where users can rewrite them. One call from the browser and they're an admin.</p></a><a class="card link" href="/findings/pl-020"><span class="n-big">PL-020</span><h3>Admin check only in the browser</h3><p class="small">The admin page is hidden in the app, but nothing stops a normal user asking the database for the same data.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/supabase-security-definer-functions">Supabase SECURITY DEFINER functions: when rpc() skips RLS</a></li><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>
