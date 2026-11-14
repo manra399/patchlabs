@@ -487,6 +487,9 @@ a.cap-row:hover { background: var(--bg-2); }
 .h4-hero .lede { margin: 0 auto 34px; max-width: 38em; font-size: clamp(17px, 1.5vw, 20px); }
 .h4-hero .repo-form { margin: 0 auto; max-width: 720px; text-align: left; box-shadow: 0 1px 2px rgba(21,23,27,.05), 0 18px 40px -22px color-mix(in srgb, var(--brand) 55%, transparent); }
 .h4-hero .form-meta { justify-content: center; }
+.h4-agency { margin-top: 14px; font-size: 14.5px; color: var(--muted); text-align: center; }
+.h4-agency a { color: var(--brand); font-weight: 600; text-decoration: none; }
+.h4-agency a:hover { text-decoration: underline; }
 .h4-stage { position: relative; margin: 64px auto 0; max-width: 1240px; border-radius: 28px; padding: clamp(16px, 3vw, 40px) clamp(8px, 2vw, 28px);
   background: linear-gradient(180deg, color-mix(in srgb, var(--card) 85%, transparent), color-mix(in srgb, var(--bg-2) 70%, transparent));
   border: 1px solid var(--line); box-shadow: 0 40px 100px -60px color-mix(in srgb, var(--brand) 60%, transparent); overflow: hidden; }

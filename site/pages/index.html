@@ -1,6 +1,6 @@
 <!--
-title: PatchLabs: independent security checks for AI-built apps
-description: Independent checks for Lovable, Supabase, Bolt and Replit apps: we rebuild your database, prove each leak, then prove the fix. Free for one app.
+title: PatchLabs: is your AI-built app leaking? Checked, fixed, and a report to show
+description: For founders and agencies with Lovable, Supabase, Bolt or Replit apps: we find out who can read your users' data, fix it, and give you a plain-English report for your client or investor. Free in early access.
 layout: marketing
 nav: home
 head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://patchlabs.dev/#org","name":"PatchLabs","url":"https://patchlabs.dev","logo":"https://patchlabs.dev/assets/favicon.svg","email":"manraj@patchlabs.dev","description":"Independent app verification for apps built with Lovable, Supabase, Bolt, Replit or Cursor: rebuilds the database in a throwaway copy, reproduces each leak, and proves the fix before the client's engineer approves it.","founder":{"@type":"Person","name":"Manraj Singh Dhillon"},"address":{"@type":"PostalAddress","addressLocality":"London","addressCountry":"GB"},"sameAs":["https://www.linkedin.com/company/patchlabsdev","https://github.com/manra399/patchlabs","https://github.com/manra399/patchlabs-cli","https://registry.modelcontextprotocol.io/v0/servers?search=dev.patchlabs"],"knowsAbout":["Supabase row level security","Lovable app security","AI-built app security","leaked API keys in git history","security headers"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"PatchLabs","applicationCategory":"SecurityApplication","operatingSystem":"Web","url":"https://patchlabs.dev","publisher":{"@id":"https://patchlabs.dev/#org"},"description":"Finds data leaks in apps built with AI app builders by rebuilding the database from its migrations and testing it as an anonymous visitor, a signed-in stranger and the owner, then writes a fix and proves it.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"GBP","description":"Early access: free for the first 1,000 users, approved fixes included"},{"@type":"Offer","name":"Maker","price":"19","priceCurrency":"GBP","description":"3 apps, per month, approved fixes included"},{"@type":"Offer","name":"Agency","price":"99","priceCurrency":"GBP","description":"10 apps, per month, approved fixes included"}]}</script>
@@ -11,9 +11,9 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
 <section class="h4-hero" id="check">
   <div class="wrap">
     <div class="h4-copy">
-      <a class="h4-pill" href="/learn/ai-builder-scan-vs-independent-check"><span class="dot" aria-hidden="true"></span>Independent app verification<span class="sep" aria-hidden="true">·</span><span class="more">Why a second check matters →</span></a>
-      <h1>Find the <em class="r">leak</em>. Prove the <em class="g">fix</em>.</h1>
-      <p class="lede">The independent security check for apps built with Lovable, Supabase, Bolt and Replit. We rebuild your database in a throwaway copy, find out who can read your users’ data, then prove the fix before your engineer approves it.</p>
+      <a class="h4-pill" href="/sample-report"><span class="dot" aria-hidden="true"></span>For founders and agencies<span class="sep" aria-hidden="true">·</span><span class="more">See a sample report →</span></a>
+      <h1>Is your app <em class="r">leaking</em>? Get it <em class="g">fixed</em>.</h1>
+      <p class="lede">For apps built with Lovable, Supabase, Bolt or Replit, and the agencies that build them. We find out who can read your users’ data, write the fix and test it, and hand you a plain-English report you can show your client or investor. No security team needed.</p>
       <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
         <div class="in">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -31,9 +31,10 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
       <noscript><p class="small muted mt-1">Without JavaScript this form opens your email app with the repo and email filled in, and we start the check by hand.</p></noscript>
       <div class="form-meta">
         <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Free in early access, fixes included</span>
-        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Reads your public repo only</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>A report in plain English</span>
         <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Never touches your database</span>
       </div>
+      <p class="h4-agency">Build apps for clients? <a href="/solutions/agencies">One monthly report for every client app →</a></p>
     </div>
     <div class="h4-stage" data-reveal>
       <div class="h4-stage-art h4-wide">{{svg:hero-lab}}</div>
@@ -66,7 +67,7 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
     <div class="h4-head">
       <p class="lab">How it works</p>
       <h2 id="how6-h">From your repo to a signed receipt, <em>in six steps</em>.</h2>
-      <p>Nothing touches your live app. Your engineer decides what ships.</p>
+      <p>Reads your public repo only. Nothing touches your live app, and your engineer (or your agency) decides what ships.</p>
     </div>
     <div class="how6-art how6-wide" data-reveal>{{svg:pipeline}}</div>
     <div class="how6-art how6-tall">{{svg:pipeline-v}}</div>
