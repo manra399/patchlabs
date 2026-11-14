@@ -1,0 +1,205 @@
+<!--
+title: Lovable apps expose data: the Crissy Field study, and how to check your own app | PatchLabs
+description: A November 2026 study found 24,664 Lovable sites sending Supabase records to visitors who were not logged in. What it measured, why Supabase’s 30 October change doesn’t fix it, and one tested SQL query to check your own app.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"24,664 Lovable sites sent data without a login. Is yours one of them?","description":"A November 2026 study found 24,664 Lovable sites sending Supabase records to visitors who were not logged in. What it measured, why Supabase’s 30 October change doesn’t fix it, and one tested SQL query to check your own app.","datePublished":"2026-11-14","dateModified":"2026-11-14","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/lovable-apps-expose-data-study"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"24,664 Lovable sites sent data without a login. Is yours one of them?","item":"https://patchlabs.dev/learn/lovable-apps-expose-data-study"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study" aria-current="page">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">The Lovable data study (Nov 2026)</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>24,664 Lovable sites sent data without a login. Is yours one of them?</h1>
+      <p class="lede">Run the query below in your Supabase SQL editor. It lists every table and view that a visitor who is not logged in can read, and flags the ones with email, phone or address columns. Those are the tables the Crissy Field study counted. If the list is empty, or shows only things you mean to publish, like a product catalogue, your app isn’t one of the sites the study describes.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 14 Nov 2026</span><span>6 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Crissy Field and Handelsblatt looked at 159,041 Lovable projects in Common Crawl. 34,545 used Supabase, and 24,664 sent database records to visitors who weren’t logged in. In 7,403 of those (30%), the records included email addresses.</li><li>The authors say 30% is not a confirmed leak rate, because some tables are meant to be public. Our own lab study of 318 apps, built a different way, came out close: 33% raw, about 25–28% after false alarms.</li><li>Supabase’s change on 30 October 2026 only affects new tables. Tables that already existed keep their access, so apps already live are not fixed by it.</li><li>One SQL query, tested on Postgres 17 and 18, shows what a logged-out visitor can read. Fix each row with RLS, a policy, or a revoke, then check again.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#what-it-found">What did the study measure?</a></li><li><a href="#our-numbers">Does it match other research?</a></li><li><a href="#why">Why does a Lovable app send data to strangers?</a></li><li><a href="#supabase-change">Didn’t Supabase fix this on 30 October?</a></li><li><a href="#lovable-scan">What about Lovable’s security scan?</a></li><li><a href="#check">How do I check my own app? (2 minutes)</a></li><li><a href="#fix">How do I fix a table it lists?</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for people who built an app with Lovable (or any builder that uses Supabase) and saw the study on Hacker News or in Handelsblatt. The study’s figures come from the <a href="https://crissyfield.de/research/lovable-en/">Crissy Field report</a>. Supabase’s and Lovable’s positions come from their own changelogs and docs, linked at the end. Every check here runs on your own project. Don’t point it at anyone else’s app.</p>
+
+<h2 id="what-it-found">What did the study measure?</h2>
+<div class="table-wrap"><table class="table compact l-wrap">
+  <thead><tr><th scope="col">Count</th><th scope="col">What was counted</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">159,041</th><td><strong>Lovable projects found.</strong> Sites in Common Crawl, the open web archive, from December 2025 to September 2026</td></tr>
+    <tr><th scope="row">34,545</th><td><strong>Used Supabase.</strong> The page loaded data from a Supabase project</td></tr>
+    <tr><th scope="row">24,664</th><td><strong>Sent records without a login.</strong> A visitor who wasn’t logged in received rows from the database</td></tr>
+    <tr><th scope="row">7,403 (30%)</th><td><strong>Records included email addresses.</strong> Email-looking values in 10,560 tables across these sites</td></tr>
+  </tbody>
+</table></div>
+<p>The authors say plainly that 30% “should not be read as a confirmed data leak rate”, and that a Common Crawl sample doesn’t represent every Lovable app. Some sites are meant to show emails, such as a business’s own contact address. The cases the report describes go well beyond that: a forum with more than 80,000 profiles and 200,000 chat messages, sales records, and over 1,000 identity-document records.</p>
+
+<h2 id="our-numbers">Does it match other research?</h2>
+<p>It does, which is the uncomfortable part. Our <a href="/research/1-in-4">lab study</a> took the opposite route. We didn’t look at live sites at all. We rebuilt 318 public Lovable and Supabase apps from their own migration files in a lab database, then tested what a visitor and a signed-in stranger could read.</p>
+<div class="table-wrap"><table class="table compact l-wrap">
+  <thead><tr><th scope="col"></th><th scope="col">Crissy Field and PatchLabs, both Nov 2026</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Source</th><td><strong>Crissy Field:</strong> Live sites in Common Crawl<br><strong>PatchLabs lab:</strong> Public repos, rebuilt from migrations</td></tr>
+    <tr><th scope="row">Who was tested</th><td><strong>Crissy Field:</strong> A visitor who isn’t logged in<br><strong>PatchLabs lab:</strong> A visitor, and a stranger who signs up</td></tr>
+    <tr><th scope="row">Signal</th><td><strong>Crissy Field:</strong> Email addresses in returned records<br><strong>PatchLabs lab:</strong> Personal data readable by the wrong person</td></tr>
+    <tr><th scope="row">Rate</th><td><strong>Crissy Field:</strong> 30% of sites sending records<br><strong>PatchLabs lab:</strong> 33% raw, about 25–28% after false alarms</td></tr>
+  </tbody>
+</table></div>
+<p>Two different methods, two different samples, and both land at roughly one app in four or worse. So this isn’t one researcher’s quirk. It’s what happens when an app reads its database straight from the browser and a table’s rules aren’t set.</p>
+
+<h2 id="why">Why does a Lovable app send data to strangers?</h2>
+<p>Your app’s browser code talks to Supabase directly, using the public anon key. That key is meant to be public (see <a href="/learn/is-supabase-anon-key-safe">is the Supabase anon key safe?</a>). What protects the data is three things on each table, checked in this order:</p>
+<ol>
+  <li><strong>Grant.</strong> Can the <code>anon</code> role reach the table at all? Until recently every table in <code>public</code> got this automatically.</li>
+  <li><strong>Row level security.</strong> Is RLS on? If it’s off, a grant means every row.</li>
+  <li><strong>Policies.</strong> If RLS is on, which rows does a policy allow? A policy of <code>using (true)</code> for anon means every row again.</li>
+</ol>
+<p>Views are a fourth way in. A normal view runs as its owner, so it skips the RLS on the tables under it, unless it was created with <code>security_invoker</code> (see <a href="/learn/supabase-views-security-invoker">views and security_invoker</a>).</p>
+
+<h2 id="supabase-change">Didn’t Supabase fix this on 30 October?</h2>
+<p>Only for new tables. Supabase’s <a href="https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically">breaking-change notice</a> says that from 30 October 2026, new tables in existing projects are no longer exposed to the Data API until you grant access. (New projects have worked this way since 30 May.) But it also says existing tables “keep their current grants and stay reachable”. Every site in the study was crawled before September, so their tables are existing tables. The change doesn’t touch them.</p>
+<p>There’s a second catch. When a new table doesn’t work in your app, the quickest fix an AI builder can write is <code>grant select on … to anon</code>. That brings back exactly the access the change took away, and RLS still has to be on with a real policy behind it.</p>
+
+<h2 id="lovable-scan">What about Lovable’s security scan?</h2>
+<p>Lovable’s <a href="https://docs.lovable.dev/features/security">security docs</a> describe a Quick scan that runs on every publish and flags things like tables without RLS, and a Deep scan you start yourself. Findings can be fixed with “Try to fix all”, using a small daily allowance of free fixes. Auto-fix is opt-in, and a setting to block publishing while critical findings are open is off by default. On 12 November Lovable added a review of critical findings before publishing.</p>
+<p>Run it, it’s free. But it looks for missing RLS. A table with RLS on and a <code>using (true)</code> policy, or a view that skips RLS, needs the check below as well. Lovable’s own docs say the scans can’t guarantee complete security.</p>
+
+<h2 id="check">How do I check my own app? (2 minutes)</h2>
+<p>Open your project in the Supabase dashboard, go to the SQL editor, and run this. It reads only the database catalog, not your data, and changes nothing.</p>
+<div class="code"><div class="code-bar"><span class="name">what-a-visitor-can-read.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Which tables and views would hand rows to a visitor who is not logged in?</span>
+with rel as (
+  select c.oid, c.relname, c.relkind, c.relrowsecurity as rls,
+         coalesce(c.reloptions, '{}') as opts
+  from pg_class c join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public' and c.relkind in ('r','v','m','p')
+),
+open_policy as (
+  select tablename, string_agg(policyname, ', ') as names
+  from pg_policies
+  where schemaname = 'public' and cmd in ('SELECT','ALL')
+    and roles &amp;&amp; array['anon','public']::name[] and qual = 'true'
+  group by tablename
+)
+select r.relname as name,
+       case r.relkind when 'v' then 'view' when 'm' then 'matview' else 'table' end as kind,
+       case
+         when r.relkind = 'm' then 'materialized view: RLS never applies'
+         when r.relkind = 'v' then 'view runs as its owner, so RLS on the tables under it is skipped'
+         when not r.rls then 'RLS is off'
+         else 'a policy allows every row: ' || p.names
+       end as why,
+       (select string_agg(a.attname, ', ') from pg_attribute a
+         where a.attrelid = r.oid and a.attnum &gt; 0 and not a.attisdropped
+           and a.attname ~* '(e_?mail|phone|passport|address|birth|iban|ssn|national_id)') as personal_columns
+from rel r left join open_policy p on p.tablename = r.relname
+where has_table_privilege('anon', r.oid, 'SELECT')
+  and ( r.relkind = 'm'
+     or (r.relkind = 'v' and not (opts &amp;&amp; array['security_invoker=true','security_invoker=on']))
+     or (r.relkind in ('r','p') and not r.rls)
+     or p.names is not null )
+order by 4 nulls last, 1;</code></pre></div>
+<p>We tested it on Postgres 17 (what Supabase runs) and 18, against a database with one table of each kind. It listed exactly the tables and views that a real query as <code>anon</code> could read, and left out the safe ones: RLS on with owner-only policies, RLS on with no policies, the grant revoked, and a <code>security_invoker</code> view.</p>
+
+<h3 id="reading">How do I read the result?</h3>
+<div class="table-wrap"><table class="table compact l-wrap">
+  <thead><tr><th scope="col">You see</th><th scope="col">What it means, and what to do</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">No rows</th><td>No table or view hands every row to a logged-out visitor.<br><strong>Do:</strong> Run it again after each new table. Then test signed-in strangers (below).</td></tr>
+    <tr><th scope="row">A row with no personal-looking columns</th><td>Readable by anyone. Fine if it’s meant to be, like products or blog posts.<br><strong>Do:</strong> Make sure nothing private gets added to it later</td></tr>
+    <tr><th scope="row">“RLS is off” with personal columns</th><td>Anyone with your public key can read every row.<br><strong>Do:</strong> Turn RLS on and add owner-only policies (see <a href="/learn/rls-policies-explained">RLS policies explained</a>)</td></tr>
+    <tr><th scope="row">“a policy allows every row”</th><td>RLS is on, but the policy allows everything.<br><strong>Do:</strong> Replace <code>using (true)</code> with a rule tied to the user, like <code>auth.uid() = user_id</code></td></tr>
+    <tr><th scope="row">A view</th><td>The view bypasses the RLS on its tables.<br><strong>Do:</strong> <code>alter view … set (security_invoker = true);</code> or revoke anon’s access to the view</td></tr>
+  </tbody>
+</table></div>
+<p>Two limits, so you know what this query doesn’t see. It only flags policies that allow everything. A policy with a condition, like <code>status = 'published'</code>, still deserves a read. And it only covers logged-out visitors. To check what a stranger who signs up can see, change <code>'anon'</code> to <code>'authenticated'</code> in both places and look again. In our lab study, 36 of the 106 leaking apps leaked only to signed-in strangers.</p>
+
+<h2 id="fix">How do I fix a table it lists?</h2>
+<p>For a table that holds user data, in the SQL editor:</p>
+<div class="code"><div class="code-bar"><span class="name">fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- Turn row level security on (with no policy, nobody can read it through the API)</span>
+alter table public.signups enable row level security;
+
+<span class="c">-- Then let each signed-in user read only their own rows</span>
+create policy "own rows" on public.signups
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+
+<span class="c">-- If logged-out visitors never need this table, remove their access entirely</span>
+revoke all on public.signups from anon;</code></pre></div>
+<p>Use your own table and column names. If your app breaks afterwards, that tells you which screen was reading data it shouldn’t have. Fix the screen, don’t loosen the rule. If you’re building in Lovable, you can paste the query result into the chat and ask it to make these changes, then run the query again to confirm the rows have gone.</p>
+<p>If a table did contain personal data that strangers could read, assume it may have been copied. The <a href="/learn/first-hour-after-a-leak">first hour after a leak</a> covers what to note down and who to tell.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://crissyfield.de/research/lovable-en/">Crissy Field: Lovable, many apps built on the platform expose sensitive data</a> (Nov 2026; cites Handelsblatt, 2 Nov 2026)</li>
+  <li><a href="https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically">Supabase: tables not exposed to the Data and GraphQL API automatically</a> (28 Apr 2026; existing projects from 30 Oct 2026)</li>
+  <li><a href="https://supabase.com/docs/guides/database/tables">Supabase: tables</a> (the Table Editor turns RLS on for you; SQL doesn’t)</li>
+  <li><a href="https://docs.lovable.dev/features/security">Lovable: security</a> and the <a href="https://docs.lovable.dev/changelog">Lovable changelog</a> (12 Nov 2026 entry)</li>
+  <li><a href="/research/methodology">PatchLabs lab study: method</a> (318 apps, Nov 2026)</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a><a class="card link" href="/findings/pl-008"><span class="n-big">PL-008</span><h3>Row level security not enabled</h3></a><a class="card link" href="/findings/pl-003"><span class="n-big">PL-003</span><h3>RLS enabled but no policies (owner locked out)</h3></a><a class="card link" href="/findings/pl-005"><span class="n-big">PL-005</span><h3>Always-true policy</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-lovable-apps-expos">Public GitHub repo</label>
+            <input id="repo-l-lovable-apps-expos" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-lovable-apps-expos">Your email</label>
+            <input id="email-l-lovable-apps-expos" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 14 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20lovable-apps-expose-data-study">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/secure-lovable-supabase-app" rel="prev"><span>Previous guide</span>How to secure a Lovable app’s Supabase database</a><a class="next" href="/learn/rls-policies-explained" rel="next"><span>Next guide</span>Supabase RLS policies explained, with owner and stranger tests</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what-it-found">What did the study measure?</a></li><li><a href="#our-numbers">Does it match other research?</a></li><li><a href="#why">Why does a Lovable app send data to strangers?</a></li><li><a href="#supabase-change">Didn’t Supabase fix this on 30 October?</a></li><li><a href="#lovable-scan">What about Lovable’s security scan?</a></li><li><a href="#check">How do I check my own app? (2 minutes)</a></li><li><a href="#fix">How do I fix a table it lists?</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
