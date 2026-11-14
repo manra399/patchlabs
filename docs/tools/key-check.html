@@ -6,12 +6,12 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Free key check: is my Supabase key anon or service_role? | PatchLabs</title>
-<meta name="description" content="Paste code, a .env file or a built JS bundle. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.">
+<meta name="description" content="Paste code, a .env file, a built JS bundle or a Claude Code settings file. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.">
 <link rel="canonical" href="https://patchlabs.dev/tools/key-check">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PatchLabs">
 <meta property="og:title" content="Free key check: is my Supabase key anon or service_role? | PatchLabs">
-<meta property="og:description" content="Paste code, a .env file or a built JS bundle. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.">
+<meta property="og:description" content="Paste code, a .env file, a built JS bundle or a Claude Code settings file. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.">
 <meta property="og:url" content="https://patchlabs.dev/tools/key-check">
 <meta property="og:image" content="https://patchlabs.dev/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Free key check: is my Supabase key anon or service_role? | PatchLabs">
-<meta name="twitter:description" content="Paste code, a .env file or a built JS bundle. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.">
+<meta name="twitter:description" content="Paste code, a .env file, a built JS bundle or a Claude Code settings file. Your browser flags secret AI, payment and database keys and tells a Supabase anon key from a service_role key. Nothing is uploaded.">
 <meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
 <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
@@ -136,7 +136,7 @@
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">Free key check</li></ol></nav>
     <p class="lab">Free tool · runs in your browser</p>
     <h1>Is that key safe to ship?</h1>
-    <p class="lede">Paste code, a <code>.env</code> file or your built JavaScript. Your browser checks it for secret AI, payment and database keys, and reads any Supabase key to tell you whether it’s the public <code>anon</code> key or the <code>service_role</code> key that skips every access rule. Nothing you paste leaves this page.</p>
+    <p class="lede">Paste code, a <code>.env</code> file, your built JavaScript or a Claude Code <code>.claude/settings.local.json</code>. Your browser checks it for secret AI, payment and database keys, and reads any Supabase key to tell you whether it’s the public <code>anon</code> key or the <code>service_role</code> key that skips every access rule. Nothing you paste leaves this page.</p>
 
     <form class="kc-form" id="kc-form" novalidate>
       <label class="sr-only" for="kc-in">Code, .env file or JavaScript bundle to check</label>
@@ -153,7 +153,7 @@
       <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>No upload, no network request</span>
       <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Keys are shown masked</span>
       <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>30 key types</span>
-      <span>Nothing to paste? <button type="button" class="t-try" id="kc-demo">Try a sample</button></span>
+      <span>Nothing to paste? <button type="button" class="t-try" id="kc-demo">Try a sample</button> or a <button type="button" class="t-try" id="kc-demo-claude">Claude Code settings sample</button></span>
     </div>
 
     <div class="rls-out" id="kc-out" aria-live="polite"></div>
@@ -194,6 +194,7 @@
         <tr><th scope="row">AI providers</th><td>OpenAI, Anthropic, OpenRouter, Google AI Studio, Groq, Replicate, Hugging Face, Perplexity, xAI, ElevenLabs, Fireworks, DeepSeek, and named variables for 30 more</td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
         <tr><th scope="row">Payments</th><td>Stripe live secret and restricted keys (test keys are flagged low)</td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
         <tr><th scope="row">Platform</th><td>AWS access keys, GitHub tokens, Slack tokens, Resend keys, private key blocks, tokens inside URLs</td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
+        <tr><th scope="row">Claude Code settings</th><td>Tokens and passwords typed into a command you approved with “don’t ask again” (bearer headers, <code>PGPASSWORD=</code>, <code>--token</code>, <code>user:pass@</code>), and secrets in the <code>env</code> block. <a href="/learn/claude-code-settings-local-json-secrets">Why this file leaks</a></td><td><a class="mono" href="/findings/pl-009">PL-009</a></td></tr>
         <tr><th scope="row">Exposure</th><td>A secret in a <code>VITE_</code>, <code>NEXT_PUBLIC_</code>, <code>EXPO_PUBLIC_</code> or <code>REACT_APP_</code> variable, which the build copies into the JavaScript every visitor downloads</td><td><a class="mono" href="/findings/pl-010">PL-010</a></td></tr>
       </tbody>
     </table></div>
@@ -288,6 +289,9 @@
       h += '<h3 class="h4 mt-4 mb-2">Public keys: fine in browser code</h3><ul class="hc-passed">' +
         r.safe.map(function (s) { return '<li><span><strong>' + esc(s.title) + '</strong> <span class="mono small muted">line ' + esc(s.line) + '</span><br><span class="small muted">' + esc(s.detail) + '</span></span></li>'; }).join('') + '</ul>';
     }
+    if (r.claude) {
+      h += '<div class="callout note mt-3"><p><strong>This looks like a Claude Code settings file.</strong> Check whether it was ever committed (<code>git log --all -- .claude/settings.local.json</code>) or published to npm (<code>npm pack --dry-run</code>). <a href="/learn/claude-code-settings-local-json-secrets">How to check, clean up and stop it happening</a>.</p></div>';
+    }
     if (!r.findings.length) {
       h += '<div class="callout note mt-3"><p><strong>None of the 30 secret key formats appear in what you pasted.</strong> That covers this text only. Keys can sit in other files or in old commits, and a public key is only as safe as your access rules. The full check scans the whole repo and its history and tests the rules in the lab.</p></div>';
     } else {
@@ -310,7 +314,9 @@
   form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
   $('kc-clear').addEventListener('click', function () { input.value = ''; out.innerHTML = ''; count.textContent = ''; errEl.textContent = ''; input.focus(); });
   $('kc-demo').addEventListener('click', function () { input.value = KC.sample(); input.dispatchEvent(new Event('input')); run(); });
-  if (/[?&]sample\b/.test(location.search)) { input.value = KC.sample(); input.dispatchEvent(new Event('input')); run(true); }
+  $('kc-demo-claude').addEventListener('click', function () { input.value = KC.sample('claude'); input.dispatchEvent(new Event('input')); run(); });
+  if (/[?&]sample=claude\b/.test(location.search)) { input.value = KC.sample('claude'); input.dispatchEvent(new Event('input')); run(true); }
+  else if (/[?&]sample\b/.test(location.search)) { input.value = KC.sample(); input.dispatchEvent(new Event('input')); run(true); }
 })();
 </script>
 

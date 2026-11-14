@@ -16,4 +16,16 @@ assert.equal(KC.scan('OPENAI_API_KEY=your_openai_key_here').findings.length, 0, 
 assert.equal(KC.scan('const k = "AKIA' + 'Q7RZ2M4KX9TB3WLP"').findings[0].id, 'aws');
 assert.equal(KC.scan('NEXT_PUBLIC_KEY=sb_secret_' + 'Zq81mLr0Xk2PvT7wYc4N').findings[0].severity, 'critical');
 assert.equal(KC.scan('').findings.length, 0);
+// Claude Code settings files (allow rules and env block)
+const cr = KC.scan(KC.sample('claude'));
+assert.equal(cr.claude, true);
+assert.deepEqual(cr.findings.map(f => [f.id, f.finding]).sort(), [['claude_rule', 'PL-009'], ['claude_rule', 'PL-009'], ['github', 'PL-009'], ['resend', 'PL-009']].sort());
+assert.ok(cr.findings.find(f => f.id === 'github').detail.includes('Claude Code settings'), 'prefixed keys get the settings note');
+const clean = JSON.stringify({ permissions: { allow: ['Bash(npm run test *)', 'Bash(mkdir -p src/components)',
+  'Bash(curl -H "Authorization: Bearer $TOKEN" *)', 'Bash(PGPASSWORD=$DB_PASSWORD psql *)', 'Bash(export API_KEY=your_api_key_here)'] },
+  env: { API_TOKEN: '${API_TOKEN}', MAX_TOKENS: '40960000', DEBUG: 'true' } }, null, 2);
+assert.deepEqual(KC.scan(clean).findings, [], 'settings near-misses stay clean');
+assert.equal(KC.scan('fetch(url, { headers: { Authorization: "Bearer " + token } })').claude, false, 'plain code is not settings mode');
+const envOnly = KC.scan('{ "env": { "DB_PASSWORD": "Wq8' + 'zL2mPx91" }, "permissions": { "allow": [] } }').findings;
+assert.equal(envOnly[0].id, 'claude_env');
 console.log('key-check: all checks pass');

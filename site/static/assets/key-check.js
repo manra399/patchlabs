@@ -33,6 +33,16 @@
     ['ai_named', 'AI provider key (named variable)', /\b(?:TOGETHER|MISTRAL|COHERE|VOYAGE|CEREBRAS|SAMBANOVA|DEEPINFRA|NOVITA|LANGSMITH|LANGCHAIN|HELICONE|PORTKEY|WANDB|PINECONE|WEAVIATE|TAVILY|SERPER|EXA|ASSEMBLYAI|DEEPGRAM|STABILITY|RUNWAY|LUMA|OPENAI|ANTHROPIC|GEMINI|GOOGLE_AI|GOOGLE_GENAI|GROQ|REPLICATE|HF|HUGGING_?FACE|AZURE_OPENAI)[A-Z0-9_]*(?:API_?KEY|SECRET|TOKEN)\s*[:=]\s*["']?([A-Za-z0-9_\-\.]{24,})["']?/gi, 'medium', 'PL-009', 'At the provider named in the variable', 1]
   ];
 
+  // Secrets with no fixed prefix, looked for only inside Claude Code allow rules: [pattern capturing the value, label]
+  var GENERIC = [
+    [/(?:Bearer|Token|Basic)\s+([A-Za-z0-9._~+\/=\-]{16,})/, 'Token'],
+    [/\b(?:x-api-key|apikey|api-key|x-auth-token|private-token)\s*:\s*([A-Za-z0-9._~+\/=\-]{16,})/i, 'API key'],
+    [/\b[A-Z][A-Z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN|API_?KEY|AUTH)[A-Z0-9_]*=['"]?([^\s'"$`)\\]{8,})/, 'Secret'],
+    [/--(?:password|passwd|token|api-key|apikey|secret)[= ]['"]?([^\s'"$`)\\]{8,})/i, 'Password or token'],
+    [/\s-(?:u|-user)\s+['"]?[^\s:'"]+:([^\s@'"$`)\\]{6,})/, 'Password'],
+    [/:\/\/[^\s:\/@'"]+:([^\s@'"$`\\]{6,})@/, 'Password in a URL']
+  ];
+
   var PLACEHOLDER = /(xxxx|your[_\-]?|example|placeholder|changeme|insert|redacted|dummy|sample|<[a-z_ ]+>|\$\{|\{\{|\.\.\.|\*{4,}|0{8,}|1234567890|abcdefghij)/i;
   var PUBLIC_VAR = /\b(VITE_|NEXT_PUBLIC_|EXPO_PUBLIC_|REACT_APP_|PUBLIC_|NUXT_PUBLIC_)[A-Z0-9_]*\s*[:=]\s*["']?$/;
   var JWT = /\beyJ[A-Za-z0-9_\-]{10,}\.(eyJ[A-Za-z0-9_\-]{10,})\.[A-Za-z0-9_\-]{10,}/g;
@@ -107,6 +117,37 @@
       }
     });
 
+    // Claude Code settings: "don't ask again" saves the whole command as an allow rule, typed secrets included.
+    var claude = /"permissions"\s*:|"(?:allow|ask|deny)"\s*:\s*\[|\bBash\(/.test(text);
+    if (claude) {
+      var RULE = /\b(?:Bash|PowerShell)\(((?:[^"\\\n]|\\.)*?)\)(?="|\s*$)/gm, rm;
+      while ((rm = RULE.exec(text))) {
+        var body0 = rm[1], off = rm.index + rm[0].indexOf(body0);
+        GENERIC.some(function (g) {
+          var re = new RegExp(g[0].source, g[0].flags.replace('g', '') + 'g'), y;
+          while ((y = re.exec(body0))) {
+            var v = y[1], a2 = off + y.index + y[0].lastIndexOf(v), b2 = a2 + v.length;
+            if (placeholder(v) || overlaps(a2, b2)) continue;
+            add({ id: 'claude_rule', title: g[1] + ' saved in a Claude Code allow rule', severity: 'high', finding: 'PL-009', line: lineAt(text, a2), masked: mask(v),
+              detail: 'Choosing \u201cdon\u2019t ask again\u201d saved this command, secret included, in .claude/settings.local.json. If the file was committed, zipped or published to npm, the secret is public.', rotate: 'At the service the command talks to; then delete the rule and pass the secret through an environment variable' }, a2, b2);
+            return true;
+          }
+          return false;
+        });
+      }
+      var ENVKV = /"([A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN|API_?KEY|PRIVATE|CREDENTIAL|AUTH)[A-Za-z0-9_]*)"\s*:\s*"([^"$\s]{8,})"/gi, em;
+      while ((em = ENVKV.exec(text))) {
+        var ev = em[2], a3 = em.index + em[0].lastIndexOf(ev), b3 = a3 + ev.length;
+        if (placeholder(ev) || overlaps(a3, b3) || /^\d+$/.test(ev)) continue;
+        add({ id: 'claude_env', title: 'Secret in a Claude Code settings env block (' + em[1] + ')', severity: 'high', finding: 'PL-009', line: lineAt(text, a3), masked: mask(ev),
+          detail: 'Values in the env block are stored in plain text. .claude/settings.json is meant to be committed, so anything here reaches everyone who clones the repo.', rotate: 'At the provider named in the variable; then read it from your shell environment instead' }, a3, b3);
+      }
+      findings.forEach(function (f) {
+        if (f.id === 'claude_rule' || f.id === 'claude_env') return;
+        f.detail = (f.detail ? f.detail + ' ' : '') + 'In a Claude Code settings file this is saved in plain text; treat it as leaked if the file was ever committed, shared or published.';
+      });
+    }
+
     SAFE.forEach(function (s) {
       var re = new RegExp(s[0].source, s[0].flags), x;
       while ((x = re.exec(text))) if (!placeholder(x[0])) safe.push({ title: s[1], line: lineAt(text, x.index), detail: s[2] });
@@ -114,15 +155,21 @@
 
     findings.sort(function (p, q) { return ['critical', 'high', 'medium', 'low'].indexOf(p.severity) - ['critical', 'high', 'medium', 'low'].indexOf(q.severity) || p.line - q.line; });
     safe.sort(function (p, q) { return p.line - q.line; });
-    return { findings: findings, safe: safe };
+    return { findings: findings, safe: safe, claude: claude };
   }
 
   // A made-up sample, built at run time so no key-shaped string sits in the source.
-  function sample() {
+  function sample(kind) {
     var rnd = function (n, chars) { chars = chars || 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'; var s = ''; for (var i = 0; i < n; i++) s += chars[Math.floor(Math.random() * chars.length)]; return s; };
     var enc = function (o) { var j = JSON.stringify(o); var b = typeof btoa === 'function' ? btoa(j) : Buffer.from(j, 'binary').toString('base64'); return b.replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_'); };
     var ref = rnd(20, 'abcdefghijklmnopqrstuvwxyz');
     var jwt = function (role) { return enc({ alg: 'HS256', typ: 'JWT' }) + '.' + enc({ iss: 'supabase', ref: ref, role: role, iat: 1760000000, exp: 2075576000 }) + '.' + rnd(43); };
+    if (kind === 'claude') return JSON.stringify({ permissions: { allow: [
+      'Bash(npm run test *)',
+      'Bash(curl -H "Authorization: Bearer ' + rnd(40) + '" https://api.example.com/v1/orders)',
+      'Bash(PGPASSWORD=' + rnd(16) + ' psql -h db.' + ref + '.supabase.co -U postgres)',
+      'Bash(git push https://deploy:ghp_' + rnd(36) + '@github.com/acme/app.git main)'
+    ] }, env: { RESEND_API_KEY: 're_' + rnd(8) + '_' + rnd(24) } }, null, 2).replace(/^/, '// .claude/settings.local.json (made-up sample)\n');
     return [
       '# .env (made-up sample)',
       'VITE_SUPABASE_URL=https://' + ref + '.supabase.co',
