@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPT-4o and GPT-4.1 leave OpenAI's API on 14 Jan 2027: will your app break? | PatchLabs</title>
+<meta name="description" content="OpenAI shuts down GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026. Find them in your app and switch safely.">
+<link rel="canonical" href="https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="GPT-4o and GPT-4.1 leave OpenAI's API on 14 Jan 2027: will your app break? | PatchLabs">
+<meta property="og:description" content="OpenAI shuts down GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026. Find them in your app and switch safely.">
+<meta property="og:url" content="https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GPT-4o and GPT-4.1 leave OpenAI's API on 14 Jan 2027: will your app break? | PatchLabs">
+<meta name="twitter:description" content="OpenAI shuts down GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026. Find them in your app and switch safely.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<!-- GitHub Pages can't send frame-ancestors or X-Frame-Options, so pages refuse to show inside another site's frame (clickjacking on approve and settings). -->
+<script>if(window.top!==window.self){document.documentElement.style.display='none';try{window.top.location=window.self.location.href}catch(e){}}</script>
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,500..600;1,9..144,480..520&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"GPT-4o and GPT-4.1 leave OpenAI’s API on 14 January 2027. Will your app break?","description":"OpenAI shuts down GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026. Find them in your app and switch safely.","datePublished":"2026-11-14","dateModified":"2026-11-14","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"GPT-4o and GPT-4.1 leave OpenAI’s API on 14 January 2027. Will your app break?","item":"https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027"}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn" aria-current="page"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027" aria-current="page">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">OpenAI model shutdowns (GPT-4o, Jan 2027)</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>GPT-4o and GPT-4.1 leave OpenAI’s API on 14 January 2027. Will your app break?</h1>
+      <p class="lede">Yes, if your app still asks OpenAI for GPT-4o, GPT-4o mini, GPT-4.1 or GPT-4.1 mini after 14 January 2027. OpenAI’s deprecations page lists those models as shut down on that day, with <code>gpt-6-luna</code> as the replacement, and o3, GPT-5 and GPT-5 mini go earlier, on 11 December 2026. After the date the call returns an error instead of a reply. Finding the model name takes two minutes; switching it safely takes an afternoon.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 14 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>OpenAI announced on 14 October 2026 that the GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini snapshots shut down on 14 January 2027. Replacement: <code>gpt-6-luna</code>.</li><li>o3, o3-pro, GPT-5, GPT-5 mini, GPT-5 nano and GPT-5 pro shut down on 11 December 2026; <code>tts-1</code> and <code>gpt-4o-mini-tts</code> on 6 January 2027.</li><li>OpenAI’s table names the dated snapshots, not the bare name <code>gpt-4o</code>, and doesn’t say what the bare name does afterwards. Plan as if it stops.</li><li>In apps built with Lovable or Bolt the model name usually sits in a Supabase Edge Function or an environment variable, not in the code you look at.</li><li>Make the model one setting, compare old and new replies on real inputs, then switch.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#dates">What shuts down, and when</a></li><li><a href="#bare-name">What about plain “gpt-4o”?</a></li><li><a href="#find">Find the model name in your app</a></li><li><a href="#switch">Switch without breaking the feature</a></li><li><a href="#next-time">Catch the next one</a></li><li><a href="#sources">Sources</a></li></ol></nav>
+      <p>This guide is for founders whose app uses OpenAI, especially apps built with Lovable, Bolt, Replit or Cursor, where nobody may remember which model the AI picked. Every date here comes from <a href="https://developers.openai.com/api/docs/deprecations">OpenAI’s deprecations page</a>, read on 14 November 2026. The search command was tested by us on that date against a sample project.</p>
+
+<h2 id="dates">What shuts down, and when</h2>
+<p>OpenAI gives each model one of three states: active, deprecated (retirement announced, still works) and shut down (“no longer accepts requests through the standard API”). These are the shutdowns in the next three months:</p>
+<div class="table-wrap"><table class="table compact l-wrap">
+  <thead><tr><th scope="col">Shuts down</th><th scope="col">Model → replacement</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">30 Nov 2026</th><td>Reusable prompt objects (<code>/v1/prompts</code>), Agent Builder<br><span class="muted">→ Prompt text in your own code; Agents SDK</span></td></tr>
+    <tr><th scope="row">11 Dec 2026</th><td><code>gpt-5</code>, <code>gpt-5-mini</code>, <code>gpt-5-nano</code>, <code>gpt-5-pro</code>, <code>o3</code>, <code>o3-pro</code><br><span class="muted">→ <code>gpt-6.1-sol</code>, <code>gpt-6.1-terra</code> (for mini), <code>gpt-6-luna</code> (for nano)</span></td></tr>
+    <tr><th scope="row">6 Jan 2027</th><td><code>tts-1</code>, <code>tts-1-hd</code>, <code>gpt-4o-mini-tts</code><br><span class="muted">→ <code>gpt-realtime-2.1-mini</code></span></td></tr>
+    <tr><th scope="row">14 Jan 2027</th><td><code>gpt-4o-2024-08-06</code>, <code>gpt-4o-2024-11-20</code>, <code>gpt-4o-mini-2024-07-18</code>, <code>gpt-4.1-2025-04-14</code>, <code>gpt-4.1-mini-2025-04-14</code><br><span class="muted">→ <code>gpt-6-luna</code></span></td></tr>
+    <tr><th scope="row">20 Jan 2027</th><td><code>gpt-realtime</code>, <code>gpt-audio</code> and the 4o audio and realtime models<br><span class="muted">→ <code>gpt-realtime-2.1</code>, <code>gpt-audio-1.5</code></span></td></tr>
+  </tbody>
+</table></div>
+<p>Two things that catch people out. Fine-tuned models stop on the same day as the model they were trained from. And some models are already gone: <code>gpt-4.1-nano</code>, <code>gpt-4o-2024-05-13</code>, <code>o4-mini</code>, <code>gpt-4-turbo</code> and <code>gpt-3.5-turbo</code> shut down on 23 October 2026, and the Assistants API on 26 August 2026. If your app uses one of those, the feature is failing now.</p>
+<div class="callout note"><p><strong>Only 92 days’ notice.</strong> OpenAI’s own policy promises at least six months for generally available models “unless safety or compliance concerns require a faster timeline”. The GPT-4o notice went out on 14 October for 14 January, so there’s less time than usual.</p></div>
+
+<h2 id="bare-name">What about plain “gpt-4o”?</h2>
+<p>Most apps don’t ask for <code>gpt-4o-2024-11-20</code>. They ask for <code>gpt-4o</code>, a name that points at whichever snapshot OpenAI chooses. OpenAI’s table lists the snapshots by date and doesn’t list the bare name, so the page doesn’t say what <code>gpt-4o</code> will do on 15 January. Every snapshot it has pointed at is on the list. Plan as if it stops working, and don’t count on it being moved to a newer model for you: even if it were, your replies would change without you choosing it.</p>
+
+<h2 id="find">Find the model name in your app</h2>
+<p>The model is a plain string, so it can be anywhere: in code, in <code>.env</code>, in your host’s environment settings, or in a Supabase secret. In Lovable and Bolt apps the call to OpenAI usually lives in a Supabase Edge Function (<code>supabase/functions/&lt;name&gt;/index.ts</code>), because the key mustn’t be in the browser. From the project folder:</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rnoE --exclude-dir={node_modules,.git,dist,build,.next} \
+  "\b(gpt-4o|gpt-4\.1|gpt-5(\.1)?|o3|tts-1|whisper-1|gpt-realtime|gpt-audio)[a-z0-9.-]*" . \
+  | grep -vE ":gpt-5\.[2-9]|:gpt-6"</code></pre></div>
+<p>Each line is a file, a line number and the model name it found. We ran it on a sample project with the name in an Edge Function and in <code>.env</code>: it found <code>gpt-4o</code>, <code>gpt-4o-mini-tts</code>, <code>o3</code>, <code>gpt-4.1-mini</code>, <code>gpt-5</code> and <code>gpt-5.1</code> (which goes on 1 April 2027), and skipped <code>gpt-6-luna</code> and words like <code>demo3</code>. Then check the places grep can’t see:</p>
+<ul>
+  <li><strong>Supabase:</strong> Project Settings, Edge Functions, Secrets. Look for anything like <code>OPENAI_MODEL</code>.</li>
+  <li><strong>Vercel, Netlify, Railway, Render:</strong> the project’s environment variables page.</li>
+  <li><strong>No-code tools</strong> (Make, Zapier, n8n, Bubble): the OpenAI step has a model drop-down. Open each scenario that calls OpenAI.</li>
+</ul>
+<p>No terminal? Paste the files and your <code>.env</code> into the <a href="/tools/model-shutdown-check">free model shutdown check</a>. It runs in your browser and lists every model on OpenAI’s shutdown list, with the days left.</p>
+
+<h2 id="switch">Switch without breaking the feature</h2>
+<p>Changing one string is the easy part. A newer model can format answers differently, ignore an instruction the old one followed, take different parameters or cost a different amount. OpenAI’s own advice is to run representative requests against both models and compare before moving production traffic. For a small app that means:</p>
+<ol>
+  <li><strong>Make the model one setting.</strong> Put the name in one environment variable (for example <code>OPENAI_MODEL</code>) and read it everywhere. The next shutdown becomes a one-line change.</li>
+  <li><strong>Collect ten real inputs.</strong> Pick prompts your users actually send, including the long and awkward ones.</li>
+  <li><strong>Run both models on them</strong> before 14 January, while the old one still answers, and read the replies side by side. Check anything your code parses: JSON fields, lists, word limits.</li>
+  <li><strong>Watch the error path.</strong> Make sure a failed call shows the user a message and writes a log line. Many AI-built apps catch the error and show an empty reply, which is how a shutdown goes unnoticed for days.</li>
+  <li><strong>Switch, then check the bill</strong> after a day of real traffic.</li>
+</ol>
+<p>Paste this into your AI builder with the project open:</p>
+<div class="code"><div class="code-bar"><span class="name">prompt for Lovable, Bolt, Cursor or Claude</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>OpenAI shuts down gpt-4o, gpt-4o-mini, gpt-4.1 and gpt-4.1-mini on 14 January 2027 (and o3, gpt-5 and gpt-5-mini on 11 December 2026).
+1. Find every place this app names an OpenAI model, including Edge Functions and environment variables, and list them.
+2. Replace them with one setting, OPENAI_MODEL, read from the environment, defaulting to gpt-6-luna.
+3. Make sure every OpenAI call shows the user a clear message and logs the error if the call fails, instead of showing an empty reply.
+4. Don't change prompts or other behaviour. Show me the diff before applying it.</code></pre></div>
+
+<h2 id="next-time">Catch the next one</h2>
+<p>OpenAI adds shutdowns every few months, and the notice email goes to whoever owns the API account, which for an app built for you may be the agency or freelancer, not you. Three cheap habits:</p>
+<ul>
+  <li>Make sure the email on your OpenAI organisation is one you read.</li>
+  <li>OpenAI’s List models endpoint (<code>GET /v1/models</code>) and Retrieve model endpoint return an optional <code>shutdown_date</code> for each model. A small scheduled job that checks your model and alerts you when that field appears catches the next notice on the day it lands.</li>
+  <li>If you call OpenAI through Azure, Microsoft runs its own retirement schedule with different dates; check its model retirement page as well.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://developers.openai.com/api/docs/deprecations">OpenAI: Deprecations</a> (upcoming and past shutdowns, notice periods, the <code>shutdown_date</code> field; read 14 Nov 2026)</li>
+  <li><a href="https://developers.openai.com/api/docs/guides/latest-model">OpenAI: latest model and migration guide</a></li>
+</ul>
+      
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Paste your code, see which models are ending.</h2>
+        <p>Paste the files that call OpenAI, your <code>.env</code> or a config file into the free model shutdown check. It runs in your browser: no request is sent and nothing is stored. It lists every model and API feature on OpenAI’s shutdown list with the date, the days left, OpenAI’s named replacement and a prompt for your AI builder.</p>
+        <p><a class="btn primary" href="/tools/model-shutdown-check">Open the free model shutdown check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/model-shutdown-check?sample">See a sample result</a></span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 14 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20openai-gpt-4o-shutdown-january-2027">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/ai-builder-scan-vs-independent-check" rel="prev"><span>Previous guide</span>Your AI app builder’s security scan vs an independent check</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#dates">What shuts down, and when</a></li><li><a href="#bare-name">What about plain “gpt-4o”?</a></li><li><a href="#find">Find the model name in your app</a></li><li><a href="#switch">Switch without breaking the feature</a></li><li><a href="#next-time">Catch the next one</a></li><li><a href="#sources">Sources</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Independent app verification for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK · <a href="https://www.linkedin.com/company/patchlabsdev" rel="noopener" target="_blank">LinkedIn</a></p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/tools/key-check">Free key check</a></li>
+        <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
+        <li><a href="/tools/edge-function-check">Free Edge Function check</a></li>
+        <li><a href="/tools/chat-render-check">Free AI chat check</a></li>
+        <li><a href="/tools/model-shutdown-check">Free model shutdown check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="https://www.linkedin.com/company/patchlabsdev" rel="noopener" target="_blank">LinkedIn</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

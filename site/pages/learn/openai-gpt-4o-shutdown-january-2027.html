@@ -1,0 +1,137 @@
+<!--
+title: GPT-4o and GPT-4.1 leave OpenAI's API on 14 Jan 2027: will your app break? | PatchLabs
+description: OpenAI shuts down GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026. Find them in your app and switch safely.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"GPT-4o and GPT-4.1 leave OpenAI’s API on 14 January 2027. Will your app break?","description":"OpenAI shuts down GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026. Find them in your app and switch safely.","datePublished":"2026-11-14","dateModified":"2026-11-14","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"GPT-4o and GPT-4.1 leave OpenAI’s API on 14 January 2027. Will your app break?","item":"https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027" aria-current="page">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">OpenAI model shutdowns (GPT-4o, Jan 2027)</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>GPT-4o and GPT-4.1 leave OpenAI’s API on 14 January 2027. Will your app break?</h1>
+      <p class="lede">Yes, if your app still asks OpenAI for GPT-4o, GPT-4o mini, GPT-4.1 or GPT-4.1 mini after 14 January 2027. OpenAI’s deprecations page lists those models as shut down on that day, with <code>gpt-6-luna</code> as the replacement, and o3, GPT-5 and GPT-5 mini go earlier, on 11 December 2026. After the date the call returns an error instead of a reply. Finding the model name takes two minutes; switching it safely takes an afternoon.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 14 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>OpenAI announced on 14 October 2026 that the GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini snapshots shut down on 14 January 2027. Replacement: <code>gpt-6-luna</code>.</li><li>o3, o3-pro, GPT-5, GPT-5 mini, GPT-5 nano and GPT-5 pro shut down on 11 December 2026; <code>tts-1</code> and <code>gpt-4o-mini-tts</code> on 6 January 2027.</li><li>OpenAI’s table names the dated snapshots, not the bare name <code>gpt-4o</code>, and doesn’t say what the bare name does afterwards. Plan as if it stops.</li><li>In apps built with Lovable or Bolt the model name usually sits in a Supabase Edge Function or an environment variable, not in the code you look at.</li><li>Make the model one setting, compare old and new replies on real inputs, then switch.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#dates">What shuts down, and when</a></li><li><a href="#bare-name">What about plain “gpt-4o”?</a></li><li><a href="#find">Find the model name in your app</a></li><li><a href="#switch">Switch without breaking the feature</a></li><li><a href="#next-time">Catch the next one</a></li><li><a href="#sources">Sources</a></li></ol></nav>
+      <p>This guide is for founders whose app uses OpenAI, especially apps built with Lovable, Bolt, Replit or Cursor, where nobody may remember which model the AI picked. Every date here comes from <a href="https://developers.openai.com/api/docs/deprecations">OpenAI’s deprecations page</a>, read on 14 November 2026. The search command was tested by us on that date against a sample project.</p>
+
+<h2 id="dates">What shuts down, and when</h2>
+<p>OpenAI gives each model one of three states: active, deprecated (retirement announced, still works) and shut down (“no longer accepts requests through the standard API”). These are the shutdowns in the next three months:</p>
+<div class="table-wrap"><table class="table compact l-wrap">
+  <thead><tr><th scope="col">Shuts down</th><th scope="col">Model → replacement</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">30 Nov 2026</th><td>Reusable prompt objects (<code>/v1/prompts</code>), Agent Builder<br><span class="muted">→ Prompt text in your own code; Agents SDK</span></td></tr>
+    <tr><th scope="row">11 Dec 2026</th><td><code>gpt-5</code>, <code>gpt-5-mini</code>, <code>gpt-5-nano</code>, <code>gpt-5-pro</code>, <code>o3</code>, <code>o3-pro</code><br><span class="muted">→ <code>gpt-6.1-sol</code>, <code>gpt-6.1-terra</code> (for mini), <code>gpt-6-luna</code> (for nano)</span></td></tr>
+    <tr><th scope="row">6 Jan 2027</th><td><code>tts-1</code>, <code>tts-1-hd</code>, <code>gpt-4o-mini-tts</code><br><span class="muted">→ <code>gpt-realtime-2.1-mini</code></span></td></tr>
+    <tr><th scope="row">14 Jan 2027</th><td><code>gpt-4o-2024-08-06</code>, <code>gpt-4o-2024-11-20</code>, <code>gpt-4o-mini-2024-07-18</code>, <code>gpt-4.1-2025-04-14</code>, <code>gpt-4.1-mini-2025-04-14</code><br><span class="muted">→ <code>gpt-6-luna</code></span></td></tr>
+    <tr><th scope="row">20 Jan 2027</th><td><code>gpt-realtime</code>, <code>gpt-audio</code> and the 4o audio and realtime models<br><span class="muted">→ <code>gpt-realtime-2.1</code>, <code>gpt-audio-1.5</code></span></td></tr>
+  </tbody>
+</table></div>
+<p>Two things that catch people out. Fine-tuned models stop on the same day as the model they were trained from. And some models are already gone: <code>gpt-4.1-nano</code>, <code>gpt-4o-2024-05-13</code>, <code>o4-mini</code>, <code>gpt-4-turbo</code> and <code>gpt-3.5-turbo</code> shut down on 23 October 2026, and the Assistants API on 26 August 2026. If your app uses one of those, the feature is failing now.</p>
+<div class="callout note"><p><strong>Only 92 days’ notice.</strong> OpenAI’s own policy promises at least six months for generally available models “unless safety or compliance concerns require a faster timeline”. The GPT-4o notice went out on 14 October for 14 January, so there’s less time than usual.</p></div>
+
+<h2 id="bare-name">What about plain “gpt-4o”?</h2>
+<p>Most apps don’t ask for <code>gpt-4o-2024-11-20</code>. They ask for <code>gpt-4o</code>, a name that points at whichever snapshot OpenAI chooses. OpenAI’s table lists the snapshots by date and doesn’t list the bare name, so the page doesn’t say what <code>gpt-4o</code> will do on 15 January. Every snapshot it has pointed at is on the list. Plan as if it stops working, and don’t count on it being moved to a newer model for you: even if it were, your replies would change without you choosing it.</p>
+
+<h2 id="find">Find the model name in your app</h2>
+<p>The model is a plain string, so it can be anywhere: in code, in <code>.env</code>, in your host’s environment settings, or in a Supabase secret. In Lovable and Bolt apps the call to OpenAI usually lives in a Supabase Edge Function (<code>supabase/functions/&lt;name&gt;/index.ts</code>), because the key mustn’t be in the browser. From the project folder:</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rnoE --exclude-dir={node_modules,.git,dist,build,.next} \
+  "\b(gpt-4o|gpt-4\.1|gpt-5(\.1)?|o3|tts-1|whisper-1|gpt-realtime|gpt-audio)[a-z0-9.-]*" . \
+  | grep -vE ":gpt-5\.[2-9]|:gpt-6"</code></pre></div>
+<p>Each line is a file, a line number and the model name it found. We ran it on a sample project with the name in an Edge Function and in <code>.env</code>: it found <code>gpt-4o</code>, <code>gpt-4o-mini-tts</code>, <code>o3</code>, <code>gpt-4.1-mini</code>, <code>gpt-5</code> and <code>gpt-5.1</code> (which goes on 1 April 2027), and skipped <code>gpt-6-luna</code> and words like <code>demo3</code>. Then check the places grep can’t see:</p>
+<ul>
+  <li><strong>Supabase:</strong> Project Settings, Edge Functions, Secrets. Look for anything like <code>OPENAI_MODEL</code>.</li>
+  <li><strong>Vercel, Netlify, Railway, Render:</strong> the project’s environment variables page.</li>
+  <li><strong>No-code tools</strong> (Make, Zapier, n8n, Bubble): the OpenAI step has a model drop-down. Open each scenario that calls OpenAI.</li>
+</ul>
+<p>No terminal? Paste the files and your <code>.env</code> into the <a href="/tools/model-shutdown-check">free model shutdown check</a>. It runs in your browser and lists every model on OpenAI’s shutdown list, with the days left.</p>
+
+<h2 id="switch">Switch without breaking the feature</h2>
+<p>Changing one string is the easy part. A newer model can format answers differently, ignore an instruction the old one followed, take different parameters or cost a different amount. OpenAI’s own advice is to run representative requests against both models and compare before moving production traffic. For a small app that means:</p>
+<ol>
+  <li><strong>Make the model one setting.</strong> Put the name in one environment variable (for example <code>OPENAI_MODEL</code>) and read it everywhere. The next shutdown becomes a one-line change.</li>
+  <li><strong>Collect ten real inputs.</strong> Pick prompts your users actually send, including the long and awkward ones.</li>
+  <li><strong>Run both models on them</strong> before 14 January, while the old one still answers, and read the replies side by side. Check anything your code parses: JSON fields, lists, word limits.</li>
+  <li><strong>Watch the error path.</strong> Make sure a failed call shows the user a message and writes a log line. Many AI-built apps catch the error and show an empty reply, which is how a shutdown goes unnoticed for days.</li>
+  <li><strong>Switch, then check the bill</strong> after a day of real traffic.</li>
+</ol>
+<p>Paste this into your AI builder with the project open:</p>
+<div class="code"><div class="code-bar"><span class="name">prompt for Lovable, Bolt, Cursor or Claude</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>OpenAI shuts down gpt-4o, gpt-4o-mini, gpt-4.1 and gpt-4.1-mini on 14 January 2027 (and o3, gpt-5 and gpt-5-mini on 11 December 2026).
+1. Find every place this app names an OpenAI model, including Edge Functions and environment variables, and list them.
+2. Replace them with one setting, OPENAI_MODEL, read from the environment, defaulting to gpt-6-luna.
+3. Make sure every OpenAI call shows the user a clear message and logs the error if the call fails, instead of showing an empty reply.
+4. Don't change prompts or other behaviour. Show me the diff before applying it.</code></pre></div>
+
+<h2 id="next-time">Catch the next one</h2>
+<p>OpenAI adds shutdowns every few months, and the notice email goes to whoever owns the API account, which for an app built for you may be the agency or freelancer, not you. Three cheap habits:</p>
+<ul>
+  <li>Make sure the email on your OpenAI organisation is one you read.</li>
+  <li>OpenAI’s List models endpoint (<code>GET /v1/models</code>) and Retrieve model endpoint return an optional <code>shutdown_date</code> for each model. A small scheduled job that checks your model and alerts you when that field appears catches the next notice on the day it lands.</li>
+  <li>If you call OpenAI through Azure, Microsoft runs its own retirement schedule with different dates; check its model retirement page as well.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://developers.openai.com/api/docs/deprecations">OpenAI: Deprecations</a> (upcoming and past shutdowns, notice periods, the <code>shutdown_date</code> field; read 14 Nov 2026)</li>
+  <li><a href="https://developers.openai.com/api/docs/guides/latest-model">OpenAI: latest model and migration guide</a></li>
+</ul>
+      
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Paste your code, see which models are ending.</h2>
+        <p>Paste the files that call OpenAI, your <code>.env</code> or a config file into the free model shutdown check. It runs in your browser: no request is sent and nothing is stored. It lists every model and API feature on OpenAI’s shutdown list with the date, the days left, OpenAI’s named replacement and a prompt for your AI builder.</p>
+        <p><a class="btn primary" href="/tools/model-shutdown-check">Open the free model shutdown check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/model-shutdown-check?sample">See a sample result</a></span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 14 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20openai-gpt-4o-shutdown-january-2027">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/ai-builder-scan-vs-independent-check" rel="prev"><span>Previous guide</span>Your AI app builder’s security scan vs an independent check</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#dates">What shuts down, and when</a></li><li><a href="#bare-name">What about plain “gpt-4o”?</a></li><li><a href="#find">Find the model name in your app</a></li><li><a href="#switch">Switch without breaking the feature</a></li><li><a href="#next-time">Catch the next one</a></li><li><a href="#sources">Sources</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

@@ -106,6 +106,7 @@ Key facts:
 - [Pre-launch security checklist for vibe-coded apps](https://patchlabs.dev/learn/vibe-coded-app-security-checklist)
 - [Firebase security rules basics: lock down Firestore and Storage](https://patchlabs.dev/learn/firebase-security-rules-basics)
 - [How to find and fix vulnerable npm dependencies](https://patchlabs.dev/learn/npm-dependency-vulnerabilities)
+- [GPT-4o and GPT-4.1 leave OpenAI's API on 14 Jan 2027: find the model in your app and switch safely](https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027)
 
 ## Free tools
 
@@ -113,6 +114,7 @@ Key facts:
 - [All tools](https://patchlabs.dev/tools)
 - [Free RLS check](https://patchlabs.dev/tools/rls-check): static analysis of a public repo's migrations, no sign-up
 - [Free security headers check](https://patchlabs.dev/tools/headers-check): one public page load, graded A to F for HTTPS, certificate, headers, cookies and mixed content; no sign-up, result not stored
+- [Free OpenAI model shutdown check](https://patchlabs.dev/tools/model-shutdown-check): finds GPT-4o, GPT-4.1, o3, GPT-5 and other OpenAI models and API features on OpenAI's shutdown list in pasted code or .env, with dates and replacements; runs in the browser
 - [Leak cost calculator](https://patchlabs.dev/tools/leak-cost)
 
 ## Compare

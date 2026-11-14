@@ -44,3 +44,9 @@
 .l-start a:hover { border-color: var(--line-2); box-shadow: var(--shadow); }
 .l-start b { color: var(--ink); font-weight: 620; }
 .l-start span { color: var(--muted); font-size: 14.5px; }
+/* Tables whose cells hold long code names: let the names wrap instead of pushing the table wider than a phone. */
+.l-wrap { table-layout: fixed; width: 100%; }
+.l-wrap th[scope="row"] { width: 7.5em; }
+.l-wrap td code, .l-wrap td { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+.l-wrap thead th:first-child, .l-wrap tbody th[scope="row"] { width: 6.5em; white-space: normal; }
+.l-wrap thead th { white-space: normal; }

@@ -1,0 +1,201 @@
+<!--
+title: Free OpenAI model shutdown check: GPT-4o, GPT-4.1, o3 and more | PatchLabs
+description: Paste your code or .env. Your browser finds every OpenAI model and API feature that is shut down or scheduled to shut down (GPT-4o and GPT-4.1 on 14 Jan 2027, o3 and GPT-5 on 11 Dec 2026), with days left and OpenAI’s named replacement. Nothing is uploaded.
+layout: marketing
+nav: tools
+head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PatchLabs free OpenAI model shutdown check","url":"https://patchlabs.dev/tools/model-shutdown-check","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}</script>
+-->
+<main id="main" class="fc-page">
+
+<section class="hero t-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/tools">Tools</a></li><li aria-current="page">Free model shutdown check</li></ol></nav>
+    <p class="lab">Free tool · runs in your browser</p>
+    <h1>Will your app’s AI stop answering on 14 January?</h1>
+    <p class="lede">OpenAI switches off GPT-4o, GPT-4o mini, GPT-4.1 and GPT-4.1 mini in its API on 14 January 2027, and o3, GPT-5 and GPT-5 mini on 11 December 2026. An app that still asks for one of them gets an error instead of a reply. Paste your code, <code>.env</code> or config: your browser lists every model and API feature on OpenAI’s shutdown list, with the date, the days left and the replacement OpenAI names. Nothing you paste leaves this page.</p>
+
+    <form class="kc-form" id="mc-form" novalidate>
+      <label class="sr-only" for="mc-in">Code, .env or config to check</label>
+      <textarea class="input kc-in" id="mc-in" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="model: 'gpt-4o',&#10;OPENAI_MODEL=gpt-4.1-mini&#10;&#10;paste the files that call OpenAI: lib/ai.ts, an Edge Function, .env, app.py, a Lovable or Bolt export" aria-describedby="mc-help"></textarea>
+      <div class="kc-bar">
+        <button class="btn primary" type="submit" id="mc-go">Check my models <span class="arrow" aria-hidden="true">→</span></button>
+        <button class="btn ghost" type="button" id="mc-clear">Clear</button>
+        <span class="kc-count mono small muted" id="mc-count" aria-live="polite"></span>
+      </div>
+    </form>
+    <p class="err" role="alert" id="mc-err"></p>
+    <noscript><p class="small muted mt-1">This tool runs entirely in your browser, so it needs JavaScript.</p></noscript>
+    <div class="form-meta" id="mc-help">
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>No upload, no network request</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Any language, .env, JSON or YAML</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="mc-n">128</span> models from OpenAI’s own list</span>
+      <span>Nothing to paste? <button type="button" class="t-try" id="mc-demo">Try a sample</button></span>
+    </div>
+
+    <div class="rls-out" id="mc-out" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="dates-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">The dates</p>
+      <h2 id="dates-h" class="h-md">Five shutdown days before the end of January.</h2>
+      <p class="muted">Taken from <a href="https://developers.openai.com/api/docs/deprecations">OpenAI’s deprecations page</a>. OpenAI emails the account owner, which in an app built for you is often not the person who reads the code. Fine-tuned models stop on the same day as the model they were trained from.</p>
+      <p class="muted">Azure OpenAI runs its own retirement schedule, so check Microsoft’s model retirement page if your app calls Azure.</p>
+    </div>
+    <div class="cov">
+      <div class="table-wrap"><table class="table fc-rules">
+        <thead><tr><th scope="col">Shuts down</th><th scope="col">Models and replacement</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">30 Nov 2026</th><td>Reusable prompt objects (<code>/v1/prompts</code>), Agent Builder. Move prompts into your code; Agents SDK.</td></tr>
+          <tr><th scope="row">11 Dec 2026</th><td><code>gpt-5</code>, <code>gpt-5-mini</code>, <code>gpt-5-nano</code>, <code>o3</code>, <code>o3-pro</code>, <code>gpt-5-pro</code>. To <code>gpt-6.1-sol</code>, <code>gpt-6.1-terra</code> or <code>gpt-6-luna</code>.</td></tr>
+          <tr><th scope="row">6 Jan 2027</th><td><code>tts-1</code>, <code>tts-1-hd</code>, <code>gpt-4o-mini-tts</code>. To <code>gpt-realtime-2.1-mini</code>.</td></tr>
+          <tr><th scope="row">14 Jan 2027</th><td><code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>gpt-4.1</code>, <code>gpt-4.1-mini</code> snapshots. To <code>gpt-6-luna</code>.</td></tr>
+          <tr><th scope="row">20 Jan 2027</th><td><code>gpt-realtime</code>, <code>gpt-audio</code> and the 4o audio models. To <code>gpt-realtime-2.1</code> or <code>gpt-audio-1.5</code>.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="looks-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">How it reads your code</p>
+      <h2 id="looks-h">It looks for the model name, wherever it’s written.</h2>
+      <p>Model names are plain strings, so they turn up in code, <code>.env</code> files, JSON settings and YAML. The check matches whole names only, longest first, so <code>gpt-4o-mini-tts</code> isn’t reported as <code>gpt-4o</code>, and short names like <code>o3</code> count only in quotes or after <code>model=</code>.</p>
+    </div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th scope="col">Result</th><th scope="col">What it means</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="pill sev-critical">critical</span></th><td>Already shut down. Those calls fail today; look for an error your app swallows and shows as an empty reply.</td></tr>
+        <tr><th scope="row"><span class="pill sev-high">high</span></th><td>Shuts down within 90 days. Change it now: the replacement may need different settings and a round of testing.</td></tr>
+        <tr><th scope="row"><span class="pill sev-medium">medium</span> or <span class="pill sev-low">low</span></th><td>Shuts down within 180 days, or later. Put it on the list.</td></tr>
+        <tr><th scope="row">Bare name</th><td><code>gpt-4o</code> without a date. OpenAI’s table lists the dated snapshots behind it, not the bare name, and doesn’t say what the bare name does after 14 January. The check treats it as stopping.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h" class="h-md">About the model shutdown check</h2>
+      <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
+    </div>
+    <div>
+      <details class="acc"><summary>Where do I find the model name?</summary><div class="acc-body"><p>Search your project for <code>model</code>, <code>gpt-</code> and <code>OPENAI</code>. In Lovable and Bolt apps the call is often in a Supabase Edge Function (<code>supabase/functions/*/index.ts</code>); check the <code>.env</code> and your host’s environment settings too, because the name is often only there.</p></div></details>
+      <details class="acc"><summary>What happens on the day?</summary><div class="acc-body"><p>OpenAI says a shut-down model “no longer accepts requests through the standard API”, so the request returns an error. Many AI-built apps catch that error and show nothing, which looks like the feature broke for no reason.</p></div></details>
+      <details class="acc"><summary>Can I just swap the name?</summary><div class="acc-body"><p>Usually, but test first. Newer models can take different parameters, format answers differently and cost a different amount. OpenAI’s advice is to run representative requests on both models and compare before switching. The <a href="/learn/openai-gpt-4o-shutdown-january-2027">guide</a> has a two-step way to do that.</p></div></details>
+      <details class="acc"><summary>How current is the list?</summary><div class="acc-body"><p>It is generated from OpenAI’s deprecations page; the date it was read is shown with each result. OpenAI adds new shutdowns every few months, so check again when you change models.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="final-h" id="full-check">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab green">The full check</p>
+      <h2 id="final-h">While you’re in the code: check your keys and database rules, free.</h2>
+      <p class="lede">The full check scans your code and full git history for keys, rebuilds your Supabase database in our lab, tests it as three identities, writes the fix and proves it works. Free in early access, fixes included.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-full">Public GitHub repo</label>
+          <input id="repo-full" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-full">Your email</label>
+          <input id="email-full" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/learn/openai-gpt-4o-shutdown-january-2027">GPT-4o shutdown guide</a></span><span><a href="/tools/headers-check">Free headers check</a></span><span><a href="/tools/key-check">Free key check</a></span><span><a href="/sample-report">See a sample proof report</a></span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<script src="/assets/model-shutdowns.js"></script>
+<script src="/assets/model-check.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var MC = window.PLModelCheck;
+  var form = $('mc-form'), input = $('mc-in'), out = $('mc-out'), errEl = $('mc-err'), count = $('mc-count');
+  var SEV = ['critical', 'high', 'medium', 'low'];
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  var pillFor = function (s) { return 'pill ' + ({ critical: 'sev-critical', high: 'sev-high', medium: 'sev-medium' }[s] || 'sev-low'); };
+  var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); };
+  var last = null;
+  if (MC.data) $('mc-n').textContent = MC.data.models.length;
+
+  function findingHtml(f) {
+    var when = f.days <= 0 ? 'shut down ' + MC.fmt(f.shutdown) : plural(f.days, 'day') + ' left';
+    return '<article class="finding s-' + esc(f.severity) + '">' +
+      '<div class="f-top"><span class="' + pillFor(f.severity) + '">' + esc(f.severity) + '</span><span class="f-id">' + esc(when) + '</span><span class="small muted">line' + (f.lines.length > 1 ? 's ' + esc(f.lines.join(', ')) : ' ' + esc(f.line)) + '</span></div>' +
+      '<h4>' + esc(f.title) + '</h4>' +
+      '<pre>' + esc(f.code) + '</pre>' +
+      '<p class="f-detail">' + esc(f.detail) + '</p></article>';
+  }
+
+  function render(r) {
+    if (r.error) { out.innerHTML = ''; errEl.textContent = r.error; return; }
+    var counts = { critical: 0, high: 0, medium: 0, low: 0 };
+    r.findings.forEach(function (f) { counts[f.severity]++; });
+    var h = '<div class="rls-head"><div><p class="tag mb-1">Result · checked in your browser</p><h2>' +
+      (r.findings.length ? plural(r.findings.length, 'model or feature', 'models or features') + ' to change' : 'Nothing on OpenAI’s shutdown list') +
+      '</h2><ul class="t-meta"><li>' + plural(r.lines, 'line') + ' read</li><li>OpenAI list read ' + esc(MC.fmt(r.fetched)) + '</li><li>0 bytes sent</li></ul></div></div>';
+    h += '<div class="sev-strip">' +
+      '<div class="crit' + (counts.critical ? '' : ' zero') + '"><b>' + counts.critical + '</b><span>Already off</span></div>' +
+      '<div class="high' + (counts.high ? '' : ' zero') + '"><b>' + counts.high + '</b><span>Within 90 days</span></div>' +
+      '<div class="med' + (counts.medium ? '' : ' zero') + '"><b>' + counts.medium + '</b><span>Within 180 days</span></div>' +
+      '<div' + (counts.low ? '' : ' class="zero"') + '><b>' + counts.low + '</b><span>Later</span></div>' +
+      '<div class="' + (r.passed.length ? 'ok' : 'zero') + '"><b>' + r.passed.length + '</b><span>Current</span></div></div>';
+    SEV.forEach(function (s) {
+      var list = r.findings.filter(function (f) { return f.severity === s; });
+      if (!list.length) return;
+      h += '<div class="sev-group"><h3>' + cap(s) + ' <span class="ct">' + list.length + '</span></h3>' + list.map(findingHtml).join('') + '</div>';
+    });
+    if (r.passed.length) {
+      h += '<h3 class="h4 mt-4 mb-2">Models with no shutdown announced</h3><ul class="hc-passed">' +
+        r.passed.map(function (p) { return '<li><span><strong>' + esc(p.id) + '</strong> <span class="mono small muted">line ' + esc(p.line) + '</span></span></li>'; }).join('') + '</ul>';
+    }
+    if (r.findings.length) {
+      h += '<div class="callout limit mt-3"><p><strong>Change it with your AI builder.</strong> Copy this prompt into Lovable, Bolt, Cursor or Claude with the project open, read what it changes, and try each AI feature before you publish.</p>' +
+        '<pre class="mt-2 fc-prompt" id="mc-prompt">' + esc(MC.prompt(r)) + '</pre><p class="mt-2"><button class="btn ghost" type="button" id="mc-copy">Copy the prompt</button></p></div>';
+    } else {
+      h += '<div class="callout note mt-3"><p><strong>No retiring OpenAI model in what you pasted.</strong> Model names often live only in <code>.env</code> or your host’s settings, so paste those too. Other providers (Anthropic, Google) aren’t covered yet.</p></div>';
+    }
+    h += '<div class="row mt-3"><a class="btn primary" href="#full-check">Check my whole app free</a><a class="link-arrow" href="/learn/openai-gpt-4o-shutdown-january-2027">Read the migration guide</a></div>';
+    out.innerHTML = h;
+    var copy = $('mc-copy');
+    if (copy) copy.addEventListener('click', function () {
+      var t = MC.prompt(last);
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copy.textContent = 'Copied'; }, function () {
+        var range = document.createRange(); range.selectNodeContents($('mc-prompt')); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); copy.textContent = 'Selected: press Ctrl+C';
+      });
+    });
+  }
+
+  function run(noScroll) {
+    errEl.textContent = '';
+    if (!input.value.trim()) { errEl.textContent = 'Paste your code, .env or config first.'; input.focus(); return; }
+    last = MC.scan(input.value);
+    render(last);
+    if (!noScroll && !last.error) out.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  input.addEventListener('input', function () { var n = input.value.split('\n').length; count.textContent = input.value ? plural(n, 'line') : ''; });
+  form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
+  $('mc-clear').addEventListener('click', function () { input.value = ''; out.innerHTML = ''; count.textContent = ''; errEl.textContent = ''; input.focus(); });
+  $('mc-demo').addEventListener('click', function () { input.value = MC.sample(); input.dispatchEvent(new Event('input')); run(); });
+  if (/[?&]sample\b/.test(location.search)) { input.value = MC.sample(); input.dispatchEvent(new Event('input')); run(true); }
+})();
+</script>

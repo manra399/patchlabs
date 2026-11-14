@@ -84,6 +84,7 @@
   <url><loc>https://patchlabs.dev/learn/is-my-lovable-app-secure</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/is-supabase-anon-key-safe</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/npm-dependency-vulnerabilities</loc><lastmod>2026-11-14</lastmod></url>
+  <url><loc>https://patchlabs.dev/learn/openai-gpt-4o-shutdown-january-2027</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/railway-breach-ai-keys</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/rls-policies-explained</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/learn/rotate-leaked-key-git-history</loc><lastmod>2026-11-14</lastmod></url>
@@ -128,5 +129,6 @@
   <url><loc>https://patchlabs.dev/tools/headers-check</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/key-check</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/leak-cost</loc><lastmod>2026-11-14</lastmod></url>
+  <url><loc>https://patchlabs.dev/tools/model-shutdown-check</loc><lastmod>2026-11-14</lastmod></url>
   <url><loc>https://patchlabs.dev/tools/rls-check</loc><lastmod>2026-11-14</lastmod></url>
 </urlset>
