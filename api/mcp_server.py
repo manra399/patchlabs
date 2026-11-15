@@ -12,12 +12,17 @@ import core, monitor, posture, rls
 from core import ORIGINS, ip_hash, pool
 
 router = APIRouter()
-PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
+PROTOCOLS = ("2025-06-18", "2025-11-25", "2025-03-26", "2024-11-05")
 MAX_BODY, MAX_BATCH = 256 * 1024, 20
 INSTRUCTIONS = ("PatchLabs finds personal-data leaks in Supabase / Lovable apps. rls_check is a free static scan of a public repo's "
                 "migrations. headers_check grades a public site's HTTPS, certificate, security headers and cookies from one page load. "
                 "start_check asks for the full lab check (the owner must verify the repo by email). list_apps and "
                 "run_check work on a workspace's monitored apps and need the workspace API key in the X-API-Key header.")
+
+
+def hints(read_only, idempotent, open_world):
+    """MCP tool annotations. No tool deletes or overwrites anything, so destructiveHint is always False."""
+    return {"readOnlyHint": read_only, "destructiveHint": False, "idempotentHint": idempotent, "openWorldHint": open_world}
 
 
 def schema(props, required):
@@ -26,21 +31,21 @@ def schema(props, required):
 
 REPO = {"type": "string", "description": "Public GitHub repo, e.g. owner/name or https://github.com/owner/name"}
 TOOLS = [
-    {"name": "rls_check", "title": "Static RLS check", "inputSchema": schema({"repo": REPO}, ["repo"]),
-     "description": "Scan a public repo's supabase/migrations for row-level-security mistakes (static analysis, no sign-up)."},
-    {"name": "headers_check", "title": "Security headers check",
+    {"name": "rls_check", "title": "Static RLS check", "annotations": {"title": "Static RLS check", **hints(True, True, True)}, "inputSchema": schema({"repo": REPO}, ["repo"]),
+     "description": "Free, no sign-up. Reads a public GitHub repo's supabase/migrations and lists row-level-security mistakes that could let strangers or other users read personal data (findings PL-001..PL-008 and PL-014, each with a fix). Static analysis only: it never connects to the live app or database. Use this first for any Supabase, Lovable or Bolt repo."},
+    {"name": "headers_check", "title": "Security headers check", "annotations": {"title": "Security headers check", **hints(True, True, True)},
      "inputSchema": schema({"url": {"type": "string", "description": "A public site, e.g. https://app.example.com"}}, ["url"]),
      "description": "Grade a public site's HTTPS, TLS certificate, security headers and cookie flags from one load of its home page "
                     "(no sign-up). Returns findings PL-027..PL-036 with fixes."},
-    {"name": "start_check", "title": "Request a full leak check",
+    {"name": "start_check", "title": "Request a full leak check", "annotations": {"title": "Request a full leak check", **hints(False, False, True)},
      "inputSchema": schema({"repo": REPO, "email": {"type": "string", "description": "Where the report goes"}}, ["repo", "email"]),
-     "description": "Request the full lab check. Returns a check id and a link; the repo owner proves ownership with a one-line file."},
-    {"name": "get_check", "title": "Get a check", "inputSchema": schema({"check_id": {"type": "string"}}, ["check_id"]),
+     "description": "Request the full lab check: the database is rebuilt from the repo with fake rows, leaks are proven as each kind of user, and a tested fix is written. Creates a check and emails the report address; nothing runs until the repo owner proves ownership with a one-line file. Returns a check id and link. Only call when the user asks for the full check and gives their email."},
+    {"name": "get_check", "title": "Get a check", "annotations": {"title": "Get a check", **hints(True, True, False)}, "inputSchema": schema({"check_id": {"type": "string"}}, ["check_id"]),
      "description": "Status, summary, report and fix for a check id."},
-    {"name": "list_apps", "title": "List monitored apps", "inputSchema": schema({}, []),
+    {"name": "list_apps", "title": "List monitored apps", "annotations": {"title": "List monitored apps", **hints(True, True, False)}, "inputSchema": schema({}, []),
      "description": "Apps monitored in the API key's workspace, with their last check. Needs X-API-Key."},
-    {"name": "run_check", "title": "Run a check on an app", "inputSchema": schema({"app_id": {"type": "string"}}, ["app_id"]),
-     "description": "Queue a check for a monitored app now. Needs X-API-Key."},
+    {"name": "run_check", "title": "Run a check on an app", "annotations": {"title": "Run a check on an app", **hints(False, False, True)}, "inputSchema": schema({"app_id": {"type": "string"}}, ["app_id"]),
+     "description": "Queue a new check for a monitored app now (counts toward the plan's monthly runs). Needs X-API-Key."},
 ]
 BY_NAME = {t["name"]: t for t in TOOLS}
 
@@ -84,7 +89,7 @@ def one(m, request, c):
     if method == "initialize":
         asked = params.get("protocolVersion")
         res = {"protocolVersion": asked if asked in PROTOCOLS else PROTOCOLS[0], "capabilities": {"tools": {"listChanged": False}},
-               "serverInfo": {"name": "patchlabs", "title": "PatchLabs", "version": "2.0.0"}, "instructions": INSTRUCTIONS}
+               "serverInfo": {"name": "patchlabs", "title": "PatchLabs", "version": "2.1.0"}, "instructions": INSTRUCTIONS}
     elif method == "ping":
         res = {}
     elif method == "tools/list":

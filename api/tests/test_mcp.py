@@ -31,6 +31,12 @@ def test_initialize_and_list(client):
     assert names == ["rls_check", "headers_check", "start_check", "get_check", "list_apps", "run_check"]
     for t in tools["result"]["tools"]:
         assert t["description"] and t["inputSchema"]["type"] == "object"
+        a = t["annotations"]
+        assert a["title"] == t["title"] and a["destructiveHint"] is False
+        assert set(a) == {"title", "readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"}
+    read_only = {t["name"] for t in tools["result"]["tools"] if t["annotations"]["readOnlyHint"]}
+    assert read_only == {"rls_check", "headers_check", "get_check", "list_apps"}
+    assert rpc(client, "initialize", {"protocolVersion": "2025-11-25"})["result"]["protocolVersion"] == "2025-11-25"
     assert rpc(client, "ping")["result"] == {}
 
 
