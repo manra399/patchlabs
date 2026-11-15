@@ -1,5 +1,6 @@
 """Remote MCP server at POST /mcp: JSON-RPC 2.0 over Streamable HTTP, stateless, plain JSON responses.
-Tools: rls_check, headers_check, start_check, get_check (open); list_apps, run_check (need an X-API-Key header)."""
+Tools: rls_check, headers_check, start_check, get_check (open); list_apps, run_check (need an X-API-Key header).
+POST /mcp/public serves only the four open tools, for clients that connect without auth."""
 import json
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -16,7 +17,7 @@ PROTOCOLS = ("2025-06-18", "2025-11-25", "2025-03-26", "2024-11-05")
 MAX_BODY, MAX_BATCH = 256 * 1024, 20
 INSTRUCTIONS = ("PatchLabs finds personal-data leaks in Supabase / Lovable apps. rls_check is a free static scan of a public repo's "
                 "migrations. headers_check grades a public site's HTTPS, certificate, security headers and cookies from one page load. "
-                "start_check asks for the full lab check (the owner must verify the repo by email). list_apps and "
+                "start_check asks for the full lab check (the owner proves they own the repo with a one-line file) and get_check reads it. list_apps and "
                 "run_check work on a workspace's monitored apps and need the workspace API key in the X-API-Key header.")
 
 
@@ -48,6 +49,10 @@ TOOLS = [
      "description": "Queue a new check for a monitored app now (counts toward the plan's monthly runs). Needs X-API-Key."},
 ]
 BY_NAME = {t["name"]: t for t in TOOLS}
+# /mcp/public: the four tools that need no key, for clients that only support no-auth servers (the Claude connector directory).
+PUBLIC = ("rls_check", "headers_check", "start_check", "get_check")
+PUBLIC_TOOLS = [t for t in TOOLS if t["name"] in PUBLIC]
+PUBLIC_INSTRUCTIONS = INSTRUCTIONS.split(" list_apps and")[0]
 
 
 def call_tool(name, args, request, c):
@@ -78,7 +83,7 @@ def text_result(data, is_error=False):
     return {"content": [{"type": "text", "text": json.dumps(data)}], "structuredContent": data, "isError": False}
 
 
-def one(m, request, c):
+def one(m, request, c, public=False):
     if not isinstance(m, dict) or m.get("jsonrpc") != "2.0" or not isinstance(m.get("method"), str):
         return error(m.get("id") if isinstance(m, dict) else None, -32600, "Invalid Request")
     mid, method, params = m.get("id"), m["method"], m.get("params") or {}
@@ -89,14 +94,15 @@ def one(m, request, c):
     if method == "initialize":
         asked = params.get("protocolVersion")
         res = {"protocolVersion": asked if asked in PROTOCOLS else PROTOCOLS[0], "capabilities": {"tools": {"listChanged": False}},
-               "serverInfo": {"name": "patchlabs", "title": "PatchLabs", "version": "2.1.0"}, "instructions": INSTRUCTIONS}
+               "serverInfo": {"name": "patchlabs", "title": "PatchLabs", "version": "2.1.0"},
+               "instructions": PUBLIC_INSTRUCTIONS if public else INSTRUCTIONS}
     elif method == "ping":
         res = {}
     elif method == "tools/list":
-        res = {"tools": TOOLS}
+        res = {"tools": PUBLIC_TOOLS if public else TOOLS}
     elif method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
-        if name not in BY_NAME:
+        if name not in BY_NAME or (public and name not in PUBLIC):
             return error(mid, -32602, f"Unknown tool: {name}")
         missing = [k for k in BY_NAME[name]["inputSchema"]["required"] if not isinstance(args, dict) or args.get(k) in (None, "")]
         if missing:
@@ -112,7 +118,7 @@ def one(m, request, c):
     return {"jsonrpc": "2.0", "id": mid, "result": res}
 
 
-def handle(raw, request):
+def handle(raw, request, public=False):
     try:
         msg = json.loads(raw or b"")
     except ValueError:
@@ -123,9 +129,9 @@ def handle(raw, request):
         return JSONResponse(error(None, -32600, f"Batches are limited to {MAX_BATCH} requests"))
     with pool.connection() as c:
         if isinstance(msg, list):
-            out = [r for r in (one(m, request, c) for m in msg) if r is not None]
+            out = [r for r in (one(m, request, c, public) for m in msg) if r is not None]
         else:
-            out = one(msg, request, c)
+            out = one(msg, request, c, public)
     return JSONResponse(out) if out else Response(status_code=202)
 
 
@@ -135,6 +141,15 @@ def refuse(status, message):
 
 @router.post("/mcp")
 async def mcp(request: Request):
+    return await serve(request, False)
+
+
+@router.post("/mcp/public")
+async def mcp_public(request: Request):
+    return await serve(request, True)
+
+
+async def serve(request, public):
     origin = request.headers.get("origin")
     if origin and origin not in ORIGINS:  # browsers on other sites can't drive the server (DNS rebinding / CSRF)
         return refuse(403, "Origin not allowed")
@@ -147,10 +162,12 @@ async def mcp(request: Request):
         raw += chunk
         if len(raw) > MAX_BODY:
             return refuse(413, "Request body too large")
-    return await run_in_threadpool(handle, bytes(raw), request)
+    return await run_in_threadpool(handle, bytes(raw), request, public)
 
 
 @router.get("/mcp")
 @router.delete("/mcp")
+@router.get("/mcp/public")
+@router.delete("/mcp/public")
 def mcp_no_stream():
     return JSONResponse({"detail": "This MCP server is stateless: POST JSON-RPC requests to /mcp."}, status_code=405, headers={"Allow": "POST"})

@@ -182,7 +182,7 @@
 <p class="muted">Every tool carries MCP annotations: the four read-only tools set <code>readOnlyHint</code>, so clients can run them without asking each time; <code>start_check</code> and <code>run_check</code> create a check and are marked not read-only. No tool deletes or changes anything in your app, repo or database (<code>destructiveHint: false</code>).</p>
 
 <h2 id="install">Install</h2>
-<p>The first four tools work with no key. To use <code>list_apps</code> and <code>run_check</code>, add a workspace <a href="/docs/api#api-keys">API key</a> as the <code>X-API-Key</code> header, as shown in each snippet.</p>
+<p>The first four tools work with no key. For a client that connects without any sign-in, such as a custom connector in Claude, use <code>https://api.patchlabs.dev/mcp/public</code>: it serves only those four tools.  To use <code>list_apps</code> and <code>run_check</code>, add a workspace <a href="/docs/api#api-keys">API key</a> as the <code>X-API-Key</code> header, as shown in each snippet.</p>
 <div class="tabs">
   <div role="tablist" aria-label="MCP client">
     <button role="tab" id="t-claude" aria-controls="p-claude" aria-selected="true">Claude Code</button>

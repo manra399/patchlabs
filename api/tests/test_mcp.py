@@ -113,3 +113,18 @@ def test_api_key_tools(client):
     assert call(client, "run_check", {"app_id": a["id"]}, headers=okey)["isError"] is True
     assert call(client, "list_apps", headers=okey)["structuredContent"]["apps"] == []
     assert "cost" not in json.dumps(apps).lower()
+
+
+def test_public_endpoint_has_only_open_tools(client):
+    def prpc(method, params=None):
+        body = {"jsonrpc": "2.0", "id": 1, "method": method, **({"params": params} if params is not None else {})}
+        r = client.post("/mcp/public", content=json.dumps(body), headers=H)
+        assert r.status_code == 200, r.text
+        return r.json()
+    init = prpc("initialize", {"protocolVersion": "2025-06-18"})["result"]
+    assert "X-API-Key" not in init["instructions"] and "rls_check" in init["instructions"]
+    names = [t["name"] for t in prpc("tools/list")["result"]["tools"]]
+    assert names == ["rls_check", "headers_check", "start_check", "get_check"]
+    err = prpc("tools/call", {"name": "list_apps", "arguments": {}})
+    assert err["error"]["code"] == -32602 and "Unknown tool" in err["error"]["message"]
+    assert client.get("/mcp/public").status_code == 405
