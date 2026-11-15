@@ -293,6 +293,7 @@
         <li><span><strong class="ink">No web access.</strong> Web fetch and web search are switched off for the agent.</span></li>
         <li><span><strong class="ink">Narrow write access.</strong> It may only edit the fix folder and the copy of your app’s source on the worker. It cannot touch the original repo.</span></li>
         <li><span><strong class="ink">One command.</strong> The only program it may run is our lab verifier.</span></li>
+        <li><span><strong class="ink">No env files, no transcripts.</strong> The agent can’t read <code>.env</code> files, and its session log is switched off, so a key committed to your repo isn’t copied into an agent history. Anthropic is the only model provider; no other company runs the model for us.</span></li>
         <li><span><strong class="ink">Independent proof.</strong> Whatever the agent says, the fix is re-tested by a separate verifier on a fresh lab. If that fails on every model, nothing is offered as proven and a person reviews it.</span></li>
         <li><span><strong class="ink">Your engineer approves.</strong> We never merge or deploy. You get a migration file to read, commit and ship.</span></li>
         <li><span><strong class="ink">Spend cap.</strong> Each check has a model budget. Once it’s reached, we stop escalating and a person takes over.</span></li>
@@ -317,6 +318,7 @@
           <tr><th scope="row">Lab database (rebuilt schema and fake rows)</th><td class="when">Deleted after each check</td><td>Dropped as soon as the probe and the proof finish.</td></tr>
           <tr><th scope="row">Live posture results</th><td class="when">Until you remove the domain or delete the app</td><td>The grade, findings and the response headers and cookie names of your public home page. Removing the domain deletes its history. The free headers check stores nothing.</td></tr>
           <tr><th scope="row">Working copy of your repo and run files on the worker</th><td class="when">Up to 30 days</td><td>A clone of public code plus logs, kept briefly so we can investigate a failed check, then deleted.</td></tr>
+          <tr><th scope="row">Fix agent session log</th><td class="when">Not kept</td><td>The agent runs with session logging off. Logs from before 15 November 2026 are deleted with the run files at 30 days.</td></tr>
           <tr><th scope="row">Reports, fixes and receipts</th><td class="when">Until you delete them</td><td>So your report link keeps working. Delete them from your account, or email us for a check made without an account.</td></tr>
           <tr><th scope="row">Email address, name and account data</th><td class="when">Until you delete your account</td><td><code>DELETE /me</code> (or the button in Settings) removes your user, sessions, solely owned workspaces, apps, checks and keys, plus earlier checks made with your email.</td></tr>
           <tr><th scope="row">Sign-in links</th><td class="when">20 minutes, single use</td><td>Stored only as a hash.</td></tr>

@@ -8,7 +8,7 @@ the report back. It runs on the machine that has the lab (Docker) and the fix ag
 Config comes from ~/.patchlabs/worker.env (KEY=value lines): API_URL, WORKER_TOKEN, PIPELINE (path to run.py).
 Only one check runs at a time. The pipeline is always run in dry-run mode: nothing is pushed to anyone's repo.
 Retention: pipeline run folders (runs/<YYYYMMDD-HHMMSS>/ next to PIPELINE) older than 30 days are deleted at start and
-then once a day.
+then once a day, together with any Claude Code session folder an older fix-agent run left in ~/.claude/projects.
 """
 import datetime, json, os, re, shutil, subprocess, sys, time, urllib.request
 
@@ -108,9 +108,34 @@ def expired_runs(runs, now=None, days=RETENTION_DAYS):
     return out
 
 
+def expired_agent_logs(runs, now=None, days=RETENTION_DAYS, projects=None):
+    """Claude Code session folders (~/.claude/projects/<encoded run path>) left by fix-agent runs older than `days`.
+    run.py now passes --no-session-persistence, but runs before 15 Nov 2026 kept transcripts there, outside runs/.
+    Only folders named exactly <encoded runs path>-<run timestamp> are chosen."""
+    now, out = now or time.time(), []
+    projects = projects or os.path.expanduser("~/.claude/projects")
+    prefix = re.sub(r"[^A-Za-z0-9]", "-", os.path.realpath(runs)) + "-"
+    try:
+        names = sorted(os.listdir(projects))
+    except OSError:
+        return out
+    for name in names:
+        path = os.path.join(projects, name)
+        stamp = name[len(prefix):] if name.startswith(prefix) else ""
+        if not RUN_NAME.match(stamp) or os.path.islink(path) or not os.path.isdir(path):
+            continue
+        try:
+            started = datetime.datetime.strptime(stamp, "%Y%m%d-%H%M%S").timestamp()
+        except ValueError:
+            continue
+        if now - started > days * 86400:
+            out.append(path)
+    return out
+
+
 def cleanup_runs():
     runs, removed = runs_dir(PIPELINE), 0
-    for path in expired_runs(runs):
+    for path in expired_runs(runs) + expired_agent_logs(runs):
         try:
             shutil.rmtree(path)
             removed += 1
