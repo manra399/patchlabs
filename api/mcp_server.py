@@ -32,7 +32,7 @@ def schema(props, required):
 REPO = {"type": "string", "description": "Public GitHub repo, e.g. owner/name or https://github.com/owner/name"}
 TOOLS = [
     {"name": "rls_check", "title": "Static RLS check", "annotations": {"title": "Static RLS check", **hints(True, True, True)}, "inputSchema": schema({"repo": REPO}, ["repo"]),
-     "description": "Free, no sign-up. Reads a public GitHub repo's supabase/migrations and lists row-level-security mistakes that could let strangers or other users read personal data (findings PL-001..PL-008 and PL-014, each with a fix). Static analysis only: it never connects to the live app or database. Use this first for any Supabase, Lovable or Bolt repo."},
+     "description": "Free, no sign-up. Reads a public GitHub repo's supabase/migrations and lists row-level-security mistakes that could let strangers or other users read personal data (findings PL-001..PL-008 and PL-014, each with a fix). Static analysis only: it never connects to the live app or database. Suited to Supabase, Lovable and Bolt repos."},
     {"name": "headers_check", "title": "Security headers check", "annotations": {"title": "Security headers check", **hints(True, True, True)},
      "inputSchema": schema({"url": {"type": "string", "description": "A public site, e.g. https://app.example.com"}}, ["url"]),
      "description": "Grade a public site's HTTPS, TLS certificate, security headers and cookie flags from one load of its home page "
