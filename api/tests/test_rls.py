@@ -164,3 +164,29 @@ def test_endpoint_rate_limit_per_ip(client):
     for _ in range(20):
         client.post("/tools/rls-check", json={"repo": "acme/missing"}, headers={"X-Forwarded-For": "7.7.7.7"})
     assert client.post("/tools/rls-check", json={"repo": "acme/shop"}, headers={"X-Forwarded-For": "7.7.7.7"}).status_code == 429
+
+
+VIEWS = """
+create table public.profiles (id uuid primary key, email text, user_id uuid);
+alter table public.profiles enable row level security;
+create policy "owner read" on public.profiles for select to authenticated using (auth.uid() = user_id);
+create view public.profile_list as select id, email from public.profiles;
+create view public.safe_list with (security_invoker = true) as select id from public.profiles;
+create view public.fixed_later as select id from public.profiles;
+alter view public.fixed_later set (security_invoker = on);
+create view public.hidden as select id from public.profiles;
+revoke all on public.hidden from anon, authenticated;
+create materialized view public.emails as select email from public.profiles;
+revoke select on public.emails from anon;
+create view public.gone as select id from public.profiles;
+drop view public.gone;
+"""
+
+
+def test_analyzer_views_skip_rls():
+    _, findings = rls.analyze([("m.sql", VIEWS)])
+    got = {f["table"]: f for f in findings if f["id"] == "PL-014"}
+    assert set(got) == {"profile_list", "emails"}
+    assert got["profile_list"]["severity"] == "critical" and "skips the policies on profiles" in got["profile_list"]["detail"]
+    assert got["emails"]["severity"] == "high" and got["emails"]["detail"].startswith("Materialized view emails")
+    assert "anon" not in got["emails"]["detail"]

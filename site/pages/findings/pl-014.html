@@ -64,17 +64,17 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
     <article class="docs-main prose finding is-coming">
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/findings">Findings</a></li><li aria-current="page">PL-014</li></ol></nav>
       <header class="f-head">
-        <div class="f-id"><span class="f-chip">PL-014</span><span class="pill sev-high">high (critical with personal data)</span><span class="pill pending">coming · not tested yet</span></div>
+        <div class="f-id"><span class="f-chip">PL-014</span><span class="pill sev-high">high (critical with personal data)</span><span class="pill pending">static check · lab proof coming</span></div>
         <h1>View skips row level security</h1>
         <p class="lede">Your table's policies are right, but a view on top of it runs as its owner and hands every row to the API.</p>
         <dl class="f-facts">
           <div><dt>Severity</dt><dd>High (critical with personal data)</dd></div>
           <div><dt>Who can exploit it</dt><dd>Anyone the view is granted to, often anon</dd></div>
-          <div><dt>Found by</dt><dd>Not tested yet: coming to PatchLabs Lab</dd></div>
+          <div><dt>Found by</dt><dd>Free RLS check and patchlabs-cli (static, from 15 Nov 2026); lab proof coming</dd></div>
           <div><dt>Status</dt><dd>Coming</dd></div>
         </dl>
       </header>
-      <div class="callout limit"><p><strong>PatchLabs does not test for this yet (coming).</strong> This page explains the problem, how to check your own project and how to fix it. The Lab’s live checks today are PL-001 to PL-008; this one is not part of any report until it ships. Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>
+      <div class="callout limit"><p><strong>Flagged from your SQL, not yet proven in the Lab.</strong> Since 15 Nov 2026 the free <a href="/tools/rls-check">RLS check</a> and the open-source patchlabs-cli flag this by reading your migration files. The Lab test that confirms a real read as a visitor is not built yet, so this finding is not part of a paid report until it ships. Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>
 
       <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
       <p>A Postgres view is a saved query. By default it runs with the privileges of the view's <strong>owner</strong>, not the person querying it. In Supabase, views created by migrations or the SQL editor are owned by <code>postgres</code>, which usually owns the tables too, and a table's owner is not subject to that table's row level security (unless the table uses <code>force row level security</code>). So the view returns every row, whatever your policies say.</p>

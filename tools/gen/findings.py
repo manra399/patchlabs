@@ -896,7 +896,7 @@ F.append(dict(
     title="View skips row level security",
     short="Your table's policies are right, but a view on top of it runs as its owner and hands every row to the API.",
     desc="PL-014: a view in a Supabase app runs with its owner's rights, so it ignores row level security on the tables beneath it. How to check, and the security_invoker fix.",
-    sev="high", sevlabel="high (critical with personal data)", who="Anyone the view is granted to, often anon", found="Not tested yet: coming to PatchLabs Lab",
+    sev="high", sevlabel="high (critical with personal data)", who="Anyone the view is granted to, often anon", found="Free RLS check and patchlabs-cli (static, from 15 Nov 2026); lab proof coming", static_since="15 Nov 2026",
     proof="Coming",
     what="""<p>A Postgres view is a saved query. By default it runs with the privileges of the view's <strong>owner</strong>, not the person querying it. In Supabase, views created by migrations or the SQL editor are owned by <code>postgres</code>, which usually owns the tables too, and a table's owner is not subject to that table's row level security (unless the table uses <code>force row level security</code>). So the view returns every row, whatever your policies say.</p>
 <p>Views in the <code>public</code> schema are served by the API just like tables. If <code>anon</code> or <code>authenticated</code> can select from the view, one request to <code>/rest/v1/&lt;view name&gt;</code> skips your careful owner-only policy. Postgres 15 added the fix: <code>security_invoker = true</code> makes the view run as the caller, so the table's policies apply again.</p>
@@ -2309,7 +2309,13 @@ def page(f):
               '","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"}}')
     status_pill = '<span class="pill pending">coming · not tested yet</span>' if coming else f'<span class="pill plain">{" ".join(LINE_NAME[f["line"]].split()[1:])}</span>'
     status_box = ""
-    if coming:
+    if coming and f.get("static_since"):
+        status_pill = '<span class="pill pending">static check · lab proof coming</span>'
+        status_box = ('<div class="callout limit"><p><strong>Flagged from your SQL, not yet proven in the Lab.</strong> Since ' + f["static_since"] +
+                      ' the free <a href="/tools/rls-check">RLS check</a> and the open-source patchlabs-cli flag this by reading your migration files. '
+                      'The Lab test that confirms a real read as a visitor is not built yet, so this finding is not part of a paid report until it ships. '
+                      'Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>')
+    elif coming:
         status_box = ('<div class="callout limit"><p><strong>PatchLabs does not test for this yet (coming).</strong> This page explains the problem, '
                       'how to check your own project and how to fix it. The Lab’s live checks today are PL-001 to PL-008; this one is not part of any report until it ships. '
                       'Shipping dates go in the <a href="/changelog">changelog</a>.</p></div>')
