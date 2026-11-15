@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cursor breach: keys in AI agent traces, and how to keep yours out | PatchLabs</title>
+<meta name="description" content="Cursor says an attacker used a key exposed at Fireworks AI to copy coding agent traces, some holding unredacted credentials. What happened, what to do if you use Cursor, and a tested way to keep keys out of agent history.">
+<link rel="canonical" href="https://patchlabs.dev/learn/cursor-fireworks-breach-agent-traces-keys">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="The Cursor breach: keys in AI agent traces, and how to keep yours out | PatchLabs">
+<meta property="og:description" content="Cursor says an attacker used a key exposed at Fireworks AI to copy coding agent traces, some holding unredacted credentials. What happened, what to do if you use Cursor, and a tested way to keep keys out of agent history.">
+<meta property="og:url" content="https://patchlabs.dev/learn/cursor-fireworks-breach-agent-traces-keys">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Cursor breach: keys in AI agent traces, and how to keep yours out | PatchLabs">
+<meta name="twitter:description" content="Cursor says an attacker used a key exposed at Fireworks AI to copy coding agent traces, some holding unredacted credentials. What happened, what to do if you use Cursor, and a tested way to keep keys out of agent history.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<!-- GitHub Pages can't send frame-ancestors or X-Frame-Options, so pages refuse to show inside another site's frame (clickjacking on approve and settings). -->
+<script>if(window.top!==window.self){document.documentElement.style.display='none';try{window.top.location=window.self.location.href}catch(e){}}</script>
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,500..600;1,9..144,480..520&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"The Cursor breach started with keys inside AI agent traces. Keep yours out.","description":"Cursor says an attacker used a key exposed at Fireworks AI to copy coding agent traces, some holding unredacted credentials. What happened, what to do if you use Cursor, and a tested way to keep keys out of agent history.","datePublished":"2026-11-15","dateModified":"2026-11-15","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/cursor-fireworks-breach-agent-traces-keys"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"The Cursor breach started with keys inside AI agent traces. Keep yours out.","item":"https://patchlabs.dev/learn/cursor-fireworks-breach-agent-traces-keys"}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn" aria-current="page"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+<li><a href="/learn/cursor-fireworks-breach-agent-traces-keys" aria-current="page">The Cursor breach and keys in agent traces</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">The Cursor breach and keys in agent traces</li></ol></nav>
+      <p class="lab">Keys and incidents</p>
+      <h1>The Cursor breach started with keys inside AI agent traces. Keep yours out.</h1>
+      <p class="lede">Cursor says an attacker copied stored coding agent traces, and some of those traces held API keys in plain text. Those keys opened more of Cursor’s systems. The keys got into the traces because an agent read them or a person pasted them in. If you build with an AI coding agent, your keys can end up in its history the same way. Here’s what happened, what to do if you use Cursor, and a setting we tested that keeps a <code>.env</code> file out of the agent’s history.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 15 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Cursor’s 13 November update says an attacker used an access key that Cursor had issued to Fireworks AI, its inference provider, after Fireworks exposed it. With it, the attacker copied a bucket of mostly 2025 coding agent traces from sessions not in Privacy Mode.</li><li>Some traces held unredacted credentials. Cursor says fewer than 0.05% of users had traces exposed and fewer than 0.01% of customers had API credentials exposed. Those credentials opened archived repos, support emails and more.</li><li>Separately, fake builds 2.1.312 and 2.1.313 of the Claude Code extension sat in Cursor’s marketplace cache for about 11 hours on 29 October. Cursor says uninstalling alone may not be enough.</li><li>We tested Claude Code: when the agent ran <code>cat .env</code> and replied with only the variable name, the full key was still saved twice in plain text in the local session log.</li><li>With a deny rule for <code>Read(./.env)</code>, the agent refused both <code>cat .env</code> and <code>awk 1 .env</code>, and the key never reached the log.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#what-happened">What Cursor says happened</a></li><li><a href="#cursor-users">If you use Cursor</a></li><li><a href="#why">Why keys end up in agent history</a></li><li><a href="#tested">What we tested in Claude Code</a></li><li><a href="#keep-out">Keep keys out of agent history</a></li><li><a href="#check">Check your own agent history for keys</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for founders and agencies who build apps with an AI coding agent such as Cursor, Claude Code or Codex. Every fact about the incident comes from <a href="https://cursor.com/blog/security-incident-update">Cursor’s update of 13 November 2026</a>. We have no inside information. The Claude Code tests in the <a href="#tested">second half</a> we ran ourselves on 15 November 2026 with Claude Code 2.1.277 and a fake key.</p>
+
+<h2 id="what-happened">What Cursor says happened</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Question</th><th scope="col">Cursor’s answer</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Where it started</th><td>At Fireworks AI, a company that ran AI models for Cursor. Fireworks exposed an access key that Cursor had issued to it.</td></tr>
+    <tr><th scope="row">What was copied</th><td>A read-only storage bucket of coding agent traces, mostly from 2025, from sessions not in Privacy Mode. Cursor kept these for model training.</td></tr>
+    <tr><th scope="row">Why it spread</th><td>Some traces held credentials in plain text. The attacker used them to reach archived non-production code, limited support data and emails, usage metrics and contact details, some agent conversation summaries, and credentials users had sent to support.</td></tr>
+    <tr><th scope="row">How many</th><td>Fewer than 0.05% of users had traces exposed. Fewer than 0.01% of customers had API credentials exposed. These are different groups, so don’t add them up. Affected users were told directly.</td></tr>
+    <tr><th scope="row">Fake extension</th><td>On 29 October, fake builds 2.1.312 and 2.1.313 of the Claude Code extension were placed in the cache behind Cursor’s marketplace for about 11 hours. At most 5,000 users could have received them. Anthropic didn’t publish them, and Open VSX never had them.</td></tr>
+    <tr><th scope="row">Not affected</th><td>Privacy Mode prompts and code, customer repositories, production systems, the Cursor app and its official updates, and release signing keys.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="cursor-users">If you use Cursor</h2>
+<ol>
+  <li><strong>Check your email from Cursor.</strong> If Cursor told you credentials were exposed, rotate every key it listed. If you got no notice, Cursor says your data wasn’t in those traces.</li>
+  <li><strong>Check the Claude Code extension version.</strong> If you installed or updated it in Cursor on 29 October and got 2.1.312 or 2.1.313, follow the clean-up steps in Cursor’s 30 October security notice. Cursor says uninstalling alone may not be enough.</li>
+  <li><strong>Rotate any key you have ever pasted into an agent chat,</strong> in Cursor or anywhere else, if the key still works. You can’t list every place a chat was stored, so treat a pasted key as shared. <a href="/learn/rotate-leaked-key-git-history#rotate">Where to rotate each kind of key</a>.</li>
+  <li><strong>Turn on Privacy Mode</strong> if your work allows it. Cursor says Privacy Mode prompts and code weren’t affected.</li>
+</ol>
+
+<h2 id="why">Why keys end up in agent history</h2>
+<p>A coding agent records what it does: your messages, the commands it runs and what those commands print. If it runs <code>cat .env</code> to “check your config”, the output, keys included, is now part of the session. The same happens when you paste a key into the chat to “just get it working”. That record may be kept on your machine, by the tool’s company, or by the company that runs the model for it, as Fireworks did for Cursor.</p>
+<p>Ignore files don’t fully stop this. Cursor’s own docs say <code>.cursorignore</code> blocks files from Agent, Tab and @ mentions, but that the terminal and MCP tools the agent uses “cannot block access” to those files. So an agent that runs a shell command can still read your <code>.env</code>.</p>
+
+<h2 id="tested">What we tested in Claude Code</h2>
+<p>Claude Code keeps each session as a file under <code>~/.claude/projects/</code>. We made an empty project with a <code>.env</code> holding a fake OpenAI key, let the agent run <code>cat</code>, and asked it which variable names the file defines.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Setup</th><th scope="col">What happened</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">No deny rule</th><td>The agent ran <code>cat .env</code> and its reply named only <code>OPENAI_API_KEY</code>. The full key was still saved twice in the session file, in plain text. The file was readable only by our user account.</td></tr>
+    <tr><th scope="row">Deny rule for <code>Read(./.env)</code></th><td>The agent refused <code>cat .env</code>. Given broad Bash access and told to run <code>awk 1 .env</code>, it refused that too. The key never appeared in the session file.</td></tr>
+  </tbody>
+</table></div>
+<p>So a polite answer doesn’t mean the secret stayed out of the record. We tested two commands, not every way a program can read a file, so treat the deny rule as a strong default, not a guarantee. The safest key is one the agent never needs to see.</p>
+
+<h2 id="keep-out">Keep keys out of agent history</h2>
+<p>Add this to <code>.claude/settings.json</code> in your project, and commit it so everyone on the project gets it. Deny rules apply straight away, without the folder trust step.</p>
+<div class="code"><div class="code-bar"><span class="name">.claude/settings.json</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}</code></pre></div>
+<ul>
+  <li><strong>Never paste a key into a chat.</strong> Put it in <code>.env</code> or your host’s environment settings, and ask the agent to use the variable name.</li>
+  <li><strong>Give agents their own keys.</strong> Use a separate, low-limit key for development, never your production key, so a leaked trace can only do limited damage. <a href="/learn/railway-breach-ai-keys#cap">How to cap what a key can spend</a>.</li>
+  <li><strong>Use the narrowest key that works.</strong> A Supabase anon key, a Stripe restricted key, a GitHub token scoped to one repo.</li>
+</ul>
+
+<h2 id="check">Check your own agent history for keys</h2>
+<p>This lists Claude Code session files that hold something shaped like a key. It prints only file names, not the keys, and nothing leaves your machine.</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rlE "sk-proj-|sk-ant-|sk-or-|sk_live_|rk_live_|ghp_|github_pat_|AKIA[0-9A-Z]{16}" \
+  ~/.claude/projects --include='*.jsonl' 2&gt;/dev/null</code></pre></div>
+<p>If it finds a file, rotate the key first. Deleting the file afterwards removes your local copy, but you can’t tell where else the session went, so rotation is the fix. Then run the same check on your code and its git history, or paste your files into the <a href="/tools/key-check">free key check</a>, which runs in your browser.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://cursor.com/blog/security-incident-update">Cursor: An update on our recent security incident</a> (13 Nov 2026)</li>
+  <li><a href="https://cursor.com/docs/context/ignore-files">Cursor docs: ignore files</a> (terminal and MCP limits)</li>
+  <li><a href="https://code.claude.com/docs/en/settings">Claude Code docs: settings files and deny rules</a></li>
+  <li>Our own test, 15 Nov 2026, Claude Code 2.1.277, fake key, empty project</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-009"><span class="n-big">PL-009</span><h3>AI, payment or database key in the code</h3></a><a class="card link" href="/findings/pl-011"><span class="n-big">PL-011</span><h3>Key still in git history</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Are any of these keys also in your code?</h2>
+        <p>Paste code, a <code>.env</code> or your built JavaScript bundle into the free key check. It runs in your browser: no request is sent and nothing is stored. It flags secret keys (AI providers, Stripe, AWS, GitHub, database URLs), tells a Supabase anon key from a service role key, and links to where to rotate each one.</p>
+        <p><a class="btn primary" href="/tools/key-check">Open the free key check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/key-check?sample">See a sample result</a></span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 15 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20cursor-fireworks-breach-agent-traces-keys">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/claude-code-settings-local-json-secrets" rel="prev"><span>Previous guide</span>Claude Code saved your token in settings.local.json. Is it public?</a><a class="next" href="/learn/vibe-coded-app-security-checklist" rel="next"><span>Next guide</span>Pre-launch security checklist for vibe-coded apps</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what-happened">What Cursor says happened</a></li><li><a href="#cursor-users">If you use Cursor</a></li><li><a href="#why">Why keys end up in agent history</a></li><li><a href="#tested">What we tested in Claude Code</a></li><li><a href="#keep-out">Keep keys out of agent history</a></li><li><a href="#check">Check your own agent history for keys</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Independent app verification for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK · <a href="https://www.linkedin.com/company/patchlabsdev" rel="noopener" target="_blank">LinkedIn</a></p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/tools/key-check">Free key check</a></li>
+        <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
+        <li><a href="/tools/edge-function-check">Free Edge Function check</a></li>
+        <li><a href="/tools/chat-render-check">Free AI chat check</a></li>
+        <li><a href="/tools/model-shutdown-check">Free model shutdown check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="https://www.linkedin.com/company/patchlabsdev" rel="noopener" target="_blank">LinkedIn</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>

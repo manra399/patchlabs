@@ -1,0 +1,146 @@
+<!--
+title: The Cursor breach: keys in AI agent traces, and how to keep yours out | PatchLabs
+description: Cursor says an attacker used a key exposed at Fireworks AI to copy coding agent traces, some holding unredacted credentials. What happened, what to do if you use Cursor, and a tested way to keep keys out of agent history.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"The Cursor breach started with keys inside AI agent traces. Keep yours out.","description":"Cursor says an attacker used a key exposed at Fireworks AI to copy coding agent traces, some holding unredacted credentials. What happened, what to do if you use Cursor, and a tested way to keep keys out of agent history.","datePublished":"2026-11-15","dateModified":"2026-11-15","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/cursor-fireworks-breach-agent-traces-keys"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"The Cursor breach started with keys inside AI agent traces. Keep yours out.","item":"https://patchlabs.dev/learn/cursor-fireworks-breach-agent-traces-keys"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+<li><a href="/learn/cursor-fireworks-breach-agent-traces-keys" aria-current="page">The Cursor breach and keys in agent traces</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">The Cursor breach and keys in agent traces</li></ol></nav>
+      <p class="lab">Keys and incidents</p>
+      <h1>The Cursor breach started with keys inside AI agent traces. Keep yours out.</h1>
+      <p class="lede">Cursor says an attacker copied stored coding agent traces, and some of those traces held API keys in plain text. Those keys opened more of Cursor’s systems. The keys got into the traces because an agent read them or a person pasted them in. If you build with an AI coding agent, your keys can end up in its history the same way. Here’s what happened, what to do if you use Cursor, and a setting we tested that keeps a <code>.env</code> file out of the agent’s history.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 15 Nov 2026</span><span>4 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Cursor’s 13 November update says an attacker used an access key that Cursor had issued to Fireworks AI, its inference provider, after Fireworks exposed it. With it, the attacker copied a bucket of mostly 2025 coding agent traces from sessions not in Privacy Mode.</li><li>Some traces held unredacted credentials. Cursor says fewer than 0.05% of users had traces exposed and fewer than 0.01% of customers had API credentials exposed. Those credentials opened archived repos, support emails and more.</li><li>Separately, fake builds 2.1.312 and 2.1.313 of the Claude Code extension sat in Cursor’s marketplace cache for about 11 hours on 29 October. Cursor says uninstalling alone may not be enough.</li><li>We tested Claude Code: when the agent ran <code>cat .env</code> and replied with only the variable name, the full key was still saved twice in plain text in the local session log.</li><li>With a deny rule for <code>Read(./.env)</code>, the agent refused both <code>cat .env</code> and <code>awk 1 .env</code>, and the key never reached the log.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#what-happened">What Cursor says happened</a></li><li><a href="#cursor-users">If you use Cursor</a></li><li><a href="#why">Why keys end up in agent history</a></li><li><a href="#tested">What we tested in Claude Code</a></li><li><a href="#keep-out">Keep keys out of agent history</a></li><li><a href="#check">Check your own agent history for keys</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for founders and agencies who build apps with an AI coding agent such as Cursor, Claude Code or Codex. Every fact about the incident comes from <a href="https://cursor.com/blog/security-incident-update">Cursor’s update of 13 November 2026</a>. We have no inside information. The Claude Code tests in the <a href="#tested">second half</a> we ran ourselves on 15 November 2026 with Claude Code 2.1.277 and a fake key.</p>
+
+<h2 id="what-happened">What Cursor says happened</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Question</th><th scope="col">Cursor’s answer</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Where it started</th><td>At Fireworks AI, a company that ran AI models for Cursor. Fireworks exposed an access key that Cursor had issued to it.</td></tr>
+    <tr><th scope="row">What was copied</th><td>A read-only storage bucket of coding agent traces, mostly from 2025, from sessions not in Privacy Mode. Cursor kept these for model training.</td></tr>
+    <tr><th scope="row">Why it spread</th><td>Some traces held credentials in plain text. The attacker used them to reach archived non-production code, limited support data and emails, usage metrics and contact details, some agent conversation summaries, and credentials users had sent to support.</td></tr>
+    <tr><th scope="row">How many</th><td>Fewer than 0.05% of users had traces exposed. Fewer than 0.01% of customers had API credentials exposed. These are different groups, so don’t add them up. Affected users were told directly.</td></tr>
+    <tr><th scope="row">Fake extension</th><td>On 29 October, fake builds 2.1.312 and 2.1.313 of the Claude Code extension were placed in the cache behind Cursor’s marketplace for about 11 hours. At most 5,000 users could have received them. Anthropic didn’t publish them, and Open VSX never had them.</td></tr>
+    <tr><th scope="row">Not affected</th><td>Privacy Mode prompts and code, customer repositories, production systems, the Cursor app and its official updates, and release signing keys.</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="cursor-users">If you use Cursor</h2>
+<ol>
+  <li><strong>Check your email from Cursor.</strong> If Cursor told you credentials were exposed, rotate every key it listed. If you got no notice, Cursor says your data wasn’t in those traces.</li>
+  <li><strong>Check the Claude Code extension version.</strong> If you installed or updated it in Cursor on 29 October and got 2.1.312 or 2.1.313, follow the clean-up steps in Cursor’s 30 October security notice. Cursor says uninstalling alone may not be enough.</li>
+  <li><strong>Rotate any key you have ever pasted into an agent chat,</strong> in Cursor or anywhere else, if the key still works. You can’t list every place a chat was stored, so treat a pasted key as shared. <a href="/learn/rotate-leaked-key-git-history#rotate">Where to rotate each kind of key</a>.</li>
+  <li><strong>Turn on Privacy Mode</strong> if your work allows it. Cursor says Privacy Mode prompts and code weren’t affected.</li>
+</ol>
+
+<h2 id="why">Why keys end up in agent history</h2>
+<p>A coding agent records what it does: your messages, the commands it runs and what those commands print. If it runs <code>cat .env</code> to “check your config”, the output, keys included, is now part of the session. The same happens when you paste a key into the chat to “just get it working”. That record may be kept on your machine, by the tool’s company, or by the company that runs the model for it, as Fireworks did for Cursor.</p>
+<p>Ignore files don’t fully stop this. Cursor’s own docs say <code>.cursorignore</code> blocks files from Agent, Tab and @ mentions, but that the terminal and MCP tools the agent uses “cannot block access” to those files. So an agent that runs a shell command can still read your <code>.env</code>.</p>
+
+<h2 id="tested">What we tested in Claude Code</h2>
+<p>Claude Code keeps each session as a file under <code>~/.claude/projects/</code>. We made an empty project with a <code>.env</code> holding a fake OpenAI key, let the agent run <code>cat</code>, and asked it which variable names the file defines.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Setup</th><th scope="col">What happened</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">No deny rule</th><td>The agent ran <code>cat .env</code> and its reply named only <code>OPENAI_API_KEY</code>. The full key was still saved twice in the session file, in plain text. The file was readable only by our user account.</td></tr>
+    <tr><th scope="row">Deny rule for <code>Read(./.env)</code></th><td>The agent refused <code>cat .env</code>. Given broad Bash access and told to run <code>awk 1 .env</code>, it refused that too. The key never appeared in the session file.</td></tr>
+  </tbody>
+</table></div>
+<p>So a polite answer doesn’t mean the secret stayed out of the record. We tested two commands, not every way a program can read a file, so treat the deny rule as a strong default, not a guarantee. The safest key is one the agent never needs to see.</p>
+
+<h2 id="keep-out">Keep keys out of agent history</h2>
+<p>Add this to <code>.claude/settings.json</code> in your project, and commit it so everyone on the project gets it. Deny rules apply straight away, without the folder trust step.</p>
+<div class="code"><div class="code-bar"><span class="name">.claude/settings.json</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}</code></pre></div>
+<ul>
+  <li><strong>Never paste a key into a chat.</strong> Put it in <code>.env</code> or your host’s environment settings, and ask the agent to use the variable name.</li>
+  <li><strong>Give agents their own keys.</strong> Use a separate, low-limit key for development, never your production key, so a leaked trace can only do limited damage. <a href="/learn/railway-breach-ai-keys#cap">How to cap what a key can spend</a>.</li>
+  <li><strong>Use the narrowest key that works.</strong> A Supabase anon key, a Stripe restricted key, a GitHub token scoped to one repo.</li>
+</ul>
+
+<h2 id="check">Check your own agent history for keys</h2>
+<p>This lists Claude Code session files that hold something shaped like a key. It prints only file names, not the keys, and nothing leaves your machine.</p>
+<div class="code"><div class="code-bar"><span class="name">terminal</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>grep -rlE "sk-proj-|sk-ant-|sk-or-|sk_live_|rk_live_|ghp_|github_pat_|AKIA[0-9A-Z]{16}" \
+  ~/.claude/projects --include='*.jsonl' 2&gt;/dev/null</code></pre></div>
+<p>If it finds a file, rotate the key first. Deleting the file afterwards removes your local copy, but you can’t tell where else the session went, so rotation is the fix. Then run the same check on your code and its git history, or paste your files into the <a href="/tools/key-check">free key check</a>, which runs in your browser.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://cursor.com/blog/security-incident-update">Cursor: An update on our recent security incident</a> (13 Nov 2026)</li>
+  <li><a href="https://cursor.com/docs/context/ignore-files">Cursor docs: ignore files</a> (terminal and MCP limits)</li>
+  <li><a href="https://code.claude.com/docs/en/settings">Claude Code docs: settings files and deny rules</a></li>
+  <li>Our own test, 15 Nov 2026, Claude Code 2.1.277, fake key, empty project</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-009"><span class="n-big">PL-009</span><h3>AI, payment or database key in the code</h3></a><a class="card link" href="/findings/pl-011"><span class="n-big">PL-011</span><h3>Key still in git history</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Are any of these keys also in your code?</h2>
+        <p>Paste code, a <code>.env</code> or your built JavaScript bundle into the free key check. It runs in your browser: no request is sent and nothing is stored. It flags secret keys (AI providers, Stripe, AWS, GitHub, database URLs), tells a Supabase anon key from a service role key, and links to where to rotate each one.</p>
+        <p><a class="btn primary" href="/tools/key-check">Open the free key check</a></p>
+        <div class="form-meta"><span>Free, no sign-up</span><span>Nothing leaves your browser</span><span><a href="/tools/key-check?sample">See a sample result</a></span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 15 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20cursor-fireworks-breach-agent-traces-keys">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/claude-code-settings-local-json-secrets" rel="prev"><span>Previous guide</span>Claude Code saved your token in settings.local.json. Is it public?</a><a class="next" href="/learn/vibe-coded-app-security-checklist" rel="next"><span>Next guide</span>Pre-launch security checklist for vibe-coded apps</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what-happened">What Cursor says happened</a></li><li><a href="#cursor-users">If you use Cursor</a></li><li><a href="#why">Why keys end up in agent history</a></li><li><a href="#tested">What we tested in Claude Code</a></li><li><a href="#keep-out">Keep keys out of agent history</a></li><li><a href="#check">Check your own agent history for keys</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
