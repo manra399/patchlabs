@@ -573,3 +573,10 @@ a.cap-row:hover { background: var(--bg-2); }
 :root[data-theme="dark"] .h4-proof { background: #08090c; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .h4-proof { background: #08090c; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); } }
 @media (max-width: 560px) { .h4-pill .sep, .h4-pill .more { display: none; } }
+
+.h4-trust { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 36px; align-items: center; margin-top: 56px; padding-top: 34px; border-top: 1px solid rgba(255,255,255,.12); }
+.h4-trust b { font: 500 clamp(52px, 6vw, 84px)/1 var(--display); letter-spacing: -.03em; color: #ffc46b; font-variant-numeric: lining-nums; }
+.h4-trust b small { font-size: .42em; color: #8a929d; margin-left: 4px; letter-spacing: 0; }
+.h4-trust p { margin: 0; font-size: 18px; line-height: 1.55; color: #c9ced5; max-width: 40em; }
+.h4-trust + .h4-src { margin-top: 18px; }
+@media (max-width: 700px) { .h4-trust { grid-template-columns: 1fr; gap: 14px; } .h4-trust p { font-size: 16px; } }
