@@ -1,0 +1,104 @@
+<!--
+title: Claude Code plugin | PatchLabs docs
+description: Install the PatchLabs plugin for Claude Code: a leak-check skill that scans Supabase and Lovable apps, explains findings in plain English and drafts a fix migration you approve, plus the PatchLabs MCP server.
+layout: marketing
+nav: docs
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/assets/pages/E-docs.js" defer></script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Docs","item":"https://patchlabs.dev/docs"},{"@type":"ListItem","position":3,"name":"Claude Code plugin","item":"https://patchlabs.dev/docs/claude-plugin"}]}</script>
+-->
+<main id="main">
+<div class="wrap wide docs">
+<nav class="docs-nav" aria-label="Docs">
+<div class="docs-search" role="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><label class="sr-only" for="docs-q">Search the docs</label><input id="docs-q" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><ul class="results" id="docs-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<details open><summary>Docs menu</summary>
+<h2>Get started</h2><ul>
+<li><a href="/docs">Quickstart</a></li>
+<li><a href="/docs/verification">Proving repo ownership</a></li>
+<li><a href="/docs/reading-a-report">Reading a report</a></li>
+<li><a href="/docs/findings">Findings and product lines</a></li>
+<li><a href="/docs/applying-a-fix">Applying a fix</a></li>
+<li><a href="/docs/decisions">Decisions and questions</a></li>
+</ul>
+<h2>Monitor and share</h2><ul>
+<li><a href="/docs/monitoring">Monitoring</a></li>
+<li><a href="/docs/badge">Badge</a></li>
+<li><a href="/docs/receipts">Signed receipts</a></li>
+<li><a href="/docs/teams">Teams and agencies</a></li>
+</ul>
+<h2>Build on PatchLabs</h2><ul>
+<li><a href="/docs/api">REST API</a></li>
+<li><a href="/docs/webhooks">Webhooks</a></li>
+<li><a href="/docs/github-action">GitHub Action</a></li>
+<li><a href="/docs/mcp">MCP server</a></li>
+<li><a href="/docs/claude-plugin" aria-current="page">Claude Code plugin</a></li>
+</ul>
+<h2>Help</h2><ul>
+<li><a href="/docs/faq">FAQ</a></li>
+<li><a href="/docs/glossary">Glossary</a></li>
+</ul>
+<h2>Elsewhere</h2><ul><li><a href="/sample-report">Sample report</a></li><li><a href="/tools/rls-check">Free RLS check</a></li><li><a href="/research/methodology">Methodology</a></li><li><a href="/changelog">Changelog</a></li></ul>
+</details></nav>
+<article class="docs-main prose">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/docs">Docs</a></li><li aria-current="page">Claude Code plugin</li></ol></nav>
+<p class="lab">Claude Code</p>
+<h1>Claude Code plugin</h1>
+<p class="lede">Ask Claude Code “does this app leak user data?” and get a straight answer. The PatchLabs plugin adds a skill that runs the free PatchLabs checks, explains each finding in plain English, writes the fix as a new migration once you approve it, and re-scans to confirm.</p>
+<h2 id="install">Install</h2>
+<p>In Claude Code, run these two commands:</p>
+<div class="code"><div class="code-bar"><span class="name">Claude Code</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>/plugin marketplace add manra399/patchlabs-claude-plugin
+/plugin install patchlabs@patchlabs</code></pre></div>
+<p>Then, in a repo with a <code>supabase/migrations</code> folder, ask:</p>
+<div class="code"><div class="code-bar"><span class="name">Prompt</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>Does this app leak user data?</code></pre></div>
+<p>For a public repo you don’t have checked out, name it: “Run a PatchLabs RLS check on owner/name”. For a live site: “Check the security headers of https://app.example.com”.</p>
+
+<h2 id="what-you-see">What you see</h2>
+<p>This is the reply from a test run on our demo app (<code>manra399/patchlabs-demo-app</code>), shortened:</p>
+<div class="window">
+<pre class="transcript lines" aria-label="Example reply">
+<span class="ln"><span class="leak">critical</span> · PL-001 · profiles  <span class="dim">(…_init.sql:12)</span></span>
+<span class="ln">Anyone with your public anon key can read every</span>
+<span class="ln">row of profiles, including email and phone.</span>
+<span class="ln"><span class="dim">More: patchlabs.dev/findings/pl-001</span></span>
+<span class="ln"> </span>
+<span class="ln">medium · PL-004 · profiles  <span class="dim">(…_init.sql:13)</span></span>
+<span class="ln">The UPDATE policy has no WITH CHECK, so a user can</span>
+<span class="ln">change their row into anything.</span>
+<span class="ln"> </span>
+<span class="ln">Should I write a migration to fix both?</span>
+</pre>
+</div>
+<p>If you say yes, Claude writes <code>supabase/migrations/&lt;timestamp&gt;_patchlabs_fix.sql</code>, shows what each statement changes for your users, and lists app code that may need updating. You apply it with <code>supabase db push</code> or the SQL editor. Then it runs the scan again and tells you which findings are gone.</p>
+
+<h2 id="how-it-scans">How it scans</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">You have</th><th scope="col">The skill runs</th><th scope="col">What leaves your machine</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">The repo open in Claude Code (private or public)</th><td>The free, open-source <a href="https://github.com/manra399/patchlabs-cli">patchlabs-cli</a>: SQL policies, keys in client code, Claude Code settings secrets, edge functions, webhooks, Firebase rules, dependencies</td><td>Package names and versions, sent to OSV for the dependency check. Nothing else.</td></tr>
+    <tr><th scope="row">A public GitHub repo name</th><td>The <code>rls_check</code> tool of the <a href="/docs/mcp">PatchLabs MCP server</a></td><td>The repo name</td></tr>
+    <tr><th scope="row">A live URL</th><td><code>headers_check</code>: one load of the home page</td><td>The URL</td></tr>
+  </tbody>
+</table></div>
+<p>The CLI is pure Python 3.9+ with no dependencies. The skill runs it with whatever is installed (<code>patchlabs</code>, <code>uvx</code>, <code>pipx</code>, or a shallow clone) and installs nothing globally. The plugin connects to <code>https://api.patchlabs.dev/mcp/public</code>, which needs no key.</p>
+
+<h2 id="rules">Rules the skill follows</h2>
+<ul>
+  <li><strong>It never runs SQL against your database.</strong> Fixes are a new migration file, shown to you first, and applied by you.</li>
+  <li><strong>It says how sure it is.</strong> A scan reads your files, so it reports what the migrations say, not what your live database does. Changes made in the Supabase dashboard are invisible to it.</li>
+  <li><strong>It asks before fixing a table that may be public on purpose</strong>, such as blog posts or a product catalogue.</li>
+  <li><strong>For a leaked key, rotation comes first.</strong> Removing a key from the code doesn’t revoke it; it stays in git history.</li>
+  <li><strong>Your apps only.</strong> It doesn’t scan other people’s apps.</li>
+</ul>
+
+<h2 id="other-agents">Use the skill elsewhere</h2>
+<p>The skill is a plain <a href="https://agentskills.io">Agent Skill</a> folder, <code>plugins/patchlabs/skills/patchlabs-leak-check</code> in the <a href="https://github.com/manra399/patchlabs-claude-plugin">plugin repo</a>. Copy it into <code>~/.claude/skills/</code>, upload it as a zip in claude.ai under Settings → Capabilities → Skills, or put it wherever your agent loads skills from. Without the plugin’s MCP server it still runs the local scan.</p>
+
+<h2 id="limits">Good to know</h2>
+<div class="callout limit"><p><strong>A clean scan is not proof.</strong> Static checks find the common mistakes in your files. To see what a stranger, a signed-in user and an owner can actually read, and get a fix tested in a rebuilt copy of your database, ask Claude for the <a href="/check">full PatchLabs check</a>. It needs you to commit one file to prove you own the repo, and it’s free in early access.</p></div>
+<div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20Claude%20Code%20plugin">Tell the founder</a></span></div>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/mcp" rel="prev"><span>Previous</span>MCP server</a><a class="next" href="/docs/faq" rel="next"><span>Next</span>FAQ</a></nav>
+</article>
+<aside class="toc" aria-label="On this page">
+<h2>On this page</h2>
+<ul><li><a href="#install">Install</a></li><li><a href="#what-you-see">What you see</a></li><li><a href="#how-it-scans">How it scans</a></li><li><a href="#rules">Rules the skill follows</a></li><li><a href="#other-agents">Use the skill elsewhere</a></li><li><a href="#limits">Good to know</a></li></ul>
+</aside>
+</div>
+</main>

@@ -68,7 +68,7 @@ jobs:
     <tr><th scope="row"><code>api-key</code></th><td>required</td><td>Workspace API key (<code>pl_live_…</code>). Pass it from a secret.</td></tr>
     <tr><th scope="row"><code>app-id</code></th><td>required</td><td>The monitored app’s ID.</td></tr>
     <tr><th scope="row"><code>wait</code></th><td><code>true</code></td><td>Wait for the result. <code>false</code> starts the check and ends the step straight away.</td></tr>
-    <tr><th scope="row"><code>fail-on-leak</code></th><td><code>true</code></td><td>Fail the step when the finished check’s status is <code>done</code> or <code>needs_review</code>.</td></tr>
+    <tr><th scope="row"><code>fail-on-leak</code></th><td><code>true</code></td><td>Fail the step when the finished check (<code>done</code> or <code>needs_review</code>) has leaking tables your team hasn’t <a href="/docs/decisions#suppressions">marked as intended</a>.</td></tr>
     <tr><th scope="row"><code>timeout-minutes</code></th><td><code>30</code></td><td>How long to wait for a result.</td></tr>
     <tr><th scope="row"><code>fail-on-timeout</code></th><td><code>false</code></td><td>Fail instead of warn when no result arrives in time.</td></tr>
     <tr><th scope="row"><code>poll-seconds</code></th><td><code>15</code></td><td>Seconds between status requests (minimum 5).</td></tr>
@@ -85,6 +85,7 @@ jobs:
     <tr><th scope="row"><code>url</code></th><td>Link to the report</td></tr>
     <tr><th scope="row"><code>leaks-found</code></th><td><code>true</code> or <code>false</code></td></tr>
     <tr><th scope="row"><code>tables-leaking</code></th><td>Comma-separated table names</td></tr>
+    <tr><th scope="row"><code>suppressed-tables</code></th><td>Leaking tables your team marked as intended (not counted by <code>fail-on-leak</code>)</td></tr>
     <tr><th scope="row"><code>lab-proof-passed</code></th><td><code>true</code> when the fix passed the lab proof</td></tr>
   </tbody>
 </table></div>
@@ -104,6 +105,7 @@ jobs:
   <tbody>
     <tr><th scope="row"><code>no_leaks</code></th><td><span class="pill proven">passes</span></td></tr>
     <tr><th scope="row"><code>done</code> or <code>needs_review</code></th><td><span class="pill leak">fails</span> with <code>fail-on-leak: true</code>, otherwise warns</td></tr>
+    <tr><th scope="row">Only tables marked as intended are leaking</th><td>Passes with a notice</td></tr>
     <tr><th scope="row"><code>failed</code> (the check couldn’t finish)</th><td>Warns. We’re alerted and follow up</td></tr>
     <tr><th scope="row">A check is already open for the app</th><td>Warns and passes; no new check is started</td></tr>
     <tr><th scope="row">Monthly run limit reached</th><td>Warns and passes</td></tr>
@@ -128,4 +130,4 @@ jobs:
 <p>The source is in the <code>action/</code> folder of the <code>manra399/patchlabs</code> repo. Read it before you use it; it’s about 130 lines. For a fixed version, pin a commit SHA instead of <code>@main</code>.</p>
 
 <h2 id="limits">Good to know</h2>
-<div class="callout limit"><p><strong>A check reads your default branch</strong> as it is on GitHub, not the branch of a pull request. Run the action after changes land on your default branch; on a <code>pull_request</code> trigger it would report on the default branch, not the PR. Each run uses one of your plan’s monthly manual runs (Free 4, Maker 30, Agency 200). Tables your team <a href="/docs/decisions#suppressions">marked as intended</a> still count as leaks for <code>fail-on-leak</code> today.</p></div>
+<div class="callout limit"><p><strong>A check reads your default branch</strong> as it is on GitHub, not the branch of a pull request. Run the action after changes land on your default branch; on a <code>pull_request</code> trigger it would report on the default branch, not the PR. Each run uses one of your plan’s monthly manual runs (Free 4, Maker 30, Agency 200). Tables your team <a href="/docs/decisions#suppressions">marked as intended</a> don’t count for <code>fail-on-leak</code>: the step fails only while other leaking tables remain, and lists the intended ones separately.</p></div>

@@ -29,6 +29,7 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/asset
 <li><a href="/docs/webhooks">Webhooks</a></li>
 <li><a href="/docs/github-action">GitHub Action</a></li>
 <li><a href="/docs/mcp" aria-current="page">MCP server</a></li>
+<li><a href="/docs/claude-plugin">Claude Code plugin</a></li>
 </ul>
 <h2>Help</h2><ul>
 <li><a href="/docs/faq">FAQ</a></li>
@@ -74,6 +75,7 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/asset
     <div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>claude mcp add --transport http patchlabs https://api.patchlabs.dev/mcp \
   --header "X-API-Key: pl_live_…"</code></pre></div>
     <p class="small muted">Run <code>claude mcp list</code> to confirm it connected.</p>
+    <p>Or install the <a href="/docs/claude-plugin">PatchLabs plugin</a>: it adds this server plus a skill that explains findings in plain English and drafts the fix migration for you to approve.</p>
   </div>
   <div class="tab-panel" id="p-cursor" role="tabpanel" aria-labelledby="t-cursor">
     <h3 class="tab-title" id="cursor" data-notoc>Cursor</h3>
@@ -157,7 +159,7 @@ curl -s https://api.patchlabs.dev/mcp -H 'Content-Type: application/json' \
 </div>
 <p>The same limits apply as for the API: the RLS check allows 20 requests an hour per network, and <code>run_check</code> uses the workspace’s monthly runs. See <a href="/docs/api#rate-limits">rate limits</a>.</p>
 <div class="docs-meta"><span>Updated 10 Nov 2026</span><span>Something unclear or wrong? <a href="mailto:manraj@patchlabs.dev?subject=Docs%3A%20MCP%20server">Tell the founder</a></span></div>
-<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/github-action" rel="prev"><span>Previous</span>GitHub Action</a><a class="next" href="/docs/faq" rel="next"><span>Next</span>FAQ</a></nav>
+<nav class="docs-pager" aria-label="Previous and next"><a href="/docs/github-action" rel="prev"><span>Previous</span>GitHub Action</a><a class="next" href="/docs/claude-plugin" rel="next"><span>Next</span>Claude Code plugin</a></nav>
 </article>
 <aside class="toc" aria-label="On this page">
 <h2>On this page</h2>

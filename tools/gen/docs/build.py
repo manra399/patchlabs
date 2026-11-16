@@ -14,7 +14,7 @@ NAV = [
     ("Get started", [("index", "Quickstart"), ("verification", "Proving repo ownership"), ("reading-a-report", "Reading a report"), ("findings", "Findings and product lines"),
                      ("applying-a-fix", "Applying a fix"), ("decisions", "Decisions and questions")]),
     ("Monitor and share", [("monitoring", "Monitoring"), ("badge", "Badge"), ("receipts", "Signed receipts"), ("teams", "Teams and agencies")]),
-    ("Build on PatchLabs", [("api", "REST API"), ("webhooks", "Webhooks"), ("github-action", "GitHub Action"), ("mcp", "MCP server")]),
+    ("Build on PatchLabs", [("api", "REST API"), ("webhooks", "Webhooks"), ("github-action", "GitHub Action"), ("mcp", "MCP server"), ("claude-plugin", "Claude Code plugin")]),
     ("Help", [("faq", "FAQ"), ("glossary", "Glossary")]),
 ]
 ORDER = [s for _, items in NAV for s, _ in items]

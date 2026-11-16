@@ -8,18 +8,20 @@ lede: Ask your coding agent to check an app for leaks. PatchLabs runs a remote M
 
 <h2 id="tools">Tools</h2>
 <div class="table-wrap"><table class="table compact">
-  <thead><tr><th scope="col">Tool</th><th scope="col">Arguments</th><th scope="col">What it does</th><th scope="col">Key</th></tr></thead>
+  <thead><tr><th scope="col">Tool</th><th scope="col">Arguments</th><th scope="col">What it does</th><th scope="col">Access</th></tr></thead>
   <tbody>
-    <tr><th scope="row"><code>rls_check</code></th><td><code>repo</code></td><td>The free static RLS check of a public repo’s migrations. Instant, no sign-up.</td><td>No</td></tr>
-    <tr><th scope="row"><code>start_check</code></th><td><code>repo</code>, <code>email</code></td><td>Requests the full lab check. Returns a check ID and link; the owner still proves ownership by committing the verification file.</td><td>No</td></tr>
-    <tr><th scope="row"><code>get_check</code></th><td><code>check_id</code></td><td>Status, summary, report and fix for a check.</td><td>No</td></tr>
-    <tr><th scope="row"><code>list_apps</code></th><td>none</td><td>The apps monitored in the key’s workspace, with their latest check.</td><td>Yes</td></tr>
-    <tr><th scope="row"><code>run_check</code></th><td><code>app_id</code></td><td>Queues a check for a monitored app now. Uses one of the plan’s monthly runs.</td><td>Yes</td></tr>
+    <tr><th scope="row"><code>rls_check</code></th><td><code>repo</code></td><td>The free static RLS check of a public repo’s migrations. Instant, no sign-up.</td><td>Read-only, no key</td></tr>
+    <tr><th scope="row"><code>headers_check</code></th><td><code>url</code></td><td>Grades a public site’s HTTPS, certificate, security headers and cookie flags from one load of its home page (PL-027 to PL-036). No sign-up.</td><td>Read-only, no key</td></tr>
+    <tr><th scope="row"><code>start_check</code></th><td><code>repo</code>, <code>email</code></td><td>Requests the full lab check. Returns a check ID and link; the owner still proves ownership by committing the verification file.</td><td>Creates a check, no key</td></tr>
+    <tr><th scope="row"><code>get_check</code></th><td><code>check_id</code></td><td>Status, summary, report and fix for a check.</td><td>Read-only, no key</td></tr>
+    <tr><th scope="row"><code>list_apps</code></th><td>none</td><td>The apps monitored in the key’s workspace, with their latest check.</td><td>Read-only, key</td></tr>
+    <tr><th scope="row"><code>run_check</code></th><td><code>app_id</code></td><td>Queues a check for a monitored app now. Uses one of the plan’s monthly runs.</td><td>Creates a check, key</td></tr>
   </tbody>
 </table></div>
+<p class="muted">Every tool carries MCP annotations: the four read-only tools set <code>readOnlyHint</code>, so clients can run them without asking each time; <code>start_check</code> and <code>run_check</code> create a check and are marked not read-only. No tool deletes or changes anything in your app, repo or database (<code>destructiveHint: false</code>).</p>
 
 <h2 id="install">Install</h2>
-<p>The first three tools work with no key. To use <code>list_apps</code> and <code>run_check</code>, add a workspace <a href="/docs/api#api-keys">API key</a> as the <code>X-API-Key</code> header, as shown in each snippet.</p>
+<p>The first four tools work with no key. For a client that connects without any sign-in, such as a custom connector in Claude, use <code>https://api.patchlabs.dev/mcp/public</code>: it serves only those four tools.  To use <code>list_apps</code> and <code>run_check</code>, add a workspace <a href="/docs/api#api-keys">API key</a> as the <code>X-API-Key</code> header, as shown in each snippet.</p>
 <div class="tabs">
   <div role="tablist" aria-label="MCP client">
     <button role="tab" id="t-claude" aria-controls="p-claude" aria-selected="true">Claude Code</button>
@@ -35,6 +37,7 @@ lede: Ask your coding agent to check an app for leaks. PatchLabs runs a remote M
     <div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>claude mcp add --transport http patchlabs https://api.patchlabs.dev/mcp \
   --header "X-API-Key: pl_live_…"</code></pre></div>
     <p class="small muted">Run <code>claude mcp list</code> to confirm it connected.</p>
+    <p>Or install the <a href="/docs/claude-plugin">PatchLabs plugin</a>: it adds this server plus a skill that explains findings in plain English and drafts the fix migration for you to approve.</p>
   </div>
   <div class="tab-panel" id="p-cursor" role="tabpanel" aria-labelledby="t-cursor">
     <h3 class="tab-title" id="cursor" data-notoc>Cursor</h3>

@@ -1,5 +1,5 @@
 title: Webhooks
-description: Send PatchLabs check results to Slack, Discord or your own endpoint. Payloads, the test button, delivery rules (one attempt, 5 second timeout) and security.
+description: Send PatchLabs check results to Slack, Discord or your own endpoint. Payloads, the test button, delivery rules (one attempt, 5 second timeout) and HMAC signatures.
 lab: Webhooks
 h1: Webhooks
 lede: When a monitored app’s check finishes, PatchLabs can POST the result to a URL you choose. The payload has a ready-made text line, so a Slack incoming webhook works with no code.
@@ -8,6 +8,7 @@ lede: When a monitored app’s check finishes, PatchLabs can POST the result to 
 <ol>
   <li>A workspace owner opens <strong>Settings → Webhook</strong>, pastes a URL and saves.</li>
   <li>Press <strong>Send test</strong>. You’ll see the status code your endpoint answered.</li>
+  <li>If your own code receives the webhook, copy the <strong>signing secret</strong> shown there (<code>whsec_…</code>) and <a href="#security">verify every request</a>.</li>
 </ol>
 <p>Or with the API:</p>
 <div class="code"><div class="code-bar"><span class="name">Terminal</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X PATCH https://api.patchlabs.dev/workspaces/$WORKSPACE_ID \
@@ -18,6 +19,7 @@ curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/webhook/test 
   -H "Authorization: Bearer $PL_SESSION"
 <span class="c"># {"ok": true, "status_code": 200}</span></code></pre></div>
 <p>A workspace has one webhook URL. It must start with <code>https://</code> and point at a public host: addresses that resolve to private, loopback or link-local networks are refused. To remove it, save an empty value (or send <code>"webhook_url": null</code>).</p>
+<p>Saving the first URL creates the workspace’s signing secret. Owners see it in <code>webhook_secret</code> on <code>GET /workspaces/{id}</code> (members get <code>null</code>) and can replace it with <code>POST /workspaces/{id}/webhook/rotate-secret</code>; the old secret stops working at once.</p>
 
 <h2 id="events">Events</h2>
 <h3 id="check-finished"><code>check.finished</code></h3>
@@ -67,7 +69,7 @@ curl -s -X POST https://api.patchlabs.dev/workspaces/$WORKSPACE_ID/webhook/test 
 <div class="code"><div class="code-bar"><span class="name">Webhook URL</span></div><pre class="wrap-lines"><code>https://discord.com/api/webhooks/123456789/abcdef…/slack</code></pre></div>
 
 <h2 id="your-endpoint">Your own endpoint</h2>
-<p>Any HTTPS endpoint that accepts a JSON POST and answers <code>2xx</code> within 5 seconds works. Do the slow work after you answer. A minimal receiver:</p>
+<p>Any HTTPS endpoint that accepts a JSON POST and answers <code>2xx</code> within 5 seconds works. Do the slow work after you answer, and <a href="#security">check the signature</a> before acting on a payload. A minimal receiver:</p>
 <div class="code"><div class="code-bar"><span class="name">server.js (Node 18+, Express)</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>import express from 'express';
 const app = express();
 app.post('/hooks/patchlabs', express.json(), (req, res) => {
@@ -84,10 +86,25 @@ app.listen(3000);</code></pre></div>
   <dt>Attempts</dt><dd><strong>One.</strong> There are no retries. If your endpoint is down, that delivery is lost (the check, its report and the emails are not).</dd>
   <dt>Timeout</dt><dd>5 seconds for the whole request.</dd>
   <dt>Redirects</dt><dd>Not followed. Use the final URL.</dd>
-  <dt>Headers</dt><dd><code>Content-Type: application/json</code> and <code>User-Agent: PatchLabs-Webhook/1</code>.</dd>
+  <dt>Headers</dt><dd><code>Content-Type: application/json</code>, <code>User-Agent: PatchLabs-Webhook/1</code>, <code>X-PatchLabs-Timestamp</code> and <code>X-PatchLabs-Signature</code> (see <a href="#security">Security</a>).</dd>
   <dt>Address</dt><dd>We resolve the host, refuse private addresses, and connect to the address we checked, so a DNS change mid-request can’t redirect it inside a network.</dd>
 </dl>
 <p>Because there are no retries, treat webhooks as a fast nudge, not a record. Members get the same news by email, and the <a href="/docs/api#get-apps-aid">app endpoint</a> always has the full history.</p>
 
-<h2 id="security">Security</h2>
-<div class="callout limit"><p><strong>Webhook requests aren’t signed yet.</strong> Anyone who learns your URL could post a look-alike payload to it. Keep the URL secret, and before acting on a payload automatically, fetch the check yourself with <code>GET /v1/checks/{id}</code> and your API key, or verify its <a href="/docs/receipts">signed receipt</a>.</p></div>
+<h2 id="security">Security: verify the signature</h2>
+<p>Every webhook request is signed with your workspace’s secret, so your endpoint can tell a real PatchLabs request from a look-alike sent by someone who learned the URL.</p>
+<dl class="defs">
+  <dt><code>X-PatchLabs-Timestamp</code></dt><dd>When we sent it, in Unix seconds.</dd>
+  <dt><code>X-PatchLabs-Signature</code></dt><dd><code>v1=</code> followed by the hex HMAC-SHA256 of <code>&lt;timestamp&gt;.&lt;raw body&gt;</code>, keyed with your <code>whsec_…</code> secret.</dd>
+</dl>
+<p>Compute the HMAC over the raw request bytes before parsing the JSON, compare in constant time, and reject timestamps more than 5 minutes old so a captured request can’t be replayed later:</p>
+<div class="code"><div class="code-bar"><span class="name">verify.py (Python 3, standard library)</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>import hashlib, hmac, time
+
+def verify(secret: str, headers, raw_body: bytes, tolerance: int = 300) -&gt; bool:
+    ts = headers.get("X-PatchLabs-Timestamp", "")
+    sig = headers.get("X-PatchLabs-Signature", "")
+    if not ts.isdigit() or abs(time.time() - int(ts)) &gt; tolerance:
+        return False  <span class="c"># missing, or more than 5 minutes off: possibly a replay</span>
+    mac = hmac.new(secret.encode(), ts.encode() + b"." + raw_body, hashlib.sha256)
+    return hmac.compare_digest(sig, "v1=" + mac.hexdigest())</code></pre></div>
+<p>In Flask that is <code>verify(SECRET, request.headers, request.get_data())</code>; answer <code>401</code> when it returns <code>False</code>. Keep the secret out of your repo (an environment variable or secret store), and rotate it in <strong>Settings → Webhook</strong> if it leaks. Slack and Discord ignore the extra headers.</p>

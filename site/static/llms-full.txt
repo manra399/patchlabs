@@ -96,7 +96,8 @@ API keys, webhooks, badges and client labels are on every plan. Upgrades: reques
 - Free RLS check (static analysis, no sign-up): https://patchlabs.dev/tools/rls-check
 - Free security headers check (no sign-up, one public page load, result not stored, 10 an hour per network): https://patchlabs.dev/tools/headers-check
 - REST API: https://api.patchlabs.dev. Errors are {"detail": "human sentence"}. Signed-in calls: Authorization: Bearer <session>. CI calls: X-API-Key: pl_live_... Docs: https://patchlabs.dev/docs/api
-- Remote MCP server: POST https://api.patchlabs.dev/mcp, JSON-RPC 2.0 over Streamable HTTP, stateless. Tools: rls_check {repo}, start_check {repo, email}, get_check {check_id}, list_apps and run_check {app_id} (these two need X-API-Key). Docs: https://patchlabs.dev/docs/mcp
+- Remote MCP server: POST https://api.patchlabs.dev/mcp, JSON-RPC 2.0 over Streamable HTTP, stateless. Tools: rls_check {repo}, start_check {repo, email}, get_check {check_id}, list_apps and run_check {app_id} (these two need X-API-Key). Docs: https://patchlabs.dev/docs/mcp. No-key endpoint with only rls_check, headers_check, start_check, get_check: POST https://api.patchlabs.dev/mcp/public.
+- Claude Code plugin (manra399/patchlabs-claude-plugin): bundles the no-key MCP server and the patchlabs-leak-check Agent Skill (scan with patchlabs-cli or rls_check, explain findings, draft a fix migration the user approves, re-scan). Docs: https://patchlabs.dev/docs/claude-plugin
 - Health: GET https://api.patchlabs.dev/health returns {ok, db, worker_last_seen, queued}. Live status page: https://patchlabs.dev/status
 
 ## Signed receipts
@@ -130,7 +131,7 @@ Research: /research/1-in-4, /research/methodology, /findings, /findings/pl-001 t
 Learn: /learn, /learn/secure-lovable-supabase-app, /learn/rls-policies-explained, /learn/supabase-views-security-invoker, /learn/supabase-storage-policies, /learn/supabase-realtime-security, /learn/user-metadata-vs-app-metadata, /learn/secure-supabase-edge-functions, /learn/stripe-webhook-supabase-edge-function, /learn/rotate-leaked-key-git-history, /learn/first-hour-after-a-leak, /learn/vibe-coded-app-security-checklist, /learn/firebase-security-rules-basics, /learn/npm-dependency-vulnerabilities
 Tools: /tools, /tools/rls-check, /tools/headers-check, /tools/leak-cost
 Compare: /compare, /compare/supabase-security-advisor, /compare/lovable-security-scan, /compare/aikido, /compare/manual-pentest
-Developers: /docs, /docs/findings, /docs/reading-a-report, /docs/api, /docs/mcp, /docs/receipts, /docs/glossary
+Developers: /docs, /docs/findings, /docs/reading-a-report, /docs/api, /docs/mcp, /docs/claude-plugin, /docs/receipts, /docs/glossary
 Company and trust: /about, /changelog, /security, /status, /proof, /.well-known/security.txt
 Legal: /legal/terms, /legal/privacy, /legal/acceptable-use, /legal/dpa, /legal/disclosure-policy, /legal/cookies
 All URLs are on https://patchlabs.dev.
