@@ -580,3 +580,12 @@ a.cap-row:hover { background: var(--bg-2); }
 .h4-trust p { margin: 0; font-size: 18px; line-height: 1.55; color: #c9ced5; max-width: 40em; }
 .h4-trust + .h4-src { margin-top: 18px; }
 @media (max-width: 700px) { .h4-trust { grid-template-columns: 1fr; gap: 14px; } .h4-trust p { font-size: 16px; } }
+
+/* Where we fit (home, 16 Nov 2026) */
+.h4-fit .table.compare { table-layout: fixed; }
+.h4-fit .table.compare thead th { white-space: normal; }
+.h4-fit .table.compare thead th .cell-note { font: 400 12.5px/1.35 var(--sans, inherit); letter-spacing: 0; text-transform: none; margin-top: 4px; }
+.h4-fit .table.compare thead .us .cell-note { color: inherit; }
+.h4-fit .table.compare th[scope="row"] { width: 17%; }
+.h4-fit .table.compare .us { width: 24%; }
+@media (max-width: 760px) { .h4-fit .table.compare { table-layout: auto; } .h4-fit .table.compare th[scope="row"] { width: 120px; } }

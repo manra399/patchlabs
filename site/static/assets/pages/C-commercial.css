@@ -297,3 +297,6 @@
   .lane li + li { margin-left: 0; margin-top: 20px; }
   .lane li + li::before { content: "↓" / ""; left: 14px; top: -18px; transform: none; }
 }
+
+/* Category table header notes (16 Nov 2026) */
+.table.compare thead th .cell-note { font: 400 12.5px/1.35 var(--sans, inherit); letter-spacing: 0; text-transform: none; white-space: normal; margin-top: 4px; }

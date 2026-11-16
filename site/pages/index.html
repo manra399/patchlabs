@@ -222,6 +222,33 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
   </div>
 </section>
 
+<!-- Where we fit (B6.7, 16 Nov 2026) -->
+<section class="sec h4-fit" aria-labelledby="fit-h">
+  <div class="wrap">
+    <div class="sec-head split">
+      <div>
+        <p class="lab">Where we fit</p>
+        <h2 id="fit-h">Other tools find bugs in code. We prove <em>who can read your data</em>.</h2>
+        <p>AI fix agents now open pull requests for $5 a test or come with a ChatGPT seat. Use them. None of them rebuilds your database and checks, as a stranger, a user and an owner, that the fix closes the leak, and none waits for your engineer to approve the migration.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table compare">
+        <caption class="sr-only">Where PatchLabs fits next to builder scans, AI fix agents and agent runtime guards</caption>
+        <thead><tr><th scope="col"></th><th scope="col" class="us">PatchLabs</th><th scope="col">Builder scans<span class="cell-note">Lovable, Supabase Advisor</span></th><th scope="col">AI fix agents<span class="cell-note">0.security, ZeroPath, Codex Security</span></th><th scope="col">Agent runtime guards<span class="cell-note">Rogue Security</span></th></tr></thead>
+        <tbody>
+          <tr><th scope="row">What it looks at</th><td class="us">Your database access rules, rebuilt from your migrations</td><td>Your project’s settings and rules</td><td>Code in your repo and pull requests</td><td>What a coding agent does while it runs</td></tr>
+          <tr><th scope="row">Tests who can read each row</th><td class="us"><span class="yes">As anon, stranger and owner</span></td><td><span class="part">Flags rules that look risky</span></td><td><span class="part">Code-level findings</span></td><td><span class="no">Not its job</span></td></tr>
+          <tr><th scope="row">Proves the fix before you see it</th><td class="us"><span class="yes">In a rebuilt copy, with row counts</span></td><td><span class="no">Re-scan after you change it</span></td><td><span class="part">Validates the flaw; fix is a draft PR</span></td><td><span class="no">Blocks, doesn’t fix</span></td></tr>
+          <tr><th scope="row">Who approves the change</th><td class="us">Your engineer, as a migration</td><td>You, in the editor</td><td>You, by merging the PR</td><td>Policy, at runtime</td></tr>
+          <tr><th scope="row">Cost</th><td class="us"><b>Free</b> in early access</td><td>Included</td><td>$5 per PR test, or a $25 seat plus tokens</td><td>Not published</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Checked 16 Nov 2026 from each company’s public pages and launch coverage. Categories, not verdicts: <a href="/compare">read the detailed comparisons</a>.</p>
+  </div>
+</section>
+
 <!-- Pricing teaser -->
 <section class="sec" aria-labelledby="pricing-h">
   <div class="wrap">
