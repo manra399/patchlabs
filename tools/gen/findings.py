@@ -1727,6 +1727,63 @@ export async function GET(req: NextRequest) {
     related=["PL-017", "PL-024", "PL-022"],
 ))
 
+# ------------------------------------------------------------------ PL-037
+F.append(dict(
+    id="PL-037", slug="pl-037", group="keys", line="code", status="live",
+    title="Personal data sent in a request header or to an AI model API",
+    short="A user's email, phone or ID number goes into a request header or an AI prompt, so it is copied into logs and vendor storage you don't control.",
+    desc="PL-037: personal data in request headers (X-User-Email) or in prompts sent to OpenAI, Anthropic or Gemini. Where those copies end up, and what to send instead.",
+    sev="medium", who="Everyone who can read your CDN, host, APM or AI provider logs, and anyone who breaches them", found="PatchLabs Code: request headers and AI model calls in your code (JS, TS and Python)",
+    proof="Not lab-proven: file and line in the report",
+    what="""<p>Two habits put personal data where your database rules don't reach. The first is a request header that carries it, such as <code>"X-User-Email": user.email</code>. Headers can be written to CDN, proxy, load balancer and APM logs, which are kept for weeks or months and read by more people and vendors than your database.</p>
+<p>The second is a prompt that carries it: <code>`Patient ${patient.full_name}, born ${patient.date_of_birth}`</code>, or <code>JSON.stringify(profile)</code> sent as a message. The AI provider keeps prompts for abuse monitoring, and gateways, tracing and eval tools in between often keep them too. PL-037 flags both.</p>""",
+    why="""<p>Both are the fastest fix that works. “The server doesn’t know who’s calling” becomes a header; “the model needs context” becomes the whole record pasted in. Nothing breaks, so nobody looks again.</p>""",
+    vuln=sql("""// src/lib/api.ts
+const res = await fetch("/api/orders", {
+  headers: { "Content-Type": "application/json", "X-User-Email": user.email },
+});
+
+// supabase/functions/summarize/index.ts
+const completion = await openai.chat.completions.create({
+  model: "gpt-5-mini",
+  messages: [
+    { role: "user", content: `Patient ${patient.full_name}, born ${patient.date_of_birth}` },
+    { role: "user", content: JSON.stringify(profile) },
+  ],
+});""", "src/lib/api.ts and summarize/index.ts (risky)"),
+    check=sql("""# the free, open-source scanner (reads the repo as text, sends nothing)
+uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .
+
+# or by hand
+grep -rnE "['\\"]X-[A-Za-z-]*(Email|Phone|Name|Address|Dob)['\\"]" --exclude-dir=node_modules .
+grep -rnE "JSON\\.stringify\\((user|profile|customer|patient)" --exclude-dir=node_modules .""", "check-pl-037.sh"),
+    fix=sql("""// headers: send nothing personal; the server reads the user from the session
+const res = await fetch("/api/orders", {
+  headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+});
+
+// prompts: send only what the task needs, with placeholders
+const notes = redact(patient.visit_notes);   // strip names, emails, phone and ID numbers
+const completion = await openai.chat.completions.create({
+  model: "gpt-5-mini",
+  messages: [
+    { role: "system", content: "Refer to the person as [PATIENT]." },
+    { role: "user", content: notes },
+  ],
+});""", "fixed") +
+    """<p>Then check your AI provider’s retention and training settings for your account, and whether your tracing tool stores prompt text. The <a href="/learn/personal-data-headers-ai-prompts">guide</a> walks through both, with the Uber and Fireworks AI breach as the example of what a vendor copy costs.</p>""",
+    proof_tr=tr("code scan · report excerpt", [
+        "{STEP:SCAN}    supabase/functions/summarize/index.ts:11",
+        "~          full_name, date_of_birth, national_insurance in prompt {LEAK}",
+        "{STEP:FIX}     send only the fields the task needs",
+    ], CODE_FOOT),
+    proof_note="""<p>PatchLabs Code reads the headers your code sets and the lines around each AI model call. ID, health, card and bank fields are high, contact fields medium. Opaque ids, <code>example.com</code> addresses, commented-out lines and code that reads the model’s answer are not flagged. It never calls your app or the model.</p>""",
+    intended="""<p>Some features need a personal detail, such as an assistant that drafts an email to a named customer. That can be fine when it is a decision: write down which fields go, check the provider’s retention terms, say so in your privacy notice, and keep the fields out of tracing.</p>""",
+    sevwhy="""<p>Medium for contact details, high for ID numbers, health, card or bank data: nobody reads it straight away, but the copies outlive your own controls and leak when a vendor is breached.</p>""",
+    study=None, lint=None,
+    related=["PL-010", "PL-022", "PL-009"],
+))
+
 # ------------------------------------------------------------------ Live posture (PL-027..PL-036)
 # line "live": read from the public home page of a domain the team verified (LIVE.md). One plain http:// request, one
 # https:// page load (at most 5 redirects) and its TLS handshake. Never the database, never other paths.
@@ -2477,7 +2534,7 @@ FOUND_SHORT = {"PL-001": "RLS check · lab", "PL-002": "RLS check · lab", "PL-0
                "PL-016": "Lab · coming", "PL-019": "Code · SQL + app code", "PL-009": "Key scan · code",
                "PL-017": "Code · functions", "PL-018": "Code · config", "PL-020": "Code · frontend", "PL-021": "Code · webhooks",
                "PL-022": "Code · functions", "PL-023": "Code · lockfile + OSV", "PL-024": "Code · frontend",
-               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers",
+               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers", "PL-037": "Code · headers and AI prompts",
                "PL-027": "Live · HTTPS redirect", "PL-028": "Live · certificate", "PL-029": "Live · headers", "PL-030": "Live · headers",
                "PL-031": "Live · headers", "PL-032": "Live · headers", "PL-033": "Live · cookies", "PL-034": "Live · page HTML",
                "PL-035": "Live · headers", "PL-036": "Live · headers"}

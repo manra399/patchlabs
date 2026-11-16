@@ -33,6 +33,7 @@ PROMPTS = {
     "PL-024": "My app renders text that users wrote as raw HTML (for example with dangerouslySetInnerHTML, v-html or innerHTML), so it can run scripts in other users' browsers. Render user text as plain text instead. If formatting is needed, sanitise it with DOMPurify before rendering.",
     "PL-025": "My Firebase security rules allow everyone, or allow everyone until a test-mode date. Rewrite the Firestore, Realtime Database and Storage rules so only signed-in users can read and write their own data (request.auth != null and request.auth.uid matching the document's owner), and remove any rule that allows read or write if true or until a date.",
     "PL-026": "One of my endpoints sends Access-Control-Allow-Origin based on whatever origin asks, together with Access-Control-Allow-Credentials: true, so any website can call it as the signed-in user. Replace it with a fixed list of my own domains, and only send the credentials header for those origins.",
+    "PL-037": "My app puts users' personal data (email, phone, name, address, date of birth or ID numbers) into request headers or into prompts sent to an AI model. Find every place that does this. For headers, remove the personal values and have the server read the signed-in user from the session instead. For AI calls, send only the fields each task needs, replace names and contact details with placeholders before the call, and never send a whole user record with JSON.stringify. List each change you made.",
     "PL-027": "My site's plain http:// address serves the page instead of redirecting to https://. Add a permanent (301) redirect from http to https for every path, using my host's settings (for example Vercel, Netlify or Cloudflare).",
     "PL-028": "My site's HTTPS certificate is invalid, expired or about to expire. Check that the custom domain is set up correctly with my host so it can issue and renew the certificate automatically, and tell me what is wrong (expired, wrong name, missing chain) and how to fix it.",
     "PL-029": "My site doesn't send a Strict-Transport-Security header, or sends one with a short max-age. Add Strict-Transport-Security: max-age=31536000; includeSubDomains to every response, using my host's headers config (for example vercel.json, netlify.toml or _headers).",
@@ -59,6 +60,7 @@ RETEST_BY_ID = {
     "PL-022": ("/tools/edge-function-check", "free Edge Function check"),
     "PL-024": ("/tools/chat-render-check", "free AI chat rendering check"),
     "PL-025": ("/tools/firebase-rules-check", "free Firebase rules check"),
+    "PL-037": ("https://github.com/manra399/patchlabs-cli", "free open-source CLI (patchlabs scan .)"),
 }
 
 

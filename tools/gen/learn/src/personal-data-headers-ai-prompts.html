@@ -1,0 +1,84 @@
+title: Personal data in request headers and AI prompts: where it ends up
+description: Emails in X-User-Email headers and customer records pasted into prompts end up in logs and vendor storage you never audit. How to find it in your code and what to send instead.
+h1: Your users’ personal data is probably in your headers and your AI prompts. Here’s where it ends up.
+navtitle: Personal data in headers and AI prompts
+topic: keys
+order: 7
+checked: 2026-11-16
+short: An email in a request header or a whole user record in a prompt is copied into logs and vendor storage. How to find it, and what to send instead.
+lede: Most leaks we write about are a database table anyone can read. This one is quieter. A request header that carries a user’s email, or a prompt that carries a customer’s address and date of birth, gets copied into logs, traces and vendor storage that you never look at and can’t delete. The Uber breach disclosed this month is a reminder of what that costs: driver records held at an AI vendor were taken when the vendor was breached. Here’s where the copies go, how to find them in your code in a minute, and what to send instead.
+tldr: Uber told US state attorneys general that names, addresses, dates of birth and driver’s licence numbers of 149,346 people were taken from data it had stored with Fireworks AI, after attackers stole Fireworks’ own internal credentials (as reported by TechCrunch on 16 November 2026). || Anything you send in a request header can be written to CDN, proxy, load balancer and APM logs, which are kept for weeks or months and read by more people and vendors than your database. || Anything you put in a prompt is stored by the AI provider for abuse monitoring, and often again by a gateway, tracing or eval tool in between. || Send an opaque user id in headers, never an email or phone number. Send the model only the fields the task needs, mask the rest, and never <code>JSON.stringify</code> a whole user record into a prompt. || Our free, open-source CLI flags both (finding PL-037): <code>uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .</code>
+findings: PL-037, PL-010, PL-009
+---
+<p>This guide is for founders and agencies shipping apps built with Lovable, Bolt, Cursor or Claude Code, especially apps that call an AI model with customer data. The Uber facts come from <a href="https://techcrunch.com/2026/11/16/uber-confirms-hackers-stole-thousands-of-drivers-license-information-in-data-breach/">TechCrunch’s report of 16 November 2026</a>, which cites Uber’s breach notices to state attorneys general. We have no inside information, and the report doesn’t say how Uber used the data it stored with Fireworks.</p>
+
+<h2 id="uber">What the Uber notice says</h2>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Question</th><th scope="col">What was reported</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Who</th><td>149,346 people, according to the notice Uber filed with Oregon’s attorney general. Notices also went to California, Iowa and several other states.</td></tr>
+    <tr><th scope="row">What</th><td>Names, addresses, dates of birth and driver’s licence numbers.</td></tr>
+    <tr><th scope="row">Where it was</th><td>Stored with Fireworks AI, a company that runs AI models for developers. Uber called it a third-party vendor that had access to some Uber data.</td></tr>
+    <tr><th scope="row">How it was taken</th><td>Attackers broke into Fireworks in October and stole its internal credentials. Because they used Fireworks’ own credentials, Uber said no alerts fired, even though it had alerts on its Fireworks environment.</td></tr>
+    <tr><th scope="row">Same incident</th><td>The Fireworks breach is the one behind the <a href="/learn/cursor-fireworks-breach-agent-traces-keys">Cursor agent-trace leak</a>.</td></tr>
+  </tbody>
+</table></div>
+<p>The lesson for a small team isn’t “don’t use AI vendors”. It’s that every copy of personal data you hand to another system is a copy you can no longer protect. Your database can have perfect row level security and the same email address can still sit in five other places.</p>
+
+<h2 id="headers">Where a header goes</h2>
+<p>AI builders often fix “the server doesn’t know who’s calling” by adding a header. It works on the first try, so it stays:</p>
+[[CODE src/lib/api.ts (risky)]]
+const res = await fetch("/api/orders", {
+  headers: {
+    "Content-Type": "application/json",
+    "X-User-Email": user.email,   // copied into every log on the way
+    "X-Phone": user.phone,
+  },
+});
+[[/CODE]]
+<p>Between the browser and your function, that request can pass through a CDN, your host’s edge network, a load balancer and your own logging or APM tool. Several of these can record request headers, and they keep them for weeks or months. Those logs are read by your team, your host’s support staff and every tool you have connected to them. None of them has your database’s access rules. A header is also easy to forge: anyone can send <code>X-User-Email: someone-else@…</code>, so a server that trusts it has a second problem (see <a href="/findings/pl-022">PL-022</a>).</p>
+<div class="callout"><p><strong>Send instead:</strong> nothing. Your function already gets the signed-in user from the session token (<code>supabase.auth.getUser()</code> in an Edge Function or API route) and can look the email up itself. If a header must identify someone, use an opaque id such as the user’s UUID, never an email, phone number or ID number.</p></div>
+
+<h2 id="prompts">Where a prompt goes</h2>
+<p>The same thing happens with AI features. The fastest way to give a model context is to paste the whole record in:</p>
+[[CODE supabase/functions/summarize/index.ts (risky)]]
+const completion = await openai.chat.completions.create({
+  model: "gpt-5-mini",
+  messages: [
+    { role: "system", content: "You write short care summaries." },
+    { role: "user", content: `Patient ${patient.full_name}, born ${patient.date_of_birth}` },
+    { role: "user", content: JSON.stringify(profile) },   // every column, including ones you added later
+  ],
+});
+[[/CODE]]
+<p>Each prompt can be kept in several places: the model provider’s own storage for abuse monitoring (how long depends on the provider and your account settings), any AI gateway or router you send it through, and any tracing, logging or eval tool you’ve wired in. <code>JSON.stringify(profile)</code> is the worst version, because it quietly sends every column you add to the table later, such as a phone number or an ID document field.</p>
+<div class="callout"><p><strong>Send instead:</strong> only the fields the task needs. Replace names, emails and numbers with placeholders such as <code>[NAME]</code> before the call and put them back in the answer afterwards, if the answer needs them at all. Then check your provider’s data retention and training settings for your account, and whether your tracing tool stores prompt text.</p></div>
+[[CODE supabase/functions/summarize/index.ts (fixed)]]
+const notes = redact(patient.visit_notes);   // strip names, emails, phone and ID numbers
+const completion = await openai.chat.completions.create({
+  model: "gpt-5-mini",
+  messages: [
+    { role: "system", content: "You write short care summaries. Refer to the person as [PATIENT]." },
+    { role: "user", content: notes },
+  ],
+});
+const summary = completion.choices[0].message.content.replaceAll("[PATIENT]", patient.first_name);
+[[/CODE]]
+
+<h2 id="find">Find it in your code in a minute</h2>
+<p>Our command-line scanner is free and open source. It reads your repository as text, never runs it and sends nothing anywhere. From version 0.4.0 it flags both patterns as <a href="/findings/pl-037">PL-037</a>: a header whose name or value carries a personal field or a real email address, and a prompt line near an OpenAI, Anthropic, Gemini, Vercel AI SDK or LangChain call that includes a personal field or a whole user record. It reads JavaScript, TypeScript and Python.</p>
+[[CODE terminal]]
+uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .
+[[/CODE]]
+<p>ID, health, card and bank fields are rated high, contact fields (email, phone, address, date of birth, name) medium. Opaque ids, <code>example.com</code> addresses, commented-out lines and the code that reads the model’s answer are not flagged. Before release we ran it on ten real repositories, including three open-source AI chat apps and cal.com: none was flagged, and reading their code by hand, none sends personal fields to a model or puts them in a header.</p>
+<p>Prefer to look by hand? These two searches find most cases:</p>
+[[CODE check.sh]]
+# headers that carry personal data
+grep -rnE "['\"]X-[A-Za-z-]*(Email|Phone|Name|Address|Dob)['\"]" --exclude-dir=node_modules .
+
+# whole records sent to a model
+grep -rnE "JSON\.stringify\((user|profile|customer|patient)" --exclude-dir=node_modules .
+[[/CODE]]
+
+<h2 id="intended">When it’s fine</h2>
+<p>Sometimes the model genuinely needs a personal detail: an assistant that drafts an email to a named customer, say. That can be a sound decision. Make it on purpose: write down which fields go, check the provider’s retention terms, tell users in your privacy notice, and keep the fields out of your tracing tool. The finding is there so the decision is made by a person, not by whatever the AI builder wrote first.</p>

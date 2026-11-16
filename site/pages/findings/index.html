@@ -11,7 +11,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
       <p class="lab">Finding index</p>
       <h1>Every problem we test for, with the fix and the proof.</h1>
-      <p class="lede">31 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, 13 that PatchLabs Code finds by reading your repo, and 10 that Live posture reads from your public home page on a domain you verify. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
+      <p class="lede">32 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, 14 that PatchLabs Code finds by reading your repo, and 10 that Live posture reads from your public home page on a domain you verify. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
       <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/learn">Read the guides</a></div>
     </div>
   </section>
@@ -40,7 +40,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
           <button type="button" class="f-chipbtn" data-filter="live" aria-pressed="false">Live</button>
           <button type="button" class="f-chipbtn" data-filter="coming" aria-pressed="false">Coming</button>
         </div>
-        <p class="f-count" aria-live="polite"><span id="f-shown">36</span> of 36 shown</p>
+        <p class="f-count" aria-live="polite"><span id="f-shown">37</span> of 37 shown</p>
       </div>
       <div class="f-group">
         <p class="lab red">Live · PatchLabs Lab · who can read what in your database</p>
@@ -71,6 +71,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <a class="f-row" href="/findings/pl-024" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-024</span><div><h3>User content rendered as raw HTML</h3><p>Text one user wrote goes into the page as HTML, so it can run scripts in other users' browsers.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · frontend</span><span class="go" aria-hidden="true">→</span></a>
       <a class="f-row" href="/findings/pl-025" data-line="code" data-sev="critical" data-status="live"><span class="fid">PL-025</span><div><h3>Firebase rules allow anyone</h3><p>Your Firestore, Realtime Database or Storage rules say yes to everyone, or do until a test-mode date.</p></div><span class="sevcell"><span class="pill sev-critical">critical</span></span><span class="where">Code · Firebase rules</span><span class="go" aria-hidden="true">→</span></a>
       <a class="f-row" href="/findings/pl-026" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-026</span><div><h3>Any website can call a signed-in function</h3><p>The endpoint tells browsers that any website may send your users' cookies to it and read the answer.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · CORS headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-037" data-line="code" data-sev="medium" data-status="live"><span class="fid">PL-037</span><div><h3>Personal data sent in a request header or to an AI model API</h3><p>A user's email, phone or ID number goes into a request header or an AI prompt, so it is copied into logs and vendor storage you don't control.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Code · headers and AI prompts</span><span class="go" aria-hidden="true">→</span></a>
         </div>
       </div>
       <div class="f-group">
