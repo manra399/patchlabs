@@ -311,6 +311,7 @@ select * from public.profiles;</pre>
       <h2 id="proven-h">“Proven” has a strict definition.</h2>
       <p class="lede">A fix is called proven only when every condition below holds, in a check we run ourselves after the fix agent has finished. What the agent says about its own work doesn’t count.</p>
       <ol class="conds mt-4">
+        <li><div><h3>The leak was shown first</h3><p>Before any fix, the lab reads the seeded rows as the anonymous visitor or the stranger. If rules only look open and no row comes back, the table is listed as unconfirmed, never called a leak, and never sent to the fix agent.</p></div><span class="pill plain">before ≥ 1</span></li>
         <li><div><h3>The migration applies cleanly</h3><p>On top of all your existing migrations, with no errors.</p></div><span class="pill plain">fix_errors = 0</span></li>
         <li><div><h3>The anonymous visitor reads nothing private</h3><p>Zero private rows and zero personal column values.</p></div><span class="pill proven">DENIED</span></li>
         <li><div><h3>The signed-in stranger reads nothing private</h3><p>Same test, as a different signed-in user.</p></div><span class="pill proven">DENIED</span></li>
@@ -345,7 +346,7 @@ select * from public.profiles;</pre>
     <div>
       <p class="lab"><span class="n">05</span>When proof fails</p>
       <h2 id="fail-h">No proof, no “proven”. A person looks first.</h2>
-      <p class="lede">If no model produces a fix that passes, we don’t ship a guess. The check is marked <span class="pill pending">needs review</span>, nothing is called proven, and a person reviews it before you act on it.</p>
+      <p class="lede">If no model produces a fix that passes, or the lab could not reproduce a leak the rules suggest, we don’t ship a guess. The check is marked <span class="pill pending">needs review</span>, nothing is called proven, and a person reviews it before you act on it.</p>
       <p>In the 9 Nov study, 2 of 20 apps ended this way (n=20). We publish them because they show where the line is:</p>
       <div class="stack mt-3">
         <div class="card">
