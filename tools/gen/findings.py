@@ -1784,6 +1784,63 @@ const completion = await openai.chat.completions.create({
     related=["PL-010", "PL-022", "PL-009"],
 ))
 
+# ------------------------------------------------------------------ PL-038
+F.append(dict(
+    id="PL-038", slug="pl-038", group="data", line="code", status="live",
+    title="Any signed-in user can add themselves to any team",
+    short="Your data is scoped to team members, but the members table lets any user insert their own row with someone else's team id.",
+    desc="PL-038: a Supabase team, org or workspace members table lets a signed-in user add themselves to any team, which unlocks every row scoped to that team. How to check, and the fix.",
+    sev="high", sevlabel="high (critical with personal data)", who="Anyone who can sign up", found="patchlabs-cli (static, from 17 Nov 2026)",
+    proof="Not lab-proven per app: file and line in the report",
+    what="""<p>Multi-tenant apps (teams, organisations, workspaces, clinics, stores) usually scope data with one rule: “you can see this row if you are a member of its team”. In Supabase that is a policy like <code>team_id in (select team_id from team_members where user_id = auth.uid())</code>. The rule is only as strong as the <code>team_members</code> table behind it.</p>
+<p>PL-038 means that table has an INSERT or UPDATE policy that only checks “the row is mine”, for example <code>with check (user_id = auth.uid())</code>. Any signed-in user can then insert <code>(their id, your team id)</code>, or change the team id on their own row, and every policy that asks “is the caller a member?” now says yes. Team ids are not secrets: they appear in URLs, invite links and API responses.</p>""",
+    why="""<p>The first time a builder wires up “create a team” or “accept an invite”, the insert into <code>team_members</code> fails with “new row violates row-level security policy”. The quickest policy that makes the error go away is <code>with check (user_id = auth.uid())</code>. It reads as safe (users can only add <em>themselves</em>) and nothing in testing breaks, because the only person testing is already in every team.</p>""",
+    vuln=sql("""-- Data is scoped to team members...
+create policy "Members read customers" on public.customers
+  for select to authenticated
+  using (team_id in (select team_id from public.team_members
+                     where user_id = (select auth.uid())));
+
+-- ...but anyone can make themselves a member of any team
+create policy "Users can join" on public.team_members
+  for insert to authenticated
+  with check (user_id = (select auth.uid()));""", "supabase/migrations/…_teams.sql (vulnerable)"),
+    check=sql("""# the free, open-source scanner (reads the SQL files as text, sends nothing)
+uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .
+
+-- or in the SQL editor: write policies on tables that other policies trust
+select tablename, policyname, cmd, with_check, qual
+from pg_policies
+where schemaname = 'public'
+  and cmd in ('INSERT', 'UPDATE', 'ALL')
+  and tablename ~ '(member|membership|users_to|_users)';
+-- a with_check that only compares user_id with auth.uid() is PL-038""", "check-pl-038"),
+    fix="""<p>Users should never write their own membership. Remove the self-service policy and add members through a function that checks the caller is an admin of that team (or holds a valid invite).</p>""" +
+    sql("""! create policy "Users can join" on public.team_members
+!   for insert to authenticated with check (user_id = (select auth.uid()));
++ create function public.is_team_admin(t uuid) returns boolean
++   language sql stable security definer set search_path = '' as $$
++   select exists (select 1 from public.team_members
++                  where team_id = t and user_id = (select auth.uid()) and role = 'admin') $$;
++ create policy "Admins add members" on public.team_members
++   for insert to authenticated with check (public.is_team_admin(team_id));""", "supabase/migrations/…_fix_team_members.sql") +
+    """<p>Creating a team needs its first admin row, so do that in one <code>security definer</code> function (<code>create_team(name)</code>) that inserts the team and the caller as admin together. Accepting an invite goes through another (<code>accept_invite(token)</code>) that checks the token, its email and its expiry. If the table has an UPDATE policy, drop it or add a <code>with check</code> that keeps <code>team_id</code> and <code>role</code> unchanged. The <a href="/learn/supabase-multi-tenant-rls">multi-tenant guide</a> has the full set.</p>""",
+    proof_tr=tr("our Postgres 17 test · fake rows", [
+        "{STEP:BEFORE}  {stranger}  customers   → 0 rows        {OK}",
+        "{STEP:JOIN}    {stranger}  insert (me, victim team)  → accepted",
+        "{STEP:AFTER}   {stranger}  customers   → 2 rows        {LEAK}",
+        "{STEP:FIX}     admin-only insert through is_team_admin()",
+        "{STEP:PROVE}   {stranger}  insert      → refused       {DENIED}",
+        "~          {stranger}  customers   → 0 rows        {DENIED}",
+        "~          {admin}     adds a member to own team {OK}",
+    ], '<span>Run on Postgres 17 with Supabase-style roles, 17 Nov 2026 · fake rows</span>'),
+    proof_note="""<p>patchlabs-cli finds the membership tables your other policies rely on (directly, or through a helper function such as <code>is_member()</code>), then reads that table's INSERT, UPDATE and ALL policies. It flags a policy whose check is only “the row is mine” and passes one that checks a role, an invite, a subquery or a helper function. It ran clean on six open-source Supabase SaaS starters, including basejump and makerkit, which add members through functions. It reads SQL text and never connects to your database.</p>""",
+    intended="""<p>A few apps really are open to anyone: a public community where joining a space is the point. That is fine when every row behind the membership check is meant for anyone who signs up. Say so in a migration comment, because the same pattern on a table that guards customer data is a breach.</p>""",
+    sevwhy="""<p>High: anyone who can sign up gets everything a team member sees. Critical when the tables behind the membership check hold personal columns (customer emails, patient names), because then it is <a href="/findings/pl-002">PL-002</a> for every team at once, one insert per team.</p>""",
+    study=None, lint=None,
+    related=["PL-002", "PL-004", "PL-019"],
+))
+
 # ------------------------------------------------------------------ Live posture (PL-027..PL-036)
 # line "live": read from the public home page of a domain the team verified (LIVE.md). One plain http:// request, one
 # https:// page load (at most 5 redirects) and its TLS handshake. Never the database, never other paths.
@@ -2534,14 +2591,14 @@ FOUND_SHORT = {"PL-001": "RLS check · lab", "PL-002": "RLS check · lab", "PL-0
                "PL-016": "Lab · coming", "PL-019": "Code · SQL + app code", "PL-009": "Key scan · code",
                "PL-017": "Code · functions", "PL-018": "Code · config", "PL-020": "Code · frontend", "PL-021": "Code · webhooks",
                "PL-022": "Code · functions", "PL-023": "Code · lockfile + OSV", "PL-024": "Code · frontend",
-               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers", "PL-037": "Code · headers and AI prompts",
+               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers", "PL-037": "Code · headers and AI prompts", "PL-038": "Code · SQL policies",
                "PL-027": "Live · HTTPS redirect", "PL-028": "Live · certificate", "PL-029": "Live · headers", "PL-030": "Live · headers",
                "PL-031": "Live · headers", "PL-032": "Live · headers", "PL-033": "Live · cookies", "PL-034": "Live · page HTML",
                "PL-035": "Live · headers", "PL-036": "Live · headers"}
 LINTS = {"PL-001": "none (0024 skips SELECT)", "PL-002": "none (0024 skips SELECT)", "PL-003": "0008", "PL-004": "–",
          "PL-005": "0024 (writes only)", "PL-006": "0011, 0028, 0029", "PL-007": "0025", "PL-008": "0013, 0007",
          "PL-010": "–", "PL-011": "–", "PL-012": "0024 (only literal true)", "PL-013": "–", "PL-014": "0010, 0002, 0016",
-         "PL-015": "–", "PL-016": "–", "PL-019": "0015 (policies only)"}
+         "PL-015": "–", "PL-016": "–", "PL-019": "0015 (policies only)", "PL-038": "–"}
 SEV_FILTER = {"critical": "critical", "high": "high", "high or medium": "high", "medium": "medium", "low": "low", "info": "info", "from advisory": "advisory"}
 
 

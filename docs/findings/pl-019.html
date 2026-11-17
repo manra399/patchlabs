@@ -162,6 +162,7 @@
         <li><a href="/findings/pl-025"><span class="fid"><span class="sev-dot crit" aria-hidden="true"></span>PL-025</span>Firebase rules allow anyone</a></li>
         <li><a href="/findings/pl-026"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-026</span>Any website can call a signed-in function</a></li>
         <li><a href="/findings/pl-037"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-037</span>Personal data sent in a request header or to an AI model API</a></li>
+        <li><a href="/findings/pl-038"><span class="fid"><span class="sev-dot high" aria-hidden="true"></span>PL-038</span>Any signed-in user can add themselves to any team</a></li>
       </ul>
       <h2>Live · public page</h2>
       <ul>
@@ -302,7 +303,7 @@ await admin.auth.admin.updateUserById(userId, {
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-013"><span class="n-big">PL-013 · coming</span><h3>Users can make themselves admin</h3><p class="small">A role column or roles table that users can write to. One request turns a normal account into an admin.</p></a><a class="card link" href="/findings/pl-020"><span class="n-big">PL-020</span><h3>Admin check only in the browser</h3><p class="small">The admin page is hidden in the app, but nothing stops a normal user asking the database for the same data.</p></a><a class="card link" href="/findings/pl-018"><span class="n-big">PL-018</span><h3>Sign-ups need no email confirmation</h3><p class="small">Anyone can create a working account with any email address, including one they don't own.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure? How to check in 10 minutes</a></li><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure? How to check in 10 minutes</a></li><li><a href="/learn/supabase-multi-tenant-rls">Supabase multi-tenant apps: how to test that one customer can’t see another’s data</a></li><li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata: where to store roles in Supabase</a></li><li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch security checklist for vibe-coded apps</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>

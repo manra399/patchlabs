@@ -1,0 +1,95 @@
+title: Supabase multi-tenant RLS: can tenant A see tenant B?
+description: How to test tenant isolation in a Supabase app built with Lovable, Cursor or Claude Code, the members-table hole we proved on Postgres 17, and the fix.
+h1: Supabase multi-tenant apps: how to test that one customer can’t see another’s data
+navtitle: Multi-tenant RLS and tenant isolation
+topic: supabase
+order: 10
+checked: 2026-11-17
+short: Five tests for “can tenant A see tenant B”, the members-table hole that lets anyone join any team, and the fix.
+lede: If your app has teams, organisations, workspaces or clients, the question that matters is whether one customer can ever see another customer’s rows. This week a founder asked it on Reddit, with a budget for a one-day review. Most of the answer is five tests you can run yourself. One of them catches a hole that is easy for an AI builder to write: a members table that lets any signed-in user add themselves to any team. We rebuilt it on Postgres 17 to show what it does.
+tldr: Multi-tenant Supabase apps usually scope every table with one rule: “you can see this row if you are a member of its team”. That rule is only as strong as the members table behind it. || If the members table has an insert policy like <code>with check (user_id = auth.uid())</code>, any signed-in user can insert themselves into your team. In our Postgres 17 test, an outsider read 0 customer rows, ran one insert, then read 2. || Fix: nobody writes their own membership. Teams are created and invites accepted through <code>security definer</code> functions; only an existing admin can add members. || Test isolation with two real users in two teams, through the API, not by reading policies. The five tests below take under an hour. || Our free, open-source CLI flags the members-table hole as PL-038: <code>uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .</code>
+findings: PL-038, PL-002, PL-004, PL-019, PL-006
+---
+<p>This guide is for founders and agencies with a Supabase app built in Lovable, Bolt, Cursor or Claude Code that serves more than one customer organisation. The test results are from our own run on 17 November 2026 on Postgres 17 with Supabase-style <code>anon</code> and <code>authenticated</code> roles and fake rows. They show the pattern, not any particular app.</p>
+
+<h2 id="model">How tenant isolation usually works in Supabase</h2>
+<p>There is one membership table, often <code>team_members</code>, <code>org_members</code> or <code>memberships</code>, with a user id, a team id and a role. Every table that holds customer data carries a <code>team_id</code>, and its policy asks whether the caller is a member of that team:</p>
+[[CODE supabase/migrations/…_customers.sql]]
+create policy "Members read customers" on public.customers
+  for select to authenticated
+  using (team_id in (select team_id from public.team_members
+                     where user_id = (select auth.uid())));
+[[/CODE]]
+<p>That policy is fine. Its safety depends entirely on who can write to <code>team_members</code>. If a user can add a row there, they decide which teams they belong to, and every policy in the app that says “members only” agrees with them.</p>
+
+<h2 id="hole">The members-table hole</h2>
+<p>When an AI builder wires up “create a team” or “accept an invite”, the first insert into <code>team_members</code> fails with “new row violates row-level security policy”. The policy that makes the error go away is short and looks safe:</p>
+[[CODE supabase/migrations/…_team_members.sql (vulnerable)]]
+create policy "Users can join" on public.team_members
+  for insert to authenticated
+  with check (user_id = (select auth.uid()));   -- "you can only add yourself"
+[[/CODE]]
+<p>“You can only add yourself” is true. But it doesn’t say <em>to which team</em>. Team ids are not secrets: they appear in URLs, invite links and API responses. The same problem appears with an UPDATE policy that lets a user edit their own membership row, because they can change its <code>team_id</code> or its <code>role</code>.</p>
+
+<h3 id="proof">What we saw on Postgres 17</h3>
+<p>We built the tables above with two teams, a victim team with two customer rows and an attacker in their own team, then acted as the attacker through the <code>authenticated</code> role:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Step</th><th scope="col">As the attacker</th><th scope="col">Result</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Before</th><td><code>select count(*) from customers</code></td><td>0 rows</td></tr>
+    <tr><th scope="row">Join</th><td><code>insert into team_members values (victim_team, my_id, 'member')</code></td><td>Accepted</td></tr>
+    <tr><th scope="row">After</th><td><code>select count(*) from customers</code></td><td>2 rows: the victim team’s customers</td></tr>
+    <tr><th scope="row">After the fix</th><td>The same insert</td><td>Refused by row level security; still 0 rows</td></tr>
+    <tr><th scope="row">After the fix</th><td>An admin adds a member to their own team</td><td>Works</td></tr>
+  </tbody>
+</table></div>
+<p>Through the Supabase API that insert is one call from the browser console: <code>supabase.from('team_members').insert({ team_id, user_id, role: 'member' })</code>. If the policy doesn’t pin <code>role</code>, the attacker can set it to <code>admin</code> too.</p>
+
+<h2 id="fix">The fix</h2>
+<p>Nobody writes their own membership. Remove the self-service policies and route the three legitimate ways in through functions that check the right thing:</p>
+[[CODE supabase/migrations/…_fix_team_members.sql]]
+drop policy if exists "Users can join" on public.team_members;
+
+-- 1. An existing admin adds members to their own team
+create function public.is_team_admin(t uuid) returns boolean
+  language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.team_members
+                 where team_id = t and user_id = (select auth.uid()) and role = 'admin') $$;
+create policy "Admins add members" on public.team_members
+  for insert to authenticated with check (public.is_team_admin(team_id));
+
+-- 2. Creating a team adds the caller as its first admin, in one step
+create function public.create_team(team_name text) returns uuid
+  language plpgsql security definer set search_path = '' as $$
+declare t uuid;
+begin
+  insert into public.teams (name) values (team_name) returning id into t;
+  insert into public.team_members (team_id, user_id, role) values (t, auth.uid(), 'admin');
+  return t;
+end $$;
+
+-- 3. Accepting an invite checks the token, the invited email and the expiry
+--    (accept_invite(token): look up the invite, compare auth.email(), check expires_at,
+--     insert the membership, mark the invite used)
+revoke execute on function public.create_team(text) from anon;
+[[/CODE]]
+<p>If you keep an UPDATE policy on the members table (to let people change a display setting, say), give it a <code>with check</code> that keeps <code>team_id</code> and <code>role</code> unchanged, or move those columns out of reach. The <a href="/findings/pl-038">PL-038 finding page</a> has a copy-paste prompt for your builder.</p>
+<div class="callout"><p><strong>Why <code>security definer</code> with <code>set search_path = ''</code>:</strong> the helper reads <code>team_members</code> inside a policy on <code>team_members</code>, and running it as its owner avoids an infinite policy loop. The empty search path stops someone shadowing <code>team_members</code> with their own table. See <a href="/learn/supabase-security-definer-functions">security definer functions</a>.</p></div>
+
+<h2 id="tests">Five tests for “can tenant A see tenant B”</h2>
+<p>Reading policies tells you what someone meant. These tests tell you what happens. Create two users in two different teams, with a few fake rows each, and sign in as each through the API (the Supabase client in a browser console works).</p>
+<ol>
+  <li><strong>Every table has row level security on.</strong> In the SQL editor: <code>select tablename from pg_tables where schemaname = 'public' and not rowsecurity;</code> should return nothing you care about.</li>
+  <li><strong>Read across.</strong> As user A, select from every table that has a <code>team_id</code>. You should see only team A’s rows. Do the same through every view and every <code>rpc()</code> function the app calls, because views and security definer functions skip policies by default.</li>
+  <li><strong>Write across.</strong> As user A, try to insert a row with team B’s id, update one of team B’s rows, and delete one. Each should change 0 rows or be refused.</li>
+  <li><strong>Join across.</strong> As user A, insert yourself into team B’s members table and try to change your own membership’s <code>team_id</code> and <code>role</code>. Both should be refused. This is the test that catches PL-038.</li>
+  <li><strong>Files and keys.</strong> Try to download team B’s files by path through Storage, and search the built frontend for the <code>service_role</code> key, which skips every policy above.</li>
+</ol>
+<p>Write the results down as pass or fail per table. If you hire someone for a review, ask them for exactly this list.</p>
+
+<h2 id="scan">Find the members-table hole in a minute</h2>
+<p>Our command-line scanner is free and open source. It reads your SQL files as text, never connects to your database and sends nothing anywhere. From version 0.5.0 it finds the members tables your other policies depend on (directly, or through a helper such as <code>is_member()</code>) and flags write policies on them that only check “the row is mine”:</p>
+[[CODE terminal]]
+uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .
+[[/CODE]]
+<p>It passes policies that check an admin role, an invite or a helper function, and it ran clean on six open-source Supabase SaaS starters, including basejump and makerkit, which add members through functions. It can’t see policies created by hand in the dashboard and never written to a migration, which is one more reason to run the five tests above.</p>

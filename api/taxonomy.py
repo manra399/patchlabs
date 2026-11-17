@@ -77,6 +77,7 @@ TAGS = {
     "PL-025": (["CWE-862"], "A01:2021"),              # Firebase rules allow anyone
     "PL-026": (["CWE-942"], "A05:2021"),              # CORS * with credentials
     "PL-037": (["CWE-359", "CWE-532"], "A04:2021"),   # personal data in request headers or AI prompts
+    "PL-038": (["CWE-639", "CWE-863"], "A01:2021"),   # self-join into any team via the membership table
     # live posture (LIVE.md): read from one public page load of a verified domain
     "PL-027": (["CWE-319"], "A02:2021"),              # site doesn't force HTTPS
     "PL-028": (["CWE-295"], "A02:2021"),              # certificate invalid, expired or expiring
