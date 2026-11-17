@@ -86,7 +86,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
   <div class="wrap">
     <div class="sec-head">
       <p class="lab">What it looks for</p>
-      <h2 id="looks-h">Eight patterns behind most Supabase leaks.</h2>
+      <h2 id="looks-h">Ten patterns behind most Supabase leaks.</h2>
       <p>Each finding links to a page that explains it in plain English, shows the fix and says when the pattern is intended. Only tables in the <code>public</code> schema are analysed.</p>
     </div>
     <div class="table-wrap"><table class="table">
@@ -101,6 +101,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
         <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-007">PL-007</a></th><td>A storage bucket created or updated with <code>public = true</code>.</td><td><span class="pill sev-medium">medium</span></td></tr>
         <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-008">PL-008</a></th><td>A table where row level security is never enabled: anyone with the public key can read and change every row.</td><td><span class="pill sev-critical">critical</span> <span class="pill sev-high">high</span></td></tr>
         <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-014">PL-014</a></th><td>A view in <code>public</code> created without <code>security_invoker</code>, or a materialized view, that <code>anon</code> or signed-in users can still select from: it skips the policies on the tables beneath it.</td><td><span class="pill sev-critical">critical</span> to <span class="pill sev-medium">medium</span></td></tr>
+        <tr><th scope="row" style="white-space:nowrap"><a class="mono" href="/findings/pl-038">PL-038</a></th><td>A team or organisation membership table that other tables trust for access, where any signed-in user can insert their own row or move it to another team: they join any team and read its data. See the <a href="/learn/supabase-multi-tenant-rls">multi-tenant RLS guide</a>.</td><td><span class="pill sev-critical">critical</span> <span class="pill sev-high">high</span></td></tr>
       </tbody>
     </table></div>
     <p class="small muted mt-2">Full taxonomy, with the lab test for each pattern: <a href="/findings">all findings</a>.</p>
@@ -120,7 +121,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
         <h3>Reads the migrations</h3>
         <ul class="ticks">
           <li>Results in seconds, no account</li>
-          <li>Flags nine risky patterns with file and line</li>
+          <li>Flags ten risky patterns with file and line</li>
           <li class="x">Can’t tell an intended public table from a leak</li>
           <li class="x">Can’t see what a visitor can actually read</li>
           <li class="x">No fix, no proof</li>
@@ -199,7 +200,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
       <p class="muted">Something else? <a href="mailto:manraj@patchlabs.dev">Email the founder</a>.</p>
     </div>
     <div>
-      <details class="acc"><summary>My result is clean. Am I safe?</summary><div class="acc-body"><p>Not necessarily. No findings means none of the nine patterns appear in your migration files. Access can still leak through grants, functions or settings made outside the repo. The full check rebuilds the database and tests what each identity can actually read, which is the only way to know.</p></div></details>
+      <details class="acc"><summary>My result is clean. Am I safe?</summary><div class="acc-body"><p>Not necessarily. No findings means none of the ten patterns appear in your migration files. Access can still leak through grants, functions or settings made outside the repo. The full check rebuilds the database and tests what each identity can actually read, which is the only way to know.</p></div></details>
       <details class="acc"><summary>Do you keep my repo or code?</summary><div class="acc-body"><p>We keep the repo name and a hashed network address to enforce the hourly limit, and we cache the result for 10 minutes so repeat checks are instant. We don’t clone the repo; we fetch the migration files from GitHub and analyse them in memory.</p></div></details>
       <details class="acc"><summary>Can it check a private repo?</summary><div class="acc-body"><p>Not yet. Private repos need our GitHub App, which is coming. Until then, both this tool and the full check work on public repos only.</p></div></details>
       <details class="acc"><summary>My migrations aren’t in supabase/migrations.</summary><div class="acc-body"><p>The tool only reads <code>supabase/migrations</code> at the root of the default branch, which is where Lovable, Bolt and the Supabase CLI put them. If yours live elsewhere, <a href="mailto:manraj@patchlabs.dev">tell us</a> and we’ll look at supporting your layout.</p></div></details>
@@ -286,7 +287,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
       '<div><b>' + esc(r.files_scanned || 0) + '</b><span>Files read</span></div></div>';
     if (r.note) h += '<div class="callout note"><p><strong>' + esc(r.note) + '</strong> This tool reads SQL migrations in <code>supabase/migrations</code>. If your project keeps them elsewhere, or manages the database only in the Supabase dashboard, there is nothing for it to read. <a href="mailto:manraj@patchlabs.dev">Tell us about your setup</a>.</p></div>';
     if (r.truncated) h += '<div class="callout limit"><p><strong>We stopped early.</strong> The free check reads at most 60 migration files or 2 MB, so later files weren’t analysed. The full check applies every migration in the lab.</p></div>';
-    if (!findings.length && r.files_scanned) h += '<div class="callout note"><p><strong>None of the nine patterns appear in ' + plural(r.files_scanned, 'file') + '.</strong> That’s a good sign, not proof: access can still leak through grants or functions. The full check tests what each identity can actually read.</p></div>';
+    if (!findings.length && r.files_scanned) h += '<div class="callout note"><p><strong>None of the ten patterns appear in ' + plural(r.files_scanned, 'file') + '.</strong> That’s a good sign, not proof: access can still leak through grants or functions. The full check tests what each identity can actually read.</p></div>';
     SEV.forEach(function (s) {
       var list = findings.filter(function (f) { return f.severity === s; });
       if (!list.length) return;

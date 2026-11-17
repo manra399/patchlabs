@@ -190,3 +190,52 @@ def test_analyzer_views_skip_rls():
     assert got["profile_list"]["severity"] == "critical" and "skips the policies on profiles" in got["profile_list"]["detail"]
     assert got["emails"]["severity"] == "high" and got["emails"]["detail"].startswith("Materialized view emails")
     assert "anon" not in got["emails"]["detail"]
+
+
+TEAM = """
+create table public.teams (id uuid primary key, name text);
+create table public.team_members (team_id uuid, user_id uuid, role text);
+create table public.customers (id uuid primary key, team_id uuid, email text);
+alter table public.teams enable row level security;
+alter table public.team_members enable row level security;
+alter table public.customers enable row level security;
+create policy "members read" on public.customers for select to authenticated
+  using (team_id in (select team_id from public.team_members where user_id = auth.uid()));
+create policy "see own memberships" on public.team_members for select to authenticated using (user_id = auth.uid());
+create policy "team read" on public.teams for select to authenticated
+  using (exists (select 1 from public.team_members m where m.team_id = id and m.user_id = auth.uid()));
+"""
+TEAM_CASES = {
+    "self_insert": (TEAM + """create policy "join" on public.team_members for insert to authenticated with check (user_id = auth.uid());""",
+                    [("PL-038", "critical")]),
+    "self_update_moves_team": (TEAM + """create policy "edit me" on public.team_members for update to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());""", [("PL-038", "critical")]),
+    "insert_needs_admin": (TEAM + """create policy "admins add" on public.team_members for insert to authenticated with check (exists (
+  select 1 from public.team_members m where m.team_id = team_members.team_id and m.user_id = auth.uid() and m.role = 'admin'));""", []),
+    "insert_through_helper": (TEAM + """create function public.is_team_admin(t uuid) returns boolean language sql security definer
+  set search_path = '' as $$ select exists (select 1 from public.team_members where team_id = t and user_id = auth.uid() and role = 'admin') $$;
+create policy "admins add" on public.team_members for insert to authenticated with check (public.is_team_admin(team_id));""", []),
+    "added_only_by_function": (TEAM, []),
+    "helper_trusts_member_table": ("""
+create table public.orgs (id uuid primary key);
+alter table public.orgs enable row level security;
+create table public.org_members (org_id uuid, user_id uuid);
+create table public.invoices (id uuid primary key, org_id uuid, total int);
+alter table public.org_members enable row level security;
+alter table public.invoices enable row level security;
+create function public.is_member(o uuid) returns boolean language sql security definer set search_path = '' as $$
+  select exists (select 1 from public.org_members where org_id = o and user_id = auth.uid()) $$;
+create policy "read" on public.invoices for select to authenticated using (public.is_member(org_id));
+create policy "own" on public.org_members for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+""", [("PL-038", "high")]),
+}
+
+
+def test_analyzer_team_self_join():
+    for name, (sql, want) in TEAM_CASES.items():
+        _, findings = rls.analyze([("m.sql", sql)])
+        got = sorted((f["id"], f["severity"]) for f in findings if f["id"] == "PL-038")
+        assert got == sorted(want), (name, got)
+    _, findings = rls.analyze([("m.sql", TEAM_CASES["self_insert"][0])])
+    f = next(f for f in findings if f["id"] == "PL-038")
+    assert f["table"] == "team_members" and "customers" in f["detail"] and "email" in f["detail"]

@@ -72,7 +72,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
         <dl class="f-facts">
           <div><dt>Severity</dt><dd>High (critical with personal data)</dd></div>
           <div><dt>Who can exploit it</dt><dd>Anyone who can sign up</dd></div>
-          <div><dt>Found by</dt><dd>patchlabs-cli (static, from 17 Nov 2026)</dd></div>
+          <div><dt>Found by</dt><dd>patchlabs-cli and the free RLS check (static, from 17 Nov 2026)</dd></div>
           <div><dt>Lab proof</dt><dd>Not lab-proven per app: file and line in the report</dd></div>
         </dl>
       </header>
@@ -153,7 +153,7 @@ where schemaname = 'public'
 </pre>
   <div class="window-foot"><span>Run on Postgres 17 with Supabase-style roles, 17 Nov 2026 · fake rows</span></div>
 </div>
-      <p>patchlabs-cli finds the membership tables your other policies rely on (directly, or through a helper function such as <code>is_member()</code>), then reads that table's INSERT, UPDATE and ALL policies. It flags a policy whose check is only “the row is mine” and passes one that checks a role, an invite, a subquery or a helper function. It ran clean on six open-source Supabase SaaS starters, including basejump and makerkit, which add members through functions. It reads SQL text and never connects to your database.</p>
+      <p>patchlabs-cli finds the membership tables your other policies rely on (directly, or through a helper function such as <code>is_member()</code>), then reads that table's INSERT, UPDATE and ALL policies. It flags a policy whose check is only “the row is mine” and passes one that checks a role, an invite, a subquery or a helper function. It ran clean on six open-source Supabase SaaS starters, including basejump and makerkit, which add members through functions. The <a href="/tools/rls-check">free RLS check</a> runs the same rule on a public repo, no sign-up. It reads SQL text and never connects to your database.</p>
 
       <h2 id="intended"><span class="lab" aria-hidden="true">Intent</span>When the pattern is intended</h2>
       <p>A few apps really are open to anyone: a public community where joining a space is the point. That is fine when every row behind the membership check is meant for anyone who signs up. Say so in a migration comment, because the same pattern on a table that guards customer data is a breach.</p>

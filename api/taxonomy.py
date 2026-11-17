@@ -31,6 +31,7 @@ CWE = {"CWE-79": "Improper Neutralization of Input During Web Page Generation ('
        "CWE-345": "Insufficient Verification of Data Authenticity",
        "CWE-347": "Improper Verification of Cryptographic Signature",
        "CWE-359": "Exposure of Private Personal Information to an Unauthorized Actor",
+       "CWE-532": "Insertion of Sensitive Information into Log File",
        "CWE-426": "Untrusted Search Path",
        "CWE-540": "Inclusion of Sensitive Information in Source Code",
        "CWE-552": "Files or Directories Accessible to External Parties",
