@@ -138,6 +138,7 @@
     <h1>What we shipped, when, and what it changed.</h1>
     <p class="lede">Dated entries, real only. Nothing appears here until it works, and anything we measured comes with its sample size. What’s coming next is listed separately and labelled as not shipped.</p>
     <nav class="cl-index" aria-label="Jump to an entry">
+      <a href="#nov-17">17 Nov 2026</a>
       <a href="#v3">v3 · 10 Nov 2026</a>
       <a href="#v2">v2 · 10 Nov 2026</a>
       <a href="#v1">v1 · 9 Nov 2026</a>
@@ -151,6 +152,19 @@
 <section class="sec tight" aria-label="Entries">
   <div class="wrap">
     <div class="cl">
+
+      <article class="cl-entry" id="nov-17" aria-labelledby="nov-17-h">
+        <div class="cl-date"><time datetime="2026-11-17">17 Nov 2026</time><span class="pill proven ver">shipped</span></div>
+        <div class="cl-body">
+          <h2 id="nov-17-h">Code checks catch personal data sent to AI models, and a leak must be shown before we call it one.</h2>
+          <p>Two changes to every hosted check, both already in the free CLI.</p>
+          <ul class="cl-items">
+            <li><span class="tag new">New</span><div><h3>Personal data in request headers or AI prompts (<code>PL-037</code>)</h3><p>Flags emails, phone numbers and ID numbers put in request headers, and prompts near an OpenAI, Anthropic, Gemini, AI SDK or LangChain call that paste in personal fields or a whole user record. JavaScript, TypeScript and Python. Checked against ten real open-source repos, including three AI chat apps and cal.com, with no false alarms.</p><div class="links"><a class="link-arrow" href="/findings/pl-037">PL-037</a><a class="link-arrow" href="/learn/personal-data-headers-ai-prompts">The guide</a></div></div></li>
+            <li><span class="tag new">New</span><div><h3>Claude Code settings files with keys (<code>PL-009</code>)</h3><p>The hosted check now also reads <code>.claude/settings.local.json</code> and <code>.claude/settings.json</code>, where allow rules and env blocks often hold live keys.</p><div class="links"><a class="link-arrow" href="/learn/claude-code-settings-local-json-secrets">The guide</a></div></div></li>
+            <li><span class="tag new">Changed</span><div><h3>“Proven” now starts with the leak being shown</h3><p>Before a finding counts, the lab seeds rows and reads them as an anonymous visitor and a signed-in stranger with no fix applied. A table that only looks open is reported as unproven and never sent to the fix agent, and a fix only passes if the leak was reproduced first.</p><div class="links"><a class="link-arrow" href="/how-it-works#proven">How it works</a></div></div></li>
+          </ul>
+        </div>
+      </article>
 
       <article class="cl-entry" id="v3" aria-labelledby="v3-h">
         <div class="cl-date"><time datetime="2026-11-10">10 Nov 2026</time><span class="pill proven ver">v3 · shipped</span></div>
