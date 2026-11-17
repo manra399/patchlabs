@@ -5,14 +5,14 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-17T06:00:00Z</updated>
+  <updated>2026-11-17T11:45:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
   <entry>
     <title>Code checks catch personal data sent to AI models; a leak must be shown before we call it one</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-17"/>
     <id>https://patchlabs.dev/changelog#nov-17</id>
-    <updated>2026-11-17T06:00:00Z</updated>
-    <summary>Hosted checks now flag personal data in request headers or AI prompts (PL-037) and keys in Claude Code settings files (PL-009). Proven findings now require the lab to reproduce the leak first; tables that only look open are reported as unproven.</summary>
+    <updated>2026-11-17T11:45:00Z</updated>
+    <summary>Hosted checks now flag personal data in request headers or AI prompts (PL-037) and keys in Claude Code settings files (PL-009). Proven findings now require the lab to reproduce the leak first; tables that only look open are reported as unproven. The hosted Code check is now copied from the open-source patchlabs-cli at a pinned release and compared with the latest CLI every six hours, so free and paid checks find the same things.</summary>
   </entry>
   <entry>
     <title>PatchLabs v3: four product lines, and checks that read your code</title>
