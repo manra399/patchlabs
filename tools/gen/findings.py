@@ -1841,6 +1841,54 @@ where schemaname = 'public'
     related=["PL-002", "PL-004", "PL-019"],
 ))
 
+# ------------------------------------------------------------------ PL-039
+F.append(dict(
+    id="PL-039", slug="pl-039", group="data", line="code", status="live",
+    title="Passwords stored or looked up in plain text",
+    short="The app keeps its own users table with the password people typed, and logs them in with a query that matches on it.",
+    desc="PL-039: an AI-built login saves passwords in plain text and checks them with .eq('password', password). Why it happens, how to check your repo, and the fix (use your auth provider, or Argon2id/bcrypt).",
+    sev="high", sevlabel="high (critical if the table is readable)", who="Anyone who can read the users table: a leaky policy, a backup, a log, a support tool", found="patchlabs-cli (static, from 18 Nov 2026)",
+    proof="Not lab-proven: file and line in the report",
+    what="""<p>Ask an AI builder for “a login page” without saying how, and it sometimes skips the auth provider you already have. It creates a <code>users</code> table with a <code>password</code> column, saves what the person typed, and logs them in with a query such as <code>.eq("email", email).eq("password", password)</code>. It works on the first try, so nobody looks again.</p>
+<p>PL-039 flags three signs of this: a query that matches rows on the password value (only possible if the stored value is the typed password), an insert or update that saves a bare password field in a repo that never hashes one, and a SQL table with a text <code>password</code> column in a repo that never hashes passwords.</p>""",
+    why="""<p>Supabase, Firebase and Clerk all hash passwords for you, but only through their own sign-up and sign-in calls. A prompt like “add a login with username and password” reads as a request for a table, and a table is what the model builds. On 17 Nov 2026 an engineer described the same thing on Hacker News: a colleague’s Gemini-built marketing page with its own login, which turned out to be saving every password in plain text. It was rolled back after it went live.</p>""",
+    vuln=sql("""// src/pages/Login.tsx: the model wrote its own login
+const { data: user } = await supabase
+  .from("users")
+  .select("*")
+  .eq("email", email)
+  .eq("password", password)   // only matches if the typed password is stored
+  .single();
+
+// src/pages/Signup.tsx
+await supabase.from("users").insert({ email, name, password });""", "src/pages/Login.tsx (vulnerable)"),
+    check=sql("""# the free, open-source scanner (reads your code as text, sends nothing)
+uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .
+
+# or by hand
+grep -rnE "eq\\(['\\"]password['\\"]|where:\\s*\\{[^}]*password|WHERE[^;]*password\\s*=" --exclude-dir=node_modules .
+grep -rniE "^\\s*,?\\s*\\"?password\\"?\\s+(text|varchar)" supabase/migrations""", "check-pl-039.sh"),
+    fix="""<p>Best: delete the custom password column and let your auth provider handle passwords. It hashes them, rate-limits guesses and sends reset emails.</p>""" +
+    sql("""! await supabase.from("users").insert({ email, name, password });
++ await supabase.auth.signUp({ email, password, options: { data: { name } } });
+
+! .from("users").select("*").eq("email", email).eq("password", password).single();
++ const { data, error } = await supabase.auth.signInWithPassword({ email, password });""", "src/pages/Login.tsx (fixed)") +
+    """<p>If you must keep your own table (a legacy system, a separate admin login), hash with Argon2id or bcrypt before saving, load the row by email only, and compare with the library’s verify function, never in the query. Then drop the old column, and treat any password it held as leaked: force a reset for every account and tell your users, because people reuse passwords. If the table was readable by anyone (see <a href="/findings/pl-001">PL-001</a>), that is a breach to assess, not just a fix. The <a href="/learn/plaintext-passwords-ai-built-login">guide</a> walks through the whole move.</p>""",
+    proof_tr=tr("code scan · report excerpt", [
+        "{STEP:SCAN}    src/pages/Login.tsx:3",
+        "~          .eq(\"password\", password): login matches on the password {LEAK}",
+        "{STEP:SCAN}    src/pages/Signup.tsx:6",
+        "~          insert({ email, name, password }): saved without hashing {LEAK}",
+        "{STEP:FIX}     supabase.auth.signUp / signInWithPassword; drop the column",
+    ], CODE_FOOT),
+    proof_note="""<p>patchlabs-cli reads your JS, TS, Python and SQL files. It skips calls to an auth provider (<code>supabase.auth.signUp</code>, Firebase’s <code>createUserWithEmailAndPassword</code>), values that are already hashed, form state and validation schemas, and only counts writes made through a database client directly (supabase-js, Drizzle, Prisma, Firestore, the MongoDB driver, Django, raw SQL). Frameworks that hash inside their own services, such as Payload or Directus, are not flagged. On 18 Nov 2026 it ran clean on ten real projects that handle passwords properly (cal.com, Payload, Directus, Vercel’s AI chatbot, the FastAPI full-stack template and five Supabase starters), and flagged all six public repos we sampled that use the <code>.eq('password', …)</code> login.</p>""",
+    intended="""<p>Almost never intended. A column named <code>password</code> that actually holds a bcrypt or Argon2 hash is fine, which is why the column on its own is only medium and is skipped when the repo calls a hash function anywhere.</p>""",
+    sevwhy="""<p>High: anyone who reads the table gets working passwords, for your app and for every other site where your users reused them. Critical when the table is also readable through a leaky policy, because then it is already public.</p>""",
+    study=None, lint=None,
+    related=["PL-001", "PL-002", "PL-019"],
+))
+
 # ------------------------------------------------------------------ Live posture (PL-027..PL-036)
 # line "live": read from the public home page of a domain the team verified (LIVE.md). One plain http:// request, one
 # https:// page load (at most 5 redirects) and its TLS handshake. Never the database, never other paths.
@@ -2591,7 +2639,7 @@ FOUND_SHORT = {"PL-001": "RLS check · lab", "PL-002": "RLS check · lab", "PL-0
                "PL-016": "Lab · coming", "PL-019": "Code · SQL + app code", "PL-009": "Key scan · code",
                "PL-017": "Code · functions", "PL-018": "Code · config", "PL-020": "Code · frontend", "PL-021": "Code · webhooks",
                "PL-022": "Code · functions", "PL-023": "Code · lockfile + OSV", "PL-024": "Code · frontend",
-               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers", "PL-037": "Code · headers and AI prompts", "PL-038": "Code · SQL policies",
+               "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers", "PL-037": "Code · headers and AI prompts", "PL-038": "Code · SQL policies", "PL-039": "Code · login and SQL",
                "PL-027": "Live · HTTPS redirect", "PL-028": "Live · certificate", "PL-029": "Live · headers", "PL-030": "Live · headers",
                "PL-031": "Live · headers", "PL-032": "Live · headers", "PL-033": "Live · cookies", "PL-034": "Live · page HTML",
                "PL-035": "Live · headers", "PL-036": "Live · headers"}

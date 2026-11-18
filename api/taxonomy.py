@@ -22,6 +22,7 @@ OWASP = {"A01:2021": "Broken Access Control", "A02:2021": "Cryptographic Failure
 CWE = {"CWE-79": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
        "CWE-200": "Exposure of Sensitive Information to an Unauthorized Actor",
        "CWE-250": "Execution with Unnecessary Privileges",
+       "CWE-256": "Plaintext Storage of a Password",
        "CWE-269": "Improper Privilege Management",
        "CWE-284": "Improper Access Control",
        "CWE-287": "Improper Authentication",
@@ -43,6 +44,7 @@ CWE = {"CWE-79": "Improper Neutralization of Input During Web Page Generation ('
        "CWE-807": "Reliance on Untrusted Inputs in a Security Decision",
        "CWE-862": "Missing Authorization",
        "CWE-863": "Incorrect Authorization",
+       "CWE-916": "Use of Password Hash With Insufficient Computational Effort",
        "CWE-915": "Improperly Controlled Modification of Dynamically-Determined Object Attributes",
        "CWE-942": "Permissive Cross-domain Policy with Untrusted Domains",
        "CWE-1004": "Sensitive Cookie Without 'HttpOnly' Flag",
@@ -79,6 +81,7 @@ TAGS = {
     "PL-026": (["CWE-942"], "A05:2021"),              # CORS * with credentials
     "PL-037": (["CWE-359", "CWE-532"], "A04:2021"),   # personal data in request headers or AI prompts
     "PL-038": (["CWE-639", "CWE-863"], "A01:2021"),   # self-join into any team via the membership table
+    "PL-039": (["CWE-256", "CWE-916"], "A02:2021"),   # passwords stored or looked up in plain text
     # live posture (LIVE.md): read from one public page load of a verified domain
     "PL-027": (["CWE-319"], "A02:2021"),              # site doesn't force HTTPS
     "PL-028": (["CWE-295"], "A02:2021"),              # certificate invalid, expired or expiring

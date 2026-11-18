@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-17T23:30:00Z</updated>
+  <updated>2026-11-18T12:00:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Code checks catch logins that store passwords in plain text</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-18"/>
+    <id>https://patchlabs.dev/changelog#nov-18</id>
+    <updated>2026-11-18T12:00:00Z</updated>
+    <summary>New check PL-039 in patchlabs-cli v0.6.0 and the hosted Code check: a login query that matches on the password, an unhashed password insert, or a plain password column. Clean on ten real projects (cal.com, Payload, Directus and others); flagged all six sampled public repos with the pattern. Guide: how to check and move to Supabase Auth.</summary>
+  </entry>
   <entry>
     <title>Code checks catch personal data sent to AI models; a leak must be shown before we call it one</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-17"/>
