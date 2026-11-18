@@ -67,6 +67,7 @@ Each ID has a page at https://patchlabs.dev/findings/pl-0NN with vulnerable exam
 - Personal data in request headers and AI prompts, and the Uber/Fireworks AI breach: https://patchlabs.dev/learn/personal-data-headers-ai-prompts
 - Supabase multi-tenant RLS, five tenant-isolation tests and the members-table self-join hole (PL-038): https://patchlabs.dev/learn/supabase-multi-tenant-rls
 - Plain-text passwords in AI-built logins (.eq('password', password)), the check and the move to Supabase Auth (PL-039): https://patchlabs.dev/learn/plaintext-passwords-ai-built-login
+- Staff-built apps with client data: Vercel Standard Protection leaves production public, team default All Deployments, a script listing every project's protection and signed-out result, and three tests (signed out, database, second user): https://patchlabs.dev/learn/staff-vibe-coded-apps-client-data
 - Supabase MCP with patient data: what read-only mode stops (writes) and does not (reads reach the model), and the two-patient test a signed-out test misses: https://patchlabs.dev/learn/supabase-mcp-patient-data
 - How to secure a Lovable app’s Supabase database: https://patchlabs.dev/learn/secure-lovable-supabase-app
 - Supabase RLS policies explained, with owner and stranger tests: https://patchlabs.dev/learn/rls-policies-explained
