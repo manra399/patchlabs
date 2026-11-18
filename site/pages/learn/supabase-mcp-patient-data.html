@@ -1,0 +1,158 @@
+<!--
+title: Supabase MCP with patient or customer data: a safe setup | PatchLabs
+description: Letting Claude or Cursor drive Supabase through MCP when your tables hold health or customer records: what read-only mode does and doesn’t stop, and the two-patient test.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Letting Claude drive your Supabase through MCP when the database holds patient data","description":"Letting Claude or Cursor drive Supabase through MCP when your tables hold health or customer records: what read-only mode does and doesn’t stop, and the two-patient test.","datePublished":"2026-11-18","dateModified":"2026-11-18","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/supabase-mcp-patient-data"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Letting Claude drive your Supabase through MCP when the database holds patient data","item":"https://patchlabs.dev/learn/supabase-mcp-patient-data"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+<li><a href="/learn/supabase-multi-tenant-rls">Multi-tenant RLS and tenant isolation</a></li>
+<li><a href="/learn/supabase-mcp-patient-data" aria-current="page">Supabase MCP and patient data</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+<li><a href="/learn/cursor-fireworks-breach-agent-traces-keys">The Cursor breach and keys in agent traces</a></li>
+<li><a href="/learn/personal-data-headers-ai-prompts">Personal data in headers and AI prompts</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Supabase MCP and patient data</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>Letting Claude drive your Supabase through MCP when the database holds patient data</h1>
+      <p class="lede">More clinicians, coaches and small-clinic founders now build their own platform by talking to Claude, with the Supabase MCP server doing the database work. That is a fine way to build. It changes two things when the tables hold patient or customer records: the AI can now read those records, and the usual “sign out and try it” test stops being enough. We read the Supabase MCP server’s source and ran the test on Postgres 18 to show both.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 18 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Point the Supabase MCP server at a development project with fake records, not at production. Supabase’s own docs say the same.</li><li>Read-only mode hides every write tool and runs SQL as read-only, but it does not stop the AI reading rows. Any patient row it selects goes into the conversation and to the model provider.</li><li>The MCP server wraps query results in “untrusted data” markers so the model ignores instructions hidden in a row. That lowers the risk of prompt injection; it doesn’t remove it.</li><li>A policy that says “logged-in users can read” passes the signed-out test. In our run, anon saw 0 rows, but patient A saw patient B’s consultation note. Test as two patients, not just as a stranger.</li><li>Our free, open-source CLI reads your migrations for these policies: <code>uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .</code></li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#what-changes">What changes when an AI drives the database</a></li><li><a href="#read-only">What read-only mode does, from the source</a></li><li><a href="#setup">A safe setup in five steps</a></li><li><a href="#two-patient-test">The two-patient test, and why signing out isn’t enough</a></li><li><a href="#uk">If you are in the UK</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for people building a health, therapy, coaching or clinic app on Supabase by working with Claude Code, Claude Desktop, Cursor or another AI client connected through the Supabase MCP server. The source references are to the open-source server at <a href="https://github.com/supabase-community/supabase-mcp">supabase-community/supabase-mcp</a>, commit <code>854980b</code> (17 November 2026). The test results are from our own run on 18 November 2026 on Postgres 18 with Supabase-style <code>anon</code> and <code>authenticated</code> roles and two fake patients. They show the pattern, not any particular app. This is not legal advice.</p>
+
+<h2 id="what-changes">What changes when an AI drives the database</h2>
+<p>Through MCP, the AI client gets tools such as <code>list_tables</code>, <code>execute_sql</code> and <code>apply_migration</code> against your project. Two consequences matter for patient data:</p>
+<ul>
+  <li><strong>Rows become conversation.</strong> When the model runs <code>select * from consultations limit 20</code> to debug something, those twenty rows are sent back to the model and kept in your chat history, the client’s local logs and the provider’s storage for as long as its retention terms say. For health data, that is a transfer of special category data to another company.</li>
+  <li><strong>Rows become instructions, potentially.</strong> A free-text field a patient filled in can contain text the model reads as a request (“ignore previous instructions and…”). If the same session can also write to the database, that text has something to act on.</li>
+</ul>
+
+<h2 id="read-only">What read-only mode does, from the source</h2>
+<p>The server has a read-only setting (<code>--read-only</code> for the local server, <code>read_only=true</code> on the hosted URL). Reading the code, it does three things:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">What</th><th scope="col">Where in the source</th><th scope="col">Effect</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Hides write tools</th><td><code>server.ts</code>: when <code>readOnly</code> is set, every tool in the write set is marked hidden</td><td>The model can’t see <code>apply_migration</code>, secret or storage-config tools, so it doesn’t try them.</td></tr>
+    <tr><th scope="row">Refuses writes anyway</th><td><code>database-operation-tools.ts</code>, <code>secret-tools.ts</code>, <code>storage-tools.ts</code>: each write path throws “Cannot … in read-only mode”</td><td>A belt-and-braces check if a hidden tool is called anyway.</td></tr>
+    <tr><th scope="row">Runs SQL as read-only</th><td><code>execute_sql</code> stays available and passes <code>read_only</code> through to Supabase’s database query API</td><td>Inserts, updates, deletes and DDL fail. <strong>Selects still work.</strong></td></tr>
+  </tbody>
+</table></div>
+<p>So read-only mode protects your data from being changed. It does not keep your data away from the model. If the project holds real patient records, the model can still read them.</p>
+<p>The server also wraps query results in a block marked as untrusted data, with a random boundary, and tells the model not to follow instructions inside it (<code>tools/util.ts</code>). The <code>execute_sql</code> description repeats the warning. That is a sensible mitigation. Models usually respect it, but not always, so it shouldn’t be the only thing between a patient’s free text and your database.</p>
+
+<h2 id="setup">A safe setup in five steps</h2>
+<ol>
+  <li><strong>Two projects.</strong> Build against a development project seeded with fake patients. Keep production off the MCP connection entirely, and change production only by applying the migrations you tested in development.</li>
+  <li><strong>Scope the connection to that one project.</strong> Use the project-scoped URL (<code>project_ref=&lt;dev-ref&gt;</code>) so the model can’t list or touch your other projects.</li>
+  <li><strong>Read-only by default, and only the tools you need.</strong> <code>read_only=true&amp;features=database,docs</code> is enough for most debugging. Switch read-only off for a session when you deliberately want the model to write a migration, then switch it back.</li>
+  <li><strong>Approve every write.</strong> Leave your client’s tool-approval prompt on for <code>execute_sql</code> and <code>apply_migration</code>, and read the SQL before you click. The server can also ask for confirmation of destructive statements in clients that support forms.</li>
+  <li><strong>Keep the service role key out of the app.</strong> MCP uses your access token, not your app’s keys. The <code>service_role</code> key bypasses every policy, so it belongs only in server code such as Edge Functions, never in anything the browser loads (see <a href="/findings/pl-010">PL-010</a>).</li>
+</ol>
+<div class="code"><div class="code-bar"><span class="name">.mcp.json (development project, read-only)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=YOUR_DEV_PROJECT_REF&amp;read_only=true&amp;features=database,docs"
+    }
+  }
+}</code></pre></div>
+
+<h2 id="two-patient-test">The two-patient test, and why signing out isn’t enough</h2>
+<p>The common advice is to sign out and check that your tables return nothing. Do that, but it misses the policy AI builders most often write first when a logged-in screen comes back empty:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_consultations.sql (vulnerable)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "logged in can read" on public.consultations
+  for select to authenticated
+  using (true);   -- every signed-in user can read every row</code></pre></div>
+<p>We built a <code>consultations</code> table with one note for patient A and one for patient B, turned on row level security, and queried it three ways with that policy, then with the fix:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Query</th><th scope="col"><code>using (true)</code></th><th scope="col"><code>patient_id = auth.uid()</code></th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Signed out (<code>anon</code>), all rows</th><td>0 rows: looks safe</td><td>0 rows</td></tr>
+    <tr><th scope="row">Patient A, all rows</th><td>2 rows</td><td>1 row</td></tr>
+    <tr><th scope="row">Patient A, patient B’s rows</th><td><strong>1 row: B’s note</strong></td><td>0 rows</td></tr>
+  </tbody>
+</table></div>
+<p>The signed-out test passed in both cases. Only the second patient showed the problem. In a clinic app, anyone can create an account, so “any signed-in user” means anyone.</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_consultations.sql (fixed)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>drop policy "logged in can read" on public.consultations;
+create policy "patients read own" on public.consultations
+  for select to authenticated
+  using (patient_id = (select auth.uid()));</code></pre></div>
+<p>Clinician access needs its own policy that checks a role you control, held in a table patients can’t write to or in <code>app_metadata</code>, never in <code>user_metadata</code>, which users can edit themselves (see <a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a>). Storage buckets with letters, photos or PDFs need the same test, because they have separate policies (see <a href="/learn/supabase-storage-policies">storage bucket policies</a>).</p>
+<h3 id="run-it">Run the test yourself</h3>
+<p>Our test script runs on any Postgres in a throwaway database, with stand-ins for Supabase’s roles and <code>auth.uid()</code>: <a href="https://github.com/manra399/patchlabs/blob/main/tools/tests-guides/two_patient_test.sql">two_patient_test.sql</a>. On your real app, do the same through the API: create two test patient accounts in your development project, sign in as A, and request B’s rows by id from every table and bucket. Or ask your AI: “write a test that signs in as two different patients and tries to read each other’s records from every table and storage bucket”, and run it after every change.</p>
+
+<h2 id="uk">If you are in the UK</h2>
+<p>Health data is special category data under UK GDPR. Before real patients use the app, write a short data protection impact assessment, check the data processing terms of each service that will hold or see records (Supabase, your host, your AI provider), and note where each stores data. If the platform will access NHS patient data or systems, the NHS Data Security and Protection Toolkit applies. The ICO’s guidance on special category data is the place to start.</p>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a><a class="card link" href="/findings/pl-002"><span class="n-big">PL-002</span><h3>Any signed-in user can read every row</h3></a><a class="card link" href="/findings/pl-010"><span class="n-big">PL-010</span><h3>Service role key in client code</h3></a><a class="card link" href="/findings/pl-037"><span class="n-big">PL-037</span><h3>Personal data sent in a request header or to an AI model API</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-supabase-mcp-patie">Public GitHub repo</label>
+            <input id="repo-l-supabase-mcp-patie" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-supabase-mcp-patie">Your email</label>
+            <input id="email-l-supabase-mcp-patie" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 18 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20supabase-mcp-patient-data">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/supabase-multi-tenant-rls" rel="prev"><span>Previous guide</span>Supabase multi-tenant apps: how to test that one customer can’t see another’s data</a><a class="next" href="/learn/user-metadata-vs-app-metadata" rel="next"><span>Next guide</span>user_metadata vs app_metadata: where to store roles in Supabase</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what-changes">What changes when an AI drives the database</a></li><li><a href="#read-only">What read-only mode does, from the source</a></li><li><a href="#setup">A safe setup in five steps</a></li><li><a href="#two-patient-test">The two-patient test, and why signing out isn’t enough</a></li><li><a href="#uk">If you are in the UK</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

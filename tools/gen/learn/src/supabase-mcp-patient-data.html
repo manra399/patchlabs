@@ -1,0 +1,82 @@
+title: Supabase MCP with patient or customer data: a safe setup
+description: Letting Claude or Cursor drive Supabase through MCP when your tables hold health or customer records: what read-only mode does and doesn’t stop, and the two-patient test.
+h1: Letting Claude drive your Supabase through MCP when the database holds patient data
+navtitle: Supabase MCP and patient data
+topic: supabase
+order: 11
+checked: 2026-11-18
+short: What the Supabase MCP server’s read-only mode stops and what it doesn’t, and the two-patient test that catches the policy a signed-out test misses.
+lede: More clinicians, coaches and small-clinic founders now build their own platform by talking to Claude, with the Supabase MCP server doing the database work. That is a fine way to build. It changes two things when the tables hold patient or customer records: the AI can now read those records, and the usual “sign out and try it” test stops being enough. We read the Supabase MCP server’s source and ran the test on Postgres 18 to show both.
+tldr: Point the Supabase MCP server at a development project with fake records, not at production. Supabase’s own docs say the same. || Read-only mode hides every write tool and runs SQL as read-only, but it does not stop the AI reading rows. Any patient row it selects goes into the conversation and to the model provider. || The MCP server wraps query results in “untrusted data” markers so the model ignores instructions hidden in a row. That lowers the risk of prompt injection; it doesn’t remove it. || A policy that says “logged-in users can read” passes the signed-out test. In our run, anon saw 0 rows, but patient A saw patient B’s consultation note. Test as two patients, not just as a stranger. || Our free, open-source CLI reads your migrations for these policies: <code>uvx --from git+https://github.com/manra399/patchlabs-cli patchlabs scan .</code>
+findings: PL-001, PL-002, PL-010, PL-037
+---
+<p>This guide is for people building a health, therapy, coaching or clinic app on Supabase by working with Claude Code, Claude Desktop, Cursor or another AI client connected through the Supabase MCP server. The source references are to the open-source server at <a href="https://github.com/supabase-community/supabase-mcp">supabase-community/supabase-mcp</a>, commit <code>854980b</code> (17 November 2026). The test results are from our own run on 18 November 2026 on Postgres 18 with Supabase-style <code>anon</code> and <code>authenticated</code> roles and two fake patients. They show the pattern, not any particular app. This is not legal advice.</p>
+
+<h2 id="what-changes">What changes when an AI drives the database</h2>
+<p>Through MCP, the AI client gets tools such as <code>list_tables</code>, <code>execute_sql</code> and <code>apply_migration</code> against your project. Two consequences matter for patient data:</p>
+<ul>
+  <li><strong>Rows become conversation.</strong> When the model runs <code>select * from consultations limit 20</code> to debug something, those twenty rows are sent back to the model and kept in your chat history, the client’s local logs and the provider’s storage for as long as its retention terms say. For health data, that is a transfer of special category data to another company.</li>
+  <li><strong>Rows become instructions, potentially.</strong> A free-text field a patient filled in can contain text the model reads as a request (“ignore previous instructions and…”). If the same session can also write to the database, that text has something to act on.</li>
+</ul>
+
+<h2 id="read-only">What read-only mode does, from the source</h2>
+<p>The server has a read-only setting (<code>--read-only</code> for the local server, <code>read_only=true</code> on the hosted URL). Reading the code, it does three things:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">What</th><th scope="col">Where in the source</th><th scope="col">Effect</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Hides write tools</th><td><code>server.ts</code>: when <code>readOnly</code> is set, every tool in the write set is marked hidden</td><td>The model can’t see <code>apply_migration</code>, secret or storage-config tools, so it doesn’t try them.</td></tr>
+    <tr><th scope="row">Refuses writes anyway</th><td><code>database-operation-tools.ts</code>, <code>secret-tools.ts</code>, <code>storage-tools.ts</code>: each write path throws “Cannot … in read-only mode”</td><td>A belt-and-braces check if a hidden tool is called anyway.</td></tr>
+    <tr><th scope="row">Runs SQL as read-only</th><td><code>execute_sql</code> stays available and passes <code>read_only</code> through to Supabase’s database query API</td><td>Inserts, updates, deletes and DDL fail. <strong>Selects still work.</strong></td></tr>
+  </tbody>
+</table></div>
+<p>So read-only mode protects your data from being changed. It does not keep your data away from the model. If the project holds real patient records, the model can still read them.</p>
+<p>The server also wraps query results in a block marked as untrusted data, with a random boundary, and tells the model not to follow instructions inside it (<code>tools/util.ts</code>). The <code>execute_sql</code> description repeats the warning. That is a sensible mitigation. Models usually respect it, but not always, so it shouldn’t be the only thing between a patient’s free text and your database.</p>
+
+<h2 id="setup">A safe setup in five steps</h2>
+<ol>
+  <li><strong>Two projects.</strong> Build against a development project seeded with fake patients. Keep production off the MCP connection entirely, and change production only by applying the migrations you tested in development.</li>
+  <li><strong>Scope the connection to that one project.</strong> Use the project-scoped URL (<code>project_ref=&lt;dev-ref&gt;</code>) so the model can’t list or touch your other projects.</li>
+  <li><strong>Read-only by default, and only the tools you need.</strong> <code>read_only=true&amp;features=database,docs</code> is enough for most debugging. Switch read-only off for a session when you deliberately want the model to write a migration, then switch it back.</li>
+  <li><strong>Approve every write.</strong> Leave your client’s tool-approval prompt on for <code>execute_sql</code> and <code>apply_migration</code>, and read the SQL before you click. The server can also ask for confirmation of destructive statements in clients that support forms.</li>
+  <li><strong>Keep the service role key out of the app.</strong> MCP uses your access token, not your app’s keys. The <code>service_role</code> key bypasses every policy, so it belongs only in server code such as Edge Functions, never in anything the browser loads (see <a href="/findings/pl-010">PL-010</a>).</li>
+</ol>
+[[CODE .mcp.json (development project, read-only)]]
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=YOUR_DEV_PROJECT_REF&read_only=true&features=database,docs"
+    }
+  }
+}
+[[/CODE]]
+
+<h2 id="two-patient-test">The two-patient test, and why signing out isn’t enough</h2>
+<p>The common advice is to sign out and check that your tables return nothing. Do that, but it misses the policy AI builders most often write first when a logged-in screen comes back empty:</p>
+[[CODE supabase/migrations/…_consultations.sql (vulnerable)]]
+create policy "logged in can read" on public.consultations
+  for select to authenticated
+  using (true);   -- every signed-in user can read every row
+[[/CODE]]
+<p>We built a <code>consultations</code> table with one note for patient A and one for patient B, turned on row level security, and queried it three ways with that policy, then with the fix:</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Query</th><th scope="col"><code>using (true)</code></th><th scope="col"><code>patient_id = auth.uid()</code></th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Signed out (<code>anon</code>), all rows</th><td>0 rows: looks safe</td><td>0 rows</td></tr>
+    <tr><th scope="row">Patient A, all rows</th><td>2 rows</td><td>1 row</td></tr>
+    <tr><th scope="row">Patient A, patient B’s rows</th><td><strong>1 row: B’s note</strong></td><td>0 rows</td></tr>
+  </tbody>
+</table></div>
+<p>The signed-out test passed in both cases. Only the second patient showed the problem. In a clinic app, anyone can create an account, so “any signed-in user” means anyone.</p>
+[[CODE supabase/migrations/…_consultations.sql (fixed)]]
+drop policy "logged in can read" on public.consultations;
+create policy "patients read own" on public.consultations
+  for select to authenticated
+  using (patient_id = (select auth.uid()));
+[[/CODE]]
+<p>Clinician access needs its own policy that checks a role you control, held in a table patients can’t write to or in <code>app_metadata</code>, never in <code>user_metadata</code>, which users can edit themselves (see <a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a>). Storage buckets with letters, photos or PDFs need the same test, because they have separate policies (see <a href="/learn/supabase-storage-policies">storage bucket policies</a>).</p>
+<h3 id="run-it">Run the test yourself</h3>
+<p>Our test script runs on any Postgres in a throwaway database, with stand-ins for Supabase’s roles and <code>auth.uid()</code>: <a href="https://github.com/manra399/patchlabs/blob/main/tools/tests-guides/two_patient_test.sql">two_patient_test.sql</a>. On your real app, do the same through the API: create two test patient accounts in your development project, sign in as A, and request B’s rows by id from every table and bucket. Or ask your AI: “write a test that signs in as two different patients and tries to read each other’s records from every table and storage bucket”, and run it after every change.</p>
+
+<h2 id="uk">If you are in the UK</h2>
+<p>Health data is special category data under UK GDPR. Before real patients use the app, write a short data protection impact assessment, check the data processing terms of each service that will hold or see records (Supabase, your host, your AI provider), and note where each stores data. If the platform will access NHS patient data or systems, the NHS Data Security and Protection Toolkit applies. The ICO’s guidance on special category data is the place to start.</p>

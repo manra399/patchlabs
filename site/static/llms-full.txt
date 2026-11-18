@@ -66,6 +66,7 @@ Each ID has a page at https://patchlabs.dev/findings/pl-0NN with vulnerable exam
 
 - Personal data in request headers and AI prompts, and the Uber/Fireworks AI breach: https://patchlabs.dev/learn/personal-data-headers-ai-prompts
 - Supabase multi-tenant RLS, five tenant-isolation tests and the members-table self-join hole (PL-038): https://patchlabs.dev/learn/supabase-multi-tenant-rls
+- Supabase MCP with patient data: what read-only mode stops (writes) and does not (reads reach the model), and the two-patient test a signed-out test misses: https://patchlabs.dev/learn/supabase-mcp-patient-data
 - How to secure a Lovable app’s Supabase database: https://patchlabs.dev/learn/secure-lovable-supabase-app
 - Supabase RLS policies explained, with owner and stranger tests: https://patchlabs.dev/learn/rls-policies-explained
 - Supabase views and security_invoker: stop views bypassing RLS: https://patchlabs.dev/learn/supabase-views-security-invoker

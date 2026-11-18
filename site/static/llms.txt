@@ -91,6 +91,7 @@ Key facts:
 - [All guides](https://patchlabs.dev/learn)
 - [Personal data in request headers and AI prompts: where it ends up](https://patchlabs.dev/learn/personal-data-headers-ai-prompts)
 - [Supabase multi-tenant RLS: can tenant A see tenant B?](https://patchlabs.dev/learn/supabase-multi-tenant-rls)
+- [Supabase MCP with patient or customer data: a safe setup](https://patchlabs.dev/learn/supabase-mcp-patient-data)
 - [Is my Lovable app secure? How to check in 10 minutes](https://patchlabs.dev/learn/is-my-lovable-app-secure)
 - [Is it safe to expose the Supabase anon key?](https://patchlabs.dev/learn/is-supabase-anon-key-safe)
 - [How to check row level security is on for every Supabase table](https://patchlabs.dev/learn/check-supabase-rls-every-table)
