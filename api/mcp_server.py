@@ -41,10 +41,14 @@ TOOLS = [
     {"name": "start_check", "title": "Request a full leak check", "annotations": {"title": "Request a full leak check", **hints(False, False, True)},
      "inputSchema": schema({"repo": REPO, "email": {"type": "string", "description": "Where the report goes"}}, ["repo", "email"]),
      "description": "Request the full lab check: the database is rebuilt from the repo with fake rows, leaks are proven as each kind of user, and a tested fix is written. Creates a check and emails the report address; nothing runs until the repo owner proves ownership with a one-line file. Returns a check id and link. Only call when the user asks for the full check and gives their email."},
-    {"name": "get_check", "title": "Get a check", "annotations": {"title": "Get a check", **hints(True, True, False)}, "inputSchema": schema({"check_id": {"type": "string"}}, ["check_id"]),
-     "description": "Status, summary, report and fix for a check id."},
+    {"name": "get_check", "title": "Get a check", "annotations": {"title": "Get a check", **hints(True, True, False)}, "inputSchema": schema({"check_id": {"type": "string", "description": "The check id that start_check or run_check returned"}}, ["check_id"]),
+     "description": "Read one check by id. Read-only, safe to call again to poll. Returns status: awaiting_verification (includes the one-line "
+                    "file the repo owner must add, then nothing runs until they do), queued, running, done, no_leaks, needs_review or failed. "
+                    "When finished it also returns the summary (each finding with severity, CWE/OWASP and days open), the plain-English "
+                    "report (report_md) and the tested fix (fix_sql), plus the event timeline. Use after start_check or run_check; "
+                    "poll every minute or so while queued or running."},
     {"name": "list_apps", "title": "List monitored apps", "annotations": {"title": "List monitored apps", **hints(True, True, False)}, "inputSchema": schema({}, []),
-     "description": "Apps monitored in the API key's workspace, with their last check. Needs X-API-Key."},
+     "description": "List the apps monitored in the API key's workspace, each with its id (pass it as app_id to run_check), its last finished check (id and status, for get_check) and any open_check_id. Needs X-API-Key."},
     {"name": "run_check", "title": "Run a check on an app", "annotations": {"title": "Run a check on an app", **hints(False, False, True)}, "inputSchema": schema({"app_id": {"type": "string"}}, ["app_id"]),
      "description": "Queue a new check for a monitored app now (counts toward the plan's monthly runs). Needs X-API-Key."},
 ]
