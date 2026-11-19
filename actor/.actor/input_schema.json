@@ -1,0 +1,23 @@
+{
+  "title": "AI-built app security check",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "startUrls": {
+      "title": "Sites to check",
+      "type": "array",
+      "description": "Home page addresses, one per line, for example https://myapp.lovable.app. Only check sites you own or have permission to test. Each site gets one plain http request, one https page load and its own scripts.",
+      "editor": "requestListSources",
+      "prefill": [{"url": "https://patchlabs.dev"}]
+    },
+    "maxConcurrency": {
+      "title": "Sites at once",
+      "type": "integer",
+      "description": "How many sites to check in parallel.",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 20
+    }
+  },
+  "required": ["startUrls"]
+}
