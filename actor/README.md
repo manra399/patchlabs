@@ -83,8 +83,8 @@ finds. It refuses private and local addresses.
 
 ## Found something?
 
-The [PatchLabs guides](https://patchlabs.dev/learn) explain each finding and how to fix it on Lovable, Supabase,
-Bolt, Vercel and Netlify. To check what the page can't show, such as Row Level Security, storage buckets and
+The [PatchLabs guides](https://patchlabs.dev/learn) explain each finding and how to fix it on Lovable, Supabase
+and Bolt. To check what the page can't show, such as Row Level Security, storage buckets and
 functions, run the free [RLS check](https://patchlabs.dev/check) on your app's repository.
 
 Source: [github.com/manra399/patchlabs](https://github.com/manra399/patchlabs/tree/main/actor)
