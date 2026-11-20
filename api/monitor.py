@@ -405,6 +405,29 @@ def v1_run(aid: str, key=Depends(api_key), c=Depends(db)):
     return run_now(c, a, "api", key=key)
 
 
+def workspace_checks(c, wid, aid=None, limit=20):
+    """Recent checks across a workspace's apps, newest first (the list_checks MCP tool). Optional app filter."""
+    try:
+        limit = max(1, min(int(limit or 20), 100))
+    except (TypeError, ValueError):
+        raise HTTPException(422, "limit must be a whole number from 1 to 100.")
+    args, where = [wid], "a.workspace_id = %s"
+    if aid:
+        a = c.execute("SELECT workspace_id FROM apps WHERE id = %s", (as_uuid(aid, "App not found."),)).fetchone()
+        if not a:
+            raise HTTPException(404, "App not found.")
+        if a["workspace_id"] != wid:
+            raise HTTPException(403, "This API key belongs to a different workspace.")
+        where += " AND k.app_id = %s"
+        args.append(aid)
+    rows = c.execute(f"SELECT k.id, k.app_id, k.repo, k.status, k.trigger, k.created_at, k.finished_at, k.summary, a.client_label "
+                     f"FROM checks k JOIN apps a ON a.id = k.app_id WHERE {where} ORDER BY k.created_at DESC LIMIT %s",
+                     (*args, limit)).fetchall()
+    return {"checks": [{"id": k["id"], "app_id": k["app_id"], "client_label": k["client_label"], "repo": k["repo"],
+                        "status": k["status"], "trigger": k["trigger"], "created_at": k["created_at"], "finished_at": k["finished_at"],
+                        "finished": k["status"] in FINISHED + ("failed",), "tables_leaking": leaking(k["summary"])} for k in rows]}
+
+
 @router.get("/v1/checks/{cid}")
 def v1_check(cid: str, key=Depends(api_key), c=Depends(db)):
     k = c.execute("SELECT k.*, a.workspace_id FROM checks k JOIN apps a ON a.id = k.app_id WHERE k.id = %s",

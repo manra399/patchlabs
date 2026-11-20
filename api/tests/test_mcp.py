@@ -28,14 +28,14 @@ def test_initialize_and_list(client):
     tools = rpc(client, "tools/list", mid="abc")
     assert tools["id"] == "abc"
     names = [t["name"] for t in tools["result"]["tools"]]
-    assert names == ["rls_check", "headers_check", "start_check", "get_check", "list_apps", "run_check"]
+    assert names == ["rls_check", "headers_check", "start_check", "get_check", "list_apps", "list_checks", "run_check"]
     for t in tools["result"]["tools"]:
         assert t["description"] and t["inputSchema"]["type"] == "object"
         a = t["annotations"]
         assert a["title"] == t["title"] and a["destructiveHint"] is False
         assert set(a) == {"title", "readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"}
     read_only = {t["name"] for t in tools["result"]["tools"] if t["annotations"]["readOnlyHint"]}
-    assert read_only == {"rls_check", "headers_check", "get_check", "list_apps"}
+    assert read_only == {"rls_check", "headers_check", "get_check", "list_apps", "list_checks"}
     assert rpc(client, "initialize", {"protocolVersion": "2025-11-25"})["result"]["protocolVersion"] == "2025-11-25"
     assert rpc(client, "ping")["result"] == {}
 
@@ -113,6 +113,17 @@ def test_api_key_tools(client):
     assert call(client, "run_check", {"app_id": a["id"]}, headers=okey)["isError"] is True
     assert call(client, "list_apps", headers=okey)["structuredContent"]["apps"] == []
     assert "cost" not in json.dumps(apps).lower()
+    hist = call(client, "list_checks", headers=key)["structuredContent"]["checks"]
+    assert len(hist) == 2 and hist[0]["status"] == "queued" and hist[1]["status"] == "no_leaks" and hist[1]["finished"] is True
+    assert hist[1]["id"] == cid and all(h["app_id"] == a["id"] for h in hist)
+    assert len(call(client, "list_checks", {"limit": 1}, headers=key)["structuredContent"]["checks"]) == 1
+    assert len(call(client, "list_checks", {"app_id": a["id"]}, headers=key)["structuredContent"]["checks"]) == 2
+    assert call(client, "list_checks", headers=okey)["structuredContent"]["checks"] == []
+    assert call(client, "list_checks", {"app_id": a["id"]}, headers=okey)["isError"] is True
+    assert call(client, "list_checks", {"app_id": "nope"}, headers=key)["isError"] is True
+    assert call(client, "list_checks")["isError"] is True
+    assert call(client, "list_checks", {"limit": "lots"}, headers=key)["isError"] is True
+    assert "cost" not in json.dumps(hist).lower()
 
 
 def test_public_endpoint_has_only_open_tools(client):

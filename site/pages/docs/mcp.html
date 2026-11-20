@@ -54,13 +54,14 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><script src="/asset
     <tr><th scope="row"><code>start_check</code></th><td><code>repo</code>, <code>email</code></td><td>Requests the full lab check. Returns a check ID and link; the owner still proves ownership by committing the verification file.</td><td>Creates a check, no key</td></tr>
     <tr><th scope="row"><code>get_check</code></th><td><code>check_id</code></td><td>Status of a check; once finished, the findings, plain-English report and tested fix. Safe to poll.</td><td>Read-only, no key</td></tr>
     <tr><th scope="row"><code>list_apps</code></th><td>none</td><td>The apps monitored in the key’s workspace, with their latest check.</td><td>Read-only, key</td></tr>
+    <tr><th scope="row"><code>list_checks</code></th><td><code>app_id</code>, <code>limit</code> (both optional)</td><td>Past and running checks in the key’s workspace, newest first, with the tables found leaking in each. Pass an ID to <code>get_check</code> for the full report.</td><td>Read-only, key</td></tr>
     <tr><th scope="row"><code>run_check</code></th><td><code>app_id</code></td><td>Queues a check for a monitored app now. Uses one of the plan’s monthly runs.</td><td>Creates a check, key</td></tr>
   </tbody>
 </table></div>
-<p class="muted">Every tool carries MCP annotations: the four read-only tools set <code>readOnlyHint</code>, so clients can run them without asking each time; <code>start_check</code> and <code>run_check</code> create a check and are marked not read-only. No tool deletes or changes anything in your app, repo or database (<code>destructiveHint: false</code>).</p>
+<p class="muted">Every tool carries MCP annotations: the five read-only tools set <code>readOnlyHint</code>, so clients can run them without asking each time; <code>start_check</code> and <code>run_check</code> create a check and are marked not read-only. No tool deletes or changes anything in your app, repo or database (<code>destructiveHint: false</code>).</p>
 
 <h2 id="install">Install</h2>
-<p>The first four tools work with no key. For a client that connects without any sign-in, such as a custom connector in Claude, use <code>https://api.patchlabs.dev/mcp/public</code>: it serves only those four tools.  To use <code>list_apps</code> and <code>run_check</code>, add a workspace <a href="/docs/api#api-keys">API key</a> as the <code>X-API-Key</code> header, as shown in each snippet.</p>
+<p>The first four tools work with no key. For a client that connects without any sign-in, such as a custom connector in Claude, use <code>https://api.patchlabs.dev/mcp/public</code>: it serves only those four tools.  To use <code>list_apps</code>, <code>list_checks</code> and <code>run_check</code>, add a workspace <a href="/docs/api#api-keys">API key</a> as the <code>X-API-Key</code> header, as shown in each snippet.</p>
 <div class="tabs">
   <div role="tablist" aria-label="MCP client">
     <button role="tab" id="t-claude" aria-controls="p-claude" aria-selected="true">Claude Code</button>

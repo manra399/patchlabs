@@ -1,5 +1,5 @@
 """Remote MCP server at POST /mcp: JSON-RPC 2.0 over Streamable HTTP, stateless, plain JSON responses.
-Tools: rls_check, headers_check, start_check, get_check (open); list_apps, run_check (need an X-API-Key header).
+Tools: rls_check, headers_check, start_check, get_check (open); list_apps, list_checks, run_check (need an X-API-Key header).
 POST /mcp/public serves only the four open tools, for clients that connect without auth."""
 import json
 
@@ -17,8 +17,8 @@ PROTOCOLS = ("2025-06-18", "2025-11-25", "2025-03-26", "2024-11-05")
 MAX_BODY, MAX_BATCH = 256 * 1024, 20
 INSTRUCTIONS = ("PatchLabs finds personal-data leaks in Supabase / Lovable apps. rls_check is a free static scan of a public repo's "
                 "migrations. headers_check grades a public site's HTTPS, certificate, security headers and cookies from one page load. "
-                "start_check asks for the full lab check (the owner proves they own the repo with a one-line file) and get_check reads it. list_apps and "
-                "run_check work on a workspace's monitored apps and need the workspace API key in the X-API-Key header.")
+                "start_check asks for the full lab check (the owner proves they own the repo with a one-line file) and get_check reads it. list_apps, "
+                "list_checks and run_check work on a workspace's monitored apps and need the workspace API key in the X-API-Key header.")
 
 
 def hints(read_only, idempotent, open_world):
@@ -49,6 +49,12 @@ TOOLS = [
                     "poll every minute or so while queued or running."},
     {"name": "list_apps", "title": "List monitored apps", "annotations": {"title": "List monitored apps", **hints(True, True, False)}, "inputSchema": schema({}, []),
      "description": "List the apps monitored in the API key's workspace, each with its id (pass it as app_id to run_check), its last finished check (id and status, for get_check) and any open_check_id. Needs X-API-Key."},
+    {"name": "list_checks", "title": "List past checks", "annotations": {"title": "List past checks", **hints(True, True, False)},
+     "inputSchema": schema({"app_id": {"type": "string", "description": "Optional: only this app's checks (an id from list_apps)"},
+                            "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "How many, newest first (default 20)"}}, []),
+     "description": "List past and running checks for the API key's workspace, newest first, optionally for one app. Each has its id (pass it "
+                    "to get_check for the full report and fix), app_id, client_label, repo, status, trigger (schedule, api, manual), "
+                    "created/finished times and the tables found leaking. Use it to see an app's history or whether a leak came back. Needs X-API-Key."},
     {"name": "run_check", "title": "Run a check on an app", "annotations": {"title": "Run a check on an app", **hints(False, False, True)}, "inputSchema": schema({"app_id": {"type": "string"}}, ["app_id"]),
      "description": "Queue a new check for a monitored app now (counts toward the plan's monthly runs). Needs X-API-Key."},
 ]
@@ -56,7 +62,7 @@ BY_NAME = {t["name"]: t for t in TOOLS}
 # /mcp/public: the four tools that need no key, for clients that only support no-auth servers (the Claude connector directory).
 PUBLIC = ("rls_check", "headers_check", "start_check", "get_check")
 PUBLIC_TOOLS = [t for t in TOOLS if t["name"] in PUBLIC]
-PUBLIC_INSTRUCTIONS = INSTRUCTIONS.split(" list_apps and")[0]
+PUBLIC_INSTRUCTIONS = INSTRUCTIONS.split(" list_apps,")[0]
 
 
 def call_tool(name, args, request, c):
@@ -73,6 +79,8 @@ def call_tool(name, args, request, c):
     if name == "list_apps":
         return {"apps": [monitor.app_view(c, a) for a in c.execute("SELECT * FROM apps WHERE workspace_id = %s ORDER BY created_at",
                                                                    (key["workspace_id"],)).fetchall()]}
+    if name == "list_checks":
+        return monitor.workspace_checks(c, key["workspace_id"], args.get("app_id") or None, args.get("limit") or 20)
     return monitor.v1_run(str(args["app_id"]), key, c)
 
 
