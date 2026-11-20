@@ -162,6 +162,7 @@
           <p>One new tool on the PatchLabs MCP server, for workspaces with an API key.</p>
           <ul class="cl-items">
             <li><span class="tag new">New</span><div><h3>MCP tool <code>list_checks</code></h3><p>Lists past and running checks for the workspace, newest first, optionally for one app, with the status, what started it (schedule, API or a person) and the tables found leaking in each. An agent can now answer “did this leak come back after last week’s fix?” without the dashboard, then open any check with <code>get_check</code> for the report and tested fix. Read-only, and it only ever sees the key’s own workspace.</p><div class="links"><a class="link-arrow" href="/docs/mcp#tools">MCP docs</a></div></div></li>
+            <li><span class="tag new">New</span><div><h3>Official MCP Registry entry updated</h3><p><code>dev.patchlabs/patchlabs</code> 3.2.0 now lists both endpoints: <code>/mcp</code> (all seven tools, API key optional) and <code>/mcp/public</code> (the four free tools, no sign-in), so registry clients pick the one that fits. <a href="/docs/mcp#install">Install</a>.</p></div></li>
           </ul>
         </div>
       </article>
