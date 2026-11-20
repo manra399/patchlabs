@@ -59,5 +59,6 @@
       }
     }
   },
-  "usesStandbyMode": true
+  "usesStandbyMode": true,
+  "output": "./output_schema.json"
 }

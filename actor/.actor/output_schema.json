@@ -1,0 +1,14 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "AI-Built App Security Check output",
+  "description": "One dataset item per site: grade A-F, headers grade and score, leaked secret keys (values masked), and findings with severity.",
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "string",
+      "title": "Results",
+      "description": "Every checked site with its grade, leaked keys and findings.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+    }
+  }
+}
