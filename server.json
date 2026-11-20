@@ -2,12 +2,12 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "dev.patchlabs/patchlabs",
   "title": "PatchLabs",
-  "description": "Security checks for AI-built apps (Lovable, Supabase, Bolt): RLS, headers, monitoring, fixes.",
+  "description": "Finds personal-data leaks in Supabase/Lovable apps: free RLS and headers checks, proven fixes.",
   "repository": {
     "url": "https://github.com/manra399/patchlabs",
     "source": "github"
   },
-  "version": "3.1.0",
+  "version": "3.2.0",
   "remotes": [
     {
       "type": "streamable-http",
@@ -20,6 +20,11 @@
           "isSecret": true
         }
       ]
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://api.patchlabs.dev/mcp/public"
     }
-  ]
+  ],
+  "websiteUrl": "https://patchlabs.dev/docs/mcp"
 }
