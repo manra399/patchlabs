@@ -3,7 +3,7 @@
   "name": "ai-app-security-check",
   "title": "AI-Built App Security Check (headers, TLS, leaked keys)",
   "description": "Grades any website's HTTPS, certificate, security headers and cookies, and finds secret keys (Supabase service_role, Stripe, OpenAI, AWS and more) shipped in its JavaScript. Made for apps built with Lovable, Bolt, Replit, Cursor and Supabase. Passive: one page load per site.",
-  "version": "0.1",
+  "version": "0.2",
   "buildTag": "latest",
   "input": "./input_schema.json",
   "dockerfile": "../Dockerfile",
@@ -14,21 +14,50 @@
       "views": {
         "overview": {
           "title": "Overview",
-          "transformation": {"fields": ["url", "grade", "secrets_found", "headers_grade", "headers_score", "error", "checked_at"]},
+          "transformation": {
+            "fields": [
+              "url",
+              "grade",
+              "secrets_found",
+              "headers_grade",
+              "headers_score",
+              "error",
+              "checked_at"
+            ]
+          },
           "display": {
             "component": "table",
             "properties": {
-              "url": {"label": "Site", "format": "link"},
-              "grade": {"label": "Grade"},
-              "secrets_found": {"label": "Leaked keys", "format": "number"},
-              "headers_grade": {"label": "Headers grade"},
-              "headers_score": {"label": "Headers score", "format": "number"},
-              "error": {"label": "Error"},
-              "checked_at": {"label": "Checked", "format": "date"}
+              "url": {
+                "label": "Site",
+                "format": "link"
+              },
+              "grade": {
+                "label": "Grade"
+              },
+              "secrets_found": {
+                "label": "Leaked keys",
+                "format": "number"
+              },
+              "headers_grade": {
+                "label": "Headers grade"
+              },
+              "headers_score": {
+                "label": "Headers score",
+                "format": "number"
+              },
+              "error": {
+                "label": "Error"
+              },
+              "checked_at": {
+                "label": "Checked",
+                "format": "date"
+              }
             }
           }
         }
       }
     }
-  }
+  },
+  "usesStandbyMode": true
 }

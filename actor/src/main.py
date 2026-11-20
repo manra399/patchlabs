@@ -64,8 +64,19 @@ def check_site(raw):
     }
 
 
+def started_by_server(env=None):
+    """True when the platform started this run through the server interface (Server Actor / Standby)."""
+    import os
+    env = os.environ if env is None else env
+    return env.get("APIFY_META_ORIGIN") == "STANDBY" or env.get("ACTOR_META_ORIGIN") == "STANDBY"
+
+
 async def main():
     async with Actor:
+        if started_by_server():
+            from .server import serve
+            await asyncio.to_thread(serve)
+            return
         inp = await Actor.get_input() or {}
         urls = [u.get("url") if isinstance(u, dict) else u for u in (inp.get("startUrls") or inp.get("urls") or [])]
         urls = [u.strip() for u in urls if isinstance(u, str) and u.strip()]

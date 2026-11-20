@@ -68,6 +68,19 @@ One dataset item per site:
 
 Secret values are never stored: only the type, the file, the first characters and the length.
 
+## Call it as an API (Server Actor)
+
+Agents and scripts can check one site per HTTP request and get the result straight back, with no run to start or
+dataset to read. Send your Apify API token as a Bearer token to this Actor's server URL (shown on its **Server** tab):
+
+```bash
+curl -H "Authorization: Bearer $APIFY_TOKEN" "<server URL>/check?url=https://myapp.lovable.app"
+curl -H "Authorization: Bearer $APIFY_TOKEN" -X POST -d '{"url": "https://myapp.lovable.app"}' "<server URL>/check"
+```
+
+The response is the same JSON as one dataset item above. You pay one `site-checked` event only when the site loaded;
+a refused or unreachable address returns HTTP 422 with an `error` and costs nothing.
+
 ## What it does not do
 
 It is passive. Per site it makes one plain `http://` request, one `https://` load of the home page and fetches the
