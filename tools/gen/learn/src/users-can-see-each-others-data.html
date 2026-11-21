@@ -1,0 +1,123 @@
+title: Why can my users see each other's data? The two-account test for AI-built apps
+description: An AI-built app works for its builder and then a customer sees everyone's invoices. Run the two-account test, find the policies that never check the user, and fix them.
+h1: “Why can I see everyone’s invoices?” The two-account test
+navtitle: Users see each other’s data
+topic: supabase
+order: 12
+checked: 2026-11-21
+short: Your app works for you because you are its only user. Two test accounts and one SQL query show whether customer B can read customer A’s rows.
+lede: If one customer can see another customer’s invoices, orders or messages, the app is filtering rows in the page, not in the database. You can find out in ten minutes with two test accounts: sign in as the second one and ask for the first one’s records by id. To fix it, every table holding customer data needs row level security on and a policy that compares the row’s owner with the signed-in user, and any server route that uses a secret key must filter by the user itself.
+tldr: The builder never sees this bug, because the builder is the only user. It shows up when the first two real customers sign in. || In the PatchLabs study of 318 rebuilt apps, 36 (11%) leaked personal data only to signed-in users. Tests that stay signed out cannot see this group. || The usual cause is a policy like <code>using (true)</code> for <code>authenticated</code>, or RLS left off. One query below lists both. || Server routes that use the secret key skip RLS completely, so they need their own check on who is asking. || Ask your AI tool to write the two-account test as a test, so the next change cannot quietly undo the fix.
+findings: PL-002, PL-005, PL-008, PL-010
+---
+<p>This guide is for founders whose app was built with Lovable, Bolt, Cursor or Claude Code on Supabase, and anyone reviewing such an app for a client. The SQL runs on any Supabase project; we tested every query below on Postgres 17 and 18 against a synthetic invoices table. Run the tests only on an app you own or have permission to test.</p>
+
+<h2 id="why">Why the builder never sees it</h2>
+<p>While you build, you are the only user. Every invoice in the database is yours, so a page that lists “all invoices” and a page that lists “my invoices” look the same. The difference appears on the day a second real customer signs in.</p>
+<p>AI tools make this more likely in two ways. First, the page often filters with <code>.eq('user_id', user.id)</code>, which hides other people’s rows on screen but does nothing to stop a request that leaves the filter out. Second, when a query fails because of RLS, a common quick fix is a policy that lets every signed-in user read every row. The app starts working, and the leak ships with it.</p>
+<div class="callout note"><p><strong>Signed in is not a security boundary.</strong> If anyone can create an account, a stranger signs up with a throwaway email and gets the same <code>authenticated</code> role as your paying customers. In <a href="/research/1-in-4">our study</a>, 36 of 318 apps leaked personal data only to signed-in users. They look closed to any scan that stays signed out.</p></div>
+
+<h2 id="test">The two-account test, in ten minutes</h2>
+<ol>
+  <li><strong>Create two test accounts</strong>, A and B, with emails you control.</li>
+  <li><strong>As A, create a record</strong>: an invoice, an order, a message, a file. Note its id from the URL or the network tab.</li>
+  <li><strong>Sign out, sign in as B</strong>, and open the same URL with A’s id. Then try the list page. If you see A’s record, the rule lives in the page, not the database.</li>
+  <li><strong>Ask the database directly as B.</strong> The page may hide a row the API still returns, so call the API with B’s token:</li>
+</ol>
+[[CODE two-account-test.sh]]
+# Your own project only. Sign in as test user B and keep the access token.
+curl -s "https://YOUR-PROJECT.supabase.co/auth/v1/token?grant_type=password" \
+  -H "apikey: YOUR_PUBLIC_KEY" -H "Content-Type: application/json" \
+  -d '{"email":"user-b@example.com","password":"TEST_PASSWORD"}'
+
+# As B, ask for every invoice, with no filter.
+curl -s "https://YOUR-PROJECT.supabase.co/rest/v1/invoices?select=id,user_id&limit=20" \
+  -H "apikey: YOUR_PUBLIC_KEY" -H "Authorization: Bearer B_ACCESS_TOKEN"
+# Every user_id in the reply should be B's. Any other user_id is a cross-customer leak.
+[[/CODE]]
+<p>Repeat step 4 for every table that holds customer data, not only the one you noticed. Tables are usually created in batches by the same prompt, so if one has the bad policy, its siblings often do too.</p>
+
+<h2 id="find">Find the policies that never check the user</h2>
+<p>Run this in the Supabase SQL editor. It lists tables that signed-in users can read where RLS is off, or where a read policy for <code>authenticated</code> never mentions who is asking.</p>
+[[CODE find-cross-user-reads.sql]]
+-- Tables a signed-in stranger may read across users
+select c.relname as table_name,
+       case when not c.relrowsecurity then 'RLS off: every signed-in user reads every row'
+            else 'policy "' || p.policyname || '" never checks the user: ' || coalesce(p.qual, '(no condition)') end as problem
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+left join pg_policies p on p.schemaname = 'public' and p.tablename = c.relname
+     and p.cmd in ('SELECT', 'ALL') and p.permissive = 'PERMISSIVE'
+     and (p.roles && array['authenticated', 'public']::name[])
+where c.relkind in ('r', 'p')
+  and has_table_privilege('authenticated', c.oid, 'SELECT')
+  and ( not c.relrowsecurity
+        or (p.policyname is not null and coalesce(p.qual, 'true') !~* 'auth\.(uid|jwt)\(\)|current_setting') )
+order by 1;
+[[/CODE]]
+<p>On our test database it returned the two tables we planted: <code>invoices</code> with a policy whose condition was <code>true</code>, and <code>notes</code> with RLS off. After the fix below it returned nothing.</p>
+<p>It is a first pass, not a proof. A policy can mention <code>auth.uid()</code> and still be wrong, for example by comparing it with the wrong column, or by joining a team table that any user can add themselves to. Some tables are meant to be shared, such as a public price list. Read each row it returns and decide. For team apps, see <a href="/learn/supabase-multi-tenant-rls">multi-tenant RLS</a>.</p>
+
+<h2 id="fix">Fix it in the database</h2>
+<p>Replace the open policy with one that ties each row to its owner. Wrapping <code>auth.uid()</code> in a <code>select</code> lets Postgres evaluate it once per query instead of once per row, which Supabase recommends for speed.</p>
+[[CODE fix-invoices-policy.sql]]
+drop policy "Authenticated users can view invoices" on public.invoices;
+
+create policy "Users read their own invoices" on public.invoices
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+
+-- A table that had RLS off: turn it on, then add the owner policy.
+alter table public.notes enable row level security;
+create policy "Users read their own notes" on public.notes
+  for select to authenticated
+  using ((select auth.uid()) = user_id);
+[[/CODE]]
+<p>Do the same for insert, update and delete, with <code>with check</code> on insert and update so a user cannot write a row with someone else’s <code>user_id</code>. If your table has no owner column, that is the real fix: add one, fill it, and make it <code>not null</code>.</p>
+
+<h2 id="server">The trap: server routes with the secret key</h2>
+<p>RLS only protects requests made with the public key and a user’s token. A server route, API route or Edge Function that creates its client with the secret (<code>service_role</code>) key skips every policy. If that route takes an id from the URL and returns the row, any signed-in user can read any invoice by changing the number.</p>
+[[CODE invoice-route.ts]]
+// Synthetic example. Risky: secret key, and the id comes straight from the URL.
+const admin = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY)
+const { data } = await admin.from('invoices').select('*').eq('id', params.id).single()
+
+// Safer: check who is asking, then filter by the owner as well as the id.
+const { data: { user } } = await userClient.auth.getUser()   // client built from the request's session
+if (!user) return new Response('Unauthorized', { status: 401 })
+const { data: invoice } = await userClient.from('invoices')
+  .select('*').eq('id', params.id).eq('user_id', user.id).single()
+[[/CODE]]
+<p>Best of all, use a client built from the user’s session for anything a user asks for, so RLS applies, and keep the secret key for jobs no user triggers, like webhooks and cron tasks. If the secret key appears in browser code at all, treat it as leaked: <a href="/learn/rotate-leaked-key-git-history">rotate it</a>.</p>
+
+<h2 id="keep">Keep it fixed: make the test part of the app</h2>
+<p>Fixes made by an AI tool can be undone by the next prompt that hits a permission error. A test stops that. This one runs as user B inside a transaction, counts the rows B can see that belong to someone else, and changes nothing:</p>
+[[CODE cross-user-test.sql]]
+begin;
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"USER_B_UUID","role":"authenticated"}';
+select count(*) filter (where user_id <> auth.uid()) as other_users_rows,  -- must be 0
+       count(*) filter (where user_id =  auth.uid()) as own_rows           -- should be above 0
+from public.invoices;
+rollback;
+[[/CODE]]
+<p>On our test table it returned 1 other user’s row before the fix and 0 after, while user B still read their own invoice. Checking <code>own_rows</code> matters: a fix that hides everything from everyone passes the first check and breaks the app.</p>
+<p>When you prompt your AI tool, ask for this outcome rather than “make it secure”: <em>“For every table with a user_id, write a test that signs in as two different users and proves neither can read, change or delete the other’s rows, and that each can still read their own.”</em></p>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>My page already filters by the user. Isn’t that enough?</h3>
+<p>No. The filter runs in the browser, and anyone can send the same request without it, using the public key and their own token. Only the database policy, or a server route that checks the user, decides what comes back.</p>
+<h3>RLS is on for every table. Am I safe?</h3>
+<p>Not necessarily. RLS with a policy of <code>using (true)</code> for <code>authenticated</code> lets every signed-in user read every row. Turning RLS on is step one; the policy decides who sees what. The query above finds this case.</p>
+<h3>Can random ids (UUIDs) protect the records instead?</h3>
+<p>They make ids hard to guess, but list endpoints and joins hand them out anyway, and an unfiltered request needs no id at all. Treat random ids as a nice extra, not as access control.</p>
+<h3>A customer told me they saw someone else’s data. What now?</h3>
+<p>Close the policy first, then work out who could see what and since when. Our <a href="/learn/first-hour-after-a-leak">first hour after a leak</a> runbook covers logs, timelines and when the reporting clock starts.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a>, including the <code>(select auth.uid())</code> performance advice (checked 21 Nov 2026)</li>
+<li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase docs: API keys</a>, on secret keys bypassing RLS (checked 21 Nov 2026)</li>
+<li><a href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/">OWASP API Security Top 10: Broken Object Level Authorization</a>, the general name for this bug (checked 21 Nov 2026)</li>
+<li><a href="/research/1-in-4">PatchLabs: the 1-in-4 report</a>, 318 public apps rebuilt from their migrations (Nov 2026)</li>
+</ul>

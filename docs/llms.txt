@@ -111,6 +111,7 @@ Key facts:
 - [Verify Stripe webhook signatures in a Supabase Edge Function](https://patchlabs.dev/learn/stripe-webhook-supabase-edge-function)
 - [How to rotate a leaked API key and clean your git history](https://patchlabs.dev/learn/rotate-leaked-key-git-history)
 - [What to do in the first hour after a leak](https://patchlabs.dev/learn/first-hour-after-a-leak)
+- [Why can my users see each other's data? The two-account test](https://patchlabs.dev/learn/users-can-see-each-others-data)
 - [Pre-launch security checklist for vibe-coded apps](https://patchlabs.dev/learn/vibe-coded-app-security-checklist)
 - [Firebase security rules basics: lock down Firestore and Storage](https://patchlabs.dev/learn/firebase-security-rules-basics)
 - [How to find and fix vulnerable npm dependencies](https://patchlabs.dev/learn/npm-dependency-vulnerabilities)

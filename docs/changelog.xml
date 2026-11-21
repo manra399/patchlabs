@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-21T18:00:00Z</updated>
+  <updated>2026-11-21T23:30:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Guide: why can my users see each other's data? The two-account test</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/users-can-see-each-others-data"/>
+    <id>https://patchlabs.dev/learn/users-can-see-each-others-data</id>
+    <updated>2026-11-21T23:30:00Z</updated>
+    <summary>A ten-minute test with two accounts, a SQL query that lists read policies which never check the user, the fix, the secret-key server-route trap, and a test that keeps it fixed. Run on Postgres 17 and 18.</summary>
+  </entry>
   <entry>
     <title>Check a whole list of sites at once, on Apify</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-21"/>
