@@ -124,6 +124,7 @@ Key facts:
 - [Free security headers check](https://patchlabs.dev/tools/headers-check): one public page load, graded A to F for HTTPS, certificate, headers, cookies and mixed content; no sign-up, result not stored
 - [Free OpenAI model shutdown check](https://patchlabs.dev/tools/model-shutdown-check): finds GPT-4o, GPT-4.1, o3, GPT-5 and other OpenAI models and API features on OpenAI's shutdown list in pasted code or .env, with dates and replacements; runs in the browser
 - [Leak cost calculator](https://patchlabs.dev/tools/leak-cost)
+- [Bulk check on Apify](https://apify.com/patchlabs/ai-app-security-check): the headers/TLS/cookie grade plus a masked leaked-key scan of each site's scripts, for a list of sites; Apify console, API, schedules or Apify MCP
 
 ## Compare
 - [All comparisons](https://patchlabs.dev/compare)

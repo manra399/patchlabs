@@ -236,10 +236,10 @@
       <p class="muted">The same check is a public endpoint. It returns the grade, every finding with its fix, the checks that passed and the raw facts: redirects, certificate, headers and cookie flags (names only, never values).</p>
       <ul class="ticks small">
         <li>Any public <code>https://</code> or <code>http://</code> address; IP addresses and private names are refused</li>
-        <li>10 requests per network per hour</li>
+        <li>10 requests per network per hour; for a list of sites or a schedule, the <a href="https://apify.com/patchlabs/ai-app-security-check" rel="noopener">Apify Actor</a> runs the same grade plus a masked scan of the page’s scripts for leaked keys</li>
         <li>422 for an address it won’t check, 502 when the page can’t be loaded, both with a sentence saying why</li>
       </ul>
-      <p class="small"><a href="/docs/api#post-tools-headers-check">REST API docs</a></p>
+      <p class="small"><a href="/docs/api#post-tools-headers-check">REST API docs</a> · <a href="/integrations#apify">Bulk checks on Apify</a></p>
     </div>
     <div>
       <div class="code dark">
