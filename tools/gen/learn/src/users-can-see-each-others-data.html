@@ -4,7 +4,7 @@ h1: “Why can I see everyone’s invoices?” The two-account test
 navtitle: Users see each other’s data
 topic: supabase
 order: 12
-checked: 2026-11-21
+checked: 2026-11-22
 short: Your app works for you because you are its only user. Two test accounts and one SQL query show whether customer B can read customer A’s rows.
 lede: If one customer can see another customer’s invoices, orders or messages, the app is filtering rows in the page, not in the database. You can find out in ten minutes with two test accounts: sign in as the second one and ask for the first one’s records by id. To fix it, every table holding customer data needs row level security on and a policy that compares the row’s owner with the signed-in user, and any server route that uses a secret key must filter by the user itself.
 tldr: The builder never sees this bug, because the builder is the only user. It shows up when the first two real customers sign in. || In the PatchLabs study of 318 rebuilt apps, 36 (11%) leaked personal data only to signed-in users. Tests that stay signed out cannot see this group. || The usual cause is a policy like <code>using (true)</code> for <code>authenticated</code>, or RLS left off. One query below lists both. || Server routes that use the secret key skip RLS completely, so they need their own check on who is asking. || Ask your AI tool to write the two-account test as a test, so the next change cannot quietly undo the fix.
@@ -16,6 +16,15 @@ findings: PL-002, PL-005, PL-008, PL-010
 <p>While you build, you are the only user. Every invoice in the database is yours, so a page that lists “all invoices” and a page that lists “my invoices” look the same. The difference appears on the day a second real customer signs in.</p>
 <p>AI tools make this more likely in two ways. First, the page often filters with <code>.eq('user_id', user.id)</code>, which hides other people’s rows on screen but does nothing to stop a request that leaves the filter out. Second, when a query fails because of RLS, a common quick fix is a policy that lets every signed-in user read every row. The app starts working, and the leak ships with it.</p>
 <div class="callout note"><p><strong>Signed in is not a security boundary.</strong> If anyone can create an account, a stranger signs up with a throwaway email and gets the same <code>authenticated</code> role as your paying customers. In <a href="/research/1-in-4">our study</a>, 36 of 318 apps leaked personal data only to signed-in users. They look closed to any scan that stays signed out.</p></div>
+
+<h2 id="scale">This is how real breaches happen: the credit union case</h2>
+<p>On 18 November 2026, BleepingComputer reported that member data from about 40 Irish credit unions was exposed through their shared IT provider, Wellington IT. According to the notices the Irish Examiner saw, the attacker signed in with valid credentials, and an automated script then made five million requests between 2 and 4 October that exploited an authorization flaw. The exposed records were saved payees: names, IBANs, account numbers and sort codes. The provider also lacked the activity logs that would show which members were affected.</p>
+<p>That is the same bug as in this guide, at scale. Three lessons carry over to any AI-built app:</p>
+<ul>
+  <li><strong>Being signed in proved nothing.</strong> The attacker had a real login. Your app’s rules must hold for a real, signed-in user who is not the owner of the row.</li>
+  <li><strong>Nobody walks five million ids by hand.</strong> Once one request leaks, a short script reads every row. One leaking table means all of its rows, not one customer.</li>
+  <li><strong>Without logs you cannot tell people what was taken.</strong> Before you need them, check how long your plan keeps API logs and whether they show which user asked for what.</li>
+</ul>
 
 <h2 id="test">The two-account test, in ten minutes</h2>
 <ol>
@@ -116,6 +125,7 @@ rollback;
 
 <h2 id="sources">Sources</h2>
 <ul>
+<li><a href="https://www.bleepingcomputer.com/news/security/data-breach-impacts-40-irish-credit-unions-in-reported-it-provider-hack/">BleepingComputer: Data breach impacts 40 Irish credit unions in reported IT provider hack</a> (18 Nov 2026, citing notices seen by the Irish Examiner and RTÉ; checked 22 Nov 2026)</li>
 <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase docs: Row Level Security</a>, including the <code>(select auth.uid())</code> performance advice (checked 21 Nov 2026)</li>
 <li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase docs: API keys</a>, on secret keys bypassing RLS (checked 21 Nov 2026)</li>
 <li><a href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/">OWASP API Security Top 10: Broken Object Level Authorization</a>, the general name for this bug (checked 21 Nov 2026)</li>
