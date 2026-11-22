@@ -5,15 +5,8 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-22T23:20:00Z</updated>
+  <updated>2026-11-22T17:45:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
-  <entry>
-    <title>PatchLabs vs Keybrum: live-app attacks versus fixes proven before they ship</title>
-    <link rel="alternate" type="text/html" href="https://patchlabs.dev/compare/keybrum"/>
-    <id>https://patchlabs.dev/compare/keybrum</id>
-    <updated>2026-11-22T23:20:00Z</updated>
-    <summary>Keybrum launched on 22 Nov: it attacks your deployed app and gives your coding agent a fix prompt. An honest comparison from its public pages, including where it is the better choice: live-app coverage, a one-off EUR 49 report, and more apps per plan.</summary>
-  </entry>
   <entry>
     <title>A revert is not a rotation: the Together AI case, tested on GitHub</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/rotate-leaked-key-git-history#revert-test"/>

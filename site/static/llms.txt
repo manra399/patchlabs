@@ -134,6 +134,7 @@ Key facts:
 - [vs Supabase Security Advisor](https://patchlabs.dev/compare/supabase-security-advisor)
 - [vs Lovable security scan](https://patchlabs.dev/compare/lovable-security-scan)
 - [vs Aikido](https://patchlabs.dev/compare/aikido)
+- [vs Keybrum](https://patchlabs.dev/compare/keybrum)
 - [vs a manual pentest](https://patchlabs.dev/compare/manual-pentest)
 
 ## Developers
