@@ -2349,6 +2349,50 @@ content-type: text/html; charset=utf-8
     related=["PL-035", "PL-031", "PL-030"],
 ))
 
+F.append(dict(
+    id="PL-040", slug="pl-040", group="live", line="live", status="live",
+    title="Third-party scripts can send your visitors’ data anywhere",
+    short="Your page runs scripts from other sites, and no Content-Security-Policy limits which servers a script can send data to.",
+    desc="PL-040: your page loads scripts from other sites and its Content-Security-Policy doesn’t restrict connect-src and img-src. What a hijacked script can take, as in the 16 Nov 2026 Optimizely compromise, and the CSP that stops it sending data out.",
+    sev="low", who="Whoever controls, or breaks into, any script host your page loads", found="PatchLabs Live posture: your home page’s HTML and Content-Security-Policy",
+    proof="Not lab-proven: read from your home page’s response",
+    what="""<p>Every <code>&lt;script src&gt;</code> from another site (analytics, A/B testing, chat widgets, tag managers) runs with the same power as your own code: it can read what visitors type into your forms and send it wherever it likes. PL-040 means your home page loads at least one such script and your <code>Content-Security-Policy</code> doesn’t say where scripts may send data, through <code>connect-src</code> (fetch, XHR, WebSocket, beacons) and <code>img-src</code> (image requests), directly or through <code>default-src</code>.</p>
+<p>If one of those vendors is compromised, the injected code arrives from a host you trust. On 16 November 2026 that happened to Optimizely: an attacker wrote code into customers’ <em>Project JavaScript</em>, and at least 178 organisations served it to their visitors from Optimizely’s own CDN, with card skimming, wallet-address swapping and iPhone exploit delivery. Read the full story in <a href="/learn/third-party-script-compromise-optimizely">our guide</a>.</p>""",
+    why="""<p>Builders add analytics and widgets by pasting a snippet, and AI tools do the same when asked to “add tracking”. A Content-Security-Policy is a hosting header that generated projects rarely set, and when one is added it often lists only <code>script-src</code>, which decides what may load, not where loaded code may send data.</p>""",
+    vuln=sql("""<!-- index.html -->
+<script src="https://cdn.vendor-a.com/snippet.js"></script>
+<script src="https://www.googletagmanager.com/gtm.js?id=GTM-XXXX"></script>
+
+# response headers: no content-security-policy, or one without connect-src / img-src / default-src""", "a page PL-040 flags"),
+    check="""<p>List the scripts your page loads from other sites, then look at the policy:</p>""" +
+    sql("""# scripts in the HTML (tag managers add more at runtime: check DevTools → Network → JS too)
+curl -s https://your-app.com | grep -oiE '<script[^>]+src=[^>]+>'
+
+# the policy: you want connect-src and img-src (or default-src) with named hosts, not * or https:
+curl -sI https://your-app.com | grep -i content-security-policy""", "check-pl-040.sh"),
+    fix="""<p>Add a policy that names the servers your page really talks to. Start in report-only mode for a few days so you can see what you missed without breaking anything, then switch to the enforcing header.</p>""" +
+    sql("""Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.vendor-a.com; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co https://api.vendor-a.com; img-src 'self' data: https://YOUR-PROJECT.supabase.co; frame-ancestors 'self'""", "the header (one line; replace the hosts with yours)") +
+    """<p>We tested this in Chrome on 22 Nov 2026 with a script that sent a fake card number four ways (fetch, an image, a beacon and a WebSocket). With no policy, all four reached the other server. With only a <code>script-src</code> allow-list, all four still did. With <code>default-src 'self'</code>, none did. A policy narrows the exits but does not close every one (a script can still navigate the page or submit a form), so also keep third-party tags off sign-in and payment pages, and take card details in your payment provider’s hosted fields.</p>""" +
+    hosts("040", [
+        ("vercel", "Vercel", vercel("Content-Security-Policy", "default-src 'self'; script-src 'self' https://cdn.vendor-a.com; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; img-src 'self' data:")),
+        ("netlify", "Netlify", netlify("Content-Security-Policy", "default-src 'self'; script-src 'self' https://cdn.vendor-a.com; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; img-src 'self' data:")),
+        ("cloudflare", "Cloudflare", cf_rule("Content-Security-Policy", "default-src 'self'; script-src 'self' https://cdn.vendor-a.com; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; img-src 'self' data:")),
+        ("lovable", "Lovable", """<p>A meta tag in <code>index.html</code> works on any host, including Lovable hosting. It covers <code>connect-src</code> and <code>img-src</code> (it can’t set <code>frame-ancestors</code>; see <a href="/findings/pl-031">PL-031</a>):</p>""" +
+         sql("""<!-- index.html, first thing inside <head> -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.vendor-a.com; connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co; img-src 'self' data:">""", "index.html")),
+    ]),
+    proof_tr=tr("live posture · report excerpt", [
+        "{STEP:LOAD}    https://app.example.com/ → 200",
+        "~          scripts from 2 other sites: cdn.vendor-a.com, www.googletagmanager.com",
+        "~          connect-src / img-src not limited  {FLAG}",
+    ], LIVE_FOOT),
+    proof_note="""<p>Live posture reads the <code>&lt;script src&gt;</code> tags in your home page’s HTML and counts those on another site (a CDN on your own domain, such as <code>static.your-app.com</code>, doesn’t count). It passes if the header or meta policy limits both <code>connect-src</code> and <code>img-src</code>, directly or through <code>default-src</code>, without <code>*</code> or a bare scheme like <code>https:</code>. Scripts that a tag manager adds later aren’t visible to one page load. If a host had a public compromise in the last 90 days, the finding names it and rises to medium.</p>""",
+    intended="""<p>A page with no forms and no signed-in users carries less risk, though a hijacked script can still redirect visitors or serve them malware.</p>""",
+    sevwhy="""<p>Low: it needs one of your vendors to be compromised first, which is rare but, as 16 November showed, hits many sites at once. Medium when a script host on your page had a public compromise in the last 90 days. Low costs 5 points in the Live posture grade, medium 15.</p>""",
+    study=None, lint=None,
+    related=["PL-030", "PL-034", "PL-031"],
+))
+
 # ------------------------------------------------------------------ shared
 for _f in F:
     _f.setdefault("line", "lab" if _f["group"] == "data" else "code")
@@ -2642,7 +2686,7 @@ FOUND_SHORT = {"PL-001": "RLS check · lab", "PL-002": "RLS check · lab", "PL-0
                "PL-025": "Code · Firebase rules", "PL-026": "Code · CORS headers", "PL-037": "Code · headers and AI prompts", "PL-038": "Code · SQL policies", "PL-039": "Code · login and SQL",
                "PL-027": "Live · HTTPS redirect", "PL-028": "Live · certificate", "PL-029": "Live · headers", "PL-030": "Live · headers",
                "PL-031": "Live · headers", "PL-032": "Live · headers", "PL-033": "Live · cookies", "PL-034": "Live · page HTML",
-               "PL-035": "Live · headers", "PL-036": "Live · headers"}
+               "PL-035": "Live · headers", "PL-036": "Live · headers", "PL-040": "Live · scripts and CSP"}
 LINTS = {"PL-001": "none (0024 skips SELECT)", "PL-002": "none (0024 skips SELECT)", "PL-003": "0008", "PL-004": "–",
          "PL-005": "0024 (writes only)", "PL-006": "0011, 0028, 0029", "PL-007": "0025", "PL-008": "0013, 0007",
          "PL-010": "–", "PL-011": "–", "PL-012": "0024 (only literal true)", "PL-013": "–", "PL-014": "0010, 0002, 0016",
@@ -2795,7 +2839,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
         <div class="card">
           <span class="n-big">FREE · NO SIGN-UP</span>
           <h3>Static RLS check</h3>
-          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. The free <a href="/tools/headers-check">headers check</a> does the same for PL-027 to PL-036 on any address.</p>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. The free <a href="/tools/headers-check">headers check</a> does the same for PL-027 to PL-036 and PL-040 on any address.</p>
           <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
         </div>
       </div>

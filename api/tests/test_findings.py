@@ -11,7 +11,7 @@ XSS = {"id": "PL-024", "line": "code", "severity": "medium", "title": "Raw HTML"
 
 
 def test_every_finding_id_is_tagged_with_known_names():
-    ids = [f"PL-{n:03d}" for n in range(1, 40)]  # PL-027..036: live posture; 037 headers/prompts; 038 team self-join; 039 plaintext passwords
+    ids = [f"PL-{n:03d}" for n in range(1, 41)]  # PL-027..036: live posture; 037 headers/prompts; 038 team self-join; 039 plaintext passwords; 040 third-party scripts
     assert sorted(taxonomy.TAGS) == ids
     for fid, (cwes, owasp) in taxonomy.TAGS.items():
         assert owasp in taxonomy.OWASP, fid

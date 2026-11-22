@@ -37,7 +37,7 @@ TOOLS = [
     {"name": "headers_check", "title": "Security headers check", "annotations": {"title": "Security headers check", **hints(True, True, True)},
      "inputSchema": schema({"url": {"type": "string", "description": "A public site, e.g. https://app.example.com"}}, ["url"]),
      "description": "Grade a public site's HTTPS, TLS certificate, security headers and cookie flags from one load of its home page "
-                    "(no sign-up). Returns findings PL-027..PL-036 with fixes."},
+                    "(no sign-up). Returns findings PL-027..PL-036 and PL-040 (third-party scripts with no CSP limit on where they send data) with fixes."},
     {"name": "start_check", "title": "Request a full leak check", "annotations": {"title": "Request a full leak check", **hints(False, False, True)},
      "inputSchema": schema({"repo": REPO, "email": {"type": "string", "description": "Where the report goes"}}, ["repo", "email"]),
      "description": "Request the full lab check: the database is rebuilt from the repo with fake rows, leaks are proven as each kind of user, and a tested fix is written. Creates a check and emails the report address; nothing runs until the repo owner proves ownership with a one-line file. Returns a check id and link. Only call when the user asks for the full check and gives their email."},

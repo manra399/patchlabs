@@ -12,7 +12,7 @@ lede: Ask your coding agent to check an app for leaks. PatchLabs runs a remote M
   <thead><tr><th scope="col">Tool</th><th scope="col">Arguments</th><th scope="col">What it does</th><th scope="col">Access</th></tr></thead>
   <tbody>
     <tr><th scope="row"><code>rls_check</code></th><td><code>repo</code></td><td>The free static RLS check of a public repo’s migrations. Instant, no sign-up.</td><td>Read-only, no key</td></tr>
-    <tr><th scope="row"><code>headers_check</code></th><td><code>url</code></td><td>Grades a public site’s HTTPS, certificate, security headers and cookie flags from one load of its home page (PL-027 to PL-036). No sign-up.</td><td>Read-only, no key</td></tr>
+    <tr><th scope="row"><code>headers_check</code></th><td><code>url</code></td><td>Grades a public site’s HTTPS, certificate, security headers and cookie flags from one load of its home page (PL-027 to PL-036, and PL-040 for third-party scripts). No sign-up.</td><td>Read-only, no key</td></tr>
     <tr><th scope="row"><code>start_check</code></th><td><code>repo</code>, <code>email</code></td><td>Requests the full lab check. Returns a check ID and link; the owner still proves ownership by committing the verification file.</td><td>Creates a check, no key</td></tr>
     <tr><th scope="row"><code>get_check</code></th><td><code>check_id</code></td><td>Status of a check; once finished, the findings, plain-English report and tested fix. Safe to poll.</td><td>Read-only, no key</td></tr>
     <tr><th scope="row"><code>list_apps</code></th><td>none</td><td>The apps monitored in the key’s workspace, with their latest check.</td><td>Read-only, key</td></tr>

@@ -45,7 +45,16 @@ CHECKS = {  # id: (title when it fails, title when it passes, fix)
                "Remove version numbers from the Server and X-Powered-By headers."),
     "PL-036": ("No Referrer-Policy", "Referrer-Policy is set",
                "Send Referrer-Policy: strict-origin-when-cross-origin"),
+    "PL-040": ("Third-party scripts can send your visitors' data anywhere", "Scripts can only send data to listed sites",
+               "Add connect-src and img-src to your Content-Security-Policy listing only the sites the page must talk to, so an "
+               "injected or hijacked script can't send form data to its own server."),
 }
+# Script hosts with a public compromise in the last 90 days: (domain, note). Shown in PL-040 evidence and raises its
+# severity; remove an entry 90 days after the incident.
+SCRIPT_INCIDENTS = {"optimizely.com": "Optimizely's script CDN served injected card-skimming code to 178+ sites on 16 Nov 2026 (OPTIMJACK)"}
+# Sources that let a script reach any server: a bare wildcard or a scheme on its own.
+OPEN_SOURCES = {"*", "https:", "http:", "wss:", "ws:"}
+TWO_PART_SUFFIX = {"co", "com", "org", "net", "ac", "gov", "edu"}
 
 
 
@@ -77,6 +86,7 @@ class taxonomy:  # stand-in for api/taxonomy.py (live-line findings only)
             "PL-034": (["CWE-319"], "A02:2021"),
             "PL-035": (["CWE-200"], "A05:2021"),
             "PL-036": (["CWE-200"], "A05:2021"),
+            "PL-040": (["CWE-829"], "A08:2021"),
     }
 
     @staticmethod
@@ -226,6 +236,44 @@ def hsts_age(value):
     return int(m.group(1)) if m else None
 
 
+def csp_directives(policy):
+    """{'connect-src': ['https://api.x.com', ...], ...} for one policy string; the first of a repeated directive wins."""
+    out = {}
+    for part in (policy or "").split(";"):
+        words = part.strip().split()
+        if words and words[0].lower() not in out:
+            out[words[0].lower()] = [w.lower() for w in words[1:]]
+    return out
+
+
+def limits_sends(policy):
+    """True if this policy stops scripts sending to arbitrary servers through fetch/XHR/WebSocket/beacon (connect-src)
+    and image requests (img-src). Navigation and form posts can still leave, so this narrows, it doesn't close."""
+    d = csp_directives(policy)
+    for name in ("connect-src", "img-src"):
+        sources = d.get(name, d.get("default-src"))
+        if sources is None or any(s in OPEN_SOURCES or s.startswith("*.") and s.count(".") < 2 for s in sources):
+            return False
+    return True
+
+
+def site_of(host):
+    """Rough registrable domain: shop.example.com -> example.com, a.b.co.uk -> b.co.uk."""
+    parts = (host or "").lower().rstrip(".").split(".")
+    n = 3 if len(parts) >= 3 and parts[-2] in TWO_PART_SUFFIX and len(parts[-1]) == 2 else 2
+    return ".".join(parts[-n:])
+
+
+def third_party_scripts(body, page_host):
+    """Hosts of <script src> tags in the HTML that belong to another site (scripts added later at runtime aren't seen)."""
+    hosts = []
+    for src in re.findall(r"<script\b[^>]*\bsrc\s*=\s*[\"']?((?:https?:)?//[^\"'\s>]+)", body or "", re.I):
+        host = urlsplit(src if not src.startswith("//") else "https:" + src).hostname or ""
+        if host and site_of(host) != site_of(page_host) and host not in hosts:
+            hosts.append(host)
+    return hosts
+
+
 def analyze(page_url, r, http_info, cert_problem=None, now=None):
     """Turns one load into findings. r: the final https response; http_info: {"redirects": bool|None, "final": url}."""
     h, body, host = r["headers"], r["body"], urlsplit(page_url).hostname or ""
@@ -279,6 +327,13 @@ def analyze(page_url, r, http_info, cert_problem=None, now=None):
         fail("PL-035", "; ".join(leaky), "info")
     if not (h.get("referrer-policy") or "").strip() and meta_tag(body, "name", "referrer") is None:
         fail("PL-036", "No Referrer-Policy header or meta tag.", "info")
+    outside = third_party_scripts(body, host)
+    if outside and not (limits_sends(csp) or limits_sends(meta_csp)):
+        hit = [note for dom, note in SCRIPT_INCIDENTS.items() for x in outside if site_of(x) == dom][:1]
+        shown = ", ".join(outside[:4]) + (f" and {len(outside) - 4} more" if len(outside) > 4 else "")
+        fail("PL-040", f"The page runs scripts from {len(outside)} other site{'s' if len(outside) > 1 else ''} ({shown}) and no "
+             "Content-Security-Policy connect-src and img-src limit where they can send data." + (f" Note: {hit[0]}." if hit else ""),
+             "medium" if hit else "low")
 
     failed = {f["id"] for f in found}
     counts = {s: sum(f["severity"] == s for f in found) for s in SEVERITIES}

@@ -1,0 +1,172 @@
+<!--
+title: A script you trust was hijacked: what the Optimizely compromise means for your app | PatchLabs
+description: On 16 Nov 2026 injected code reached visitors of 178+ sites through Optimizely's own CDN. How to list the scripts your app runs, the CSP that stops them sending data out (tested in Chrome), and what to keep off payment pages.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"A script you trust was hijacked: the Optimizely lesson for small apps","description":"On 16 Nov 2026 injected code reached visitors of 178+ sites through Optimizely's own CDN. How to list the scripts your app runs, the CSP that stops them sending data out (tested in Chrome), and what to keep off payment pages.","datePublished":"2026-11-22","dateModified":"2026-11-22","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/third-party-script-compromise-optimizely"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"A script you trust was hijacked: the Optimizely lesson for small apps","item":"https://patchlabs.dev/learn/third-party-script-compromise-optimizely"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Would Subresource Integrity (SRI) have stopped this?","acceptedAnswer":{"@type":"Answer","text":"Not for a snippet like Optimizely’s, which changes whenever the customer edits their project, so no fixed hash can be pinned. SRI is a good fit for versioned library files from a public CDN, where the file never changes."}},{"@type":"Question","name":"We don’t use Optimizely. Does this matter to us?","acceptedAnswer":{"@type":"Answer","text":"Yes, if your page loads any script from another site. The pattern, one vendor compromised and every customer’s visitors hit at once, has happened before with other script providers, and it will happen again."}},{"@type":"Question","name":"Will a strict policy break my app?","acceptedAnswer":{"@type":"Answer","text":"It can, which is why you start in report-only mode. The console then lists each blocked request, and you add the hosts you really need. Supabase apps usually need the project’s https:// and wss:// addresses in connect-src ."}},{"@type":"Question","name":"Our visitors may have been on an affected site. What should we tell them?","acceptedAnswer":{"@type":"Answer","text":"If you ran Optimizely between 15 and 17 November, check your project’s change history and Optimizely’s notice to you before saying anything. If customer data may have left, our first hour after a leak runbook covers timelines and reporting clocks."}}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+<li><a href="/learn/supabase-multi-tenant-rls">Multi-tenant RLS and tenant isolation</a></li>
+<li><a href="/learn/plaintext-passwords-ai-built-login">Plain-text passwords in AI-built logins</a></li>
+<li><a href="/learn/supabase-mcp-patient-data">Supabase MCP and patient data</a></li>
+<li><a href="/learn/users-can-see-each-others-data">Users see each other’s data</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+<li><a href="/learn/cursor-fireworks-breach-agent-traces-keys">The Cursor breach and keys in agent traces</a></li>
+<li><a href="/learn/personal-data-headers-ai-prompts">Personal data in headers and AI prompts</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/third-party-script-compromise-optimizely" aria-current="page">Hijacked third-party scripts</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Hijacked third-party scripts</li></ol></nav>
+      <p class="lab">Launch and other stacks</p>
+      <h1>A script you trust was hijacked: the Optimizely lesson for small apps</h1>
+      <p class="lede">On 16 November 2026 an attacker wrote code into Optimizely customers’ projects, and at least 178 organisations served it to their visitors from Optimizely’s own CDN for most of a day. Your app probably doesn’t use Optimizely, but it likely loads analytics, a chat widget or a tag manager in the same way, and each of those can read every form on your page. Three things limit the damage: know which outside scripts run, add a Content-Security-Policy that names where data may go (we tested it below), and keep outside scripts off sign-in and payment pages.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 22 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>A script tag from another site runs with full power on your page: it can read what visitors type and send it anywhere.</li><li>In the Optimizely case the bad code came from a host the victims trusted, so “only load scripts from vendors we trust” didn’t help.</li><li>In our Chrome test, a <code>script-src</code> allow-list alone let a script send data out four ways. <code>default-src 'self'</code> stopped all four.</li><li>The injected code in one sampled variant pulled a second script from an unrelated domain, which a tight <code>script-src</code> blocks.</li><li>The free headers check now flags pages that load outside scripts with no limit on where they send data (PL-040).</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#what">What happened on 16 November</a></li><li><a href="#list">Step 1: list the scripts your app runs</a></li><li><a href="#test">Step 2: what a Content-Security-Policy really stops (our test)</a></li><li><a href="#policy">Step 3: write the policy</a></li><li><a href="#pages">Step 4: keep outside scripts off the pages that matter</a></li><li><a href="#check">Check your site</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for founders whose app was built with Lovable, Bolt, Cursor or Claude Code, and for anyone who adds analytics, A/B testing or chat widgets to a site by pasting a snippet. The incident facts come from Unit 42 (17 Nov 2026) and Socket (18 Nov 2026); we ran the browser test ourselves on 22 Nov 2026.</p>
+
+<h2 id="what">What happened on 16 November</h2>
+<p>Optimizely Web Experimentation lets customers add their own code to a project in a field called <em>Project JavaScript</em>. That code is bundled into the snippet every visitor’s browser downloads from Optimizely’s CDN. According to Optimizely, as reported by Socket, an attacker used a flaw in the account sign-up flow to get at that field in other customers’ projects and inserted malicious code.</p>
+<ul>
+  <li><strong>Scale:</strong> Scott Helme of Report URI counted 188 infected snippets belonging to 178 organisations. Unit 42 says “at least 178”.</li>
+  <li><strong>Payload:</strong> Unit 42 lists three behaviours: swapping cryptocurrency wallet addresses, skimming card details from checkout forms, and trying to deliver exploit kits to iPhones and iPads.</li>
+  <li><strong>How it loaded:</strong> in the variant Socket sampled, the injected code loaded a second script from an unrelated domain. Other variants carried the payload inline or hid the address in base64.</li>
+  <li><strong>Timeline:</strong> Report URI saw the snippets it monitored cleaned by 23:11 UTC on 16 November. Unit 42 says Optimizely patched the flaw, removed the code and secured affected accounts early on 17 November.</li>
+</ul>
+<div class="callout note"><p><strong>The point for small apps.</strong> The victims did nothing wrong that day. They loaded a script from a vendor they had chosen, and the vendor was hijacked. Picking trusted vendors is necessary, but it can’t be the whole defence.</p></div>
+
+<h2 id="list">Step 1: list the scripts your app runs</h2>
+<p>Open your live site, not the editor preview, and run this in the browser console. It lists every script the page has loaded so far, including ones a tag manager added after the page arrived:</p>
+<div class="code"><div class="code-bar"><span class="name">list-scripts.js</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">// Paste into DevTools → Console on your live site, after using the page for a moment.</span>
+const mine = location.hostname.split('.').slice(-2).join('.');
+const hosts = {};
+for (const e of performance.getEntriesByType('resource')) {
+  const h = new URL(e.name).hostname;
+  if (!h.endsWith(mine)) (hosts[h] ||= new Set()).add(e.initiatorType);
+}
+console.table(Object.entries(hosts).map(([host, t]) =&gt; ({ host, types: [...t].join(', ') })));
+<span class="c">// "script" = code that runs on your page. "fetch" / "xmlhttprequest" / "img" = where the page sends requests.</span></code></pre></div>
+<p>For each script host, ask: do we still use this, and does it need to run on every page? Old analytics tags and abandoned experiments are common. Every one you remove is one less vendor whose breach becomes yours.</p>
+
+<h2 id="test">Step 2: what a Content-Security-Policy really stops (our test)</h2>
+<p>We built a shop page that loads a script from a second local server. The script grabs a fake card number and tries to send it back four ways: <code>fetch</code>, an image request, <code>navigator.sendBeacon</code> and a WebSocket. We loaded the page in Chrome with four different policies and counted what reached the second server.</p>
+<div class="table-wrap"><table class="table compact">
+<thead><tr><th scope="col">Policy on the page</th><th scope="col">Sends that got out</th></tr></thead>
+<tbody>
+<tr><th scope="row">No Content-Security-Policy</th><td>4 of 4 (fetch, image, beacon, WebSocket)</td></tr>
+<tr><th scope="row"><code>script-src 'self' &lt;the script’s host&gt;</code> only</th><td>4 of 4</td></tr>
+<tr><th scope="row"><code>default-src 'self'; script-src 'self' &lt;the script’s host&gt;</code></th><td>0 of 4</td></tr>
+<tr><th scope="row">The same plus <code>connect-src 'self'</code></th><td>0 of 4</td></tr>
+</tbody></table></div>
+<p>The lesson is in the second row. Many guides stop at <code>script-src</code>, which controls what may <em>load</em>. It says nothing about where loaded code may <em>send</em> data. That is <code>connect-src</code> (fetch, XHR, WebSocket, beacons) and <code>img-src</code> (image requests), or <code>default-src</code> when those two aren’t set.</p>
+<p>Two honest limits. First, a policy doesn’t stop a script sending data to a host you allowed, so allow only what you need. Second, a script can still move the visitor to another page or submit a form, so a policy narrows the exits rather than closing all of them.</p>
+
+<h2 id="policy">Step 3: write the policy</h2>
+<p>Start from the hosts you listed in step 1. A typical Supabase app with one analytics script looks like this:</p>
+<div class="code"><div class="code-bar"><span class="name">Content-Security-Policy</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>Content-Security-Policy: default-src 'self';
+  script-src 'self' https://cdn.your-analytics.com;
+  connect-src 'self' https://YOUR-PROJECT.supabase.co wss://YOUR-PROJECT.supabase.co https://api.your-analytics.com;
+  img-src 'self' data: https://YOUR-PROJECT.supabase.co;
+  frame-ancestors 'self'</code></pre></div>
+<p>Send it as one line. Ship it first as <code>Content-Security-Policy-Report-Only</code> for a few days and watch the console for blocked requests, then switch to the enforcing header. Where to set headers on Vercel, Netlify, Cloudflare and Lovable is in the <a href="/findings/pl-040">PL-040 fix</a>. On hosts where you can’t set headers, a <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> tag in <code>index.html</code> works for everything above except <code>frame-ancestors</code>.</p>
+<p>Avoid <code>*</code> and bare schemes like <code>https:</code> in <code>connect-src</code> and <code>img-src</code>: they allow every server and undo the point. Some vendors document the hosts their snippet needs; use that list, not a wildcard.</p>
+
+<h2 id="pages">Step 4: keep outside scripts off the pages that matter</h2>
+<p>Unit 42’s advice after the incident was to remove tags that aren’t essential from sensitive pages and to take payments inside hardened cross-origin frames. For a small app that means:</p>
+<ul>
+  <li><strong>Payments:</strong> use your provider’s hosted checkout or hosted card fields (Stripe Checkout or Elements, for example). The card number is typed into the provider’s frame, which scripts on your page can’t read.</li>
+  <li><strong>Sign-in and account pages:</strong> no A/B testing, heatmaps or session recorders there. They don’t need them, and these pages hold passwords and tokens.</li>
+  <li><strong>Tag managers:</strong> a tag manager lets anyone with access to its dashboard add code to your site without a deploy. Limit who has that access, and turn on two-factor sign-in for it.</li>
+</ul>
+
+<h2 id="check">Check your site</h2>
+<p>The free <a href="/tools/headers-check">headers check</a> now includes PL-040: it lists the scripts your home page loads from other sites and flags the page if no policy limits where they can send data. If one of those hosts had a public compromise in the last 90 days, it says so and rates the finding medium. It reads one public page, the way a visitor’s browser does; scripts a tag manager adds later need the console snippet above.</p>
+
+<h2 id="faq">Questions people ask</h2>
+<h3>Would Subresource Integrity (SRI) have stopped this?</h3>
+<p>Not for a snippet like Optimizely’s, which changes whenever the customer edits their project, so no fixed hash can be pinned. SRI is a good fit for versioned library files from a public CDN, where the file never changes.</p>
+<h3>We don’t use Optimizely. Does this matter to us?</h3>
+<p>Yes, if your page loads any script from another site. The pattern, one vendor compromised and every customer’s visitors hit at once, has happened before with other script providers, and it will happen again.</p>
+<h3>Will a strict policy break my app?</h3>
+<p>It can, which is why you start in report-only mode. The console then lists each blocked request, and you add the hosts you really need. Supabase apps usually need the project’s <code>https://</code> and <code>wss://</code> addresses in <code>connect-src</code>.</p>
+<h3>Our visitors may have been on an affected site. What should we tell them?</h3>
+<p>If you ran Optimizely between 15 and 17 November, check your project’s change history and Optimizely’s notice to you before saying anything. If customer data may have left, our <a href="/learn/first-hour-after-a-leak">first hour after a leak</a> runbook covers timelines and reporting clocks.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://unit42.paloaltonetworks.com/optimjack-supply-chain-attack/">Unit 42 (Palo Alto Networks): OPTIMJACK supply-chain attack</a> (17 Nov 2026; checked 22 Nov 2026)</li>
+<li><a href="https://socket.dev/blog/optimizely-supply-chain-attack">Socket: Optimizely supply chain attack</a>, including Report URI’s count and cleanup time and Optimizely’s statement (18 Nov 2026; checked 22 Nov 2026)</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy">MDN: Content-Security-Policy</a>, directive reference and fallback to <code>default-src</code> (checked 22 Nov 2026)</li>
+<li>PatchLabs browser test, 22 Nov 2026: Chrome headless, two local servers, four policies, as described above.</li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-040"><span class="n-big">PL-040</span><h3>Third-party scripts can send your visitors’ data anywhere</h3></a><a class="card link" href="/findings/pl-030"><span class="n-big">PL-030</span><h3>No Content-Security-Policy</h3></a><a class="card link" href="/findings/pl-034"><span class="n-big">PL-034</span><h3>Page loads scripts or styles over plain HTTP</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-third-party-script">Public GitHub repo</label>
+            <input id="repo-l-third-party-script" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-third-party-script">Your email</label>
+            <input id="email-l-third-party-script" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 22 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20third-party-script-compromise-optimizely">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/npm-dependency-vulnerabilities" rel="prev"><span>Previous guide</span>How to find and fix vulnerable npm dependencies</a><a class="next" href="/learn/vibe-coding-security-risks" rel="next"><span>Next guide</span>Security risks of vibe-coded apps, with data</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#what">What happened on 16 November</a></li><li><a href="#list">Step 1: list the scripts your app runs</a></li><li><a href="#test">Step 2: what a Content-Security-Policy really stops (our test)</a></li><li><a href="#policy">Step 3: write the policy</a></li><li><a href="#pages">Step 4: keep outside scripts off the pages that matter</a></li><li><a href="#check">Check your site</a></li><li><a href="#faq">Questions people ask</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

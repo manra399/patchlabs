@@ -177,6 +177,7 @@
         <li><a href="/findings/pl-034" aria-current="page"><span class="fid"><span class="sev-dot med" aria-hidden="true"></span>PL-034</span>Page loads scripts or styles over plain HTTP</a></li>
         <li><a href="/findings/pl-035"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-035</span>Server headers reveal software versions</a></li>
         <li><a href="/findings/pl-036"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-036</span>No Referrer-Policy</a></li>
+        <li><a href="/findings/pl-040"><span class="fid"><span class="sev-dot low" aria-hidden="true"></span>PL-040</span>Third-party scripts can send your visitors’ data anywhere</a></li>
       </ul>
       <h2>Not tested yet · coming</h2>
       <ul>
@@ -301,7 +302,7 @@ curl -s https://your-app.com | grep -oiE '&lt;(script|link)[^&gt;]+(src|href)="h
 
       <h2 id="related"><span class="lab" aria-hidden="true">See also</span>Related findings</h2>
       <div class="grid g3 not-prose"><a class="card link" href="/findings/pl-027"><span class="n-big">PL-027</span><h3>Site doesn’t force HTTPS</h3><p class="small">The plain http:// address of your site serves the page instead of redirecting to https://.</p></a><a class="card link" href="/findings/pl-030"><span class="n-big">PL-030</span><h3>No Content-Security-Policy</h3><p class="small">Your page sends no Content-Security-Policy, so any script that gets onto it can run and send data anywhere.</p></a><a class="card link" href="/findings/pl-029"><span class="n-big">PL-029</span><h3>No HSTS header, or max-age under 180 days</h3><p class="small">Browsers aren’t told to use HTTPS only, so a visitor’s first request can still go out over plain HTTP.</p></a></div>
-      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/security-headers-ai-built-apps">Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></li></ul>
+      <h3 class="f-guides-h">Guides</h3><ul class="f-guides"><li><a href="/learn/security-headers-ai-built-apps">Security headers for AI-built apps (Lovable, Bolt, Vercel, Netlify)</a></li><li><a href="/learn/third-party-script-compromise-optimizely">A script you trust was hijacked: the Optimizely lesson for small apps</a></li></ul>
 
       <div class="f-cta">
         <p class="lab">Free check</p>

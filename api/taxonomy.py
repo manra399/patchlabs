@@ -49,6 +49,7 @@ CWE = {"CWE-79": "Improper Neutralization of Input During Web Page Generation ('
        "CWE-942": "Permissive Cross-domain Policy with Untrusted Domains",
        "CWE-1004": "Sensitive Cookie Without 'HttpOnly' Flag",
        "CWE-1021": "Improper Restriction of Rendered UI Layers or Frames",
+       "CWE-829": "Inclusion of Functionality from Untrusted Control Sphere",
        "CWE-1395": "Dependency on Vulnerable Third-Party Component"}
 
 # id: (CWEs, OWASP 2021 category)
@@ -93,6 +94,7 @@ TAGS = {
     "PL-034": (["CWE-319"], "A02:2021"),              # scripts or styles over plain HTTP
     "PL-035": (["CWE-200"], "A05:2021"),              # software versions in headers
     "PL-036": (["CWE-200"], "A05:2021"),              # no Referrer-Policy
+    "PL-040": (["CWE-829"], "A08:2021"),              # third-party scripts with no CSP limit on where data goes
 }
 SEVERITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 

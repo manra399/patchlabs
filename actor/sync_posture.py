@@ -12,7 +12,7 @@ consts = re.sub(r'^UA = ".*"$', 'UA = "PatchLabs-ApifyActor/1 (+https://patchlab
 body = src[src.index("class Unreachable(Exception):"):src.index("def has_code(site, code):")]
 
 tax = (ROOT / "api/taxonomy.py").read_text()
-live_tags = "\n".join(f"            {m.group(1)}," for m in re.finditer(r'^\s*("PL-0(?:2[7-9]|3[0-6])": \(\[[^\]]*\], "[^"]+"\)),', tax, re.M))
+live_tags = "\n".join(f"            {m.group(1)}," for m in re.finditer(r'^\s*("PL-0(?:2[7-9]|3[0-6]|40)": \(\[[^\]]*\], "[^"]+"\)),', tax, re.M))
 
 HEADER = '''"""GENERATED from api/posture.py by actor/sync_posture.py. Do not edit by hand; edit api/posture.py and re-run the sync.
 

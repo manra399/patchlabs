@@ -46,6 +46,7 @@ PROMPTS = {
     "PL-034": "My HTTPS page loads a script or stylesheet from an http:// address. Change each one to https://, or host the file myself. If a provider has no https version, replace it.",
     "PL-035": "My server sends Server or X-Powered-By headers that name the software and its version. Remove X-Powered-By and strip version numbers from the Server header, using my framework or host settings (for Express, app.disable('x-powered-by')).",
     "PL-036": "My site sends no Referrer-Policy header. Add Referrer-Policy: strict-origin-when-cross-origin to every response, using my host's headers config.",
+    "PL-040": "My page loads scripts from other sites (analytics, widgets) and has no Content-Security-Policy limiting where scripts can send data. List every outside host the app loads scripts from and talks to (fetch, WebSocket, images), then add a Content-Security-Policy with default-src 'self' and script-src, connect-src and img-src naming only those hosts, using my host's headers config or a meta tag in index.html. Ship it first as Content-Security-Policy-Report-Only, then enforce it. Keep third-party tags off sign-in and payment pages.",
 }
 
 # The free check that can confirm the fix, per product line or finding.

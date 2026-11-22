@@ -135,7 +135,7 @@
       <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/research/1-in-4">Research</a></li><li aria-current="page">Findings</li></ol></nav>
       <p class="lab">Finding index</p>
       <h1>Every problem we test for, with the fix and the proof.</h1>
-      <p class="lede">34 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, 16 that PatchLabs Code finds by reading your repo, and 10 that Live posture reads from your public home page on a domain you verify. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
+      <p class="lede">35 live checks with stable IDs: 8 that PatchLabs Lab proves in a database rebuilt from your migrations, 16 that PatchLabs Code finds by reading your repo, and 11 that Live posture reads from your public home page on a domain you verify. 5 more are written up but not tested yet, and are marked as coming. Each page shows vulnerable code, a way to check your own project and the fix.</p>
       <div class="row mt-3"><a class="btn primary large" href="/#check">Check my app free</a><a class="btn secondary large" href="/learn">Read the guides</a></div>
     </div>
   </section>
@@ -164,7 +164,7 @@
           <button type="button" class="f-chipbtn" data-filter="live" aria-pressed="false">Live</button>
           <button type="button" class="f-chipbtn" data-filter="coming" aria-pressed="false">Coming</button>
         </div>
-        <p class="f-count" aria-live="polite"><span id="f-shown">39</span> of 39 shown</p>
+        <p class="f-count" aria-live="polite"><span id="f-shown">40</span> of 40 shown</p>
       </div>
       <div class="f-group">
         <p class="lab red">Live · PatchLabs Lab · who can read what in your database</p>
@@ -213,6 +213,7 @@
       <a class="f-row" href="/findings/pl-034" data-line="live" data-sev="medium" data-status="live"><span class="fid">PL-034</span><div><h3>Page loads scripts or styles over plain HTTP</h3><p>Your HTTPS page pulls a script or stylesheet from an http:// address, which anyone on the network can replace.</p></div><span class="sevcell"><span class="pill sev-medium">medium</span></span><span class="where">Live · page HTML</span><span class="go" aria-hidden="true">→</span></a>
       <a class="f-row" href="/findings/pl-035" data-line="live" data-sev="info" data-status="live"><span class="fid">PL-035</span><div><h3>Server headers reveal software versions</h3><p>A Server or X-Powered-By header names the software and its version, which tells attackers which known bugs to try.</p></div><span class="sevcell"><span class="pill sev-low">info</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
       <a class="f-row" href="/findings/pl-036" data-line="live" data-sev="info" data-status="live"><span class="fid">PL-036</span><div><h3>No Referrer-Policy</h3><p>Your page sends no Referrer-Policy, so the browser’s default decides how much of your URLs other sites see.</p></div><span class="sevcell"><span class="pill sev-low">info</span></span><span class="where">Live · headers</span><span class="go" aria-hidden="true">→</span></a>
+      <a class="f-row" href="/findings/pl-040" data-line="live" data-sev="low" data-status="live"><span class="fid">PL-040</span><div><h3>Third-party scripts can send your visitors’ data anywhere</h3><p>Your page runs scripts from other sites, and no Content-Security-Policy limits which servers a script can send data to.</p></div><span class="sevcell"><span class="pill sev-low">low</span></span><span class="where">Live · scripts and CSP</span><span class="go" aria-hidden="true">→</span></a>
         </div>
       </div>
       <div class="f-group f-group-coming">
@@ -282,7 +283,7 @@
         <div class="card">
           <span class="n-big">FREE · NO SIGN-UP</span>
           <h3>Static RLS check</h3>
-          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. The free <a href="/tools/headers-check">headers check</a> does the same for PL-027 to PL-036 on any address.</p>
+          <p>Reads the SQL in your <code>supabase/migrations</code> and flags PL-001 to PL-008 from the rules as written. The free <a href="/tools/headers-check">headers check</a> does the same for PL-027 to PL-036 and PL-040 on any address.</p>
           <div class="card-foot"><a class="link-arrow" href="/tools/rls-check">Run the free RLS check</a></div>
         </div>
       </div>

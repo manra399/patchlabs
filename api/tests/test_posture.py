@@ -50,7 +50,7 @@ def grade(headers, http_redirects=True, host="shop.example.com", **kw):
 
 def test_strong_site_gets_an_a_with_every_check_passed():
     g = grade(STRONG)
-    assert g["grade"] == "A" and g["score"] == 100 and g["findings"] == [] and len(g["passed"]) == 10
+    assert g["grade"] == "A" and g["score"] == 100 and g["findings"] == [] and len(g["passed"]) == 11
     assert g["facts"]["tls"] == {"version": "TLSv1.3", "issuer": "Let's Encrypt", "expires": "2099-02-07", "days_left": g["facts"]["tls"]["days_left"]}
     assert g["facts"]["headers"]["content-security-policy"].startswith("default-src") and g["facts"]["headers"]["x-powered-by"] is None
 
@@ -369,4 +369,52 @@ def test_taxonomy_lists_live_findings(client):
     t = client.get("/taxonomy/findings").json()
     assert t["findings"]["PL-033"]["cwe"] == ["CWE-614", "CWE-1004"] and t["cwe"]["CWE-1021"]
     assert all(f"PL-0{n}" in t["findings"] for n in range(27, 37))
-    assert set(posture.CHECKS) == {f"PL-0{n}" for n in range(27, 37)}
+    assert set(posture.CHECKS) == {f"PL-0{n}" for n in range(27, 37)} | {"PL-040"} and t["findings"]["PL-040"]["owasp"] == "A08:2021"
+
+
+# ---- PL-040: third-party scripts with no CSP limit on where they can send data ----------------------------------------
+
+SCRIPTS = ('<script src="https://cdn.optimizely.com/js/123.js"></script><script src="//www.googletagmanager.com/gtm.js"></script>'
+           '<script src="https://static.example.com/app.js"></script><script src="/local.js"></script>')
+
+
+def pl040(headers, body=SCRIPTS, host="shop.example.com"):
+    return next((f for f in grade(headers, host=host, body=body)["findings"] if f["id"] == "PL-040"), None)
+
+
+def test_third_party_scripts_without_send_limits_flagged_with_incident_note():
+    f = pl040(STRONG | {"content-security-policy": "script-src 'self' https:; frame-ancestors 'self'"})
+    assert f and f["severity"] == "medium" and "2 other sites (cdn.optimizely.com, www.googletagmanager.com)" in f["evidence"]
+    assert "OPTIMJACK" in f["evidence"] and f["cwe"] == ["CWE-829"] and f["owasp"] == "A08:2021"
+
+
+def test_same_site_scripts_and_no_scripts_pass():
+    assert pl040(STRONG, body='<script src="https://static.example.com/a.js"></script><script src="/b.js"></script>') is None
+    assert pl040({}, body="<html></html>") is None
+
+
+def test_plain_third_party_script_is_low_without_an_incident():
+    f = pl040({}, body='<script src="https://js.stripe.com/v3"></script>')
+    assert f["severity"] == "low" and "Note:" not in f["evidence"] and "1 other site (js.stripe.com)" in f["evidence"]
+
+
+@pytest.mark.parametrize("policy,limited", [
+    ("default-src 'self'", True),                                          # connect and img fall back to default-src
+    ("default-src 'self'; connect-src *", False),
+    ("default-src 'self'; img-src https:", False),                          # a scheme alone allows every server
+    ("connect-src 'self' https://api.example.com; img-src 'self' data:", True),
+    ("connect-src 'self'", False),                                          # no img-src and no default-src: images go anywhere
+    ("script-src 'self'", False),
+    ("default-src 'self'; connect-src *.com", False),
+    ("default-src 'self'; connect-src https://*.supabase.co", True),
+])
+def test_limits_sends(policy, limited):
+    assert posture.limits_sends(policy) is limited
+    assert (pl040({"content-security-policy": policy}) is None) is limited
+
+
+def test_meta_csp_counts_and_two_part_suffixes():
+    meta = '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'">'
+    assert pl040({}, body=meta + SCRIPTS) is None
+    assert pl040({}, host="shop.example.co.uk", body='<script src="https://cdn.example.co.uk/a.js"></script>') is None
+    assert pl040({}, host="shop.example.co.uk", body='<script src="https://other.co.uk/a.js"></script>')["evidence"].count("other.co.uk") == 1
