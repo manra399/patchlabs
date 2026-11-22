@@ -1,0 +1,182 @@
+<!--
+title: PatchLabs vs Keybrum | PatchLabs
+description: Keybrum attacks your live app and hands your coding agent a fix prompt. PatchLabs never touches the live app and proves each fix on a rebuilt copy of your database before an engineer approves it. When each is the better choice.
+layout: marketing
+head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
+-->
+<main id="main">
+
+<section class="page-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/compare">Compare</a></li><li aria-current="page">Keybrum</li></ol></nav>
+    <p class="lab">PatchLabs vs Keybrum</p>
+    <h1>Keybrum attacks your live app. PatchLabs proves the fix before anything ships.</h1>
+    <p class="lede">Keybrum (launched on Hacker News on 22 Nov 2026) runs hundreds of attacks against your deployed Lovable, Bolt, Replit, v0 or Cursor app, shows proof, and gives your coding agent a fix prompt, then attacks again. PatchLabs rebuilds your database from your migrations in a disposable lab, writes the fix as a migration, proves it as an anonymous visitor, a signed-in stranger and the owner, and only then hands it to the engineer who approves it.</p>
+    <div class="meta-line"><span>Last checked 22 Nov 2026</span><span>Sources at the end</span><span>Independent of Keybrum</span></div>
+  </div>
+</section>
+
+<section class="sec tight" aria-label="Summary">
+  <div class="wrap">
+    <div class="verdict">
+      <div>
+        <p class="who">Choose Keybrum when</p>
+        <h2>You want your live app attacked from the outside, today, and you can pay now.</h2>
+        <ul class="ticks">
+          <li>You want one run that covers Supabase, Firebase, API routes, storage, leaked keys and framework CVEs on the deployed app</li>
+          <li>You want a fix prompt to paste into Lovable, Bolt, Cursor or Claude Code, and a retest when your agent is done</li>
+          <li>You want a one-off paid report (€49) before a launch or a client handover, or a branded trust page for clients</li>
+          <li>You run many apps: their Team plan lists 25 apps for €99 a month, more apps per pound than our planned Agency plan</li>
+        </ul>
+      </div>
+      <div>
+        <p class="who">Choose PatchLabs when</p>
+        <h2>Nothing should touch your live app, and a person must approve every change.</h2>
+        <ul class="ticks">
+          <li>You’d rather no attack ran against your production app, its users’ rows or its keys</li>
+          <li>You want the fix proven before you see it, not checked after your agent has already changed production</li>
+          <li>You want a reviewable SQL migration your engineer (or your client’s) approves, with a signed receipt of the proof</li>
+          <li>You want a free check now: PatchLabs is free for the first 1,000 users in early access</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="cover-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Coverage</p>
+      <h2 id="cover-h">Outside-in versus inside-out.</h2>
+      <p class="lede">Keybrum covers more ground on the running app than we do, and we say so plainly. Where we overlap, on who can read database rows, the difference is when the proof happens: Keybrum proves the leak and the retest on your live app; we prove the fix on a copy before it reaches you.</p>
+      <p class="muted small">Based on what Keybrum lists on its own home and pricing pages on 22 Nov 2026. We did not run Keybrum’s paid attack.</p>
+    </div>
+    <div>
+      <div class="cover" role="table" aria-label="Coverage: Keybrum and PatchLabs">
+        <div class="cover-row head" role="row"><span class="area" role="columnheader">Area</span><span role="columnheader">Keybrum</span><span role="columnheader">PatchLabs</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Attacks on the live app<small>auth, API routes, storage, Firebase</small></span><span class="c full" role="cell">Covered</span><span class="c none" role="cell">Not covered</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Framework and package CVEs</span><span class="c full" role="cell">Covered</span><span class="c none" role="cell">Not covered</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Security headers and third-party scripts</span><span class="c full" role="cell">Free checker</span><span class="c full" role="cell">Free check</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Leaked keys<small>PatchLabs: code and full git history</small></span><span class="c full" role="cell">Covered</span><span class="c full" role="cell">Covered</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Supabase row access<small>anon, stranger, owner</small></span><span class="c full" role="cell">On the live app</span><span class="c deep" role="cell">Proven in lab</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Fix written for you</span><span class="c full" role="cell">Agent prompt or SQL</span><span class="c full" role="cell">SQL migration</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">Fix proven before you see it</span><span class="c none" role="cell">Retest after</span><span class="c deep" role="cell">Every fix</span></div>
+        <div class="cover-row" role="row"><span class="area" role="rowheader">CI re-check</span><span class="c full" role="cell">Preview deploys</span><span class="c full" role="cell">GitHub Action</span></div>
+      </div>
+      <div class="cover-key" aria-hidden="true"><span><i class="full"></i>Covered</span><span><i class="deep"></i>Covered and proven in our lab</span><span><i class="some"></i>Partly</span><span><i></i>Not covered</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="table-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="lab">Side by side</p>
+      <h2 id="table-h">The details.</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="table compare pair">
+        <caption class="sr-only">PatchLabs compared with Keybrum</caption>
+        <thead><tr><th scope="col"></th><th scope="col" class="us">PatchLabs</th><th scope="col">Keybrum</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">What it is</th><td class="us">A lab that proves data-access fixes for AI-built apps before they ship</td><td>An automated attacker for live AI-built apps, with fix prompts and retests</td></tr>
+          <tr><th scope="row">What it looks at</th><td class="us">Your repo: migrations rebuilt in a disposable Postgres, plus code and git history</td><td>Your deployed app: what the browser downloads, then 339 attacks (576 checks) in about a minute</td></tr>
+          <tr><th scope="row">Touches your live app</th><td class="us"><span class="yes">Never tests it</span><span class="cell-note">Opt-in Live posture only loads your public home page, on a domain you verify</span></td><td>Attacks it by design<span class="cell-note">Says its write tests use a null primary key so no row is written, keeps one redacted row per finding, and never tests delete</span></td></tr>
+          <tr><th scope="row">Proving ownership</th><td class="us">A one-line file committed to the repo</td><td>A tag, a DNS record or a published file; rechecked every 30 days</td></tr>
+          <tr><th scope="row">The fix</th><td class="us">SQL migration with one-click commit on GitHub, approved by your engineer</td><td>A prompt for Lovable, Bolt, Cursor or Claude Code, or SQL; an MCP server lets your agent apply it</td></tr>
+          <tr><th scope="row">How fixes are checked</th><td class="us"><span class="yes">Three-identity proof on a rebuilt database, before you see the fix</span><span class="cell-note">Signed Ed25519 receipt</span></td><td>The same attack is run again on the live app after your agent changes it; a finding closes when it fails</td></tr>
+          <tr><th scope="row">Free</th><td class="us">The full product on 1 app: every finding, every fix proven, monthly re-checks</td><td>A preview of what visitors’ browsers download (backend, keys, table names); the attack itself is paid</td></tr>
+          <tr><th scope="row">Paid</th><td class="us">Free in early access. Planned: Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 each)</td><td>Report €49 once (1 app, 1 run, 7 days of retests). Maker €29/month (5 apps). Team €99/month (25 apps). Ex VAT</td></tr>
+          <tr><th scope="row">For agencies</th><td class="us">Client labels, 10 seats, weekly re-checks, Slack webhook, plain-English questions to the client</td><td>Your brand on reports and trust pages, app discovery on Vercel, Netlify and Supabase, owners and roles</td></tr>
+          <tr><th scope="row">Company</th><td class="us">Founder-run, London. You email the person who built it</td><td>Not stated on its site; launched 22 Nov 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted mt-2">Last checked 22 Nov 2026 against Keybrum’s home and pricing pages. Prices are Keybrum’s own, excluding VAT. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="proof-h">
+  <div class="wrap split top">
+    <figure class="figure">
+      <div class="window">
+        <div class="window-bar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab run · manra399/patchlabs-demo-app</span></div>
+<pre class="transcript lines" aria-label="A real PatchLabs lab proof on our demo app">
+<span class="ln"><span class="step">[REBUILD]</span> 1 migration → lab Postgres  <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[PROBE]</span>   <span class="k">anon</span> → 2 rows               <span class="leak">LEAK</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">stranger</span> → 2 rows           <span class="leak">LEAK</span></span>
+<span class="ln"><span class="step">[FIX]</span>     smallest model writes migration</span>
+<span class="ln"><span class="step">[PROVE]</span>   <span class="k">anon</span>      → 0 rows       <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">stranger</span>  → 0 rows       <span class="deny">DENIED</span></span>
+<span class="ln"><span class="dim">          </span><span class="k">owner</span>     → 1 row        <span class="ok">OK</span></span>
+<span class="ln"><span class="step">[DONE]</span>    <span class="done">lab proof passed</span> <span class="dim">· 36 s</span></span>
+</pre>
+        <div class="window-foot"><span class="pill proven">proven</span><span>Real run, 9 Nov 2026 · demo app, fake data</span></div>
+      </div>
+    </figure>
+    <div>
+      <p class="lab green">Where we’re different</p>
+      <h2 id="proof-h">An agent-applied fix can break the owner’s own access. We check that before it ships.</h2>
+      <p class="lede">A retest that fails for the attacker proves the stranger is locked out. Whether the owner can still read their own rows is a separate question, and on a live app the change is already in production when you ask it. Our lab runs the same read as all three people on the fixed copy, so a fix that locks out the owner, or only half closes the hole, is never called proven; it goes to a person.</p>
+      <ul class="ticks">
+        <li>No access to your database or cloud, and no attack on your live app</li>
+        <li>A person approves every change: yours, or your client’s engineer</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="faq-h">
+  <div class="wrap split top">
+    <div>
+      <p class="lab">Questions</p>
+      <h2 id="faq-h">Asked about Keybrum.</h2>
+    </div>
+    <div>
+      <details class="acc"><summary>Can I use both?</summary><div class="acc-body"><p>Yes. Keybrum tests the running app from outside, across far more than the database. PatchLabs proves the database fix before it ships and re-checks it when migrations change. One looks at production, the other at the code that becomes production.</p></div></details>
+      <details class="acc"><summary>Is attacking a live app safe?</summary><div class="acc-body"><p>Keybrum says its attacks are built for live apps: writes are tested so no row is written, delete is never tested, and only counts, column names and one redacted row are kept. We haven’t verified that independently. We chose not to test live apps at all, so there’s nothing to trust on that point.</p></div></details>
+      <details class="acc"><summary>Keybrum is cheaper per app. Why pick PatchLabs?</summary><div class="acc-body"><p>On listed prices it is: 25 apps for €99 a month against our planned 10 apps for £99. If a live attack and a fix prompt are what you need, that’s a good deal. PatchLabs is for teams where nobody wants an agent changing production without a proven, approved migration, and it’s free during early access.</p></div></details>
+      <details class="acc"><summary>Are you affiliated with Keybrum?</summary><div class="acc-body"><p>No. We read their public pages on 22 Nov 2026 and did not run their paid attack. If anything here is wrong, <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">tell us</a> and we’ll fix it.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="src-h">
+  <div class="wrap narrow">
+    <p class="lab">Sources</p>
+    <h2 id="src-h" class="h-md">Where these facts come from.</h2>
+    <ul class="sources">
+      <li><span><a href="https://keybrum.com" rel="noopener">Keybrum homepage</a> · attack counts, live-app safety claims, fix prompts and MCP, ownership proof, agency features</span><span class="when">checked 22 Nov 2026</span></li>
+      <li><span><a href="https://keybrum.com/pricing" rel="noopener">Keybrum pricing</a> · Report, Maker and Team prices and limits, free preview</span><span class="when">checked 22 Nov 2026</span></li>
+      <li><span><a href="https://news.ycombinator.com/item?id=50603596" rel="noopener">Show HN: I’ve made a CVE auto pentest app</a> · launch date</span><span class="when">22 Nov 2026</span></li>
+      <li><span><a href="/pricing">PatchLabs pricing</a> and <a href="/solutions/agencies">agency plan</a> · our planned prices and features</span><span class="when">ours</span></li>
+    </ul>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Keybrum.</b> Product names are used only to identify them. Facts were checked on 22 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="cta-cmpk">
+  <div class="wrap">
+    <div class="cta-panel">
+      <p class="lab">Free check</p>
+      <h2 id="cta-cmpk">See the proof for your own app. The first one is free.</h2>
+      <p class="lede">Paste your public repo. You’ll get the leaks, the fix and the proof on one page, in a few minutes.</p>
+      <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <label class="sr-only" for="repo-cmpk">Public GitHub repo</label>
+          <input id="repo-cmpk" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+        </div>
+        <div class="in">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.75l5.5-4.25" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <label class="sr-only" for="email-cmpk">Your email</label>
+          <input id="email-cmpk" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" type="submit">Check my app free <span class="arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="err" role="alert" data-err></p>
+      <div class="form-meta"><span><a href="/sample-report">See a sample proof report</a></span><span><a href="/compare">All comparisons</a></span><span>Prefer a person? <a href="mailto:manraj@patchlabs.dev">Email the founder</a></span></div>
+    </div>
+  </div>
+</section>
+</main>
