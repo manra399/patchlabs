@@ -3,7 +3,7 @@ title: How to rotate a leaked API key and clean your git history | PatchLabs
 description: Leaked an OpenAI, Stripe or Supabase key in a repo? Rotate it first, move it to a server secret, then optionally remove it from git history with git filter-repo. Exact steps.
 layout: marketing
 nav: learn
-head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to rotate a leaked API key and clean your git history","description":"Leaked an OpenAI, Stripe or Supabase key in a repo? Rotate it first, move it to a server secret, then optionally remove it from git history with git filter-repo. Exact steps.","datePublished":"2026-11-10","dateModified":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/rotate-leaked-key-git-history"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to rotate a leaked API key and clean your git history","item":"https://patchlabs.dev/learn/rotate-leaked-key-git-history"}]}]}</script>
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"How to rotate a leaked API key and clean your git history","description":"Leaked an OpenAI, Stripe or Supabase key in a repo? Rotate it first, move it to a server secret, then optionally remove it from git history with git filter-repo. Exact steps.","datePublished":"2026-11-22","dateModified":"2026-11-22","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/rotate-leaked-key-git-history"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"How to rotate a leaked API key and clean your git history","item":"https://patchlabs.dev/learn/rotate-leaked-key-git-history"}]}]}</script>
 -->
 <main id="main">
   <div class="wrap wide docs learn">
@@ -58,12 +58,32 @@ head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="styleshe
       <p class="lab">Keys and incidents</p>
       <h1>How to rotate a leaked API key and clean your git history</h1>
       <p class="lede">If an API key has been committed to a repo, rotate it at the provider first: create a new key, switch your app to it, and revoke the old one. Deleting the key from your code doesn’t help on its own, because every earlier commit still contains it; rewriting git history is optional clean-up that only makes sense after the key is dead.</p>
-      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 10 Nov 2026</span><span>4 min read</span></p>
-      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Rotation is the fix. Any key that was ever in a public repo must be treated as copied.</li><li>Order: revoke or roll the key → put the new one in a server-side secret → remove it from code → optionally rewrite history.</li><li>Find every key, including deleted ones, with <code>git log -p</code> over all branches.</li><li><code>git filter-repo</code> removes files or strings from history; everyone must re-clone afterwards, and forks keep the old commits.</li></ul></div>
-      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why-rotate">Why deleting the key isn’t enough</a></li><li><a href="#find">Step 0: find every key, including deleted ones</a></li><li><a href="#rotate">Step 1: rotate at the provider</a></li><li><a href="#move">Step 2: put the new key where it belongs</a></li><li><a href="#remove">Step 3: remove it from the code and stop it happening again</a></li><li><a href="#history">Step 4 (optional): rewrite history</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 22 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>Rotation is the fix. Any key that was ever in a public repo must be treated as copied.</li><li>A revert does not hide it: in our test, a commit removed by force-push was still readable on GitHub from four characters of its id.</li><li>Order: revoke or roll the key → put the new one in a server-side secret → remove it from code → optionally rewrite history.</li><li>Find every key, including deleted ones, with <code>git log -p</code> over all branches.</li><li><code>git filter-repo</code> removes files or strings from history; everyone must re-clone afterwards, and forks keep the old commits.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why-rotate">Why deleting the key isn’t enough</a></li><li><a href="#revert-test">A revert is not a rotation: the Together AI case, and what we tested</a></li><li><a href="#find">Step 0: find every key, including deleted ones</a></li><li><a href="#rotate">Step 1: rotate at the provider</a></li><li><a href="#move">Step 2: put the new key where it belongs</a></li><li><a href="#remove">Step 3: remove it from the code and stop it happening again</a></li><li><a href="#history">Step 4 (optional): rewrite history</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
       <h2 id="why-rotate">Why deleting the key isn’t enough</h2>
 <p>Git keeps every version of every file. If <code>.env</code> was committed last month and deleted last week, <code>git show &lt;old commit&gt;:.env</code> still prints it, for anyone who can read the repo. For a public repo that means anyone, and automated scanners watch public pushes for key patterns, so assume a pushed key is found quickly. Forks, clones and caches keep the old commits even if you rewrite yours.</p>
 <p>So the only thing that makes a leaked key harmless is making it stop working.</p>
+
+<h2 id="revert-test">A revert is not a rotation: the Together AI case, and what we tested</h2>
+<p>On 21 November 2026, Together AI published a security notice. During work on its public GitHub repository <code>xorl</code>, an AI coding agent committed a credential that gave access to a private Hugging Face repository holding samples of customer prompts from June and July 2026. The company’s scanning caught the commit and it was reverted, but an outside party downloaded the samples anyway, then searched them for other services’ credentials and tried those too. The notice describes the revert; it does not say when the credential itself was revoked.</p>
+<p>Coding agents commit whatever is in the working tree unless something stops them, so this will happen to more small teams. We checked what a revert leaves behind on GitHub. In a public test repo, <a href="https://github.com/manra399/revert-is-not-rotation">manra399/revert-is-not-rotation</a>, we committed a demo token (never a real credential), reverted it, and then went further than most people do: we reset the branch and force-pushed, so the commit is in no branch at all. Every check below was made without signing in, within a minute of each push, on 22 Nov 2026.</p>
+<div class="table-wrap"><table class="table compact">
+  <thead><tr><th scope="col">Can a stranger read the token?</th><th scope="col">After revert</th><th scope="col">After force-push</th></tr></thead>
+  <tbody>
+    <tr><td>Commit page, full id</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Commit page, first 7 characters of the id</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Commit page, first 4 characters of the id</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Raw file at that commit (<code>raw.githubusercontent.com</code>)</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>GitHub REST API, no token</td><td>Yes, with the diff</td><td>Yes, with the diff</td></tr>
+  </tbody>
+</table></div>
+<p>A four-character id has only 65,536 possible values, so a commit that is in no branch can still be found by trying them all, and anyone who saw the push already has the full id. Two lessons:</p>
+<ul>
+  <li><strong>Revoke first, then clean up.</strong> Reverting, deleting the file and force-pushing all leave the token readable. Only revoking it at the provider makes it useless. Steps 1 and 4 below are in that order for this reason.</li>
+  <li><strong>Secrets in prompts leak too.</strong> The attacker searched the stolen prompts for credentials. Keys pasted into an AI chat or sent in a request can end up in logs and samples you don’t control: see <a href="/learn/personal-data-headers-ai-prompts">personal data in headers and AI prompts</a>.</li>
+</ul>
+<p>To stop an agent committing secrets in the first place, keep <code>.env</code> files in <code>.gitignore</code> before the agent starts (Step 3), turn on GitHub push protection, and tell the agent in its instructions file never to stage env or credential files.</p>
 
 <h2 id="find">Step 0: find every key, including deleted ones</h2>
 <div class="code"><div class="code-bar"><span class="name">find-keys.sh</span><button class="copy" type="button" data-copy>Copy</button></div>
@@ -128,7 +148,7 @@ git push --force --mirror origin</code></pre></div>
 <ul>
   <li>Everyone with a clone must re-clone (or carefully rebase onto the new history). An old clone pushed back will reintroduce the commits.</li>
   <li>Forks and existing clones elsewhere still have the old commits; you can’t rewrite those. This is why Step 1 comes first.</li>
-  <li>GitHub may keep old commits reachable through cached views or pull request refs for a while. GitHub’s guide on removing sensitive data explains how to ask support to purge them.</li>
+  <li>GitHub keeps old commits reachable by their id after a force-push: in <a href="#revert-test">our test</a> the removed commit was still readable from the first four characters of its id. GitHub’s guide on removing sensitive data explains how to ask support to purge them.</li>
 </ul>
 
 <h2 id="checklist">Checklist</h2>
@@ -143,6 +163,8 @@ git push --force --mirror origin</code></pre></div>
 
 <h2 id="sources">Sources</h2>
 <ul>
+  <li><a href="https://www.together.ai/blog/security-event-prompt-leakage-for-requests-in-june-and-july-of-2026">Together AI: Security event: prompt leakage for requests in June and July of 2026</a> (21 Nov 2026, checked 22 Nov 2026)</li>
+  <li><a href="https://github.com/manra399/revert-is-not-rotation">PatchLabs test repo: revert-is-not-rotation</a> (demo token, tested 22 Nov 2026)</li>
   <li><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository">GitHub: removing sensitive data from a repository</a></li>
   <li><a href="https://github.com/newren/git-filter-repo">git-filter-repo</a></li>
   <li><a href="https://supabase.com/docs/guides/api/api-keys">Supabase: API keys</a></li>
@@ -169,12 +191,12 @@ git push --force --mirror origin</code></pre></div>
         <p class="err" role="alert" data-err></p>
         <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
       </div>
-      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 10 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20rotate-leaked-key-git-history">Tell us</a>.</p>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 22 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20rotate-leaked-key-git-history">Tell us</a>.</p>
       <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/ai-chat-output-xss" rel="prev"><span>Previous guide</span>Your AI chat’s replies are untrusted input</a><a class="next" href="/learn/first-hour-after-a-leak" rel="next"><span>Next guide</span>What to do in the first hour after a leak</a></nav>
     </article>
     <aside class="toc" aria-label="On this page">
       <h2>On this page</h2>
-      <ul><li><a href="#why-rotate">Why deleting the key isn’t enough</a></li><li><a href="#find">Step 0: find every key, including deleted ones</a></li><li><a href="#rotate">Step 1: rotate at the provider</a></li><li><a href="#move">Step 2: put the new key where it belongs</a></li><li><a href="#remove">Step 3: remove it from the code and stop it happening again</a></li><li><a href="#history">Step 4 (optional): rewrite history</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+      <ul><li><a href="#why-rotate">Why deleting the key isn’t enough</a></li><li><a href="#revert-test">A revert is not a rotation: the Together AI case, and what we tested</a></li><li><a href="#find">Step 0: find every key, including deleted ones</a></li><li><a href="#rotate">Step 1: rotate at the provider</a></li><li><a href="#move">Step 2: put the new key where it belongs</a></li><li><a href="#remove">Step 3: remove it from the code and stop it happening again</a></li><li><a href="#history">Step 4 (optional): rewrite history</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
     </aside>
   </div>
   <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>

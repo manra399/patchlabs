@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-22T12:30:00Z</updated>
+  <updated>2026-11-22T17:45:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>A revert is not a rotation: the Together AI case, tested on GitHub</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/rotate-leaked-key-git-history#revert-test"/>
+    <id>https://patchlabs.dev/learn/rotate-leaked-key-git-history#revert-test</id>
+    <updated>2026-11-22T17:45:00Z</updated>
+    <summary>Together AI disclosed on 21 Nov that an AI coding agent committed a credential to a public repo; the commit was reverted and prompt samples were still downloaded. In a public test repo, a commit removed by force-push stayed readable without a login from four characters of its id. Revoke first, then clean up.</summary>
+  </entry>
   <entry>
     <title>PL-040: hijacked third-party scripts, and a guide to the Optimizely compromise</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/third-party-script-compromise-optimizely"/>
