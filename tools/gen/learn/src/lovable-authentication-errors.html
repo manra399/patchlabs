@@ -1,0 +1,200 @@
+title: Lovable sign-up errors: “Database error saving new user” fixed safely
+description: Why a Lovable or Supabase sign-up fails with “Database error saving new user” or “new row violates row-level security policy”, the two AI fixes that leak every profile, and the safe fix.
+h1: Lovable authentication errors: fix “Database error saving new user” without opening your data
+navtitle: Sign-up errors and the safe fix
+topic: supabase
+order: 13
+checked: 2026-11-23
+short: The two sign-up errors Lovable apps hit most, the two quick fixes that expose every profile, and the fix we proved keeps sign-up working and data private.
+lede: Two database errors are behind most broken sign-ups in Lovable apps that reach the Supabase forums: “Database error saving new user” and “new row violates row-level security policy for table profiles”. Both come from the step that creates a profile row for each new user. The quick fixes an AI builder usually reaches for, turning row level security off or adding a policy that says <code>true</code>, make sign-up work and let anyone on the internet read every user’s email and phone number. We reproduced both errors and all three fixes on Postgres 17 on 23 November 2026; the results are below.
+tldr: “Database error saving new user” almost always means the trigger that copies a new user into <code>profiles</code> failed, so Supabase rolled the whole sign-up back. || “new row violates row-level security policy” at sign-up means the profile insert ran with no signed-in user: either inside that trigger, or from your app before the email was confirmed. || Turning RLS off on <code>profiles</code>, or adding <code>using (true)</code> / <code>with check (true)</code> policies, fixes sign-up and exposes every profile. In our test a logged-out visitor then read 2 of 2 users’ emails and phone numbers. || The fix: make the trigger function <code>security definer</code> with <code>set search_path = ''</code>, keep RLS on, keep the owner-only read policy, and stop inserting profiles from the browser. After it, sign-up worked and the visitor and a stranger read 0 rows; the owner read 1. || Check which state your app is in with one query, below.
+findings: PL-008, PL-005, PL-001, PL-006
+---
+<p>This guide is for founders and agencies with a Lovable app (or any Supabase app built with Bolt, Cursor or Claude Code) where new users can’t sign up, or where sign-up was “fixed” recently and nobody checked how. The results come from our own run on 23 November 2026: Postgres 17.11, Supabase-style roles (<code>anon</code>, <code>authenticated</code>, and <code>supabase_auth_admin</code>, the role Supabase Auth uses to write new users), two fake users, and the trigger and policies Lovable apps usually have. They show the pattern, not any particular app.</p>
+
+<h2 id="which-error">Which error do you have?</h2>
+<p>Open your browser’s developer tools on the sign-up page, sign up with a fresh address, and read the response of the request to <code>/auth/v1/signup</code>. Then check the Postgres logs in your Supabase dashboard (Logs, then Postgres) for the same minute, which show the real cause.</p>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">What you see</th><th scope="col">Cause</th></tr></thead>
+<tbody>
+<tr><td><b>App:</b> Database error saving new user<br><b>Log:</b> permission denied for schema public (or for table profiles)</td><td>The profile trigger runs as Supabase Auth’s role, which has no rights on your tables. <a href="#cause-1">Cause 1</a>.</td></tr>
+<tr><td><b>App:</b> Database error saving new user<br><b>Log:</b> new row violates row-level security policy for table "profiles"</td><td>The trigger has rights, but the insert policy checks <code>auth.uid() = id</code>, and nobody is signed in during sign-up. <a href="#cause-1">Cause 1</a>.</td></tr>
+<tr><td><b>App:</b> sign-up succeeds, then an error toast with the same row-level security message</td><td>Your app inserts the profile from the browser right after <code>signUp()</code>; with email confirmation on there is no session yet. <a href="#cause-2">Cause 2</a>.</td></tr>
+<tr><td><b>App:</b> Database error saving new user<br><b>Log:</b> null value in column … violates not-null constraint, or column … does not exist</td><td>The trigger expects a field the form doesn’t send, or a column was renamed. Fix the trigger body; the security part of this guide still applies.</td></tr>
+</tbody></table></div>
+
+<h2 id="cause-1">Cause 1: the profile trigger fails</h2>
+<p>Most Lovable apps create a <code>profiles</code> row for each new user with a trigger on <code>auth.users</code>. When the trigger fails, Postgres rolls back the whole insert, so the user isn’t created either, and Supabase Auth reports the generic “Database error saving new user”. In our run the failed sign-ups left <code>auth.users</code> with 0 rows.</p>
+<p>This is the trigger as it is often written, without <code>security definer</code>:</p>
+[[CODE supabase/migrations/…_profiles_trigger.sql (fails)]]
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+as $$
+begin
+  insert into public.profiles (id, email, full_name)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+[[/CODE]]
+<p>A trigger function without <code>security definer</code> runs as whoever caused the insert. For a sign-up that is <code>supabase_auth_admin</code>, the role Supabase Auth uses, and it has no rights in <code>public</code>. Our run gave exactly the error you see in the logs:</p>
+[[CODE lab output, 23 Nov 2026]]
+ERROR:  permission denied for schema public
+CONTEXT:  PL/pgSQL function public.handle_new_user() line 1 at SQL statement
+[[/CODE]]
+<p>If someone has granted that role rights on <code>profiles</code>, the next error is the row level security one, because the usual insert policy is <code>with check (auth.uid() = id)</code> and <code>auth.uid()</code> is empty while Supabase Auth is creating the user:</p>
+[[CODE lab output, 23 Nov 2026]]
+ERROR:  new row violates row-level security policy for table "profiles"
+CONTEXT:  SQL statement "insert into public.profiles ..."
+          PL/pgSQL function handle_new_user() line 1 at SQL statement
+[[/CODE]]
+
+<h2 id="cause-2">Cause 2: the app inserts the profile before the user has a session</h2>
+<p>Some generated sign-up forms call <code>supabase.auth.signUp()</code> and then insert into <code>profiles</code> from the browser. With email confirmation switched on (the Supabase default), <code>signUp()</code> returns no session, so the insert goes out as a logged-out visitor and the owner-only policy refuses it. Our run, inserting as <code>anon</code> for a user who had just signed up:</p>
+[[CODE lab output, 23 Nov 2026]]
+ERROR:  new row violates row-level security policy for table "profiles"
+[[/CODE]]
+<p>The policy is doing its job here. The design is what is wrong: profile creation belongs in the database trigger, not in the browser.</p>
+
+<h2 id="bad-fixes">The two quick fixes that expose every profile</h2>
+<p>Paste either error into an AI builder and these are the two answers you are most likely to get. Both make sign-up work. We applied each one, signed up two users, then read <code>profiles</code> as a logged-out visitor, as a stranger who is signed in, and as Alice, one of the two users.</p>
+<h3 id="bad-fix-a">Quick fix A: turn row level security off</h3>
+[[CODE do not ship]]
+alter table public.profiles disable row level security;
+[[/CODE]]
+[[CODE lab output, 23 Nov 2026]]
+reads: anon=2 stranger=2 owner(alice)=2
+anon sees:
+  alice@example.com|+447700900001
+  bob@example.com|+447700900002
+[[/CODE]]
+<p>With RLS off, the default Supabase grants let anyone holding your public key, which ships in your web pages, read the whole table. That is finding <a href="/findings/pl-008">PL-008</a>.</p>
+<h3 id="bad-fix-b">Quick fix B: policies that say true</h3>
+[[CODE do not ship]]
+create policy "Enable insert for all" on public.profiles
+  for insert with check (true);
+create policy "Enable read access for all users" on public.profiles
+  for select using (true);
+[[/CODE]]
+[[CODE lab output, 23 Nov 2026]]
+reads: anon=2 stranger=2 owner(alice)=2
+carol signed up but has no profile row yet; anon writes it first:
+  inserted as anon: not carol
+[[/CODE]]
+<p>The same full read, plus a write: a logged-out visitor created Carol’s profile with a name she didn’t choose. If your app inserts profiles from the browser (cause 2), anyone can get there first. These are findings <a href="/findings/pl-005">PL-005</a> and <a href="/findings/pl-001">PL-001</a>. “Enable read access for all users” is the name of one of Supabase’s own policy templates, so it often lands in generated migrations unchanged.</p>
+
+<h2 id="fix">The fix that keeps sign-up working and data private</h2>
+<p>One migration. It keeps row level security on and the owner-only policies as they are, and gives only the trigger the rights it needs:</p>
+[[CODE supabase/migrations/…_fix_profiles_trigger.sql]]
+-- 1. Undo the quick fixes, if they were applied
+alter table public.profiles enable row level security;
+drop policy if exists "Enable insert for all" on public.profiles;
+drop policy if exists "Enable read access for all users" on public.profiles;
+
+-- 2. Owner-only policies (skip any you already have)
+drop policy if exists "own row read" on public.profiles;
+create policy "own row read" on public.profiles
+  for select to authenticated using ((select auth.uid()) = id);
+drop policy if exists "own row update" on public.profiles;
+create policy "own row update" on public.profiles
+  for update to authenticated
+  using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
+
+-- 3. The trigger runs as the function's owner, with a pinned search path
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, email, full_name)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  return new;
+end;
+$$;
+
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+[[/CODE]]
+<p>Then remove the browser-side insert into <code>profiles</code> from your sign-up form; the trigger now does it. If the form collects a name or phone number, pass it as <code>options.data</code> in <code>signUp()</code> and read it from <code>raw_user_meta_data</code> in the trigger, as above. Treat those values as typed by the user: never copy a role or plan from them (see <a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a>).</p>
+<p>What our run showed after this migration:</p>
+[[CODE lab output, 23 Nov 2026]]
+users=2 profiles=2                         sign-up works, profile created
+reads: anon=0 stranger=0 owner(alice)=1    each user sees only their own row
+anon direct insert:
+  ERROR:  new row violates row-level security policy for table "profiles"
+signed-in user calling the trigger function:
+  ERROR:  permission denied for function handle_new_user
+[[/CODE]]
+<p>Why this is safe: <code>security definer</code> lets only this one function write past row level security, and it only ever inserts the row for the user being created. <code>set search_path = ''</code> stops a look-alike table from being swapped in, which is why the table names inside are written in full. Trigger functions can’t be called through the API, and the <code>revoke</code> makes sure of it. Our <a href="/learn/supabase-security-definer-functions">SECURITY DEFINER guide</a> explains when owner rights are dangerous; a sign-up trigger is one of the few places they are the right tool.</p>
+
+<h2 id="check">Check which state your app is in</h2>
+<p>Run this in the Supabase SQL editor. It changes nothing.</p>
+[[CODE check-profiles.sql]]
+select
+  c.relrowsecurity                                   as rls_on,
+  (select string_agg(polname, '; ') from pg_policy
+     where polrelid = c.oid
+       and 'true' in (pg_get_expr(polqual, polrelid),
+                      pg_get_expr(polwithcheck, polrelid))) as always_true_policies,
+  (select p.prosecdef from pg_proc p
+     where p.oid = 'public.handle_new_user'::regproc) as trigger_is_definer,
+  (select array_to_string(p.proconfig, ', ') from pg_proc p
+     where p.oid = 'public.handle_new_user'::regproc) as trigger_settings
+from pg_class c
+where c.oid = 'public.profiles'::regclass;
+[[/CODE]]
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">Result</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>rls_on</code> false</td><td>Quick fix A is live. Anyone with your public key can read every profile. Apply the fix today.</td></tr>
+<tr><td><code>always_true_policies</code> not empty</td><td>Quick fix B (or similar) is live. Read the policy names: a read policy here exposes every row, an insert one lets anyone write.</td></tr>
+<tr><td><code>trigger_is_definer</code> false</td><td>Cause 1: sign-ups will fail, or someone granted Supabase Auth’s role rights on your tables to make them pass.</td></tr>
+<tr><td><code>trigger_settings</code> has no <code>search_path=</code></td><td>The trigger works but its path isn’t pinned. Add <code>set search_path = ''</code>.</td></tr>
+</tbody></table></div>
+<p>If your trigger function has a different name, find it with <code>select tgname, tgfoid::regproc from pg_trigger where tgrelid = 'auth.users'::regclass and not tgisinternal;</code>. The query errors if <code>profiles</code> or <code>handle_new_user</code> doesn’t exist; replace the names with yours.</p>
+
+<h2 id="prompt">Tell your AI builder the rule</h2>
+[[CODE prompt for Lovable or your AI builder]]
+Sign-up is failing with "Database error saving new user".
+Do not disable row level security and do not add policies
+with using (true) or with check (true) on any table.
+Fix it like this:
+- The trigger on auth.users that creates the profile must be
+  SECURITY DEFINER with SET search_path = '' and fully
+  qualified table names, and REVOKE EXECUTE from public,
+  anon, authenticated.
+- Keep RLS on public.profiles with owner-only select and
+  update policies using (select auth.uid()) = id.
+- Remove any insert into profiles from the browser; pass form
+  fields in signUp options.data instead.
+Show me the migration before applying it.
+[[/CODE]]
+
+<h2 id="other">Other Lovable sign-in errors that aren’t the database</h2>
+<ul>
+  <li><strong>The confirmation link opens localhost or the Lovable preview.</strong> The Site URL and Redirect URLs under Authentication, URL Configuration in Supabase still point at the preview. Add your real domain to both.</li>
+  <li><strong>“Email not confirmed” at sign-in.</strong> Confirmation is on and the user hasn’t clicked the link yet. Leave it on for real users; turning it off lets anyone sign up with someone else’s address.</li>
+  <li><strong>“Email rate limit exceeded”.</strong> Supabase’s built-in email sender is for testing and sends only a few emails an hour. Set up your own SMTP provider under Authentication settings before launch.</li>
+  <li><strong>Google sign-in returns to an error page.</strong> The callback URL in your Google Cloud OAuth client must be your Supabase project’s <code>/auth/v1/callback</code>, and your domain must be in Supabase’s Redirect URLs.</li>
+</ul>
+<p>None of these need a database change, so none of them is a reason to touch row level security.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/auth/managing-user-data">Supabase: user management, creating a profile with a trigger (security definer, search_path)</a></li>
+  <li><a href="https://supabase.com/docs/guides/troubleshooting/database-error-saving-new-user-RU_EwB">Supabase troubleshooting: “Database error saving new user”</a></li>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: row level security</a></li>
+  <li><a href="https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY">PostgreSQL: writing SECURITY DEFINER functions safely</a></li>
+  <li><a href="https://supabase.com/docs/guides/auth/auth-smtp">Supabase: custom SMTP and the built-in email limits</a></li>
+</ul>

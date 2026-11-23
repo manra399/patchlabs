@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-23T12:45:00Z</updated>
+  <updated>2026-11-23T18:30:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Lovable sign-up errors: the safe fix, and the two quick fixes that leak every profile</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/lovable-authentication-errors"/>
+    <id>https://patchlabs.dev/learn/lovable-authentication-errors</id>
+    <updated>2026-11-23T18:30:00Z</updated>
+    <summary>We reproduced "Database error saving new user" and "new row violates row-level security policy" on Postgres 17. Turning RLS off, or adding using (true) policies, fixed sign-up and let a logged-out visitor read every user's email and phone. A security definer trigger with an empty search path kept sign-up working: visitor and stranger 0 rows, owner 1.</summary>
+  </entry>
   <entry>
     <title>Our sign-in form can no longer be used to email strangers</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-23"/>
