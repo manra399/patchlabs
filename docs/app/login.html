@@ -78,18 +78,43 @@
   var flash = function (text, kind) { try { sessionStorage.setItem('pl_flash', JSON.stringify({ text: text, kind: kind || 'ok' })); } catch (e) {} };
   var go = function (dest) { location.replace(dest || '/app/'); };
 
+  // POST /auth/start needs a signed challenge, a small proof of work and a short wait, so a script can't use this form
+  // to mail sign-in links to strangers. It is solved in the background while you type.
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var zeroBits = function (d, bits) { for (var i = 0; bits > 0; i++, bits -= 8) { var m = bits >= 8 ? 0xff : (0xff << (8 - bits)) & 0xff; if (d[i] & m) return false; } return true; };
+  async function solveChallenge() {
+    var ch = await api('/auth/challenge', { auth: false }), t0 = Date.now(), enc = new TextEncoder();
+    for (var n = 0; ; n += 64) {
+      var batch = [];
+      for (var k = 0; k < 64; k++) batch.push(crypto.subtle.digest('SHA-256', enc.encode(ch.challenge + ':' + (n + k))));
+      var ds = await Promise.all(batch);
+      for (k = 0; k < 64; k++) if (zeroBits(new Uint8Array(ds[k]), ch.bits)) {
+        var wait = (ch.min_wait_s || 0) * 1000 + 1100 - (Date.now() - t0);  // the server counts whole seconds
+        if (wait > 0) await sleep(wait);
+        return { challenge: ch.challenge, nonce: String(n + k) };
+      }
+    }
+  }
+  var pending = null;
+  var proof = function () { var p = pending || solveChallenge(); pending = null; p.catch(function () {}); return p; };
+  var prefetch = function () { pending = solveChallenge(); pending.catch(function () {}); };
+  var startBody = function (email, dest, hp) {
+    return proof().then(function (pw) { var b = { email: email, challenge: pw.challenge, nonce: pw.nonce }; if (dest) b.next = dest; if (hp) b.website = hp; return b; });
+  };
+
   function form(opts) {
     opts = opts || {};
     view.innerHTML = '<div class="panel">' +
       (opts.callout || (notice ? '<div class="callout note"><p>' + esc(notice[1]) + '</p></div>' : '')) +
       '<p class="lab">' + esc(opts.lab || 'Sign in') + '</p><h1>' + esc(opts.title || 'Sign in to PatchLabs') + '</h1>' +
       '<p class="muted">' + (opts.lede || 'Enter your email and we’ll send you a one-time sign-in link. No passwords.') + '</p>' +
-      '<form id="f" novalidate><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>' +
+      '<form id="f" novalidate><div class="sr-only" aria-hidden="true"><label for="pl-hp">Leave this empty</label><input id="pl-hp" name="pl-hp" type="text" tabindex="-1" autocomplete="off" data-1p-ignore data-lpignore="true"></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>' +
       '<button class="btn primary block" type="submit" id="send">Email me a sign-in link</button><p class="err" role="alert" id="err"></p></form>' +
       '<p class="small muted mt-3 mb-0">New here? The same link creates your account and a personal workspace. By signing in you agree to the <a href="/legal/terms">terms</a> and <a href="/legal/privacy">privacy policy</a>.</p></div>';
     var f = $('f'), em = $('email');
     if (opts.email) em.value = opts.email;
     em.focus();
+    prefetch();
     f.addEventListener('submit', async function (e) {
       e.preventDefault();
       var email = em.value.trim();
@@ -98,7 +123,7 @@
       try {
         var dest = invite ? '/app/login?invite=' + encodeURIComponent(invite) : next;
         if (invite) { try { sessionStorage.setItem('pl_invite_email', email); } catch (e) {} }
-        await api('/auth/start', { method: 'POST', auth: false, body: dest ? { email: email, next: dest } : { email: email } });
+        await api('/auth/start', { method: 'POST', auth: false, body: await startBody(email, dest, $('pl-hp').value) });
         sent(email);
       } catch (x) { restore(); $('err').textContent = x.status === 422 ? 'Enter a valid email address.' : x.message; }
     });
@@ -118,7 +143,7 @@
     cool();
     again.addEventListener('click', async function () {
       var restore = PL.busy(again, 'Sending…');
-      try { await api('/auth/start', { method: 'POST', auth: false, body: { email: email, next: invite ? '/app/login?invite=' + encodeURIComponent(invite) : (next || undefined) } }); restore(); PL.toast('Another link is on its way', 'ok'); cool(); }
+      try { await api('/auth/start', { method: 'POST', auth: false, body: await startBody(email, invite ? '/app/login?invite=' + encodeURIComponent(invite) : next) }); restore(); PL.toast('Another link is on its way', 'ok'); cool(); }
       catch (x) { restore(); $('err').textContent = x.message; }
     });
     $('other').addEventListener('click', function () { notice = null; form(); });
@@ -130,6 +155,15 @@
 
   function problem(title, text, actions) {
     view.innerHTML = '<div class="panel"><p class="lab red">Couldn’t finish</p><h1>' + esc(title) + '</h1><p class="muted">' + esc(text) + '</p><div class="row">' + actions + '</div></div>';
+  }
+
+  // Mail security scanners open links (some even run the page) but don't click, so a sign-in link only signs in on a click.
+  function confirmLink() {
+    view.innerHTML = '<div class="panel">' + mailIcon + '<p class="lab">Sign in</p><h1>Finish signing in</h1>' +
+      '<p class="muted">Your link is ready. It works once and expires 20 minutes after it was sent.</p>' +
+      '<button class="btn primary block" type="button" id="go">Continue to PatchLabs</button></div>';
+    var b = $('go'); b.focus();
+    b.addEventListener('click', function () { finish(); });
   }
 
   async function finish() {
@@ -173,7 +207,7 @@
       lede: 'Sign in with the email address the invite was sent to' + (inviteEmail ? ' (<b class="ink">' + esc(inviteEmail) + '</b>)' : '') + '. We’ll email you a one-time link, and you’ll join the workspace as soon as you open it.' });
   }
 
-  if (token) finish();
+  if (token) confirmLink();
   else if (invite && session.get()) acceptInvite();
   else if (invite) inviteForm();
   else if (session.get()) go(next || '/app/');

@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-23T05:30:00Z</updated>
+  <updated>2026-11-23T12:45:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Our sign-in form can no longer be used to email strangers</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-23"/>
+    <id>https://patchlabs.dev/changelog#nov-23-sign-in</id>
+    <updated>2026-11-23T12:45:00Z</updated>
+    <summary>Our own logs showed a bot typing other people's addresses into the sign-in form since 10 Nov (about 45 unwanted sign-in emails; three opened by mail scanners, creating empty accounts). The form now needs a signed one-time challenge with a small proof of work and a short wait, catches form-filling bots with a hidden field, caps links to new addresses per hour, and a link signs in only when a person clicks Continue.</summary>
+  </entry>
   <entry>
     <title>The revert test, 36 hours on: still readable, and the Activity page lists the id</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-23"/>

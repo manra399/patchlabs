@@ -188,6 +188,10 @@ await step('magic link from the outbox signs in and lands on ?next (/app/setting
   S.link = await linkFor(OWNER, S.mark);
   assert(S.link.includes('next=%2Fapp%2Fsettings'), 'link carries next: ' + S.link);
   await p.goto(S.link);
+  await p.waitText('Finish signing in', 'h1');
+  assert(!(await p.eval('localStorage.pl_session')), 'opening the link alone does not sign in (mail scanners)');
+  await p.shot('login-confirm');
+  await p.click('#go');
   await p.waitFor(`location.pathname === '/app/settings'`, 'landed on settings', 15000);
   await p.waitText('Profile', '#sm');
   assert(await p.eval('!!localStorage.pl_session'), 'session stored');
@@ -199,6 +203,7 @@ await step('magic link from the outbox signs in and lands on ?next (/app/setting
 await step('re-used magic link shows the expired/used message with a fresh-link form', p, async () => {
   const c2 = await Page.open((await cdp('Target.createBrowserContext')).browserContextId);
   await c2.goto(S.link);
+  await c2.click('#go');
   await c2.waitText('expired or was already used', 'h1');
   assert(!(await c2.eval('location.search')).includes('token'), 'token removed from the address bar');
   await c2.shot('login-expired', { dark: false });
@@ -434,6 +439,7 @@ await step('teammate accepts the invite in another browser: invite page → magi
   const link = await linkFor(MATE, mark);
   assert(decodeURIComponent(link).includes('next=/app/login?invite='), 'link carries the invite: ' + link);
   await tm.goto(link);
+  await tm.click('#go');
   await tm.waitFor(`location.pathname === '/app/'`, 'teammate on dashboard', 15000);
   await tm.waitText('You joined', '#flash');
   await tm.waitFor(`document.querySelectorAll('#ws-select option').length === 2`, 'two workspaces in the switcher');
@@ -550,6 +556,7 @@ await step('sign in again and delete the account (type DELETE); teammate inherit
   const mark = outbox().length;
   await p.type('#email', OWNER); await p.click('#send'); await p.waitText('Check your inbox', 'h1');
   await p.goto(await linkFor(OWNER, mark));
+  await p.click('#go');
   await p.waitFor(`location.pathname === '/app/'`, 'dashboard', 15000);
   await p.goto('/app/settings#delete');
   await p.waitText('Delete account', '#delete');

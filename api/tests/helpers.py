@@ -84,7 +84,7 @@ os.environ.update(
     DATABASE_URL=os.environ.get("DATABASE_URL", "postgresql://postgres:test@localhost:5432/patchlabs"),
     WORKER_TOKEN="worker-test-token", ADMIN_TOKEN="admin-test-token", SITE_URL="https://patchlabs.test",
     GITHUB_API=f"{STUB}/gh", RAW_GITHUB=f"{STUB}/raw", SCHEMA_PATH=os.path.join(ROOT, "db", "schema.sql"),
-    EMAIL_OUTBOX=OUTBOX, AUTH_PER_IP_PER_HOUR="100000", FOUNDER_EMAIL="manraj@patchlabs.dev", WATCHDOG_EVERY="0",
+    EMAIL_OUTBOX=OUTBOX, AUTH_PER_IP_PER_HOUR="100000", AUTH_POW_BITS="6", AUTH_MIN_WAIT_S="0", AUTH_NEW_EMAILS_PER_HOUR="1000", FOUNDER_EMAIL="manraj@patchlabs.dev", WATCHDOG_EVERY="0",
     CORS_ORIGINS="https://patchlabs.dev,https://www.patchlabs.dev",
     RECEIPT_PRIVATE_KEY="AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",  # bytes 0..31, test only
     PATCHLABS_DEV="1", POSTURE_EVERY="0")
@@ -118,8 +118,18 @@ def add_repo(repo, branch="main"):
     STATE.repos[repo.lower()] = {"full_name": repo, "default_branch": branch}
 
 
+def solve(client):
+    """A solved challenge for POST /auth/start, the way the sign-in page does it."""
+    import hashlib
+    ch = client.get("/auth/challenge").json()
+    n = 0
+    while int.from_bytes(hashlib.sha256(f"{ch['challenge']}:{n}".encode()).digest(), "big") >> (256 - ch["bits"]):
+        n += 1
+    return {"challenge": ch["challenge"], "nonce": str(n)}
+
+
 def start(client, email, **kw):
-    r = client.post("/auth/start", json={"email": email, **kw})
+    r = client.post("/auth/start", json={"email": email, **solve(client), **kw})
     assert r.status_code == 202, r.text
     return outbox(email.lower())[-1]
 

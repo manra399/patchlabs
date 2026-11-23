@@ -4,7 +4,7 @@ import json, os, subprocess, sys, threading, time
 import pytest
 
 import accounts, core, rls
-from helpers import A, API_DIR, STATE, W, add_repo, claim, create_app, finish, link_param, outbox, sign_in, sql, verified_app, verify
+from helpers import A, API_DIR, STATE, W, add_repo, claim, create_app, finish, link_param, outbox, sign_in, solve, sql, verified_app, verify
 
 MB2 = 2_000_000
 
@@ -106,7 +106,7 @@ def test_spoofed_xff_does_not_bypass_ip_limit(client):
 def test_auth_start_ip_limit_uses_rightmost_entry(client, monkeypatch):
     monkeypatch.setattr(accounts, "AUTH_PER_IP_PER_HOUR", 30)
     for i in range(40):
-        client.post("/auth/start", json={"email": f"victim{i % 8}@example.com"}, headers={"X-Forwarded-For": f"1.1.1.{i}, 198.51.100.1"})
+        client.post("/auth/start", json={"email": f"victim{i % 8}@example.com", **solve(client)}, headers={"X-Forwarded-For": f"1.1.1.{i}, 198.51.100.1"})
     assert len(outbox()) == 30
 
 

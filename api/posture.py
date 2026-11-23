@@ -255,7 +255,7 @@ def analyze(page_url, r, http_info, cert_problem=None, now=None):
 
     def fail(fid, evidence, severity, obj=None):
         found.append({"id": fid, "line": "live", "severity": severity, "title": CHECKS[fid][0], "object": obj or page_url,
-                      "evidence": evidence[:300], "fix": CHECKS[fid][2], **taxonomy.tags(fid)})
+                      "evidence": evidence[:500], "fix": CHECKS[fid][2], **taxonomy.tags(fid)})
 
     final = r.get("url") or page_url
     if urlsplit(final).scheme != "https":

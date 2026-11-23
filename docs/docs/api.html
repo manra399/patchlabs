@@ -218,7 +218,7 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
   <tbody>
     <tr><th scope="row"><code>POST /checks</code></th><td>3 open checks per email; 10 requests per network per day</td><td><code>429</code></td></tr>
     <tr><th scope="row"><code>POST /tools/rls-check</code></th><td>20 requests per network per hour, failed lookups included</td><td><code>429</code></td></tr>
-    <tr><th scope="row"><code>POST /auth/start</code></th><td>5 links per email per hour, plus a per-network cap</td><td>Still <code>202</code>, no email sent</td></tr>
+    <tr><th scope="row"><code>POST /auth/start</code></th><td>5 links per email per hour, a per-network cap, and 20 brand-new addresses an hour across everyone (existing accounts are never held back)</td><td>Still <code>202</code>, no email sent</td></tr>
     <tr><th scope="row">Run now, <code>/v1</code> runs, MCP <code>run_check</code></th><td>The plan’s manual runs per month (4, 30, 200), shared</td><td><code>429</code></td></tr>
     <tr><th scope="row">Open checks per app</th><td>One queued or running at a time</td><td><code>409</code></td></tr>
   </tbody>
@@ -250,6 +250,7 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 <tr><td><span class="method get">GET</span></td><td><a href="#get-receipts-id"><code>/receipts/{id}</code></a></td><td class="small muted">No auth · by link</td></tr>
 <tr><td><span class="method get">GET</span></td><td><a href="#get-well-known-patchlabs-receipt-key"><code>/.well-known/patchlabs-receipt-key</code></a></td><td class="small muted">No auth</td></tr>
 <tr><th scope="rowgroup" colspan="3"><a href="#auth">Sign-in</a></th></tr>
+<tr><td><span class="method get">GET</span></td><td><a href="#get-auth-challenge"><code>/auth/challenge</code></a></td><td class="small muted">No auth</td></tr>
 <tr><td><span class="method post">POST</span></td><td><a href="#post-auth-start"><code>/auth/start</code></a></td><td class="small muted">No auth</td></tr>
 <tr><td><span class="method post">POST</span></td><td><a href="#post-auth-finish"><code>/auth/finish</code></a></td><td class="small muted">No auth</td></tr>
 <tr><td><span class="method post">POST</span></td><td><a href="#post-auth-logout"><code>/auth/logout</code></a></td><td class="small muted">Session</td></tr>
@@ -397,13 +398,20 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
 </div></section>
 <h2 id="auth">Sign-in</h2>
 <p>Sign-in is by magic link. The site handles these calls for you; they are listed for completeness.</p>
+<section class="ep" aria-labelledby="get-auth-challenge"><header><h3 id="get-auth-challenge"><span class="method get">GET</span> <code>/auth/challenge</code></h3><span class="auth">No auth</span></header><div class="body">
+<p>A signed, single-use challenge for <code>POST /auth/start</code>, so nobody can script the sign-in form to email links to strangers. Find a <code>nonce</code> so that <code>sha256("&lt;challenge&gt;:&lt;nonce&gt;")</code> starts with <code>bits</code> zero bits (about 65,000 tries at 16, a second or two in a browser), wait at least <code>min_wait_s</code>, then send both. It expires after 30 minutes.</p>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s https://api.patchlabs.dev/auth/challenge</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Response · 200 OK</span></div><pre><code>{"challenge": "1795430400.3f9c2a7d1b6e8f04.6c1f…", "bits": 16, "min_wait_s": 2.0, "expires_in": 1800}</code></pre></div>
+</div></section>
 <section class="ep" aria-labelledby="post-auth-start"><header><h3 id="post-auth-start"><span class="method post">POST</span> <code>/auth/start</code></h3><span class="auth">No auth</span></header><div class="body">
-<p>Email a sign-in link to <code>{site}/app/login?token=…</code>. Always answers 202, whether or not the address has an account. The link works once and expires in 20 minutes.</p>
+<p>Email a sign-in link to <code>{site}/app/login?token=…</code>. Needs a solved challenge from <code>GET /auth/challenge</code> (400 without one). Otherwise always answers 202, whether or not the address has an account. The link works once, expires in 20 minutes, and signs in only when the person clicks <b>Continue</b> on the page it opens, so mail scanners that open links can’t create accounts.</p>
 <p class="small muted mb-1">Body</p><dl class="fields">
 <dt>email <i>string</i></dt><dd>Required.</dd>
+<dt>challenge <i>string</i></dt><dd>Required: from <code>GET /auth/challenge</code>.</dd>
+<dt>nonce <i>string</i></dt><dd>Required: the proof-of-work answer.</dd>
 <dt>next <i>string, optional</i></dt><dd>A path on patchlabs.dev to return to after sign-in, such as <code>/app/</code>.</dd>
 </dl>
-<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/auth/start -H 'Content-Type: application/json' -d '{"email": "you@company.com"}'</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">Request</span><button class="copy" type="button" data-copy>Copy</button></div><pre><code>curl -s -X POST https://api.patchlabs.dev/auth/start -H 'Content-Type: application/json' -d '{"email": "you@company.com", "challenge": "…", "nonce": "48211"}'</code></pre></div>
 <div class="code"><div class="code-bar"><span class="name">Response · 202 Accepted</span></div><pre><code>{"ok": true, "detail": "If that address can sign in, a link is on its way. It expires in 20 minutes."}</code></pre></div>
 </div></section>
 <section class="ep" aria-labelledby="post-auth-finish"><header><h3 id="post-auth-finish"><span class="method post">POST</span> <code>/auth/finish</code></h3><span class="auth">No auth</span></header><div class="body">

@@ -56,7 +56,7 @@ curl -s -X POST https://api.patchlabs.dev/v1/apps/$APP_ID/checks -H "X-API-Key: 
   <tbody>
     <tr><th scope="row"><code>POST /checks</code></th><td>3 open checks per email; 10 requests per network per day</td><td><code>429</code></td></tr>
     <tr><th scope="row"><code>POST /tools/rls-check</code></th><td>20 requests per network per hour, failed lookups included</td><td><code>429</code></td></tr>
-    <tr><th scope="row"><code>POST /auth/start</code></th><td>5 links per email per hour, plus a per-network cap</td><td>Still <code>202</code>, no email sent</td></tr>
+    <tr><th scope="row"><code>POST /auth/start</code></th><td>5 links per email per hour, a per-network cap, and 20 brand-new addresses an hour across everyone (existing accounts are never held back)</td><td>Still <code>202</code>, no email sent</td></tr>
     <tr><th scope="row">Run now, <code>/v1</code> runs, MCP <code>run_check</code></th><td>The plan’s manual runs per month (4, 30, 200), shared</td><td><code>429</code></td></tr>
     <tr><th scope="row">Open checks per app</th><td>One queued or running at a time</td><td><code>409</code></td></tr>
   </tbody>

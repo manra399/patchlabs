@@ -236,6 +236,7 @@
 .cl-items .tag { font: 600 11px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase; padding: 6px 8px; border-radius: 6px; align-self: start; justify-self: start; border: 1px solid var(--line-2); color: var(--muted); background: var(--bg-2); }
 .cl-items .tag.new { color: var(--green); border-color: var(--green-line); background: var(--green-bg); }
 .cl-items .tag.study { color: var(--ink); border-color: var(--ink); background: var(--card); }
+.cl-items .tag.fix { color: var(--brand); border-color: var(--brand); background: var(--card); }
 .cl-items h3 { font-size: 17px; margin: 0 0 4px; }
 .cl-items p { font-size: 15px; color: var(--muted); margin: 0; }
 .cl-items p + p { margin-top: 8px; }

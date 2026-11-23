@@ -1,5 +1,5 @@
 """Accounts: magic-link sign-in, the signed-in user, workspaces with members, invites, API keys and upgrade requests, plus admin."""
-import hashlib, re, secrets, uuid
+import hashlib, hmac, re, secrets, time, uuid
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
 from urllib.parse import urlencode
@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 import alerts, audit, support
-from core import (ADMIN_TOKEN, AUTH_PER_IP_PER_HOUR, EMAIL_RE, FOUNDER_EMAIL, PERMS, ROLE_RE, SITE_URL, as_uuid, bearer, can,
+from core import (ADMIN_TOKEN, AUTH_CHALLENGE_TTL_S, AUTH_MIN_WAIT_S, AUTH_NEW_EMAILS_PER_HOUR, AUTH_PER_IP_PER_HOUR, AUTH_POW_BITS, WORKER_TOKEN, EMAIL_RE, FOUNDER_EMAIL, PERMS, ROLE_RE, SITE_URL, as_uuid, bearer, can,
                   clean_report, clean_text, client_apps, current_user, db, ip_hash, limits, mail, membership, new_webhook_secret, recent,
                   record, scrub, token_hash, usage, webhook_target)
 
@@ -35,6 +35,9 @@ def safe_next(n):
 class AuthStart(BaseModel):
     email: str = Field(max_length=254, pattern=EMAIL_RE)
     next: str | None = Field(default=None, max_length=500)
+    challenge: str | None = Field(default=None, max_length=200)
+    nonce: str | None = Field(default=None, max_length=40)
+    website: str | None = Field(default=None, max_length=500)  # honeypot: hidden on the form, only bots fill it in
 
 
 class AuthFinish(BaseModel):
@@ -46,13 +49,65 @@ class InviteToken(BaseModel):
     invite: str = Field(max_length=200)
 
 
+def _challenge_sig(body):
+    return hmac.new(hashlib.sha256(b"auth-challenge:" + WORKER_TOKEN.encode()).digest(), body.encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def pow_ok(challenge, nonce, bits):
+    """True when sha256("<challenge>:<nonce>") starts with `bits` zero bits."""
+    if bits <= 0:
+        return True
+    d = int.from_bytes(hashlib.sha256(f"{challenge}:{nonce}".encode()).digest(), "big")
+    return d >> (256 - bits) == 0
+
+
+@router.get("/auth/challenge")
+def auth_challenge():
+    """A signed, single-use challenge for POST /auth/start. Find a nonce so that sha256("<challenge>:<nonce>") starts with
+    `bits` zero bits (about 65,000 tries at 16 bits, a second or two in a browser), wait at least `min_wait_s`, then send
+    both. It keeps a script from mailing sign-in links to strangers by the thousand."""
+    body = f"{int(time.time())}.{secrets.token_hex(8)}"
+    return {"challenge": f"{body}.{_challenge_sig(body)}", "bits": AUTH_POW_BITS, "min_wait_s": AUTH_MIN_WAIT_S,
+            "expires_in": AUTH_CHALLENGE_TTL_S}
+
+
+def challenge_problem(c, challenge, nonce):
+    """None when the challenge is genuine, old enough, fresh, solved and unused (it is then spent); else the reason."""
+    parts = (challenge or "").split(".")
+    if len(parts) != 3 or not parts[0].isdigit() or not hmac.compare_digest(parts[2], _challenge_sig(f"{parts[0]}.{parts[1]}")):
+        return "missing or invalid challenge"
+    age = time.time() - int(parts[0])
+    if age < AUTH_MIN_WAIT_S:
+        return "too fast"
+    if age > AUTH_CHALLENGE_TTL_S:
+        return "challenge expired"
+    if not nonce or not pow_ok(challenge, nonce, AUTH_POW_BITS):
+        return "proof of work not solved"
+    spent = c.execute("INSERT INTO kv (key, value) VALUES (%s, '1') ON CONFLICT (key) DO NOTHING",
+                      ("authpow:" + hashlib.sha256(challenge.encode()).hexdigest()[:32],)).rowcount
+    if not spent:
+        return "challenge already used"
+    c.execute("DELETE FROM kv WHERE key LIKE 'authpow:%%' AND updated_at < now() - interval '1 day'")
+    return None
+
+
 @router.post("/auth/start", status_code=202)
 def auth_start(body: AuthStart, request: Request, c=Depends(db)):
     email, nxt, iph = body.email.strip().lower(), safe_next(body.next), ip_hash(request)
+    ok = {"ok": True, "detail": "If that address can sign in, a link is on its way. It expires in 20 minutes."}
+    why = challenge_problem(c, body.challenge, body.nonce)
+    if why:
+        raise HTTPException(400, f"Sign-in check failed ({why}). Reload the page and try again.")
+    if body.website:  # honeypot filled in: a bot. Same answer as success, nothing sent.
+        return ok
     n = c.execute("SELECT (SELECT count(*) FROM login_tokens WHERE lower(email) = %s AND created_at > now() - interval '1 hour') AS e, "
-                  "(SELECT count(*) FROM login_tokens WHERE ip_hash = %s AND created_at > now() - interval '1 hour') AS i",
-                  (email, iph)).fetchone()
-    if n["e"] < MAX_LOGINS_PER_EMAIL_PER_HOUR and n["i"] < AUTH_PER_IP_PER_HOUR:  # always 202: no account enumeration
+                  "(SELECT count(*) FROM login_tokens WHERE ip_hash = %s AND created_at > now() - interval '1 hour') AS i, "
+                  "EXISTS (SELECT 1 FROM users WHERE lower(email) = %s) AS known, "
+                  "(SELECT count(DISTINCT lower(t.email)) FROM login_tokens t WHERE t.created_at > now() - interval '1 hour' "
+                  " AND NOT EXISTS (SELECT 1 FROM users u WHERE lower(u.email) = lower(t.email))) AS new_emails",
+                  (email, iph, email)).fetchone()
+    new_ok = n["known"] or n["e"] > 0 or n["new_emails"] < AUTH_NEW_EMAILS_PER_HOUR
+    if n["e"] < MAX_LOGINS_PER_EMAIL_PER_HOUR and n["i"] < AUTH_PER_IP_PER_HOUR and new_ok:  # always 202: no account enumeration
         tok = secrets.token_urlsafe(32)
         c.execute("INSERT INTO login_tokens (token_hash, email, next, ip_hash, expires_at) VALUES (%s, %s, %s, %s, now() + interval '20 minutes')",
                   (token_hash(tok), email, nxt, iph))
@@ -60,7 +115,7 @@ def auth_start(body: AuthStart, request: Request, c=Depends(db)):
         mail(email, "Your PatchLabs sign-in link",
              f"Here is your link to sign in to PatchLabs:\n{link}\n\nIt works once and expires in 20 minutes.\n\n"
              "If you didn't ask for it, ignore this email: nobody can sign in without it.\n\nPatchLabs")
-    return {"ok": True, "detail": "If that address can sign in, a link is on its way. It expires in 20 minutes."}
+    return ok
 
 
 def accept_invite(c, user, tok):

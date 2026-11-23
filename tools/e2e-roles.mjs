@@ -153,9 +153,18 @@ async function step(name, page, fn, { allow = [] } = {}) {
   results.push({ name, ok });
 }
 const H = s => ({ Authorization: 'Bearer ' + s });
+async function solveChallenge() {  // what the sign-in page does: signed challenge, proof of work, short wait
+  const ch = (await http('/auth/challenge')).json, t0 = Date.now();
+  const { createHash } = await import('node:crypto');
+  let n = 0;
+  for (;; n++) { const d = createHash('sha256').update(`${ch.challenge}:${n}`).digest(); let bits = ch.bits, ok = true; for (let i = 0; bits > 0 && ok; i++, bits -= 8) ok = !(d[i] & (bits >= 8 ? 0xff : (0xff << (8 - bits)) & 0xff)); if (ok) break; }
+  const wait = ch.min_wait_s * 1000 + 1100 - (Date.now() - t0); if (wait > 0) await sleep(wait);
+  return { challenge: ch.challenge, nonce: String(n) };
+}
+
 async function signIn(email, invite) {
   const mark = outbox().length;
-  await http('/auth/start', { method: 'POST', body: { email } });
+  await http('/auth/start', { method: 'POST', body: { email, ...(await solveChallenge()) } });
   let tok;
   for (let i = 0; i < 40 && !tok; i++) { const m = outbox().slice(mark).filter(x => x.to === email).pop(); if (m) tok = decodeURIComponent(m.text.match(/token=([^&\s]+)/)[1]); else await sleep(150); }
   const r = await http('/auth/finish', { method: 'POST', body: invite ? { token: tok, invite } : { token: tok } });

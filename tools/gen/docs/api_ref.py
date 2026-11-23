@@ -93,9 +93,12 @@ ep("GET", "/.well-known/patchlabs-receipt-key", "No auth", "The public key that 
    extra='TRY:GET:/.well-known/patchlabs-receipt-key')
 
 group("auth", "Sign-in", "Sign-in is by magic link. The site handles these calls for you; they are listed for completeness.")
-ep("POST", "/auth/start", "No auth", "Email a sign-in link to <code>{site}/app/login?token=…</code>. Always answers 202, whether or not the address has an account. The link works once and expires in 20 minutes.",
-   [("email", "string", "Required."), ("next", "string, optional", "A path on patchlabs.dev to return to after sign-in, such as <code>/app/</code>.")],
-   f"""curl -s -X POST {B}/auth/start {JSONH} -d '{{"email": "you@company.com"}}'""",
+ep("GET", "/auth/challenge", "No auth", "A signed, single-use challenge for <code>POST /auth/start</code>, so nobody can script the sign-in form to email links to strangers. Find a <code>nonce</code> so that <code>sha256(\"&lt;challenge&gt;:&lt;nonce&gt;\")</code> starts with <code>bits</code> zero bits (about 65,000 tries at 16, a second or two in a browser), wait at least <code>min_wait_s</code>, then send both. It expires after 30 minutes.",
+   [], f"curl -s {B}/auth/challenge",
+   '200 OK\n{"challenge": "1795430400.3f9c2a7d1b6e8f04.6c1f…", "bits": 16, "min_wait_s": 2.0, "expires_in": 1800}')
+ep("POST", "/auth/start", "No auth", "Email a sign-in link to <code>{site}/app/login?token=…</code>. Needs a solved challenge from <code>GET /auth/challenge</code> (400 without one). Otherwise always answers 202, whether or not the address has an account. The link works once, expires in 20 minutes, and signs in only when the person clicks <b>Continue</b> on the page it opens, so mail scanners that open links can’t create accounts.",
+   [("email", "string", "Required."), ("challenge", "string", "Required: from <code>GET /auth/challenge</code>."), ("nonce", "string", "Required: the proof-of-work answer."), ("next", "string, optional", "A path on patchlabs.dev to return to after sign-in, such as <code>/app/</code>.")],
+   f"""curl -s -X POST {B}/auth/start {JSONH} -d '{{"email": "you@company.com", "challenge": "…", "nonce": "48211"}}'""",
    '202 Accepted\n{"ok": true, "detail": "If that address can sign in, a link is on its way. It expires in 20 minutes."}')
 ep("POST", "/auth/finish", "No auth", "Exchange the link’s token for a session (valid 30 days). Creates the user and a personal workspace on first sign-in, and links earlier free checks with the same email.",
    [("token", "string", "From the sign-in link."), ("invite", "string, optional", "An invite token to accept at the same time.")],

@@ -17,6 +17,13 @@ GITHUB_API = os.environ.get("GITHUB_API", "https://api.github.com")
 RAW_GITHUB = os.environ.get("RAW_GITHUB", "https://raw.githubusercontent.com")
 FOUNDER_EMAIL = os.environ.get("FOUNDER_EMAIL", "manraj@patchlabs.dev")
 AUTH_PER_IP_PER_HOUR = int(os.environ.get("AUTH_PER_IP_PER_HOUR", "30"))
+# Sign-in form abuse (Nov 2026: a bot sent our sign-in link to ~45 strangers' addresses, one an hour from different IPs):
+# /auth/start needs a signed challenge from GET /auth/challenge, at least AUTH_MIN_WAIT_S old, with a proof-of-work nonce,
+# and links to addresses that have no account are capped across all callers.
+AUTH_POW_BITS = int(os.environ.get("AUTH_POW_BITS", "16"))
+AUTH_MIN_WAIT_S = float(os.environ.get("AUTH_MIN_WAIT_S", "2"))
+AUTH_CHALLENGE_TTL_S = 30 * 60
+AUTH_NEW_EMAILS_PER_HOUR = int(os.environ.get("AUTH_NEW_EMAILS_PER_HOUR", "20"))
 VERIFY_FILE = "patchlabs-verify.txt"
 EMAIL_RE = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 FINISHED = ("done", "no_leaks", "needs_review")
