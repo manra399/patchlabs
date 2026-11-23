@@ -6,8 +6,8 @@ topic: keys
 order: 1
 short: Why deleting the key isn’t enough, the order that works, and git filter-repo step by step.
 lede: If an API key has been committed to a repo, rotate it at the provider first: create a new key, switch your app to it, and revoke the old one. Deleting the key from your code doesn’t help on its own, because every earlier commit still contains it; rewriting git history is optional clean-up that only makes sense after the key is dead.
-tldr: Rotation is the fix. Any key that was ever in a public repo must be treated as copied. || A revert does not hide it: in our test, a commit removed by force-push was still readable on GitHub from four characters of its id. || Order: revoke or roll the key → put the new one in a server-side secret → remove it from code → optionally rewrite history. || Find every key, including deleted ones, with <code>git log -p</code> over all branches. || <code>git filter-repo</code> removes files or strings from history; everyone must re-clone afterwards, and forks keep the old commits.
-checked: 2026-11-22
+tldr: Rotation is the fix. Any key that was ever in a public repo must be treated as copied. || A revert does not hide it: in our test, a commit removed by force-push was still readable on GitHub 36 hours later from four characters of its id, and the repo’s public Activity page shows its full id. || Order: revoke or roll the key → put the new one in a server-side secret → remove it from code → optionally rewrite history. || Find every key, including deleted ones, with <code>git log -p</code> over all branches. || <code>git filter-repo</code> removes files or strings from history; everyone must re-clone afterwards, and forks keep the old commits.
+checked: 2026-11-23
 findings: PL-009, PL-010, PL-011
 ---
 <h2 id="why-rotate">Why deleting the key isn’t enough</h2>
@@ -18,16 +18,17 @@ findings: PL-009, PL-010, PL-011
 <p>On 21 November 2026, Together AI published a security notice. During work on its public GitHub repository <code>xorl</code>, an AI coding agent committed a credential that gave access to a private Hugging Face repository holding samples of customer prompts from June and July 2026. The company’s scanning caught the commit and it was reverted, but an outside party downloaded the samples anyway, then searched them for other services’ credentials and tried those too. The notice describes the revert; it does not say when the credential itself was revoked.</p>
 <p>Coding agents commit whatever is in the working tree unless something stops them, so this will happen to more small teams. We checked what a revert leaves behind on GitHub. In a public test repo, <a href="https://github.com/manra399/revert-is-not-rotation">manra399/revert-is-not-rotation</a>, we committed a demo token (never a real credential), reverted it, and then went further than most people do: we reset the branch and force-pushed, so the commit is in no branch at all. Every check below was made without signing in, within a minute of each push, on 22 Nov 2026.</p>
 <div class="table-wrap"><table class="table compact">
-  <thead><tr><th scope="col">Can a stranger read the token?</th><th scope="col">After revert</th><th scope="col">After force-push</th></tr></thead>
+  <thead><tr><th scope="col">Can a stranger read the token?</th><th scope="col">After revert</th><th scope="col">After force-push</th><th scope="col">36 hours later</th></tr></thead>
   <tbody>
-    <tr><td>Commit page, full id</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>Commit page, first 7 characters of the id</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>Commit page, first 4 characters of the id</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>Raw file at that commit (<code>raw.githubusercontent.com</code>)</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>GitHub REST API, no token</td><td>Yes, with the diff</td><td>Yes, with the diff</td></tr>
+    <tr><td>Commit page, full id</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Commit page, first 7 characters of the id</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Commit page, first 4 characters of the id</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Raw file at that commit (<code>raw.githubusercontent.com</code>)</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>GitHub REST API, no token</td><td>Yes, with the diff</td><td>Yes, with the diff</td><td>Yes, with the diff</td></tr>
+    <tr><td>The removed commit’s full id, on the repo’s public Activity page and <code>/activity</code> API</td><td>Not applicable</td><td>Not checked then</td><td>Yes</td></tr>
   </tbody>
 </table></div>
-<p>A four-character id has only 65,536 possible values, so a commit that is in no branch can still be found by trying them all, and anyone who saw the push already has the full id. Two lessons:</p>
+<p>We checked again on 23 Nov 2026 at 05:15 GMT, 36 hours after the force-push, still without signing in: nothing had changed. We also found that a stranger does not need to guess the id at all. The repository’s public Activity page (<code>github.com/&lt;owner&gt;/&lt;repo&gt;/activity</code>) and the matching <code>/activity</code> REST endpoint list the force-push, and the entry shows the full id of the commit it replaced. A four-character id has only 65,536 possible values anyway, and anyone who saw the push already has it. Two lessons:</p>
 <ul>
   <li><strong>Revoke first, then clean up.</strong> Reverting, deleting the file and force-pushing all leave the token readable. Only revoking it at the provider makes it useless. Steps 1 and 4 below are in that order for this reason.</li>
   <li><strong>Secrets in prompts leak too.</strong> The attacker searched the stolen prompts for credentials. Keys pasted into an AI chat or sent in a request can end up in logs and samples you don’t control: see <a href="/learn/personal-data-headers-ai-prompts">personal data in headers and AI prompts</a>.</li>

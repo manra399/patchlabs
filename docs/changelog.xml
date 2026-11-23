@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-22T17:45:00Z</updated>
+  <updated>2026-11-23T05:30:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>The revert test, 36 hours on: still readable, and the Activity page lists the id</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-23"/>
+    <id>https://patchlabs.dev/changelog#nov-23</id>
+    <updated>2026-11-23T05:30:00Z</updated>
+    <summary>36 hours after a force-push removed it, the demo token in our public test repo was still readable without login from the commit page (full, 7- and 4-character id), the raw file and the REST API. The repo's public Activity page and /activity API list the force-push with the full id of the removed commit. Revoke first.</summary>
+  </entry>
   <entry>
     <title>A revert is not a rotation: the Together AI case, tested on GitHub</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/rotate-leaked-key-git-history#revert-test"/>

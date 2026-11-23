@@ -138,6 +138,7 @@
     <h1>What we shipped, when, and what it changed.</h1>
     <p class="lede">Dated entries, real only. Nothing appears here until it works, and anything we measured comes with its sample size. What’s coming next is listed separately and labelled as not shipped.</p>
     <nav class="cl-index" aria-label="Jump to an entry">
+      <a href="#nov-23">23 Nov 2026</a>
       <a href="#nov-22">22 Nov 2026</a>
       <a href="#nov-21">21 Nov 2026</a>
       <a href="#nov-20">20 Nov 2026</a>
@@ -156,6 +157,17 @@
 <section class="sec tight" aria-label="Entries">
   <div class="wrap">
     <div class="cl">
+
+      <article class="cl-entry" id="nov-23" aria-labelledby="nov-23-h">
+        <div class="cl-date"><time datetime="2026-11-23">23 Nov 2026</time><span class="pill proven ver">shipped</span></div>
+        <div class="cl-body">
+          <h2 id="nov-23-h">The revert test, 36 hours on: still readable, and GitHub lists the id for you.</h2>
+          <p>A follow-up to yesterday’s test of what a revert leaves behind.</p>
+          <ul class="cl-items">
+            <li><span class="tag study">Updated</span><div><h3>Guide: a revert is not a rotation</h3><p>We re-checked the demo token 36 hours after the force-push, without signing in: the commit page (full, 7- and 4-character id), the raw file and the REST API all still return it. We also found that the repo’s public Activity page and <code>/activity</code> API list the force-push with the full id of the commit it removed, so nobody needs to guess. <a href="/learn/rotate-leaked-key-git-history#revert-test">Read the updated section</a>.</p></div></li>
+          </ul>
+        </div>
+      </article>
 
       <article class="cl-entry" id="nov-22" aria-labelledby="nov-22-h">
         <div class="cl-date"><time datetime="2026-11-22">22 Nov 2026</time><span class="pill proven ver">shipped</span></div>
