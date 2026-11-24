@@ -3,7 +3,7 @@ title: The 1-in-4 Report: personal-data exposure in AI-built apps, Nov 2026 | Pa
 description: We rebuilt 318 public Lovable and Supabase apps from their migrations. 106 let the wrong people read personal data; about 1 in 4 after false alarms. Full data and method.
 layout: marketing
 nav: research
-head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Report","name":"The 1-in-4 Report: personal-data exposure in AI-built apps","datePublished":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"url":"https://patchlabs.dev/research/1-in-4","isBasedOn":"https://patchlabs.dev/research/1-in-4-aggregate.csv"}</script>
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Report","name":"The 1-in-4 Report: personal-data exposure in AI-built apps","datePublished":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"url":"https://patchlabs.dev/research/1-in-4","isBasedOn":"https://patchlabs.dev/research/1-in-4-aggregate.csv"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"PatchLabs 1-in-4 study: personal-data exposure in AI-built apps (aggregate results)","description":"Aggregate results from rebuilding 318 public Lovable and Supabase apps from their own migrations in a lab, Nov 2026: 106 of 318 let the wrong people read personal data (70 by anyone with the public key, 36 by anyone who signs up); about 1 in 4 exposed real personal data. No app is named.","url":"https://patchlabs.dev/research/1-in-4","creator":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"datePublished":"2026-11-10","temporalCoverage":"2026-11","variableMeasured":["apps rebuilt","apps readable by anonymous visitors","apps readable by any signed-up user"],"isAccessibleForFree":true,"license":"https://creativecommons.org/licenses/by/4.0/","measurementTechnique":"Database rebuilt from supabase/migrations in a disposable Postgres; select queries as anon, a signed-in stranger and the owner"}</script>
 -->
 <main id="main">
 
@@ -57,13 +57,13 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <div class="stat"><b class="num">318</b><span>public apps rebuilt to a working database<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
         <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data (33%)<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup></span></div>
         <div class="stat red"><b class="num">25–28<small>%</small></b><span>real personal-data exposure, after false alarms<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
-        <div class="stat green"><b class="num">18<small>of 20</small></b><span>fixes passed the strict lab proof, no human<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></span></div>
+        <div class="stat green"><b class="num">17<small>of 20</small></b><span>fixes passed the strict lab proof, no human help<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></span></div>
       </div>
       <ol class="footnotes">
         <li id="fn1">PatchLabs lab study, Nov 2026. 500 public repos sampled, 436 run, 318 built a working database in the lab.</li>
         <li id="fn2">106 of 318: 70 (22%) readable by anyone with the app’s public key, 36 (11%) by anyone who signs up.</li>
         <li id="fn3">Removing businesses’ own public contact details, using the false-alarm rate from the fix study (4 of 24 flagged apps, n=24, 5 Nov 2026).</li>
-        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20. The other 2 went to a person.</li>
+        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20, re-checked 24 Nov 2026. 2 went to a person; 1 more passed on the day but fails the current, stricter check.</li>
       </ol>
       <ol class="keyfind mt-4">
         <li><span class="n">01</span><p><b>About 1 in 4 public AI-built apps expose personal data to people who shouldn’t see it.</b> Emails, phone numbers, addresses and dates of birth, readable with nothing more than the key every visitor already has, or a throwaway account.</p></li>
@@ -200,23 +200,25 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <h2 id="fixes-h">17 of 20 fixes passed a strict lab proof with no human help.</h2>
       <p>On 9 Nov 2026 we gave the pipeline 20 leaking apps from the study that had never been through a fix agent (14 readable by anyone, 6 by any signed-up user). It rebuilt each database, wrote a fix with the smallest Claude model, and ran an independent proof. A fix passes only if the anonymous visitor and the signed-in stranger can read neither the private rows nor the personal columns, <em>and</em> the owner still reads their own row and its personal columns. If the proof fails, the attempt is discarded and the next model tries.</p>
       <figure class="chart">
-        <p class="lab">Figure 5 · n=20 apps, 9 Nov 2026</p>
+        <p class="lab">Figure 5 · n=20 apps, 9 Nov 2026, re-checked 24 Nov 2026</p>
         <h3>Which model produced the passing fix</h3>
         <p class="sub">Cheapest first: Haiku, then Sonnet, then Opus, escalating only when the proof fails.</p>
         {{MODEL_BAR}}
-        <ul class="legend"><li><i class="green"></i>Proven: 15 on the smallest model, 2 on Sonnet, 1 on Opus</li><li><i class="amber"></i>Needs a person · 2</li></ul>
+        <ul class="legend"><li><i class="green"></i>Proven: 14 on the smallest model, 2 on Sonnet, 1 on Opus</li><li><i class="ink"></i>Passed on 9 Nov, fails current check · 1</li><li><i class="amber"></i>Needs a person · 2</li></ul>
         <details><summary>Show the numbers as a table</summary>
           <div class="table-wrap"><table class="table compact">
             <thead><tr><th scope="col">Outcome</th><th scope="col" class="num">Apps</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Passed on the smallest model (Haiku), first try</th><td class="num">15</td></tr>
+              <tr><th scope="row">Passed on the smallest model (Haiku), first try</th><td class="num">14</td></tr>
               <tr><th scope="row">Escalated to Sonnet, passed</th><td class="num">2</td></tr>
               <tr><th scope="row">Escalated to Opus, passed</th><td class="num">1</td></tr>
+              <tr><th scope="row">Passed on Haiku on 9 Nov, fails the current check</th><td class="num">1</td></tr>
               <tr><th scope="row">Failed on all three, sent to a person</th><td class="num">2</td></tr>
             </tbody>
           </table></div>
         </details>
       </figure>
+      <p>On 24 Nov 2026 we re-ran today’s stricter verifier on the 18 saved fixes. Since 16 Nov a fix passes only if the leak was first reproduced in the lab. One fix that passed on Haiku on 9 Nov now fails: one of its two tables was never filled with a test row on 9 Nov, so “nothing readable after the fix” proved nothing, and the fix never touched that table. With a valid row, anyone can still read it. The other 17 passes stand. So 17 of 20 passed, 14 on the smallest model first try.</p>
       <h3>What the fixes looked like</h3>
       <p>Three shapes, matching the verdicts. These are synthetic examples of each shape, not code from any studied app.</p>
       <div class="code">
@@ -253,9 +255,9 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <figure class="chart">
         <p class="lab">Figure 6 · n=20 apps, 9 Nov 2026</p>
         <h3>Model cost per app</h3>
-        <p class="sub">Log scale, from $0.12 to $15.65. Green: proven. Amber: sent to a person.</p>
+        <p class="sub">Log scale, from $0.12 to $15.65. Green: proven. Dark: passed on 9 Nov, fails the current check. Amber: sent to a person.</p>
         {{COST_STRIP}}
-        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="amber"></i>Needs a person</li></ul>
+        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="ink"></i>Passed on 9 Nov, fails current check</li><li><i class="amber"></i>Needs a person</li></ul>
         <details><summary>Show the numbers as a table</summary>{{COST_BTABLE}}</details>
       </figure>
       <figure class="chart">
@@ -263,10 +265,10 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <h3>Agent working time per app</h3>
         <p class="sub">Log scale, from 0.8 to 66.7 minutes.</p>
         {{TIME_STRIP}}
-        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="amber"></i>Needs a person</li></ul>
+        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="ink"></i>Passed on 9 Nov, fails current check</li><li><i class="amber"></i>Needs a person</li></ul>
         <details><summary>Show the numbers as a table</summary>{{TIME_BTABLE}}</details>
       </figure>
-      <p class="mt-3">14 of 20 apps cost under $0.50. The 15 apps fixed by the smallest model had a median cost of $0.41 and never exceeded $0.76. The tail comes from escalation: the most expensive app went through all three models and cost $15.65 over 67 minutes. That is why every check now has a spend cap: a free check can’t run away.</p>
+      <p class="mt-3">14 of 20 apps cost under $0.50. The 14 apps fixed by the smallest model had a median cost of $0.39 and never exceeded $0.76. The tail comes from escalation: the most expensive app went through all three models and cost $15.65 over 67 minutes. That is why every check now has a spend cap: a free check can’t run away.</p>
       <p>Why smallest first? In a trial on 3 apps the same fixes cost an average of $2.26 per app on Opus, $0.83 on Sonnet and $0.25 on Haiku (9 Nov 2026, n=3). In that trial Haiku’s first attempts failed 2 of 3 until the verifier’s verdict was made explicit, which is the point: a cheap model is only safe behind an independent proof that refuses to pass a fix that locks the owner out or leaves strangers a way in.</p>
       <h3>Every run</h3>
       <p>Ordered by cost. No table names, repos or owners.</p>
@@ -277,7 +279,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
           <tbody>
 {{RUN_TABLE}}
           </tbody>
-          <tfoot><tr><th scope="row">All</th><td>14 anyone · 6 signed-in</td><td class="num">37</td><td>15 · 2 · 1 · 2 failed</td><td>18 proven</td><td class="num">$0.46 med.</td><td class="num">3.5 med.</td><td class="num">18</td><td>18 low · 2 med.</td></tr></tfoot>
+          <tfoot><tr><th scope="row">All</th><td>14 anyone · 6 signed-in</td><td class="num">37</td><td>15 · 2 · 1 · 2 failed</td><td>17 proven · 1 fails current check</td><td class="num">$0.46 med.</td><td class="num">3.5 med.</td><td class="num">18</td><td>18 low · 2 med.</td></tr></tfoot>
         </table>
       </div>
       <p class="small muted mt-2">Cost is model spend only. It excludes the lab machine and any human time. Prices are those in effect in November 2026.</p>
@@ -342,7 +344,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <li class="dash"><span><strong>The lab is only as complete as the migrations.</strong> 118 of 436 repos didn’t build and are excluded. Changes made in a dashboard but never saved as a migration are invisible to us, so a repo can differ from the live app in either direction.</span></li>
         <li class="dash"><span><strong>Personal data is detected by column name</strong> (email, phone, address, date of birth and similar). Oddly named columns can be missed; public business contacts can be counted, which is why we adjust.</span></li>
         <li class="dash"><span><strong>The 25–28% adjustment comes from a small sample</strong> (4 false alarms in 24 apps). Treat it as an estimate.</span></li>
-        <li class="dash"><span><strong>Fix results are small samples:</strong> n=20 on 5 Nov and n=20 on 9 Nov, one run each. Costs depend on model prices at the time.</span></li>
+        <li class="dash"><span><strong>Fix results are small samples:</strong> n=20 on 5 Nov and n=20 on 9 Nov, one run each; the 9 Nov fixes were re-checked on 24 Nov 2026 with a stricter verifier. Costs depend on model prices at the time.</span></li>
         <li class="dash"><span><strong>The proof covers reads</strong> by three identities. Write rules, functions and storage were checked statically, not proven in the lab.</span></li>
         <li class="dash"><span><strong>Readable is not the same as read.</strong> We never touched live apps, so we can’t say whether anyone actually took this data.</span></li>
         <li class="dash"><span><strong>We sell a product that fixes this.</strong> The study was designed and run by PatchLabs and has not been peer reviewed. That is why the method and the aggregate data are public.</span></li>
@@ -369,6 +371,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <a class="btn secondary" href="/research/1-in-4-aggregate.csv" download>Download CSV</a>
       </div>
       <h3>Cite this report</h3>
+      <p class="small muted">The aggregate numbers and the CSV are free to reuse under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: credit PatchLabs and link this page.</p>
       <div class="cite">
         <div class="cite-head"><span>Citation</span><button class="copy" type="button" data-copy="#cite-text">Copy</button></div>
         <blockquote id="cite-text">Dhillon, M. S. (2026). The 1-in-4 Report: personal-data exposure in AI-built apps. PatchLabs, 10 November 2026. https://patchlabs.dev/research/1-in-4</blockquote>

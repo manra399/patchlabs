@@ -57,13 +57,13 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <div class="stat"><b class="num">318</b><span>public apps rebuilt to a working database<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
         <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data (33%)<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup></span></div>
         <div class="stat red"><b class="num">25–28<small>%</small></b><span>real personal-data exposure, after false alarms<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
-        <div class="stat green"><b class="num">18<small>of 20</small></b><span>fixes passed the strict lab proof, no human<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></span></div>
+        <div class="stat green"><b class="num">17<small>of 20</small></b><span>fixes passed the strict lab proof, no human help<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></span></div>
       </div>
       <ol class="footnotes">
         <li id="fn1">PatchLabs lab study, Nov 2026. 500 public repos sampled, 436 run, 318 built a working database in the lab.</li>
         <li id="fn2">106 of 318: 70 (22%) readable by anyone with the app’s public key, 36 (11%) by anyone who signs up.</li>
         <li id="fn3">Removing businesses’ own public contact details, using the false-alarm rate from the fix study (4 of 24 flagged apps, n=24, 5 Nov 2026).</li>
-        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20. The other 2 went to a person.</li>
+        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20, re-checked 24 Nov 2026. 2 went to a person; 1 more passed on the day but fails the current, stricter check.</li>
       </ol>
       <ol class="keyfind mt-4">
         <li><span class="n">01</span><p><b>About 1 in 4 public AI-built apps expose personal data to people who shouldn’t see it.</b> Emails, phone numbers, addresses and dates of birth, readable with nothing more than the key every visitor already has, or a throwaway account.</p></li>
@@ -274,33 +274,37 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <h2 id="fixes-h">17 of 20 fixes passed a strict lab proof with no human help.</h2>
       <p>On 9 Nov 2026 we gave the pipeline 20 leaking apps from the study that had never been through a fix agent (14 readable by anyone, 6 by any signed-up user). It rebuilt each database, wrote a fix with the smallest Claude model, and ran an independent proof. A fix passes only if the anonymous visitor and the signed-in stranger can read neither the private rows nor the personal columns, <em>and</em> the owner still reads their own row and its personal columns. If the proof fails, the attempt is discarded and the next model tries.</p>
       <figure class="chart">
-        <p class="lab">Figure 5 · n=20 apps, 9 Nov 2026</p>
+        <p class="lab">Figure 5 · n=20 apps, 9 Nov 2026, re-checked 24 Nov 2026</p>
         <h3>Which model produced the passing fix</h3>
         <p class="sub">Cheapest first: Haiku, then Sonnet, then Opus, escalating only when the proof fails.</p>
         <svg role="img" aria-labelledby="models-t models-d" width="100%" height="44" xmlns="http://www.w3.org/2000/svg">
-<title id="models-t">Which model produced the passing fix, 20 apps</title><desc id="models-d">15 passed with the smallest model, 2 needed Sonnet, 1 needed Opus, 2 failed on all three and went to a person.</desc>
+<title id="models-t">Which model produced the passing fix, 20 apps, re-checked 24 Nov 2026</title><desc id="models-d">14 passed with the smallest model, 2 needed Sonnet, 1 needed Opus, 1 passed on Haiku on 9 Nov but fails the current check, 2 failed on all three and went to a person.</desc>
 <defs><pattern id="hatch-models" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
-<svg x="0.000%" y="0" width="75.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Smallest model (Haiku), first try: 15 of 20</title></rect></svg>
-<svg x="75.000%" y="0" width="10.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Escalated to Sonnet: 2 of 20</title></rect></svg>
-<svg x="85.000%" y="0" width="5.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Escalated to Opus: 1 of 20</title></rect></svg>
+<svg x="0.000%" y="0" width="70.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Smallest model (Haiku), first try: 14 of 20</title></rect></svg>
+<svg x="70.000%" y="0" width="10.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Escalated to Sonnet: 2 of 20</title></rect></svg>
+<svg x="80.000%" y="0" width="5.000%" height="44" overflow="visible"><rect class="mark m-green" x="0" y="4" width="100%" height="36" rx="4"><title>Escalated to Opus: 1 of 20</title></rect></svg>
+<svg x="85.000%" y="0" width="5.000%" height="44" overflow="visible"><rect class="mark m-ink" x="0" y="4" width="100%" height="36" rx="4"><title>Passed on Haiku on 9 Nov, fails the current check: 1 of 20</title></rect></svg>
 <svg x="90.000%" y="0" width="10.000%" height="44" overflow="visible"><rect class="mark m-amber" x="0" y="4" width="100%" height="36" rx="4"><title>Needs a person: 2 of 20</title></rect></svg>
-<line x1="75.000%" x2="75.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="70.000%" x2="70.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="80.000%" x2="80.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
 <line x1="85.000%" x2="85.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
 <line x1="90.000%" x2="90.000%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
 </svg>
-        <ul class="legend"><li><i class="green"></i>Proven: 15 on the smallest model, 2 on Sonnet, 1 on Opus</li><li><i class="amber"></i>Needs a person · 2</li></ul>
+        <ul class="legend"><li><i class="green"></i>Proven: 14 on the smallest model, 2 on Sonnet, 1 on Opus</li><li><i class="ink"></i>Passed on 9 Nov, fails current check · 1</li><li><i class="amber"></i>Needs a person · 2</li></ul>
         <details><summary>Show the numbers as a table</summary>
           <div class="table-wrap"><table class="table compact">
             <thead><tr><th scope="col">Outcome</th><th scope="col" class="num">Apps</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Passed on the smallest model (Haiku), first try</th><td class="num">15</td></tr>
+              <tr><th scope="row">Passed on the smallest model (Haiku), first try</th><td class="num">14</td></tr>
               <tr><th scope="row">Escalated to Sonnet, passed</th><td class="num">2</td></tr>
               <tr><th scope="row">Escalated to Opus, passed</th><td class="num">1</td></tr>
+              <tr><th scope="row">Passed on Haiku on 9 Nov, fails the current check</th><td class="num">1</td></tr>
               <tr><th scope="row">Failed on all three, sent to a person</th><td class="num">2</td></tr>
             </tbody>
           </table></div>
         </details>
       </figure>
+      <p>On 24 Nov 2026 we re-ran today’s stricter verifier on the 18 saved fixes. Since 16 Nov a fix passes only if the leak was first reproduced in the lab. One fix that passed on Haiku on 9 Nov now fails: one of its two tables was never filled with a test row on 9 Nov, so “nothing readable after the fix” proved nothing, and the fix never touched that table. With a valid row, anyone can still read it. The other 17 passes stand. So 17 of 20 passed, 14 on the smallest model first try.</p>
       <h3>What the fixes looked like</h3>
       <p>Three shapes, matching the verdicts. These are synthetic examples of each shape, not code from any studied app.</p>
       <div class="code">
@@ -337,7 +341,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <figure class="chart">
         <p class="lab">Figure 6 · n=20 apps, 9 Nov 2026</p>
         <h3>Model cost per app</h3>
-        <p class="sub">Log scale, from $0.12 to $15.65. Green: proven. Amber: sent to a person.</p>
+        <p class="sub">Log scale, from $0.12 to $15.65. Green: proven. Dark: passed on 9 Nov, fails the current check. Amber: sent to a person.</p>
         <svg class="strip" role="img" aria-labelledby="cost-t cost-d" height="132" width="100%" xmlns="http://www.w3.org/2000/svg">
 <title id="cost-t">Model cost per app, all 20 apps</title>
 <desc id="cost-d">Each dot is one app on a logarithmic scale. Median $0.46. Range $0.12 to $16. Data table below.</desc>
@@ -371,7 +375,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 <circle class="dot mark m-green" cx="24.64%" cy="78" r="6"><title>$0.37, proven</title></circle>
 <circle class="dot mark m-green" cx="26.46%" cy="78" r="6"><title>$0.41, proven</title></circle>
 <circle class="dot mark m-green" cx="27.30%" cy="65" r="6"><title>$0.42, proven</title></circle>
-<circle class="dot mark m-green" cx="28.76%" cy="78" r="6"><title>$0.46, proven</title></circle>
+<circle class="dot mark m-ink" cx="28.76%" cy="78" r="6"><title>$0.46, passed on 9 Nov; fails current check</title></circle>
 <circle class="dot mark m-green" cx="29.19%" cy="65" r="6"><title>$0.47, proven</title></circle>
 <circle class="dot mark m-green" cx="29.50%" cy="52" r="6"><title>$0.48, proven</title></circle>
 <circle class="dot mark m-green" cx="29.63%" cy="39" r="6"><title>$0.48, proven</title></circle>
@@ -383,7 +387,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 <circle class="dot mark m-amber" cx="80.11%" cy="78" r="6"><title>$6.97, needs a person</title></circle>
 <circle class="dot mark m-green" cx="95.37%" cy="78" r="6"><title>$16, proven</title></circle>
 </svg>
-        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="amber"></i>Needs a person</li></ul>
+        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="ink"></i>Passed on 9 Nov, fails current check</li><li><i class="amber"></i>Needs a person</li></ul>
         <details><summary>Show the numbers as a table</summary><div class="table-wrap"><table class="table compact"><thead><tr><th scope="col">Model cost</th><th scope="col" class="num">Apps</th></tr></thead><tbody><tr><th scope="row">under $0.50</th><td class="num">14</td></tr><tr><th scope="row">$0.50 to $1</th><td class="num">1</td></tr><tr><th scope="row">$1 to $3</th><td class="num">3</td></tr><tr><th scope="row">$3 to $10</th><td class="num">1</td></tr><tr><th scope="row">over $10</th><td class="num">1</td></tr></tbody></table></div></details>
       </figure>
       <figure class="chart">
@@ -428,17 +432,17 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 <circle class="dot mark m-green" cx="38.36%" cy="78" r="6"><title>3.8 min, proven</title></circle>
 <circle class="dot mark m-green" cx="40.02%" cy="78" r="6"><title>4.2 min, proven</title></circle>
 <circle class="dot mark m-green" cx="43.83%" cy="78" r="6"><title>5.1 min, proven</title></circle>
-<circle class="dot mark m-green" cx="56.38%" cy="78" r="6"><title>9.9 min, proven</title></circle>
+<circle class="dot mark m-ink" cx="56.38%" cy="78" r="6"><title>9.9 min, passed on 9 Nov; fails current check</title></circle>
 <circle class="dot mark m-amber" cx="60.01%" cy="78" r="6"><title>12.0 min, needs a person</title></circle>
 <circle class="dot mark m-green" cx="61.00%" cy="65" r="6"><title>12.7 min, proven</title></circle>
 <circle class="dot mark m-green" cx="62.71%" cy="78" r="6"><title>13.9 min, proven</title></circle>
 <circle class="dot mark m-amber" cx="76.90%" cy="78" r="6"><title>29.4 min, needs a person</title></circle>
 <circle class="dot mark m-green" cx="92.34%" cy="78" r="6"><title>66.7 min, proven</title></circle>
 </svg>
-        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="amber"></i>Needs a person</li></ul>
+        <ul class="legend"><li><i class="green"></i>Fix proven</li><li><i class="ink"></i>Passed on 9 Nov, fails current check</li><li><i class="amber"></i>Needs a person</li></ul>
         <details><summary>Show the numbers as a table</summary><div class="table-wrap"><table class="table compact"><thead><tr><th scope="col">Agent time</th><th scope="col" class="num">Apps</th></tr></thead><tbody><tr><th scope="row">under 2 min</th><td class="num">4</td></tr><tr><th scope="row">2 to 4 min</th><td class="num">8</td></tr><tr><th scope="row">4 to 10 min</th><td class="num">3</td></tr><tr><th scope="row">10 to 30 min</th><td class="num">4</td></tr><tr><th scope="row">over 30 min</th><td class="num">1</td></tr></tbody></table></div></details>
       </figure>
-      <p class="mt-3">14 of 20 apps cost under $0.50. The 15 apps fixed by the smallest model had a median cost of $0.41 and never exceeded $0.76. The tail comes from escalation: the most expensive app went through all three models and cost $15.65 over 67 minutes. That is why every check now has a spend cap: a free check can’t run away.</p>
+      <p class="mt-3">14 of 20 apps cost under $0.50. The 14 apps fixed by the smallest model had a median cost of $0.39 and never exceeded $0.76. The tail comes from escalation: the most expensive app went through all three models and cost $15.65 over 67 minutes. That is why every check now has a spend cap: a free check can’t run away.</p>
       <p>Why smallest first? In a trial on 3 apps the same fixes cost an average of $2.26 per app on Opus, $0.83 on Sonnet and $0.25 on Haiku (9 Nov 2026, n=3). In that trial Haiku’s first attempts failed 2 of 3 until the verifier’s verdict was made explicit, which is the point: a cheap model is only safe behind an independent proof that refuses to pass a fix that locks the owner out or leaves strangers a way in.</p>
       <h3>Every run</h3>
       <p>Ordered by cost. No table names, repos or owners.</p>
@@ -456,7 +460,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 <tr><th scope="row">07</th><td>anyone</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.37</td><td class="num">2.5</td><td class="num">0</td><td>low</td></tr>
 <tr><th scope="row">08</th><td>anyone</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.41</td><td class="num">3.4</td><td class="num">1</td><td>low</td></tr>
 <tr><th scope="row">09</th><td>anyone</td><td class="num">3</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.42</td><td class="num">2.8</td><td class="num">3</td><td>low</td></tr>
-<tr><th scope="row">10</th><td>anyone</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.46</td><td class="num">9.9</td><td class="num">1</td><td>low</td></tr>
+<tr><th scope="row">10</th><td>anyone</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill neutral">passed on 9 Nov; fails current check</span></td><td class="num">$0.46</td><td class="num">9.9</td><td class="num">1</td><td>low</td></tr>
 <tr><th scope="row">11</th><td>signed-in</td><td class="num">7</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.47</td><td class="num">3.8</td><td class="num">2</td><td>low</td></tr>
 <tr><th scope="row">12</th><td>anyone</td><td class="num">1</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.48</td><td class="num">4.2</td><td class="num">1</td><td>low</td></tr>
 <tr><th scope="row">13</th><td>signed-in</td><td class="num">2</td><td><span class="models"><b>haiku ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$0.48</td><td class="num">3.5</td><td class="num">1</td><td>low</td></tr>
@@ -468,7 +472,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 <tr><th scope="row">19</th><td>anyone</td><td class="num">1</td><td><span class="models"><s>haiku</s> → <s>sonnet</s> → <s>opus</s></span></td><td><span class="pill pending">needs a person</span></td><td class="num">$6.97</td><td class="num">29.4</td><td class="num">2</td><td>medium</td></tr>
 <tr><th scope="row">20</th><td>anyone</td><td class="num">2</td><td><span class="models"><s>haiku</s> → <s>sonnet</s> → <b>opus ✓</b></span></td><td><span class="pill proven">proven</span></td><td class="num">$15.65</td><td class="num">66.7</td><td class="num">4</td><td>medium</td></tr>
           </tbody>
-          <tfoot><tr><th scope="row">All</th><td>14 anyone · 6 signed-in</td><td class="num">37</td><td>15 · 2 · 1 · 2 failed</td><td>18 proven</td><td class="num">$0.46 med.</td><td class="num">3.5 med.</td><td class="num">18</td><td>18 low · 2 med.</td></tr></tfoot>
+          <tfoot><tr><th scope="row">All</th><td>14 anyone · 6 signed-in</td><td class="num">37</td><td>15 · 2 · 1 · 2 failed</td><td>17 proven · 1 fails current check</td><td class="num">$0.46 med.</td><td class="num">3.5 med.</td><td class="num">18</td><td>18 low · 2 med.</td></tr></tfoot>
         </table>
       </div>
       <p class="small muted mt-2">Cost is model spend only. It excludes the lab machine and any human time. Prices are those in effect in November 2026.</p>
@@ -533,7 +537,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <li class="dash"><span><strong>The lab is only as complete as the migrations.</strong> 118 of 436 repos didn’t build and are excluded. Changes made in a dashboard but never saved as a migration are invisible to us, so a repo can differ from the live app in either direction.</span></li>
         <li class="dash"><span><strong>Personal data is detected by column name</strong> (email, phone, address, date of birth and similar). Oddly named columns can be missed; public business contacts can be counted, which is why we adjust.</span></li>
         <li class="dash"><span><strong>The 25–28% adjustment comes from a small sample</strong> (4 false alarms in 24 apps). Treat it as an estimate.</span></li>
-        <li class="dash"><span><strong>Fix results are small samples:</strong> n=20 on 5 Nov and n=20 on 9 Nov, one run each. Costs depend on model prices at the time.</span></li>
+        <li class="dash"><span><strong>Fix results are small samples:</strong> n=20 on 5 Nov and n=20 on 9 Nov, one run each; the 9 Nov fixes were re-checked on 24 Nov 2026 with a stricter verifier. Costs depend on model prices at the time.</span></li>
         <li class="dash"><span><strong>The proof covers reads</strong> by three identities. Write rules, functions and storage were checked statically, not proven in the lab.</span></li>
         <li class="dash"><span><strong>Readable is not the same as read.</strong> We never touched live apps, so we can’t say whether anyone actually took this data.</span></li>
         <li class="dash"><span><strong>We sell a product that fixes this.</strong> The study was designed and run by PatchLabs and has not been peer reviewed. That is why the method and the aggregate data are public.</span></li>
@@ -556,7 +560,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <h2 id="data-h">Take the data. Check our working.</h2>
       <div class="dl">
         <span class="file">1-in-4-aggregate.csv</span>
-        <span class="meta">233 rows, about 25 KB. Every number in this report, plus the 20 anonymised runs. Long format: study, date, group, metric, value, denominator, unit, notes.</span>
+        <span class="meta">234 rows, about 26 KB. Every number in this report, plus the 20 anonymised runs. Long format: study, date, group, metric, value, denominator, unit, notes.</span>
         <a class="btn secondary" href="/research/1-in-4-aggregate.csv" download>Download CSV</a>
       </div>
       <h3>Cite this report</h3>

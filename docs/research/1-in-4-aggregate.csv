@@ -20,8 +20,8 @@ fix-agent study (24 apps),2026-11-05,all,break_risk_medium,10,20,fixes,agent's a
 fix-agent study (24 apps),2026-11-05,all,break_risk_low,5,20,fixes,agent's assessment
 fix-agent study (24 apps),2026-11-05,all,human_review_minutes_median,15,,minutes,agent's estimate
 autonomous pipeline (20 new apps),2026-11-09,all,apps,20,,apps,"14 readable by anyone, 6 by any signed-up user"
-autonomous pipeline (20 new apps),2026-11-09,all,passed_strict_lab_proof,18,20,apps,no human involved
-autonomous pipeline (20 new apps),2026-11-09,all,passed_on_smallest_model_first_try,15,20,apps,Haiku
+autonomous pipeline (20 new apps),2026-11-09,all,passed_strict_lab_proof,17,20,apps,no human help; re-checked 2026-11-24 with the current verifier (18 on the day)
+autonomous pipeline (20 new apps),2026-11-09,all,passed_on_smallest_model_first_try,14,20,apps,Haiku; re-checked 2026-11-24 (15 on the day)
 autonomous pipeline (20 new apps),2026-11-09,all,escalated_to_sonnet_and_passed,2,20,apps,
 autonomous pipeline (20 new apps),2026-11-09,all,escalated_to_opus_and_passed,1,20,apps,
 autonomous pipeline (20 new apps),2026-11-09,all,needs_a_person,2,20,apps,failed on all three models; no fix branch
@@ -36,12 +36,13 @@ autonomous pipeline (20 new apps),2026-11-09,all,model_cost_median,0.46,,usd,
 autonomous pipeline (20 new apps),2026-11-09,all,model_cost_mean,1.75,,usd,pulled up by one app
 autonomous pipeline (20 new apps),2026-11-09,all,model_cost_min,0.12,,usd,
 autonomous pipeline (20 new apps),2026-11-09,all,model_cost_max,15.65,,usd,escalated through all three models
-autonomous pipeline (20 new apps),2026-11-09,all,model_cost_median_smallest_model_passes,0.41,15,usd,
-autonomous pipeline (20 new apps),2026-11-09,all,model_cost_max_smallest_model_passes,0.76,15,usd,
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_median_smallest_model_passes,0.39,14,usd,re-checked 2026-11-24
+autonomous pipeline (20 new apps),2026-11-09,all,model_cost_max_smallest_model_passes,0.76,14,usd,re-checked 2026-11-24
 autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_median,3.5,,minutes,agent working time summed across attempts
 autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_mean,9.2,,minutes,
 autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_min,0.8,,minutes,
 autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_max,66.7,,minutes,
+autonomous pipeline (20 new apps),2026-11-24,all,passed_on_day_fails_current_verifier,1,20,apps,saved 9 Nov fixes re-run under the current verifier (a fix passes only if the leak was reproduced first); source RECHECK-9NOV.md
 autonomous pipeline (20 new apps),2026-11-09,cost bucket under $0.50,apps,14,20,apps,
 autonomous pipeline (20 new apps),2026-11-09,cost bucket $0.50 to $1,apps,1,20,apps,
 autonomous pipeline (20 new apps),2026-11-09,cost bucket $1 to $3,apps,3,20,apps,
@@ -137,7 +138,7 @@ autonomous pipeline (20 new apps),2026-11-09,run 10,who_could_read,anyone,,,runs
 autonomous pipeline (20 new apps),2026-11-09,run 10,tables_flagged,2,,tables,runs ordered by cost; no app identifiers
 autonomous pipeline (20 new apps),2026-11-09,run 10,models_tried,haiku,,,runs ordered by cost; no app identifiers
 autonomous pipeline (20 new apps),2026-11-09,run 10,passed_on,haiku,,,runs ordered by cost; no app identifiers
-autonomous pipeline (20 new apps),2026-11-09,run 10,result,proven,,,runs ordered by cost; no app identifiers
+autonomous pipeline (20 new apps),2026-11-09,run 10,result,passed on 9 Nov; fails current check,,,runs ordered by cost; no app identifiers
 autonomous pipeline (20 new apps),2026-11-09,run 10,model_cost,0.46,,usd,runs ordered by cost; no app identifiers
 autonomous pipeline (20 new apps),2026-11-09,run 10,agent_minutes,9.9,,minutes,runs ordered by cost; no app identifiers
 autonomous pipeline (20 new apps),2026-11-09,run 10,questions_for_owner,1,,questions,runs ordered by cost; no app identifiers

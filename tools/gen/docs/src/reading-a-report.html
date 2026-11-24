@@ -76,7 +76,7 @@ lede: Every finished check ends on one page: what leaked, who could read it, the
 <div class="callout warn"><p><strong>Rotate first, clean up second.</strong> If a key is listed, create a new one at the provider and revoke the old one. Rewriting git history alone doesn’t help: the old key may already have been copied.</p></div>
 
 <h2 id="run-details">Run details</h2>
-<p>The last line of the report records how long the run took and which models were tried. We start with the smallest Claude model and only move to a larger one if the lab proof fails, with a spending cap on every check. In our lab study, 15 of 20 apps needed only the smallest model (n=20, 9 Nov 2026).</p>
+<p>The last line of the report records how long the run took and which models were tried. We start with the smallest Claude model and only move to a larger one if the lab proof fails, with a spending cap on every check. In our lab study, 14 of 20 apps needed only the smallest model (9 Nov 2026 run, n=20, re-checked 24 Nov 2026).</p>
 
 <h2 id="in-review">When a report says “in review”</h2>
 <p>If no fix passes the strict proof on its own, the check goes to a person instead of guessing. In the same study, 17 of 20 fixes passed the lab proof with no human help; 2 went to a person and 1 fails our stricter current check (n=20, 9 Nov 2026, re-checked 24 Nov 2026). You’ll get an email when the reviewed fix is ready; nothing changes in your repo meanwhile.</p>

@@ -1,12 +1,25 @@
 #!/usr/bin/env python3
 """Builds the SVG charts, the anonymised run table and the aggregate CSV for /research/1-in-4 from the 20-app log,
 then fills the {{...}} slots in report_tpl.html and writes site/pages/research/1-in-4.html."""
-import csv, io, json, math, os, statistics as st
+import csv, hashlib, io, json, math, os, statistics as st
 
 # The raw run log names real apps, so it stays outside the repo. Point PL_STUDY_BATCH at it to regenerate.
 BATCH = os.environ.get("PL_STUDY_BATCH", "/Users/manraj/co-founder/build/leakcheck/batch-20261109-1513.jsonl")
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(os.environ.get("PL_GEN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(HERE))), "site")
+
+# Override from the 24 Nov 2026 re-check of the saved 9 Nov fixes under the current (stricter) verifier.
+# Source: /Users/manraj/co-founder/research/deep-sweep-2026-11/head-to-head/RECHECK-9NOV.md
+#         (raw verifier output: head-to-head/recheck-9nov/results.jsonl)
+# Since 16 Nov a fix passes only if the leak was reproduced first. One app passed on Haiku on 9 Nov, but the lab had
+# failed to seed one of its two tables (a CHECK constraint rejected the filler row), so "0 rows after" proved nothing,
+# and its fix never touched that table: with a valid row anyone can still read it. Every other verdict is unchanged.
+# The log keeps its 9 Nov result; this set only changes how the page and CSV report it. Keyed by the first 16 hex
+# chars of sha256(repo name), because the run log names real apps and this repo must not.
+RECHECK_DATE = "2026-11-24"
+RECHECK_SOURCE = "RECHECK-9NOV.md"
+FAILS_CURRENT_CHECK = {"904e4fb63b9b77a0"}
+RECHECK_LABEL = "passed on 9 Nov; fails current check"
 
 rows = [json.loads(l) for l in open(BATCH) if l.strip()]
 assert len(rows) == 20
@@ -15,24 +28,34 @@ for r in rows:
     tried = [a["model"] for a in r["attempts"]]
     passed_on = next((a["model"] for a in r["attempts"] if a["passed"]), None)
     v = list(r["verdicts"].values())
-    runs.append(dict(who="anyone" if r["who"] == "anyone" else "signed-in", tables=len(r["leaking"]), tried=tried,
+    rechecked = hashlib.sha256(r["repo"].encode()).hexdigest()[:16] in FAILS_CURRENT_CHECK
+    assert not rechecked or passed_on, "override only applies to an app that passed on 9 Nov"
+    status = "recheck" if rechecked else "proven" if passed_on else "person"
+    runs.append(dict(status=status, who="anyone" if r["who"] == "anyone" else "signed-in", tables=len(r["leaking"]), tried=tried,
                      passed_on=passed_on, cost=r["cost"], minutes=r["seconds"] / 60, questions=r["questions"],
                      risk=r["break_risk"], bug=v.count("bug"), pbd=v.count("public_by_design_but_leaky"),
                      fp=v.count("false_positive")))
+assert sum(x["status"] == "recheck" for x in runs) == len(FAILS_CURRENT_CHECK) == 1
 runs.sort(key=lambda x: x["cost"])
 costs = [x["cost"] for x in runs]
 mins = [x["minutes"] for x in runs]
 S = dict(
     cost_med=st.median(costs), cost_mean=st.mean(costs), cost_min=min(costs), cost_max=max(costs),
     min_med=st.median(mins), min_mean=st.mean(mins), min_min=min(mins), min_max=max(mins),
-    haiku_only=[x["cost"] for x in runs if x["tried"] == ["haiku"] and x["passed_on"] == "haiku"],
+    haiku_only=[x["cost"] for x in runs if x["tried"] == ["haiku"] and x["passed_on"] == "haiku" and x["status"] == "proven"],
 )
 assert round(S["cost_med"], 2) == 0.46 and round(S["min_med"], 1) == 3.5
 assert sum(x["tables"] for x in runs) == 37
 assert sum(x["bug"] for x in runs) == 28 and sum(x["pbd"] for x in runs) == 7 and sum(x["fp"] for x in runs) == 2
 assert sum(x["questions"] for x in runs) == 18
 hq = S["haiku_only"]
-assert len(hq) == 15 and round(st.median(hq), 2) == 0.41 and round(max(hq), 2) == 0.76
+# Haiku first-try passes that still pass the current check: 14 (15 on 9 Nov; median then $0.41, max $0.76).
+assert len(hq) == 14 and round(st.median(hq), 2) == 0.39 and round(max(hq), 2) == 0.76
+N = dict(proven=sum(x["status"] == "proven" for x in runs), recheck=sum(x["status"] == "recheck" for x in runs),
+         person=sum(x["status"] == "person" for x in runs),
+         sonnet=sum(x["status"] == "proven" and x["passed_on"] == "sonnet" for x in runs),
+         opus=sum(x["status"] == "proven" and x["passed_on"] == "opus" for x in runs))
+assert N == dict(proven=17, recheck=1, person=2, sonnet=2, opus=1) and N["proven"] == len(hq) + N["sonnet"] + N["opus"]
 
 
 def money(v):
@@ -72,13 +95,14 @@ def strip(values, kinds, lo, hi, ticks, fmt, median, label, unit_word):
             lane += 1
         placed.append((x, lane))
         y = 78 - lane * 13
-        cls = "m-green" if k == "proven" else "m-amber"
+        cls = {"proven": "m-green", RECHECK_LABEL: "m-ink"}.get(k, "m-amber")
         out.append(f'<circle class="dot mark {cls}" cx="{x:.2f}%" cy="{y}" r="6"><title>{fmt(v)}, {k}</title></circle>')
     out.append('</svg>')
     return "\n".join(out)
 
 
-kinds = ["proven" if x["passed_on"] else "needs a person" for x in runs]
+KIND = {"proven": "proven", "recheck": RECHECK_LABEL, "person": "needs a person"}
+kinds = [KIND[x["status"]] for x in runs]
 COST_STRIP = strip(costs, kinds, 0.1, 20,
                    [(0.1, "all"), (0.25, "desk"), (0.5, "all"), (1, "desk"), (2.5, "all"), (5, "desk"), (10, "all"), (20, "desk")],
                    lambda v: (f"${v:.2f}" if v < 1 else f"${v:.2f}".rstrip("0").rstrip(".") if v < 10 else f"${v:.0f}") if v not in (0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20) else {0.1: "$0.10", 0.25: "$0.25", 0.5: "$0.50", 1: "$1", 2.5: "$2.50", 5: "$5", 10: "$10", 20: "$20"}[v],
@@ -169,10 +193,14 @@ VERDICT_BAR = stacked([("Real bug", 28, "m-red"), ("Public by design, but leakin
                        ("False alarm", 2, "m-faint")],
                       "verdict", "Agent verdicts on 37 leaking tables",
                       "28 real bugs, 7 public by design but leaking personal columns, 2 false alarms.", 37)
-MODEL_BAR = stacked([("Smallest model (Haiku), first try", 15, "m-green"), ("Escalated to Sonnet", 2, "m-green"),
-                     ("Escalated to Opus", 1, "m-green"), ("Needs a person", 2, "m-amber")],
-                    "models", "Which model produced the passing fix, 20 apps",
-                    "15 passed with the smallest model, 2 needed Sonnet, 1 needed Opus, 2 failed on all three and went to a person.", 20)
+MODEL_BAR = stacked([("Smallest model (Haiku), first try", len(hq), "m-green"), ("Escalated to Sonnet", N["sonnet"], "m-green"),
+                     ("Escalated to Opus", N["opus"], "m-green"),
+                     ("Passed on Haiku on 9 Nov, fails the current check", N["recheck"], "m-ink"),
+                     ("Needs a person", N["person"], "m-amber")],
+                    "models", "Which model produced the passing fix, 20 apps, re-checked 24 Nov 2026",
+                    f"{len(hq)} passed with the smallest model, {N['sonnet']} needed Sonnet, {N['opus']} needed Opus, "
+                    f"{N['recheck']} passed on Haiku on 9 Nov but fails the current check, "
+                    f"{N['person']} failed on all three and went to a person.", 20)
 
 
 def bucket(vals, edges):
@@ -202,7 +230,9 @@ def model_cell(x):
 
 RUN_ROWS = []
 for i, x in enumerate(runs, 1):
-    res = '<span class="pill proven">proven</span>' if x["passed_on"] else '<span class="pill pending">needs a person</span>'
+    res = {"proven": '<span class="pill proven">proven</span>',
+           "recheck": f'<span class="pill neutral">{RECHECK_LABEL}</span>',
+           "person": '<span class="pill pending">needs a person</span>'}[x["status"]]
     w = 100 * math.log(x["cost"] / 0.1) / math.log(20 / 0.1)
     RUN_ROWS.append(
         f'<tr><th scope="row">{i:02d}</th><td>{x["who"]}</td><td class="num">{x["tables"]}</td><td>{model_cell(x)}</td><td>{res}</td>'
@@ -244,11 +274,11 @@ for row in [
 P9 = "autonomous pipeline (20 new apps)"
 summary = [
     ("apps", 20, "", "apps", "14 readable by anyone, 6 by any signed-up user"),
-    ("passed_strict_lab_proof", 18, 20, "apps", "no human involved"),
-    ("passed_on_smallest_model_first_try", 15, 20, "apps", "Haiku"),
-    ("escalated_to_sonnet_and_passed", 2, 20, "apps", ""),
-    ("escalated_to_opus_and_passed", 1, 20, "apps", ""),
-    ("needs_a_person", 2, 20, "apps", "failed on all three models; no fix branch"),
+    ("passed_strict_lab_proof", N["proven"], 20, "apps", f"no human help; re-checked {RECHECK_DATE} with the current verifier (18 on the day)"),
+    ("passed_on_smallest_model_first_try", len(hq), 20, "apps", f"Haiku; re-checked {RECHECK_DATE} (15 on the day)"),
+    ("escalated_to_sonnet_and_passed", N["sonnet"], 20, "apps", ""),
+    ("escalated_to_opus_and_passed", N["opus"], 20, "apps", ""),
+    ("needs_a_person", N["person"], 20, "apps", "failed on all three models; no fix branch"),
     ("tables_flagged", 37, "", "tables", ""),
     ("verdict_real_bug", 28, 37, "tables", ""),
     ("verdict_public_by_design_but_leaky", 7, 37, "tables", ""),
@@ -260,8 +290,8 @@ summary = [
     ("model_cost_mean", round(S["cost_mean"], 2), "", "usd", "pulled up by one app"),
     ("model_cost_min", round(S["cost_min"], 2), "", "usd", ""),
     ("model_cost_max", round(S["cost_max"], 2), "", "usd", "escalated through all three models"),
-    ("model_cost_median_smallest_model_passes", round(st.median(hq), 2), 15, "usd", ""),
-    ("model_cost_max_smallest_model_passes", round(max(hq), 2), 15, "usd", ""),
+    ("model_cost_median_smallest_model_passes", round(st.median(hq), 2), len(hq), "usd", f"re-checked {RECHECK_DATE}"),
+    ("model_cost_max_smallest_model_passes", round(max(hq), 2), len(hq), "usd", f"re-checked {RECHECK_DATE}"),
     ("agent_minutes_median", round(S["min_med"], 1), "", "minutes", "agent working time summed across attempts"),
     ("agent_minutes_mean", round(S["min_mean"], 1), "", "minutes", ""),
     ("agent_minutes_min", round(S["min_min"], 1), "", "minutes", ""),
@@ -269,6 +299,8 @@ summary = [
 ]
 for m, v, d, u, n in summary:
     w.writerow((P9, "2026-11-09", "all", m, v, d, u, n))
+w.writerow((P9, RECHECK_DATE, "all", "passed_on_day_fails_current_verifier", N["recheck"], 20, "apps",
+            f"saved 9 Nov fixes re-run under the current verifier (a fix passes only if the leak was reproduced first); source {RECHECK_SOURCE}"))
 for n, v in COST_B:
     w.writerow((P9, "2026-11-09", "cost bucket " + n, "apps", v, 20, "apps", ""))
 for n, v in TIME_B:
@@ -277,7 +309,7 @@ for i, x in enumerate(runs, 1):
     g = f"run {i:02d}"
     for m, v, u in [("who_could_read", x["who"], ""), ("tables_flagged", x["tables"], "tables"),
                     ("models_tried", " > ".join(x["tried"]), ""), ("passed_on", x["passed_on"] or "none", ""),
-                    ("result", "proven" if x["passed_on"] else "needs a person", ""),
+                    ("result", KIND[x["status"]], ""),
                     ("model_cost", round(x["cost"], 2), "usd"), ("agent_minutes", round(x["minutes"], 1), "minutes"),
                     ("questions_for_owner", x["questions"], "questions"), ("break_risk", x["risk"], "")]:
         w.writerow((P9, "2026-11-09", g, m, v, "", u, "runs ordered by cost; no app identifiers"))
