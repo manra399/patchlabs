@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-23T23:15:00Z</updated>
+  <updated>2026-11-24T08:30:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Lovable storage errors: failed uploads, size limits and the quota, without exposing users' files</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/lovable-supabase-storage-errors"/>
+    <id>https://patchlabs.dev/learn/lovable-supabase-storage-errors</id>
+    <updated>2026-11-24T08:30:00Z</updated>
+    <summary>Reproduced on Supabase's open-source Storage server (1.98.5) on Postgres 17: a storage policy "for all" that checks only the bucket fixed uploads and let a logged-out visitor list, download and delete another user's file; a public bucket served it by URL; deleting rows in SQL left the file on disk. The per-user folder fix kept uploads working and gave the stranger and visitor nothing.</summary>
+  </entry>
   <entry>
     <title>FAQ: can the fix agent change the test it's graded by?</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/how-it-works#agent-reach"/>

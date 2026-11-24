@@ -1,0 +1,187 @@
+title: Lovable + Supabase storage errors: uploads failing, size limits and the storage quota
+description: Why file uploads fail in a Lovable or Supabase app (row-level security, file too large, storage quota), the two AI fixes that let anyone download or delete users' files, and the fix we proved on the real Storage server.
+h1: Lovable storage errors: fix failed uploads and the storage quota without exposing users’ files
+navtitle: Storage errors and the quota
+topic: supabase
+order: 14
+checked: 2026-11-24
+short: Failed uploads, “exceeded the maximum allowed size” and a full storage quota in Lovable apps, the two quick fixes that expose every file, and the fix we proved on Supabase’s own Storage server.
+lede: When uploads break in a Lovable app, it is almost always one of three things: no storage policy lets the user upload, the file is bigger than the limit, or the project has used up its storage quota. The quick fixes an AI builder tends to suggest make the error go away and open every user’s files to the internet. We ran Supabase’s own Storage server (storage-api 1.98.5) on Postgres 17 on 24 November 2026, reproduced the errors, and tested each fix with two fake users and a logged-out visitor.
+tldr: “new row violates row-level security policy” on upload means no policy on <code>storage.objects</code> allows it. It is not a quota problem. || “The object exceeded the maximum allowed size” is the per-file limit: 50 MB on the Free plan, up to 500 GB on paid plans, and lower if the bucket sets its own limit. || The storage quota is 1 GB on Free and 100 GB on Pro. It is measured as an average over the billing month, so deleting files today lowers it gradually, not at once. || Quick fix “for all using (bucket_id = …)” with no role: in our run a logged-out visitor listed, downloaded and deleted another user’s file, and a signed-in user overwrote it. A public bucket served the file to anyone who had its URL. || Deleting rows from <code>storage.objects</code> in SQL doesn’t free space. Supabase blocks it, and when forced, the file stayed on disk. Delete through the Storage API. || The fix: private bucket, files under <code>&lt;user id&gt;/</code>, four policies for <code>authenticated</code> that check the folder. Uploads worked, and the stranger and visitor got nothing.
+findings: PL-007, PL-015
+---
+<p>This guide is for founders and agencies with a Lovable app (or any Supabase app built with Bolt, Cursor or Claude Code) where uploads fail, a file is rejected as too large, or Supabase has emailed about the storage quota. The results come from our own run on 24 November 2026: Supabase’s open-source Storage server (<code>supabase/storage-api</code> 1.98.5, local file backend) on Postgres 17.11, a private bucket called <code>uploads</code>, two fake users (Alice and Bob) and a logged-out visitor holding only the public key. They show the pattern, not any particular app. The scripts are short and we can share them.</p>
+
+<h2 id="which-error">Which error do you have?</h2>
+<p>Open your browser’s developer tools, try the upload again, and read the response of the request to <code>/storage/v1/object/…</code>. The message is the same one <code>supabase-js</code> returns in <code>error.message</code>.</p>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">What you see</th><th scope="col">Cause</th></tr></thead>
+<tbody>
+<tr><td>new row violates row-level security policy</td><td>No policy on <code>storage.objects</code> lets this user upload to this bucket and path. <a href="#cause-1">Cause 1</a>.</td></tr>
+<tr><td>The object exceeded the maximum allowed size</td><td>The file is over the bucket’s limit or the project’s global limit (50 MB at most on Free). <a href="#cause-2">Cause 2</a>.</td></tr>
+<tr><td>Bucket not found</td><td>The bucket name in the code doesn’t match a bucket, or the code asks for a public URL from a private bucket. Check the name; don’t make the bucket public to fix it.</td></tr>
+<tr><td>Uploads still work, but Supabase emails that you are over the storage quota</td><td>Your organisation is over its plan’s storage size. <a href="#cause-3">Cause 3</a>.</td></tr>
+</tbody></table></div>
+
+<h2 id="cause-1">Cause 1: no storage policy allows the upload</h2>
+<p>A new private bucket has no policies, so the Storage API refuses every upload, even from a signed-in user uploading into their own folder. In our run, Alice’s first upload got:</p>
+[[CODE lab output, 24 Nov 2026]]
+alice upload: {"statusCode":"403","error":"Unauthorized",
+  "message":"new row violates row-level security policy"}
+[[/CODE]]
+<p>That refusal is the safe default. The fix is a policy that lets each user write only their own files (<a href="#fix">below</a>), not a policy that lets everyone write everything.</p>
+
+<h2 id="cause-2">Cause 2: the file is over the size limit</h2>
+<p>Every file is checked against the bucket’s own limit, if it has one, and the project’s global limit. On the Free plan the global limit can’t go above 50 MB; on Pro and above it can be set up to 500 GB. We set a 1 MB bucket limit and uploaded 2 MB as a user who was allowed to upload:</p>
+[[CODE lab output, 24 Nov 2026]]
+alice 2 MB upload: {"statusCode":"413","error":"Payload too large",
+  "message":"The object exceeded the maximum allowed size"}
+[[/CODE]]
+<p>Raise the bucket’s limit under Storage settings, or compress or resize the file in the browser before upload. Nothing about this error needs a policy change. If the AI builder’s answer touches row level security, it is fixing the wrong problem.</p>
+
+<h2 id="cause-3">Cause 3: the storage quota</h2>
+<p>The quota is the total size of every file in every bucket across your organisation: 1 GB on the Free plan, 100 GB on Pro, then $0.0213 per GB per month above that. Supabase measures it in GB-hours, so the figure it compares with your quota is the average over the billing period, not today’s size. Deleting 500 MB today lowers the month’s average a little each day, not all at once.</p>
+<p>To see what is using the space, run this in the SQL editor. It only reads:</p>
+[[CODE storage-size.sql]]
+select b.id as bucket, b.public, b.file_size_limit,
+       count(o.id) as files,
+       pg_size_pretty(coalesce(sum((o.metadata->>'size')::bigint), 0)) as total_size
+from storage.buckets b
+left join storage.objects o on o.bucket_id = b.id
+group by b.id, b.public, b.file_size_limit
+order by coalesce(sum((o.metadata->>'size')::bigint), 0) desc;
+[[/CODE]]
+<h3 id="sql-delete">Don’t free space by deleting rows in SQL</h3>
+<p>An AI builder will often suggest <code>delete from storage.objects where …</code>. Each row in that table only points at a file; the file itself lives in Supabase’s object store. Supabase now blocks the delete with a trigger, and our run hit it:</p>
+[[CODE lab output, 24 Nov 2026]]
+delete from storage.objects where bucket_id = 'uploads';
+ERROR:  Direct deletion from storage tables is not allowed. Use the Storage API instead.
+[[/CODE]]
+<p>The trigger can be switched off with a setting (<code>storage.allow_delete_query</code>), and some answers online do that. We did it to see what happens: the row went, and the file stayed on disk with nothing pointing at it.</p>
+[[CODE lab output, 24 Nov 2026]]
+files on disk before: 1
+with storage.allow_delete_query=true: deleted 22222222-…/passport.txt
+rows left: 0  files on disk after: 1
+[[/CODE]]
+<p>Delete files in the Storage page of the dashboard, or with <code>supabase.storage.from('uploads').remove([...])</code> from a server using the service key. In our run, Alice deleting her own file through the API, with the policies below, returned “Successfully deleted” and removed the file.</p>
+
+<h2 id="bad-fixes">The two quick fixes that expose every file</h2>
+<p>Paste the upload error into an AI builder and these are the two answers you are most likely to get. We applied each one to a fresh bucket that held one file of Bob’s (fake passport details), then tried it as Alice and as a logged-out visitor.</p>
+<h3 id="bad-fix-a">Quick fix A: make the bucket public</h3>
+[[CODE do not ship]]
+update storage.buckets set public = true where id = 'uploads';
+[[/CODE]]
+[[CODE lab output, 24 Nov 2026]]
+alice upload: "new row violates row-level security policy"     still broken
+anon GET /object/public/uploads/<bob's id>/passport.txt: 200
+  Bob Example, passport 123456789 (fake test data)
+anon list: 0 files
+[[/CODE]]
+<p>This doesn’t even fix the upload: public only affects downloads. It does make every file downloadable by anyone with its URL, with no sign-in, forever. Listing stayed closed, so a stranger needs the path, but paths built from a user id and a file name are shared in links, logs and screenshots. That is fine for logos and wrong for ID scans, invoices or anything personal. This is finding <a href="/findings/pl-007">PL-007</a>.</p>
+<h3 id="bad-fix-b">Quick fix B: a policy “for all” that checks only the bucket</h3>
+[[CODE do not ship]]
+create policy "Allow all" on storage.objects
+  for all
+  using (bucket_id = 'uploads')
+  with check (bucket_id = 'uploads');
+[[/CODE]]
+[[CODE lab output, 24 Nov 2026]]
+alice upload: 200                                      upload works
+anon list bob's folder: 1 ['passport.txt']
+anon download bob's file: 200  Bob Example, passport 123456789
+alice overwrites bob's file (upsert): 200
+bob's file now says: replaced by alice
+anon deletes bob's file: 200 "Successfully deleted"
+[[/CODE]]
+<p>A policy with no <code>to</code> clause applies to every role, including the logged-out visitor, and a policy that checks only <code>bucket_id</code> covers every file in the bucket. Together they let anyone with your public key list, download, replace and delete every user’s files. Writing <code>to authenticated</code> closes the door to logged-out visitors but still lets any user who signs up do all of the above to everyone else. This is finding <a href="/findings/pl-015">PL-015</a>.</p>
+
+<h2 id="fix">The fix that keeps uploads working and files private</h2>
+<p>Keep the bucket private and upload each user’s files under a folder named after their user id, for example <code>supabase.storage.from('uploads').upload(`${user.id}/${file.name}`, file)</code>. Then one migration:</p>
+[[CODE supabase/migrations/…_storage_per_user.sql]]
+-- 1. Undo the quick fixes, if they were applied
+update storage.buckets set public = false where id = 'uploads';
+drop policy if exists "Allow all" on storage.objects;
+
+-- 2. Each signed-in user can only touch files in their own folder
+create policy "uploads: own folder insert" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+create policy "uploads: own folder read" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+create policy "uploads: own folder update" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text))
+  with check (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+create policy "uploads: own folder delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+[[/CODE]]
+<p>What our run showed after it:</p>
+[[CODE lab output, 24 Nov 2026]]
+alice upload own folder: 200          uploads work
+alice re-upload (upsert): 200         replacing her own file works
+alice upload into bob's folder: "new row violates row-level security policy"
+alice reads bob's file: "Object not found"
+alice overwrites bob's file: "new row violates row-level security policy"
+alice deletes bob's file: "Access denied"
+anon list bob's folder: 0 files
+anon public URL: "Bucket not found"
+bob reads own file: 200
+[[/CODE]]
+<p>To show a private file in the page, create a short-lived signed URL (<code>createSignedUrl(path, 60)</code>) instead of a public one. If users need to share files with each other, add a policy for that case on purpose, for example by checking a <code>shares</code> table, rather than widening the folder rule. Our <a href="/learn/supabase-storage-policies">storage bucket policies guide</a> covers public and private buckets, shared files and signed URLs in more detail.</p>
+
+<h2 id="check">Check which state your app is in</h2>
+<p>Run this in the Supabase SQL editor. It changes nothing.</p>
+[[CODE check-storage-policies.sql]]
+select policyname, cmd, roles,
+       'public' = any(roles) as applies_to_everyone,
+       coalesce(qual, '') || coalesce(with_check, '')
+         not like '%auth.uid()%'  as not_per_user
+from pg_policies
+where schemaname = 'storage' and tablename = 'objects'
+order by policyname;
+[[/CODE]]
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">Result</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>applies_to_everyone</code> true</td><td>The policy has no <code>to</code> clause, so logged-out visitors get it too. On a select, update or delete policy that is quick fix B.</td></tr>
+<tr><td><code>not_per_user</code> true</td><td>The policy doesn’t look at who is signed in, so it covers every user’s files. Fine for a deliberately public bucket of logos; wrong for anything personal.</td></tr>
+<tr><td>a bucket with <code>public</code> true in <a href="#cause-3">the size query</a></td><td>Every file in it can be downloaded by URL with no sign-in. Make sure nothing personal is in it.</td></tr>
+<tr><td>no rows</td><td>No storage policies at all: uploads will fail until you add the per-user ones.</td></tr>
+</tbody></table></div>
+<p>In our run the query flagged quick fix B on both columns and passed all four per-user policies.</p>
+
+<h2 id="prompt">Tell your AI builder the rule</h2>
+[[CODE prompt for Lovable or your AI builder]]
+File uploads fail with "new row violates row-level security
+policy". Do not make the bucket public and do not add a
+storage policy that checks only bucket_id or has no TO role.
+Fix it like this:
+- Keep the bucket private. Upload to `${user.id}/${fileName}`.
+- Add insert, select, update and delete policies on
+  storage.objects TO authenticated, each requiring
+  bucket_id = '<bucket>' and
+  (storage.foldername(name))[1] = (select auth.uid()::text).
+- Show files with createSignedUrl, not getPublicUrl.
+- Never delete rows from storage.objects in SQL; use
+  storage.remove().
+Show me the migration before applying it.
+[[/CODE]]
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/storage/security/access-control">Supabase: Storage access control (policies on storage.objects, storage.foldername)</a></li>
+  <li><a href="https://supabase.com/docs/guides/storage/uploads/file-limits">Supabase: file size limits (50 MB on Free, up to 500 GB on paid plans)</a></li>
+  <li><a href="https://supabase.com/docs/guides/platform/manage-your-usage/storage-size">Supabase: storage size, GB-hours and plan quotas</a></li>
+  <li><a href="https://supabase.com/docs/guides/storage/management/delete-objects">Supabase: delete objects through the API, not SQL (orphaned objects)</a></li>
+  <li><a href="https://github.com/supabase/storage">supabase/storage: the open-source Storage server we ran (v1.98.5)</a></li>
+</ul>

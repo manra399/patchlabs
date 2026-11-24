@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http://localhost:8001; connect-src 'self' https://api.patchlabs.dev http://localhost:8001; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://api.patchlabs.dev">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lovable + Supabase storage errors: uploads failing, size limits and the storage quota | PatchLabs</title>
+<meta name="description" content="Why file uploads fail in a Lovable or Supabase app (row-level security, file too large, storage quota), the two AI fixes that let anyone download or delete users' files, and the fix we proved on the real Storage server.">
+<link rel="canonical" href="https://patchlabs.dev/learn/lovable-supabase-storage-errors">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PatchLabs">
+<meta property="og:title" content="Lovable + Supabase storage errors: uploads failing, size limits and the storage quota | PatchLabs">
+<meta property="og:description" content="Why file uploads fail in a Lovable or Supabase app (row-level security, file too large, storage quota), the two AI fixes that let anyone download or delete users' files, and the fix we proved on the real Storage server.">
+<meta property="og:url" content="https://patchlabs.dev/learn/lovable-supabase-storage-errors">
+<meta property="og:image" content="https://patchlabs.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PatchLabs: find the leak, prove the fix.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lovable + Supabase storage errors: uploads failing, size limits and the storage quota | PatchLabs">
+<meta name="twitter:description" content="Why file uploads fail in a Lovable or Supabase app (row-level security, file too large, storage quota), the two AI fixes that let anyone download or delete users' files, and the fix we proved on the real Storage server.">
+<meta name="twitter:image" content="https://patchlabs.dev/assets/og.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
+<link rel="alternate" type="application/atom+xml" href="/changelog.xml" title="PatchLabs changelog">
+<!-- GitHub Pages can't send frame-ancestors or X-Frame-Options, so pages refuse to show inside another site's frame (clickjacking on approve and settings). -->
+<script>if(window.top!==window.self){document.documentElement.style.display='none';try{window.top.location=window.self.location.href}catch(e){}}</script>
+<script>(function(r){r.className=r.className.replace('no-js','js');try{var t=localStorage.getItem('pl_theme');if(t==='dark'||t==='light')r.setAttribute('data-theme',t)}catch(e){}})(document.documentElement)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,500..600;1,9..144,480..520&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+<script src="/assets/site.js" defer></script>
+<link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Lovable storage errors: fix failed uploads and the storage quota without exposing users’ files","description":"Why file uploads fail in a Lovable or Supabase app (row-level security, file too large, storage quota), the two AI fixes that let anyone download or delete users' files, and the fix we proved on the real Storage server.","datePublished":"2026-11-24","dateModified":"2026-11-24","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/lovable-supabase-storage-errors"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Lovable storage errors: fix failed uploads and the storage quota without exposing users’ files","item":"https://patchlabs.dev/learn/lovable-supabase-storage-errors"}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="PatchLabs home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <details class="dd" data-mega>
+        <summary>Products <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-products">
+          <div class="mega-main">
+            <p class="mega-h">Four product lines, one report</p>
+            <div class="mega-grid">
+              <a class="mega-item" href="/product/lab"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3M7.5 15h9"/></svg></span><span class="t"><b>Lab</b><span>Rebuilds your database from its migrations and reproduces each leak as anon, stranger and owner.</span></span></a>
+              <a class="mega-item" href="/product/code"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="t"><b>Code</b><span>Reads the repo: keys in code and history, vulnerable dependencies, risky AI-written patterns.</span></span></a>
+              <a class="mega-item" href="/product/fix"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.3-4.6"/></svg></span><span class="t"><b>Fix</b><span>Writes the migration, proves it as three identities, then waits for your engineer to approve.</span></span></a>
+              <a class="mega-item" href="/product/watch"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="t"><b>Watch</b><span>Scheduled re-checks, diffs, alerts, a public badge and signed receipts for every result.</span></span></a>
+              <a class="mega-item wide" href="/product/live-posture"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z"/></svg></span><span class="t"><b>Live posture <span class="mega-tag">part of Watch</span></b><span>A daily grade for HTTPS, the certificate, security headers and cookies on the domain you verify. Never touches your database.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">See it work</p>
+            <ul>
+              <li><a href="/demo">Try the demo <span>No sign-in</span></a></li>
+              <li><a href="/sample-report">Sample proof report</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/findings">Findings library</a></li>
+              <li><a href="/integrations">Integrations</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Solutions <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-solutions">
+          <div class="mega-main">
+            <p class="mega-h">Who it’s for</p>
+            <div class="mega-grid one">
+              <a class="mega-item" href="/solutions/founders"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><span class="t"><b>Founders</b><span>You built it with AI and real people are signing up.</span></span></a>
+              <a class="mega-item" href="/solutions/agencies"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><rect x="13.5" y="14" width="7" height="6" rx="1.5"/></svg></span><span class="t"><b>Agencies</b><span>Every client app you ship, watched after handover.</span></span></a>
+              <a class="mega-item" href="/solutions/engineers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15.5 17.5l2 2 3.5-4"/></svg></span><span class="t"><b>Engineers who approve</b><span>The SQL, the proof and the receipt. Nothing ships without you.</span></span></a>
+            </div>
+          </div>
+          <div class="mega-side">
+            <p class="mega-h">Works with apps built on</p>
+            <ul>
+              <li><a href="/for/lovable">Lovable</a></li>
+              <li><a href="/for/supabase">Supabase</a></li>
+              <li><a href="/for/bolt">Bolt</a></li>
+              <li><a href="/for/replit">Replit</a></li>
+              <li><a href="/for/cursor">Cursor</a></li>
+            </ul>
+            <p class="mega-note">Compatibility, not partnerships.</p>
+          </div>
+        </div>
+      </details>
+      <details class="dd" data-mega>
+        <summary>Resources <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="dd-panel mega mega-resources">
+          <div class="mega-main">
+            <p class="mega-h">Learn and look things up</p>
+            <div class="mega-grid">
+              <a class="mega-item small" href="/learn" aria-current="page"><span class="t"><b>Learn</b><span>In-depth guides to securing AI-built apps.</span></span></a>
+              <a class="mega-item small" href="/research/1-in-4"><span class="t"><b>Research</b><span>The 1-in-4 study and how we measured it.</span></span></a>
+              <a class="mega-item small" href="/findings"><span class="t"><b>Findings library</b><span>Every check by ID, with the fix.</span></span></a>
+              <a class="mega-item small" href="/docs"><span class="t"><b>Docs</b><span>Reports, API, webhooks, MCP and CI.</span></span></a>
+              <a class="mega-item small" href="/changelog"><span class="t"><b>Changelog</b><span>What shipped, dated.</span></span></a>
+              <a class="mega-item small" href="/tools"><span class="t"><b>Free tools</b><span>RLS check, headers check and leak-cost calculator.</span></span></a>
+              <a class="mega-item small" href="/status"><span class="t"><b>Status</b><span>API and worker health, live.</span></span></a>
+              <a class="mega-item small urgent" href="/leaking-now"><span class="t"><b>Leaking right now?</b><span>What to do in the next hour.</span></span></a>
+            </div>
+          </div>
+          <a class="mega-feature" href="/research/1-in-4">
+            <span class="lab red">Study</span>
+            <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="link-arrow">Read the study</span>
+          </a>
+        </div>
+      </details>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-right">
+      <a class="signin" href="/app/login">Sign in</a>
+      <a class="btn secondary small" href="/demo">Try the demo</a>
+      <a class="btn primary small" href="/#check">Check my app free</a>
+    </div>
+    <a class="menu-btn" href="#site-footer" aria-label="Open menu"><svg class="bars" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg class="x" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+<li><a href="/learn/supabase-multi-tenant-rls">Multi-tenant RLS and tenant isolation</a></li>
+<li><a href="/learn/plaintext-passwords-ai-built-login">Plain-text passwords in AI-built logins</a></li>
+<li><a href="/learn/supabase-mcp-patient-data">Supabase MCP and patient data</a></li>
+<li><a href="/learn/users-can-see-each-others-data">Users see each other’s data</a></li>
+<li><a href="/learn/lovable-authentication-errors">Sign-up errors and the safe fix</a></li>
+<li><a href="/learn/lovable-supabase-storage-errors" aria-current="page">Storage errors and the quota</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+<li><a href="/learn/cursor-fireworks-breach-agent-traces-keys">The Cursor breach and keys in agent traces</a></li>
+<li><a href="/learn/personal-data-headers-ai-prompts">Personal data in headers and AI prompts</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/third-party-script-compromise-optimizely">Hijacked third-party scripts</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Storage errors and the quota</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>Lovable storage errors: fix failed uploads and the storage quota without exposing users’ files</h1>
+      <p class="lede">When uploads break in a Lovable app, it is almost always one of three things: no storage policy lets the user upload, the file is bigger than the limit, or the project has used up its storage quota. The quick fixes an AI builder tends to suggest make the error go away and open every user’s files to the internet. We ran Supabase’s own Storage server (storage-api 1.98.5) on Postgres 17 on 24 November 2026, reproduced the errors, and tested each fix with two fake users and a logged-out visitor.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 24 Nov 2026</span><span>6 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>“new row violates row-level security policy” on upload means no policy on <code>storage.objects</code> allows it. It is not a quota problem.</li><li>“The object exceeded the maximum allowed size” is the per-file limit: 50 MB on the Free plan, up to 500 GB on paid plans, and lower if the bucket sets its own limit.</li><li>The storage quota is 1 GB on Free and 100 GB on Pro. It is measured as an average over the billing month, so deleting files today lowers it gradually, not at once.</li><li>Quick fix “for all using (bucket_id = …)” with no role: in our run a logged-out visitor listed, downloaded and deleted another user’s file, and a signed-in user overwrote it. A public bucket served the file to anyone who had its URL.</li><li>Deleting rows from <code>storage.objects</code> in SQL doesn’t free space. Supabase blocks it, and when forced, the file stayed on disk. Delete through the Storage API.</li><li>The fix: private bucket, files under <code>&lt;user id&gt;/</code>, four policies for <code>authenticated</code> that check the folder. Uploads worked, and the stranger and visitor got nothing.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#which-error">Which error do you have?</a></li><li><a href="#cause-1">Cause 1: no storage policy allows the upload</a></li><li><a href="#cause-2">Cause 2: the file is over the size limit</a></li><li><a href="#cause-3">Cause 3: the storage quota</a></li><li><a href="#bad-fixes">The two quick fixes that expose every file</a></li><li><a href="#fix">The fix that keeps uploads working and files private</a></li><li><a href="#check">Check which state your app is in</a></li><li><a href="#prompt">Tell your AI builder the rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for founders and agencies with a Lovable app (or any Supabase app built with Bolt, Cursor or Claude Code) where uploads fail, a file is rejected as too large, or Supabase has emailed about the storage quota. The results come from our own run on 24 November 2026: Supabase’s open-source Storage server (<code>supabase/storage-api</code> 1.98.5, local file backend) on Postgres 17.11, a private bucket called <code>uploads</code>, two fake users (Alice and Bob) and a logged-out visitor holding only the public key. They show the pattern, not any particular app. The scripts are short and we can share them.</p>
+
+<h2 id="which-error">Which error do you have?</h2>
+<p>Open your browser’s developer tools, try the upload again, and read the response of the request to <code>/storage/v1/object/…</code>. The message is the same one <code>supabase-js</code> returns in <code>error.message</code>.</p>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">What you see</th><th scope="col">Cause</th></tr></thead>
+<tbody>
+<tr><td>new row violates row-level security policy</td><td>No policy on <code>storage.objects</code> lets this user upload to this bucket and path. <a href="#cause-1">Cause 1</a>.</td></tr>
+<tr><td>The object exceeded the maximum allowed size</td><td>The file is over the bucket’s limit or the project’s global limit (50 MB at most on Free). <a href="#cause-2">Cause 2</a>.</td></tr>
+<tr><td>Bucket not found</td><td>The bucket name in the code doesn’t match a bucket, or the code asks for a public URL from a private bucket. Check the name; don’t make the bucket public to fix it.</td></tr>
+<tr><td>Uploads still work, but Supabase emails that you are over the storage quota</td><td>Your organisation is over its plan’s storage size. <a href="#cause-3">Cause 3</a>.</td></tr>
+</tbody></table></div>
+
+<h2 id="cause-1">Cause 1: no storage policy allows the upload</h2>
+<p>A new private bucket has no policies, so the Storage API refuses every upload, even from a signed-in user uploading into their own folder. In our run, Alice’s first upload got:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alice upload: {"statusCode":"403","error":"Unauthorized",
+  "message":"new row violates row-level security policy"}</code></pre></div>
+<p>That refusal is the safe default. The fix is a policy that lets each user write only their own files (<a href="#fix">below</a>), not a policy that lets everyone write everything.</p>
+
+<h2 id="cause-2">Cause 2: the file is over the size limit</h2>
+<p>Every file is checked against the bucket’s own limit, if it has one, and the project’s global limit. On the Free plan the global limit can’t go above 50 MB; on Pro and above it can be set up to 500 GB. We set a 1 MB bucket limit and uploaded 2 MB as a user who was allowed to upload:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alice 2 MB upload: {"statusCode":"413","error":"Payload too large",
+  "message":"The object exceeded the maximum allowed size"}</code></pre></div>
+<p>Raise the bucket’s limit under Storage settings, or compress or resize the file in the browser before upload. Nothing about this error needs a policy change. If the AI builder’s answer touches row level security, it is fixing the wrong problem.</p>
+
+<h2 id="cause-3">Cause 3: the storage quota</h2>
+<p>The quota is the total size of every file in every bucket across your organisation: 1 GB on the Free plan, 100 GB on Pro, then $0.0213 per GB per month above that. Supabase measures it in GB-hours, so the figure it compares with your quota is the average over the billing period, not today’s size. Deleting 500 MB today lowers the month’s average a little each day, not all at once.</p>
+<p>To see what is using the space, run this in the SQL editor. It only reads:</p>
+<div class="code"><div class="code-bar"><span class="name">storage-size.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>select b.id as bucket, b.public, b.file_size_limit,
+       count(o.id) as files,
+       pg_size_pretty(coalesce(sum((o.metadata-&gt;&gt;'size')::bigint), 0)) as total_size
+from storage.buckets b
+left join storage.objects o on o.bucket_id = b.id
+group by b.id, b.public, b.file_size_limit
+order by coalesce(sum((o.metadata-&gt;&gt;'size')::bigint), 0) desc;</code></pre></div>
+<h3 id="sql-delete">Don’t free space by deleting rows in SQL</h3>
+<p>An AI builder will often suggest <code>delete from storage.objects where …</code>. Each row in that table only points at a file; the file itself lives in Supabase’s object store. Supabase now blocks the delete with a trigger, and our run hit it:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>delete from storage.objects where bucket_id = 'uploads';
+ERROR:  Direct deletion from storage tables is not allowed. Use the Storage API instead.</code></pre></div>
+<p>The trigger can be switched off with a setting (<code>storage.allow_delete_query</code>), and some answers online do that. We did it to see what happens: the row went, and the file stayed on disk with nothing pointing at it.</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>files on disk before: 1
+with storage.allow_delete_query=true: deleted 22222222-…/passport.txt
+rows left: 0  files on disk after: 1</code></pre></div>
+<p>Delete files in the Storage page of the dashboard, or with <code>supabase.storage.from('uploads').remove([...])</code> from a server using the service key. In our run, Alice deleting her own file through the API, with the policies below, returned “Successfully deleted” and removed the file.</p>
+
+<h2 id="bad-fixes">The two quick fixes that expose every file</h2>
+<p>Paste the upload error into an AI builder and these are the two answers you are most likely to get. We applied each one to a fresh bucket that held one file of Bob’s (fake passport details), then tried it as Alice and as a logged-out visitor.</p>
+<h3 id="bad-fix-a">Quick fix A: make the bucket public</h3>
+<div class="code"><div class="code-bar"><span class="name">do not ship</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>update storage.buckets set public = true where id = 'uploads';</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alice upload: "new row violates row-level security policy"     still broken
+anon GET /object/public/uploads/&lt;bob's id&gt;/passport.txt: 200
+  Bob Example, passport 123456789 (fake test data)
+anon list: 0 files</code></pre></div>
+<p>This doesn’t even fix the upload: public only affects downloads. It does make every file downloadable by anyone with its URL, with no sign-in, forever. Listing stayed closed, so a stranger needs the path, but paths built from a user id and a file name are shared in links, logs and screenshots. That is fine for logos and wrong for ID scans, invoices or anything personal. This is finding <a href="/findings/pl-007">PL-007</a>.</p>
+<h3 id="bad-fix-b">Quick fix B: a policy “for all” that checks only the bucket</h3>
+<div class="code"><div class="code-bar"><span class="name">do not ship</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Allow all" on storage.objects
+  for all
+  using (bucket_id = 'uploads')
+  with check (bucket_id = 'uploads');</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alice upload: 200                                      upload works
+anon list bob's folder: 1 ['passport.txt']
+anon download bob's file: 200  Bob Example, passport 123456789
+alice overwrites bob's file (upsert): 200
+bob's file now says: replaced by alice
+anon deletes bob's file: 200 "Successfully deleted"</code></pre></div>
+<p>A policy with no <code>to</code> clause applies to every role, including the logged-out visitor, and a policy that checks only <code>bucket_id</code> covers every file in the bucket. Together they let anyone with your public key list, download, replace and delete every user’s files. Writing <code>to authenticated</code> closes the door to logged-out visitors but still lets any user who signs up do all of the above to everyone else. This is finding <a href="/findings/pl-015">PL-015</a>.</p>
+
+<h2 id="fix">The fix that keeps uploads working and files private</h2>
+<p>Keep the bucket private and upload each user’s files under a folder named after their user id, for example <code>supabase.storage.from('uploads').upload(`${user.id}/${file.name}`, file)</code>. Then one migration:</p>
+<div class="code"><div class="code-bar"><span class="name">supabase/migrations/…_storage_per_user.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code><span class="c">-- 1. Undo the quick fixes, if they were applied</span>
+update storage.buckets set public = false where id = 'uploads';
+drop policy if exists "Allow all" on storage.objects;
+
+<span class="c">-- 2. Each signed-in user can only touch files in their own folder</span>
+create policy "uploads: own folder insert" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+create policy "uploads: own folder read" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+create policy "uploads: own folder update" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text))
+  with check (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+create policy "uploads: own folder delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'uploads'
+    and (storage.foldername(name))[1] = (select auth.uid()::text));</code></pre></div>
+<p>What our run showed after it:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alice upload own folder: 200          uploads work
+alice re-upload (upsert): 200         replacing her own file works
+alice upload into bob's folder: "new row violates row-level security policy"
+alice reads bob's file: "Object not found"
+alice overwrites bob's file: "new row violates row-level security policy"
+alice deletes bob's file: "Access denied"
+anon list bob's folder: 0 files
+anon public URL: "Bucket not found"
+bob reads own file: 200</code></pre></div>
+<p>To show a private file in the page, create a short-lived signed URL (<code>createSignedUrl(path, 60)</code>) instead of a public one. If users need to share files with each other, add a policy for that case on purpose, for example by checking a <code>shares</code> table, rather than widening the folder rule. Our <a href="/learn/supabase-storage-policies">storage bucket policies guide</a> covers public and private buckets, shared files and signed URLs in more detail.</p>
+
+<h2 id="check">Check which state your app is in</h2>
+<p>Run this in the Supabase SQL editor. It changes nothing.</p>
+<div class="code"><div class="code-bar"><span class="name">check-storage-policies.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>select policyname, cmd, roles,
+       'public' = any(roles) as applies_to_everyone,
+       coalesce(qual, '') || coalesce(with_check, '')
+         not like '%auth.uid()%'  as not_per_user
+from pg_policies
+where schemaname = 'storage' and tablename = 'objects'
+order by policyname;</code></pre></div>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">Result</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>applies_to_everyone</code> true</td><td>The policy has no <code>to</code> clause, so logged-out visitors get it too. On a select, update or delete policy that is quick fix B.</td></tr>
+<tr><td><code>not_per_user</code> true</td><td>The policy doesn’t look at who is signed in, so it covers every user’s files. Fine for a deliberately public bucket of logos; wrong for anything personal.</td></tr>
+<tr><td>a bucket with <code>public</code> true in <a href="#cause-3">the size query</a></td><td>Every file in it can be downloaded by URL with no sign-in. Make sure nothing personal is in it.</td></tr>
+<tr><td>no rows</td><td>No storage policies at all: uploads will fail until you add the per-user ones.</td></tr>
+</tbody></table></div>
+<p>In our run the query flagged quick fix B on both columns and passed all four per-user policies.</p>
+
+<h2 id="prompt">Tell your AI builder the rule</h2>
+<div class="code"><div class="code-bar"><span class="name">prompt for Lovable or your AI builder</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>File uploads fail with "new row violates row-level security
+policy". Do not make the bucket public and do not add a
+storage policy that checks only bucket_id or has no TO role.
+Fix it like this:
+- Keep the bucket private. Upload to `${user.id}/${fileName}`.
+- Add insert, select, update and delete policies on
+  storage.objects TO authenticated, each requiring
+  bucket_id = '&lt;bucket&gt;' and
+  (storage.foldername(name))[1] = (select auth.uid()::text).
+- Show files with createSignedUrl, not getPublicUrl.
+- Never delete rows from storage.objects in SQL; use
+  storage.remove().
+Show me the migration before applying it.</code></pre></div>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/storage/security/access-control">Supabase: Storage access control (policies on storage.objects, storage.foldername)</a></li>
+  <li><a href="https://supabase.com/docs/guides/storage/uploads/file-limits">Supabase: file size limits (50 MB on Free, up to 500 GB on paid plans)</a></li>
+  <li><a href="https://supabase.com/docs/guides/platform/manage-your-usage/storage-size">Supabase: storage size, GB-hours and plan quotas</a></li>
+  <li><a href="https://supabase.com/docs/guides/storage/management/delete-objects">Supabase: delete objects through the API, not SQL (orphaned objects)</a></li>
+  <li><a href="https://github.com/supabase/storage">supabase/storage: the open-source Storage server we ran (v1.98.5)</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-007"><span class="n-big">PL-007</span><h3>Public storage bucket</h3></a><a class="card link" href="/findings/pl-015"><span class="n-big">PL-015 · coming</span><h3>Stored files readable or writable by anyone</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-lovable-supabase-s">Public GitHub repo</label>
+            <input id="repo-l-lovable-supabase-s" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-lovable-supabase-s">Your email</label>
+            <input id="email-l-lovable-supabase-s" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 24 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20lovable-supabase-storage-errors">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/lovable-authentication-errors" rel="prev"><span>Previous guide</span>Lovable authentication errors: fix “Database error saving new user” without opening your data</a><a class="next" href="/learn/user-metadata-vs-app-metadata" rel="next"><span>Next guide</span>user_metadata vs app_metadata: where to store roles in Supabase</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#which-error">Which error do you have?</a></li><li><a href="#cause-1">Cause 1: no storage policy allows the upload</a></li><li><a href="#cause-2">Cause 2: the file is over the size limit</a></li><li><a href="#cause-3">Cause 3: the storage quota</a></li><li><a href="#bad-fixes">The two quick fixes that expose every file</a></li><li><a href="#fix">The fix that keeps uploads working and files private</a></li><li><a href="#check">Check which state your app is in</a></li><li><a href="#prompt">Tell your AI builder the rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>
+
+<footer class="site-footer" id="site-footer">
+  <div class="wrap">
+    <div class="foot-cta">
+      <div>
+        <p class="lab">Free check</p>
+        <p class="foot-cta-h">Can a stranger read your users table?</p>
+        <p class="foot-cta-p">Paste a public repo. Leaks, the fix and the proof on one page, usually within minutes.</p>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="/#check">Check my app free <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn secondary" href="/demo">Try the demo</a>
+      </div>
+    </div>
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" style="fill:var(--brand)"/><path d="M11.5 9H8.5v14h3M20.5 9h3v14h-3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6 16.4l2.5 2.5 4.4-5.2" stroke="var(--logo-check)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>PatchLabs</a>
+        <p>Find the leak. Prove the fix. Independent app verification for apps built with AI: Lab, Code, Fix and Watch.</p>
+        <p class="small"><a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a><br>London, UK · <a href="https://www.linkedin.com/company/patchlabsdev" rel="noopener" target="_blank">LinkedIn</a></p>
+        <a class="status" href="/status" data-status data-state="unknown"><span class="dot" aria-hidden="true"></span><span class="status-text">System status</span></a>
+      </div>
+      <nav class="foot-col" aria-labelledby="f-product"><h2 id="f-product">Products</h2><ul>
+        <li><a href="/product/lab">Lab</a></li>
+        <li><a href="/product/code">Code</a></li>
+        <li><a href="/product/fix">Fix</a></li>
+        <li><a href="/product/watch">Watch</a></li>
+        <li><a href="/product/live-posture">Live posture</a></li>
+        <li><a href="/demo">Try the demo</a></li>
+        <li><a href="/integrations">Integrations</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-solutions"><h2 id="f-solutions">Solutions</h2><ul>
+        <li><a href="/solutions/founders">Founders</a></li>
+        <li><a href="/solutions/agencies">Agencies</a></li>
+        <li><a href="/solutions/engineers">Engineers</a></li>
+        <li><a href="/for/lovable">Lovable apps</a></li>
+        <li><a href="/for/supabase">Supabase apps</a></li>
+        <li><a href="/for/bolt">Bolt apps</a></li>
+        <li><a href="/for/replit">Replit apps</a></li>
+        <li><a href="/for/cursor">Cursor projects</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-research"><h2 id="f-research">Resources</h2><ul>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/research/1-in-4">The 1-in-4 study</a></li>
+        <li><a href="/research/methodology">Methodology</a></li>
+        <li><a href="/findings">Findings library</a></li>
+        <li><a href="/sample-report">Sample report</a></li>
+        <li><a href="/tools">Free tools</a></li>
+        <li><a href="/leaking-now">Leaking right now?</a></li>
+        <li><a href="/changelog">Changelog</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-dev"><h2 id="f-dev">Developers</h2><ul>
+        <li><a href="/docs">Docs</a></li>
+        <li><a href="/docs/api">REST API</a></li>
+        <li><a href="/docs/mcp">MCP server</a></li>
+        <li><a href="/docs/claude-plugin">Claude Code plugin</a></li>
+        <li><a href="/docs/github-action">GitHub Action</a></li>
+        <li><a href="/docs/webhooks">Webhooks</a></li>
+        <li><a href="/docs/receipts">Signed receipts</a></li>
+        <li><a href="/tools/rls-check">Free RLS check</a></li>
+        <li><a href="/tools/headers-check">Free headers check</a></li>
+        <li><a href="/tools/key-check">Free key check</a></li>
+        <li><a href="/tools/firebase-rules-check">Free Firebase rules check</a></li>
+        <li><a href="/tools/edge-function-check">Free Edge Function check</a></li>
+        <li><a href="/tools/chat-render-check">Free AI chat check</a></li>
+        <li><a href="/tools/model-shutdown-check">Free model shutdown check</a></li>
+        <li><a href="/status">Status</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-compare"><h2 id="f-compare">Compare</h2><ul>
+        <li><a href="/compare">All comparisons</a></li>
+        <li><a href="/compare/supabase-security-advisor">Supabase Security Advisor</a></li>
+        <li><a href="/compare/lovable-security-scan">Lovable security scan</a></li>
+        <li><a href="/compare/aikido">Aikido</a></li>
+        <li><a href="/compare/manual-pentest">Manual pentest</a></li>
+        <li><a href="/compare/url-scanners">URL scanners</a></li>
+      </ul></nav>
+      <nav class="foot-col" aria-labelledby="f-company"><h2 id="f-company">Company</h2><ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="https://www.linkedin.com/company/patchlabsdev" rel="noopener" target="_blank">LinkedIn</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="mailto:manraj@patchlabs.dev">Email the founder</a></li>
+        <li><a href="/legal/terms">Terms</a></li>
+        <li><a href="/legal/privacy">Privacy</a></li>
+        <li><a href="/legal/acceptable-use">Acceptable use</a></li>
+        <li><a href="/legal/dpa">Data processing</a></li>
+        <li><a href="/legal/disclosure-policy">Disclosure policy</a></li>
+        <li><a href="/legal/cookies">Cookies (none)</a></li>
+      </ul></nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 PatchLabs</span>
+      <a href="/changelog.xml">Changelog feed</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.8A5.7 5.7 0 0 1 6.2 2.5a5.7 5.7 0 1 0 7.3 7.3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="t">Theme</span></button>
+    </div>
+    <p class="foot-note">Independent: not affiliated with Lovable, Supabase, Bolt, Replit, Cursor or GitHub. Names are used to describe compatibility only. No cookies, no third-party analytics.</p>
+  </div>
+</footer>
+
+</body>
+</html>
