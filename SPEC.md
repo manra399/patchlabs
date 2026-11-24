@@ -22,8 +22,9 @@ the public home page of a domain the team verified.
   on the internet using the public key, 36 more (11%) to anyone who signs up. After removing a business's own public
   contact details, the real rate is **about 1 in 4 (25-28%)**.
 - Fix agents, re-verified by us: **19 of 20** real fixes worked first time and applied cleanly (5 Nov study).
-- Autonomous pipeline, 20 new apps (9 Nov): **18 of 20** fixes passed the strict lab proof with no human; 15 needed only
-  the smallest model. Median model cost **$0.46** per app, median **3.5 minutes**. The other 2 went to a person.
+- Autonomous pipeline, 20 new apps (9 Nov run, n=20, re-checked 24 Nov 2026): **17 of 20** fixes pass the strict lab proof
+  with no human help under the current verifier (18 on the day); 14 needed only the smallest model. Median model cost
+  **$0.46** per app, median **3.5 minutes**. 2 went to a person, and 1 that passed on the day fails the current check.
 - Most "human" moments are business questions for the owner (should sellers' emails be public?), so the report asks them in
   plain English with a recommended answer.
 
