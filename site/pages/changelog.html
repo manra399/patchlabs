@@ -36,9 +36,10 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
       <article class="cl-entry" id="nov-24" aria-labelledby="nov-24-h">
         <div class="cl-date"><time datetime="2026-11-24">24 Nov 2026</time><span class="pill proven ver">shipped</span></div>
         <div class="cl-body">
-          <h2 id="nov-24-h">A guide to Lovable storage errors, tested on Supabase’s own Storage server.</h2>
+          <h2 id="nov-24-h">Two guides for broken Lovable apps: storage errors, and contact forms that fail on submit.</h2>
           <p>The second guide written from what people search for when they reach us.</p>
           <ul class="cl-items">
+            <li><span class="tag new">New</span><div><h3>Guide: contact form fails with a row-level security error</h3><p>Reproduced on Postgres 17 with PostgREST 12.2.12 and Supabase’s default grants: with an insert-only policy, <code>.insert(row).select()</code> fails with “new row violates row-level security policy” because reading the row back needs select. The three usual fixes all made the form work and all let a logged-out visitor read every submission; two also let them delete every row. The guide has the fix we proved (no <code>.select()</code>, column-level insert grant, admin-only read) and a read-only query that lists anon-readable tables. <a href="/learn/lovable-contact-form-rls-error">Read the guide</a>.</p></div></li>
             <li><span class="tag new">New</span><div><h3>Guide: Lovable storage errors and the storage quota</h3><p>Failed uploads, “The object exceeded the maximum allowed size” and the storage quota, reproduced on Supabase’s open-source Storage server (1.98.5) on Postgres 17. A policy “for all” that checks only the bucket fixed the upload and let a logged-out visitor list, download and delete another user’s file; a public bucket served it to anyone with the URL. Deleting rows in SQL to free space left the file on disk. The guide has the per-user folder fix (uploads work, stranger and visitor get nothing) and a read-only query for your policies. <a href="/learn/lovable-supabase-storage-errors">Read the guide</a>.</p></div></li>
           </ul>
         </div>

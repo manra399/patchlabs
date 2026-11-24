@@ -1,0 +1,246 @@
+<!--
+title: Lovable contact form fails with “new row violates row-level security policy”: the safe fix | PatchLabs
+description: Why a Lovable or Supabase contact, lead or quote form fails on submit with a row-level security error even though anon can insert, the three AI fixes that let anyone read or delete every submission, and the fix we proved on PostgREST.
+layout: marketing
+nav: learn
+head: <link rel="stylesheet" href="/assets/pages/E-docs.css"><link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Contact form fails with “new row violates row-level security policy”: fix it without exposing every submission","description":"Why a Lovable or Supabase contact, lead or quote form fails on submit with a row-level security error even though anon can insert, the three AI fixes that let anyone read or delete every submission, and the fix we proved on PostgREST.","datePublished":"2026-11-24","dateModified":"2026-11-24","author":{"@type":"Person","name":"Manraj Singh Dhillon","url":"https://patchlabs.dev/about"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"mainEntityOfPage":"https://patchlabs.dev/learn/lovable-contact-form-rls-error"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://patchlabs.dev/"},{"@type":"ListItem","position":2,"name":"Learn","item":"https://patchlabs.dev/learn"},{"@type":"ListItem","position":3,"name":"Contact form fails with “new row violates row-level security policy”: fix it without exposing every submission","item":"https://patchlabs.dev/learn/lovable-contact-form-rls-error"}]}]}</script>
+-->
+<main id="main">
+  <div class="wrap wide docs learn">
+    <nav class="docs-nav l-nav" aria-label="Guides">
+<details open><summary>All guides</summary>
+<h2>Learn</h2><ul><li><a href="/learn">All guides</a></li><li><a href="/findings">Finding index</a></li></ul>
+<h2>Supabase database</h2><ul>
+<li><a href="/learn/secure-lovable-supabase-app">Secure a Lovable app’s database</a></li>
+<li><a href="/learn/lovable-apps-expose-data-study">The Lovable data study (Nov 2026)</a></li>
+<li><a href="/learn/rls-policies-explained">RLS policies explained</a></li>
+<li><a href="/learn/supabase-views-security-invoker">Views and security_invoker</a></li>
+<li><a href="/learn/supabase-storage-policies">Storage bucket policies</a></li>
+<li><a href="/learn/supabase-realtime-security">Realtime security</a></li>
+<li><a href="/learn/is-my-lovable-app-secure">Is my Lovable app secure?</a></li>
+<li><a href="/learn/is-supabase-anon-key-safe">Is the anon key safe?</a></li>
+<li><a href="/learn/check-supabase-rls-every-table">RLS on every table</a></li>
+<li><a href="/learn/supabase-security-definer-functions">SECURITY DEFINER functions</a></li>
+<li><a href="/learn/supabase-multi-tenant-rls">Multi-tenant RLS and tenant isolation</a></li>
+<li><a href="/learn/plaintext-passwords-ai-built-login">Plain-text passwords in AI-built logins</a></li>
+<li><a href="/learn/supabase-mcp-patient-data">Supabase MCP and patient data</a></li>
+<li><a href="/learn/users-can-see-each-others-data">Users see each other’s data</a></li>
+<li><a href="/learn/lovable-authentication-errors">Sign-up errors and the safe fix</a></li>
+<li><a href="/learn/lovable-supabase-storage-errors">Storage errors and the quota</a></li>
+<li><a href="/learn/lovable-contact-form-rls-error" aria-current="page">Form submit RLS error</a></li>
+</ul>
+<h2>Auth and server code</h2><ul>
+<li><a href="/learn/user-metadata-vs-app-metadata">user_metadata vs app_metadata</a></li>
+<li><a href="/learn/secure-supabase-edge-functions">Secure Edge Functions</a></li>
+<li><a href="/learn/stripe-webhook-supabase-edge-function">Stripe webhooks in Edge Functions</a></li>
+<li><a href="/learn/ai-chat-output-xss">AI chat replies as HTML</a></li>
+</ul>
+<h2>Keys and incidents</h2><ul>
+<li><a href="/learn/rotate-leaked-key-git-history">Rotate a leaked key</a></li>
+<li><a href="/learn/first-hour-after-a-leak">The first hour after a leak</a></li>
+<li><a href="/learn/railway-breach-ai-keys">The Railway breach and your AI keys</a></li>
+<li><a href="/learn/fake-ai-crawlers-env-files">Fake AI crawlers and your .env</a></li>
+<li><a href="/learn/claude-code-settings-local-json-secrets">Claude Code settings.local.json secrets</a></li>
+<li><a href="/learn/cursor-fireworks-breach-agent-traces-keys">The Cursor breach and keys in agent traces</a></li>
+<li><a href="/learn/personal-data-headers-ai-prompts">Personal data in headers and AI prompts</a></li>
+</ul>
+<h2>Launch and other stacks</h2><ul>
+<li><a href="/learn/vibe-coded-app-security-checklist">Pre-launch checklist</a></li>
+<li><a href="/learn/firebase-security-rules-basics">Firebase rules basics</a></li>
+<li><a href="/learn/security-headers-ai-built-apps">Security headers</a></li>
+<li><a href="/learn/npm-dependency-vulnerabilities">Vulnerable npm dependencies</a></li>
+<li><a href="/learn/third-party-script-compromise-optimizely">Hijacked third-party scripts</a></li>
+<li><a href="/learn/vibe-coding-security-risks">Vibe-coding security risks</a></li>
+<li><a href="/learn/bolt-replit-app-security">Secure a Bolt or Replit app</a></li>
+<li><a href="/learn/ai-builder-scan-vs-independent-check">Builder scan vs independent check</a></li>
+<li><a href="/learn/openai-gpt-4o-shutdown-january-2027">OpenAI model shutdowns (GPT-4o, Jan 2027)</a></li>
+</ul>
+</details></nav>
+    <article class="docs-main prose guide">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/learn">Learn</a></li><li aria-current="page">Form submit RLS error</li></ol></nav>
+      <p class="lab">Supabase database</p>
+      <h1>Contact form fails with “new row violates row-level security policy”: fix it without exposing every submission</h1>
+      <p class="lede">A contact, lead or quote form is the simplest table in an app: visitors write to it and only you read it. It is also where we see AI builders open the most personal data, because the error that shows up on submit points at the wrong problem. We ran Postgres 17 with PostgREST 12.2.12, the server <code>supabase-js</code> talks to, on 24 November 2026, gave it Supabase’s default grants, reproduced the error, and tried each fix as a logged-out visitor.</p>
+      <p class="l-byline"><span>By <a href="/about">Manraj Singh Dhillon</a>, technical founder</span><span>Checked 24 Nov 2026</span><span>5 min read</span></p>
+      <div class="l-tldr"><p class="l-tldr-h">TL;DR</p><ul><li>If anon has an insert-only policy and the form still fails with “new row violates row-level security policy”, the code is almost certainly calling <code>.insert(row).select()</code>. Asking for the row back needs read access, and the error doesn’t say so.</li><li>The usual AI fixes (a select policy <code>using (true)</code>, turning RLS off, or one policy “for all” <code>using (true)</code>) all made the form work. All three let a logged-out visitor read every submission; the last two also let them delete every row.</li><li>The fix: drop <code>.select()</code> from the insert, keep the insert-only policy, limit anon to the form’s columns, and let only admins read.</li></ul></div>
+      <nav class="l-toc" aria-label="In this guide"><p class="l-toc-h">In this guide</p><ol><li><a href="#why">Why the form fails when anon is allowed to insert</a></li><li><a href="#bad-fixes">The three quick fixes that expose every submission</a></li><li><a href="#columns">The quiet problem with insert-only: anon can set any column</a></li><li><a href="#fix">The fix we proved</a></li><li><a href="#check">Check which state your app is in</a></li><li><a href="#prompt">Tell your AI builder the rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ol></nav>
+      <p>This guide is for founders and agencies whose Lovable app (or any Supabase app built with Bolt, Cursor or Claude Code) has a contact, lead, quote, waitlist or booking form that fails on submit. The results come from our own run on 24 November 2026: Postgres 17.11 and PostgREST 12.2.12, with the <code>anon</code> and <code>authenticated</code> roles and the table grants a new Supabase project gives them. The data was fake: two earlier enquiries from “Bob” and “Dana” with phone numbers and messages.</p>
+
+<h2 id="why">Why the form fails when anon is allowed to insert</h2>
+<p>We started where a careful builder would: row level security on, and one policy that lets logged-out visitors insert and nothing else.</p>
+<div class="code"><div class="code-bar"><span class="name">the correct starting point</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alter table public.contact_submissions enable row level security;
+
+create policy "anon can submit" on public.contact_submissions
+  for insert to anon with check (true);</code></pre></div>
+<p>Then we sent the same form twice, the two ways <code>supabase-js</code> sends an insert:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>.insert(row)            (Prefer: return=minimal)         201
+.insert(row).select()   (Prefer: return=representation)  401
+  {"code":"42501","message":"new row violates row-level
+   security policy for table \"contact_submissions\""}
+anon reads the table: []</code></pre></div>
+<p>The second call asks the database to send the new row back. Reading it back counts as a select, and anon has no select policy, so the whole insert is refused and rolled back: only the first of our two submissions was stored. The message says the new row violated a policy, which sends people, and AI builders, off to loosen the insert rules. The insert rules were fine.</p>
+<p>AI builders add <code>.select()</code> out of habit, often to get the new <code>id</code> for a “thanks” screen. A form rarely needs it.</p>
+
+<h2 id="bad-fixes">The three quick fixes that expose every submission</h2>
+<p>These are the three answers AI builders and forum threads most often give for this error. We applied each one to a fresh table, then tried it as a logged-out visitor with nothing but the public anon key, which ships in every Supabase app’s JavaScript.</p>
+<h3 id="bad-fix-a">Quick fix A: “Enable read access for all users”</h3>
+<div class="code"><div class="code-bar"><span class="name">do not ship</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Enable read access for all users"
+  on public.contact_submissions for select using (true);</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>form posts with .select(): 201                     form works
+anon GET /contact_submissions:
+  [{"name":"Bob Client","email":"bob@example.com","phone":"+447700900002"},
+   {"name":"Dana Client","email":"dana@example.com","phone":"+447700900004"},
+   ...]</code></pre></div>
+<p>The form works, and every enquiry anyone has ever sent is one request away from anyone. Contact forms collect exactly what you would not want public: names, emails, phone numbers, and messages people wrote assuming only you would read them. The policy name is Supabase’s own template name, which is why it looks safe. This is finding <a href="/findings/pl-005">PL-005</a>.</p>
+<h3 id="bad-fix-b">Quick fix B: turn row level security off</h3>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>anon reads: every submission (same as above)
+anon edits Bob's message (PATCH):      204
+anon deletes all rows (DELETE):        204
+rows left: 0</code></pre></div>
+<p>With RLS off, Supabase’s default grants are all that is left, and they give anon every right on the table. A visitor can read your leads, rewrite them, or wipe them. This is finding <a href="/findings/pl-001">PL-001</a>.</p>
+<h3 id="bad-fix-c">Quick fix C: one policy “for all” that is always true</h3>
+<div class="code"><div class="code-bar"><span class="name">do not ship</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>create policy "Allow all" on public.contact_submissions
+  for all using (true) with check (true);</code></pre></div>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>anon reads: every submission
+anon deletes all rows: 204
+rows left: 0</code></pre></div>
+<p>Same result as turning RLS off, but the dashboard still shows RLS as enabled, so it passes a glance.</p>
+
+<h2 id="columns">The quiet problem with insert-only: anon can set any column</h2>
+<p>Even the correct policy has a gap. <code>with check (true)</code> checks rows, not columns, and the default grants let anon write every column. We posted a submission that set its own <code>status</code> and <code>created_at</code>:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>anon posts status=closed, created_at=2020-01-01: 201
+stored: status=closed created_at=2020-01-01</code></pre></div>
+<p>On a lead table that can mean spam that files itself as handled, or a booking that marks itself paid. Granting insert on only the form’s columns closes it:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>revoke insert on public.contact_submissions from anon;
+grant insert (name, email, phone, message) on public.contact_submissions to anon;
+
+anon posts status=closed again:  401 permission denied for table contact_submissions
+anon posts only the form fields: 201</code></pre></div>
+
+<h2 id="fix">The fix we proved</h2>
+<p>In the app, send the insert without asking for the row back. If you need an id for the thank-you screen, make it in the browser with <code>crypto.randomUUID()</code> and send it as a column you allow.</p>
+<div class="code"><div class="code-bar"><span class="name">form submit (supabase-js v2)</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>const { error } = await supabase
+  .from('contact_submissions')
+  .insert({ name, email, phone, message });   // no .select()
+if (error) showError(error.message);</code></pre></div>
+<p>In the database, one migration:</p>
+<div class="code"><div class="code-bar"><span class="name">contact-form-fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>alter table public.contact_submissions enable row level security;
+
+<span class="c">-- visitors (and signed-in users) can submit, nothing else</span>
+create policy "anon can submit" on public.contact_submissions
+  for insert to anon, authenticated with check (true);
+
+<span class="c">-- only admins read; role set in app_metadata (users can't edit it)</span>
+create policy "admins read" on public.contact_submissions
+  for select to authenticated
+  using ((auth.jwt() -&gt; 'app_metadata' -&gt;&gt; 'role') = 'admin');
+
+<span class="c">-- replace the default grants with exactly what the form needs</span>
+revoke all on public.contact_submissions from anon, authenticated;
+grant insert (name, email, phone, message)
+  on public.contact_submissions to anon, authenticated;
+grant select on public.contact_submissions to authenticated;
+
+<span class="c">-- cheap limits against junk</span>
+alter table public.contact_submissions
+  add constraint msg_len check (char_length(message) between 1 and 5000),
+  add constraint email_shape check (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$');</code></pre></div>
+<p>What our run showed after it:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>anon submits (.insert(row)):            201     form works
+anon submits (.insert(row).select()):   401     still refused, by design
+anon reads:                             permission denied
+signed-in customer reads:               []
+admin (app_metadata.role=admin) reads:  all 3 submissions
+anon deletes:                           permission denied
+anon posts a 6,000-character message:   400 violates check constraint "msg_len"</code></pre></div>
+<p>Use <code>app_metadata</code> for the admin role, never <code>user_metadata</code>, which users can change themselves (<a href="/learn/user-metadata-vs-app-metadata">why</a>). If your team reads leads in the Supabase dashboard or from a server with the service key, you can leave out the admin policy entirely: those bypass RLS.</p>
+<p>The constraints stop oversized junk, not a bot that sends thousands of valid-looking rows. If that starts, move the submit to an Edge Function that checks a CAPTCHA token and inserts with the service key, and revoke anon’s insert.</p>
+
+<h2 id="check">Check which state your app is in</h2>
+<p>Run this in the Supabase SQL editor. It only reads. It lists public tables that a logged-out visitor can read: RLS off, or a read, update, delete or “all” policy for anon or everyone whose condition is just <code>true</code>.</p>
+<div class="code"><div class="code-bar"><span class="name">anon-readable-tables.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>select c.relname as table_name,
+       case when not c.relrowsecurity
+            then 'RLS OFF: anon can read/write everything granted'
+            else 'policy ' || p.polname || ' using '
+                 || coalesce(pg_get_expr(p.polqual, p.polrelid), '-')
+       end as finding
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+left join pg_policy p on p.polrelid = c.oid
+  and p.polcmd in ('r', '*', 'd', 'w')
+  and (p.polroles = '{0}' or 'anon'::regrole::oid = any(p.polroles))
+  and coalesce(pg_get_expr(p.polqual, p.polrelid), 'true') = 'true'
+where n.nspname = 'public' and c.relkind = 'r'
+  and has_table_privilege('anon', c.oid, 'select')
+  and (not c.relrowsecurity or p.polname is not null);</code></pre></div>
+<p>In our run it flagged the form table with quick fix A and a table with RLS off, and correctly left out an insert-only newsletter table:</p>
+<div class="code"><div class="code-bar"><span class="name">lab output, 24 Nov 2026</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>quote_requests      | RLS OFF: anon can read/write everything granted
+contact_submissions | policy Enable read access for all users using true</code></pre></div>
+<p>It only catches the plainest cases. A policy like <code>using (status = 'new')</code> is just as open and won’t show up; our <a href="/learn/check-supabase-rls-every-table">every-table check</a> covers more.</p>
+
+<h2 id="prompt">Tell your AI builder the rule</h2>
+<div class="code"><div class="code-bar"><span class="name">prompt for Lovable or your AI builder</span><button class="copy" type="button" data-copy>Copy</button></div>
+<pre class="wrap-lines"><code>The contact form fails with "new row violates row-level
+security policy". Do not add a select policy using (true),
+do not disable RLS, and do not add a FOR ALL policy.
+Fix it like this:
+- Remove .select() from the insert call; the form doesn't
+  need the row back.
+- Keep one INSERT policy TO anon, authenticated.
+- Revoke all from anon, authenticated and grant INSERT only
+  on (name, email, phone, message).
+- Only users with app_metadata.role = 'admin' may SELECT.
+Show me the migration before applying it.</code></pre></div>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: row level security (policies per command and role)</a></li>
+  <li><a href="https://supabase.com/docs/reference/javascript/insert">supabase-js: insert, and chaining .select() to return the inserted row</a></li>
+  <li><a href="https://docs.postgrest.org/en/v12/references/api/preferences.html">PostgREST 12: the Prefer return=minimal / return=representation header</a></li>
+  <li><a href="https://www.postgresql.org/docs/17/sql-grant.html">PostgreSQL 17: GRANT, including column-level privileges</a></li>
+</ul>
+      <h2 id="related-findings" class="l-rel-h">Related findings</h2>
+      <p>The checks behind this guide, each with example code, a self-check and the fix.</p>
+      <div class="grid g3 not-prose l-rel"><a class="card link" href="/findings/pl-001"><span class="n-big">PL-001</span><h3>Anonymous visitor can read personal data</h3></a><a class="card link" href="/findings/pl-005"><span class="n-big">PL-005</span><h3>Always-true policy</h3></a></div>
+      <div class="f-cta l-cta">
+        <p class="lab">Free check</p>
+        <h2>Check your app for this, free.</h2>
+        <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
+        <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
+          <div class="in">
+            <label class="sr-only" for="repo-l-lovable-contact-fo">Public GitHub repo</label>
+            <input id="repo-l-lovable-contact-fo" name="repo" required autocomplete="off" spellcheck="false" placeholder="github.com/you/your-app">
+          </div>
+          <div class="in">
+            <label class="sr-only" for="email-l-lovable-contact-fo">Your email</label>
+            <input id="email-l-lovable-contact-fo" name="email" type="email" required autocomplete="email" placeholder="you@company.com">
+          </div>
+          <button class="btn primary" type="submit">Check my app free</button>
+        </form>
+        <p class="err" role="alert" data-err></p>
+        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+      </div>
+      <p class="small muted mt-4">Written by Manraj Singh Dhillon. Last checked 24 Nov 2026. Code samples are synthetic and run against your own project; nothing here names a real app. Spotted a mistake? <a href="mailto:manraj@patchlabs.dev?subject=Guide%3A%20lovable-contact-form-rls-error">Tell us</a>.</p>
+      <nav class="docs-pager" aria-label="Previous and next guide"><a href="/learn/lovable-supabase-storage-errors" rel="prev"><span>Previous guide</span>Lovable storage errors: fix failed uploads and the storage quota without exposing users’ files</a><a class="next" href="/learn/user-metadata-vs-app-metadata" rel="next"><span>Next guide</span>user_metadata vs app_metadata: where to store roles in Supabase</a></nav>
+    </article>
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ul><li><a href="#why">Why the form fails when anon is allowed to insert</a></li><li><a href="#bad-fixes">The three quick fixes that expose every submission</a></li><li><a href="#columns">The quiet problem with insert-only: anon can set any column</a></li><li><a href="#fix">The fix we proved</a></li><li><a href="#check">Check which state your app is in</a></li><li><a href="#prompt">Tell your AI builder the rule</a></li><li><a href="#sources">Sources</a></li><li><a href="#related-findings">Related findings</a></li></ul>
+    </aside>
+  </div>
+  <script>if (window.matchMedia('(max-width: 820px)').matches) { var dn = document.querySelector('.docs-nav details'); if (dn) dn.open = false; }</script>
+</main>

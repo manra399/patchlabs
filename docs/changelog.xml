@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-24T08:30:00Z</updated>
+  <updated>2026-11-24T11:45:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Contact form fails with "new row violates row-level security policy": the safe fix</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/lovable-contact-form-rls-error"/>
+    <id>https://patchlabs.dev/learn/lovable-contact-form-rls-error</id>
+    <updated>2026-11-24T11:45:00Z</updated>
+    <summary>Reproduced on Postgres 17 with PostgREST 12.2.12: with an insert-only policy, .insert(row).select() fails with a row-level security error because reading the row back needs select. The three usual fixes let a logged-out visitor read every submission, and two let them delete every row. The proven fix: no .select(), column-level insert grant, admin-only read.</summary>
+  </entry>
   <entry>
     <title>Lovable storage errors: failed uploads, size limits and the quota, without exposing users' files</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/learn/lovable-supabase-storage-errors"/>

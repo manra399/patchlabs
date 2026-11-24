@@ -94,6 +94,7 @@ Key facts:
 - [Personal data in request headers and AI prompts: where it ends up](https://patchlabs.dev/learn/personal-data-headers-ai-prompts)
 - [Supabase multi-tenant RLS: can tenant A see tenant B?](https://patchlabs.dev/learn/supabase-multi-tenant-rls)
 - [Lovable storage errors: failed uploads, size limits and the storage quota](https://patchlabs.dev/learn/lovable-supabase-storage-errors)
+- [Contact form fails with "new row violates row-level security policy": the safe fix](https://patchlabs.dev/learn/lovable-contact-form-rls-error)
 - [Lovable sign-up errors: “Database error saving new user” fixed safely](https://patchlabs.dev/learn/lovable-authentication-errors)
 - [Did your AI-built login store passwords in plain text? How to check](https://patchlabs.dev/learn/plaintext-passwords-ai-built-login)
 - [Staff are vibe-coding apps with client data: find and check them](https://patchlabs.dev/learn/staff-vibe-coded-apps-client-data)
