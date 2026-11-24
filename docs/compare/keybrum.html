@@ -137,7 +137,7 @@
     <p class="lab">PatchLabs vs Keybrum</p>
     <h1>Keybrum attacks your live app. PatchLabs proves the fix before anything ships.</h1>
     <p class="lede">Keybrum (launched on Hacker News on 22 Nov 2026) runs hundreds of attacks against your deployed Lovable, Bolt, Replit, v0 or Cursor app, shows proof, and gives your coding agent a fix prompt, then attacks again. PatchLabs rebuilds your database from your migrations in a disposable lab, writes the fix as a migration, proves it as an anonymous visitor, a signed-in stranger and the owner, and only then hands it to the engineer who approves it.</p>
-    <div class="meta-line"><span>Last checked 22 Nov 2026</span><span>Sources at the end</span><span>Independent of Keybrum</span></div>
+    <div class="meta-line"><span>Last checked 22 Nov 2026 (prices 24 Nov)</span><span>Sources at the end</span><span>Independent of Keybrum</span></div>
   </div>
 </section>
 
@@ -150,8 +150,8 @@
         <ul class="ticks">
           <li>You want one run that covers Supabase, Firebase, API routes, storage, leaked keys and framework CVEs on the deployed app</li>
           <li>You want a fix prompt to paste into Lovable, Bolt, Cursor or Claude Code, and a retest when your agent is done</li>
-          <li>You want a one-off paid report (€49) before a launch or a client handover, or a branded trust page for clients</li>
-          <li>You run many apps: their Team plan lists 25 apps for €99 a month, more apps per pound than our planned Agency plan</li>
+          <li>You want a one-off paid report (€99) before a launch or a client handover, or a branded trust page for clients</li>
+          <li>You run many apps: their Team plan lists 25 apps for €199 a month, against 10 apps for £99 on our planned Agency plan</li>
         </ul>
       </div>
       <div>
@@ -211,13 +211,13 @@
           <tr><th scope="row">The fix</th><td class="us">SQL migration with one-click commit on GitHub, approved by your engineer</td><td>A prompt for Lovable, Bolt, Cursor or Claude Code, or SQL; an MCP server lets your agent apply it</td></tr>
           <tr><th scope="row">How fixes are checked</th><td class="us"><span class="yes">Three-identity proof on a rebuilt database, before you see the fix</span><span class="cell-note">Signed Ed25519 receipt</span></td><td>The same attack is run again on the live app after your agent changes it; a finding closes when it fails</td></tr>
           <tr><th scope="row">Free</th><td class="us">The full product on 1 app: every finding, every fix proven, monthly re-checks</td><td>A preview of what visitors’ browsers download (backend, keys, table names); the attack itself is paid</td></tr>
-          <tr><th scope="row">Paid</th><td class="us">Free in early access. Planned: Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 each)</td><td>Report €49 once (1 app, 1 run, 7 days of retests). Maker €29/month (5 apps). Team €99/month (25 apps). Ex VAT</td></tr>
+          <tr><th scope="row">Paid</th><td class="us">Free in early access. Planned: Maker £19/month (3 apps), Agency £99/month (10 apps, +£8 each)</td><td>Report €99 once (1 app, 1 run, 7 days of retests). Maker €59/month (5 apps, 2 members). Team €199/month (25 apps, 10 members). Ex VAT</td></tr>
           <tr><th scope="row">For agencies</th><td class="us">Client labels, 10 seats, weekly re-checks, Slack webhook, plain-English questions to the client</td><td>Your brand on reports and trust pages, app discovery on Vercel, Netlify and Supabase, owners and roles</td></tr>
           <tr><th scope="row">Company</th><td class="us">Founder-run, London. You email the person who built it</td><td>Not stated on its site; launched 22 Nov 2026</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="small muted mt-2">Last checked 22 Nov 2026 against Keybrum’s home and pricing pages. Prices are Keybrum’s own, excluding VAT. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
+    <p class="small muted mt-2">Last checked 22 Nov 2026 against Keybrum’s home and pricing pages; prices rechecked 24 Nov 2026. Prices are Keybrum’s own, excluding VAT. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
   </div>
 </section>
 
@@ -260,7 +260,7 @@
     <div>
       <details class="acc"><summary>Can I use both?</summary><div class="acc-body"><p>Yes. Keybrum tests the running app from outside, across far more than the database. PatchLabs proves the database fix before it ships and re-checks it when migrations change. One looks at production, the other at the code that becomes production.</p></div></details>
       <details class="acc"><summary>Is attacking a live app safe?</summary><div class="acc-body"><p>Keybrum says its attacks are built for live apps: writes are tested so no row is written, delete is never tested, and only counts, column names and one redacted row are kept. We haven’t verified that independently. We chose not to test live apps at all, so there’s nothing to trust on that point.</p></div></details>
-      <details class="acc"><summary>Keybrum is cheaper per app. Why pick PatchLabs?</summary><div class="acc-body"><p>On listed prices it is: 25 apps for €99 a month against our planned 10 apps for £99. If a live attack and a fix prompt are what you need, that’s a good deal. PatchLabs is for teams where nobody wants an agent changing production without a proven, approved migration, and it’s free during early access.</p></div></details>
+      <details class="acc"><summary>Keybrum is cheaper per app. Why pick PatchLabs?</summary><div class="acc-body"><p>On listed prices it is: 25 apps for €199 a month against our planned 10 apps for £99. If a live attack and a fix prompt are what you need, that’s a good deal. PatchLabs is for teams where nobody wants an agent changing production without a proven, approved migration, and it’s free during early access.</p></div></details>
       <details class="acc"><summary>Are you affiliated with Keybrum?</summary><div class="acc-body"><p>No. We read their public pages on 22 Nov 2026 and did not run their paid attack. If anything here is wrong, <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">tell us</a> and we’ll fix it.</p></div></details>
     </div>
   </div>
@@ -272,11 +272,11 @@
     <h2 id="src-h" class="h-md">Where these facts come from.</h2>
     <ul class="sources">
       <li><span><a href="https://keybrum.com" rel="noopener">Keybrum homepage</a> · attack counts, live-app safety claims, fix prompts and MCP, ownership proof, agency features</span><span class="when">checked 22 Nov 2026</span></li>
-      <li><span><a href="https://keybrum.com/pricing" rel="noopener">Keybrum pricing</a> · Report, Maker and Team prices and limits, free preview</span><span class="when">checked 22 Nov 2026</span></li>
+      <li><span><a href="https://keybrum.com/pricing" rel="noopener">Keybrum pricing</a> · Report €99 once, Maker €59/month, Team €199/month, limits, free preview</span><span class="when">checked 24 Nov 2026</span></li>
       <li><span><a href="https://news.ycombinator.com/item?id=50603596" rel="noopener">Show HN: I’ve made a CVE auto pentest app</a> · launch date</span><span class="when">22 Nov 2026</span></li>
       <li><span><a href="/pricing">PatchLabs pricing</a> and <a href="/solutions/agencies">agency plan</a> · our planned prices and features</span><span class="when">ours</span></li>
     </ul>
-    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Keybrum.</b> Product names are used only to identify them. Facts were checked on 22 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Keybrum.</b> Product names are used only to identify them. Facts were checked on 22 Nov 2026 (prices on 24 Nov) and may have changed since; we update these pages when we hear about a change.</p></div>
   </div>
 </section>
 
