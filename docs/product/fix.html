@@ -205,11 +205,11 @@ select * from public.profiles;
       </div>
       <div>
         <div class="stats" style="--cols:3">
-          <div class="stat green"><b class="num">18<small>of 20</small></b><span>passed the strict lab proof with no human<sup class="fn"><a href="#ffn1" aria-label="Footnote 1">1</a></sup></span></div>
-          <div class="stat"><b class="num">15</b><span>needed only the smallest model<sup class="fn"><a href="#ffn1" aria-label="Footnote 1">1</a></sup></span></div>
-          <div class="stat"><b class="num">2</b><span>went to a person<sup class="fn"><a href="#ffn1" aria-label="Footnote 1">1</a></sup></span></div>
+          <div class="stat green"><b class="num">17<small>of 20</small></b><span>passed the strict lab proof with no human help<sup class="fn"><a href="#ffn1" aria-label="Footnote 1">1</a></sup></span></div>
+          <div class="stat"><b class="num">14</b><span>needed only the smallest model<sup class="fn"><a href="#ffn1" aria-label="Footnote 1">1</a></sup></span></div>
+          <div class="stat"><b class="num">3</b><span>didn’t pass: 2 went to a person, 1 fails the current check<sup class="fn"><a href="#ffn1" aria-label="Footnote 1">1</a></sup></span></div>
         </div>
-        <ol class="footnotes"><li id="ffn1">Autonomous pipeline on 20 new apps, 9 Nov 2026, n=20. Small sample, published with the misses. <a href="/research/methodology">Methodology</a>.</li></ol>
+        <ol class="footnotes"><li id="ffn1">Autonomous pipeline on 20 new apps, 9 Nov 2026, n=20, re-checked 24 Nov 2026 with our stricter current verifier. Small sample, published with the misses. <a href="/research/methodology">Methodology</a>.</li></ol>
       </div>
     </div><div class="callout limit mt-4"><p><strong>What Fix doesn’t do.</strong> It never merges or applies anything by itself: a person always approves. Automatic pull requests and private repos need our GitHub App, which is coming. A proven fix covers the access rules we test, not the whole app; it isn’t a pentest or a compliance certification.</p></div>
   </div>
