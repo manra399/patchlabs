@@ -8,6 +8,16 @@ exposure study (318 rebuilt repos),2026-11-05,all,readable_only_by_signed_in_use
 exposure study (318 rebuilt repos),2026-11-05,all,no_personal_data_readable_by_wrong_people,212,318,repos,derived: 318 - 106
 exposure study (318 rebuilt repos),2026-11-05,all,adjusted_rate_low,25,,percent,after removing businesses' own public contact details
 exposure study (318 rebuilt repos),2026-11-05,all,adjusted_rate_high,28,,percent,"false-alarm rate taken from the fix study, n=24"
+exposure study (318 rebuilt repos),2026-11-24,all,flagged_repos_rechecked,106,106,repos,"the 106 flagged on 5 Nov, re-probed with the stricter lab (a seeded test row must be readable); the 318 base is from 5 Nov and was not re-sampled"
+exposure study (318 rebuilt repos),2026-11-24,all,personal_data_readable_by_wrong_people,97,318,repos,31%
+exposure study (318 rebuilt repos),2026-11-24,all,readable_by_anyone_with_public_key,65,318,repos,20%
+exposure study (318 rebuilt repos),2026-11-24,all,readable_only_by_signed_in_users,32,318,repos,"10%, in addition to the 65"
+exposure study (318 rebuilt repos),2026-11-24,all,no_personal_data_readable_by_wrong_people,221,318,repos,derived: 318 - 97
+exposure study (318 rebuilt repos),2026-11-24,all,flagged_repos_fixed_by_owner,0,104,repos,flagged repos still on GitHub that had closed the leak in their migrations
+exposure study (318 rebuilt repos),2026-11-24,all,flagged_repos_deleted,2,106,repos,no longer on GitHub; counted as not leaking
+exposure study (318 rebuilt repos),2026-11-24,all,flagged_repos_without_readable_test_row,7,106,repos,in 5 the lab's test row could not be inserted (rules still open on paper); not counted
+exposure study (318 rebuilt repos),2026-11-24,all,adjusted_rate_low,25,,percent,97 x 20/24 = about 81 apps
+exposure study (318 rebuilt repos),2026-11-24,all,adjusted_rate_high,27,,percent,"about 85 apps, counting the 5 where the test row could not be inserted"
 fix-agent study (24 apps),2026-11-05,all,apps_given_to_fix_agents,24,,apps,35 tables
 fix-agent study (24 apps),2026-11-05,all,tables_confirmed_exposed_at_row_level,35,35,tables,
 fix-agent study (24 apps),2026-11-05,all,false_alarms_caught_by_agent,4,24,apps,business's own public contact details
@@ -43,6 +53,7 @@ autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_mean,9.2,,minutes
 autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_min,0.8,,minutes,
 autonomous pipeline (20 new apps),2026-11-09,all,agent_minutes_max,66.7,,minutes,
 autonomous pipeline (20 new apps),2026-11-24,all,passed_on_day_fails_current_verifier,1,20,apps,saved 9 Nov fixes re-run under the current verifier (a fix passes only if the leak was reproduced first); source RECHECK-9NOV.md
+autonomous pipeline (20 new apps),2026-11-24,all,passed_proven_on_existing_rows,3,17,apps,"the lab's test row could not be inserted, so the proof read the rows the app's migrations left"
 autonomous pipeline (20 new apps),2026-11-09,cost bucket under $0.50,apps,14,20,apps,
 autonomous pipeline (20 new apps),2026-11-09,cost bucket $0.50 to $1,apps,1,20,apps,
 autonomous pipeline (20 new apps),2026-11-09,cost bucket $1 to $3,apps,3,20,apps,

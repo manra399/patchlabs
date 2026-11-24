@@ -839,6 +839,8 @@ def receipt_seal():
 
 
 def study_318():
+    # Leaking apps on the 24 Nov 2026 re-check of the 106 flagged on 5 Nov (base 318 from 5 Nov; see research/1-in-4).
+    LEAK = 97
     cols, rows_, pitch, t = 53, 6, 16, 11
     x0 = (960 - (cols * pitch - (pitch - t))) / 2
     y0 = 72
@@ -846,32 +848,32 @@ def study_318():
     for k in range(318):
         c_, r_ = divmod(k, rows_)
         x, y = x0 + c_ * pitch, y0 + r_ * pitch
-        (red if k < 106 else grey).append(f"M{n(x)} {n(y)}h{t}v{t}h-{t}Z")
-        if k < 106:
+        (red if k < LEAK else grey).append(f"M{n(x)} {n(y)}h{t}v{t}h-{t}Z")
+        if k < LEAK:
             bars.append(f"M{n(x + 2.5)} {n(y + 3.5)}h6")
         else:
             grey.append(f"M{n(x)} {n(y + 3.5)}h{t}")
-    assert len(red) == 106 and len(bars) == 106
+    assert len(red) == LEAK and len(bars) == LEAK
     o = [T(x0, 40, "318 APPS REBUILT FROM THEIR OWN MIGRATIONS", "tb", 12),
          path("".join(grey), "h"), path("".join(red), "rf"), path("".join(bars), "ws")]
-    xr = x0 + 18 * pitch - (pitch - t)  # end of the red block (17 columns + 4)
+    xr = x0 + -(-LEAK // rows_) * pitch - (pitch - t)  # end of the red block (16 full columns + 1)
     yb = y0 + rows_ * pitch + 6
     o.append(path(f"M{n(x0)} {yb} C{n(x0)} {yb + 8} {n(x0 + 4)} {yb + 8} {n(x0 + 20)} {yb + 8} H{n((x0 + xr) / 2 - 8)} "
                   f"C{n((x0 + xr) / 2 - 2)} {yb + 8} {n((x0 + xr) / 2)} {yb + 12} {n((x0 + xr) / 2)} {yb + 16} "
                   f"C{n((x0 + xr) / 2)} {yb + 12} {n((x0 + xr) / 2 + 2)} {yb + 8} {n((x0 + xr) / 2 + 8)} {yb + 8} H{n(xr - 20)} "
                   f"C{n(xr - 4)} {yb + 8} {n(xr)} {yb + 8} {n(xr)} {yb}", "r"))
-    o.append(T((x0 + xr) / 2, yb + 36, "106", "tr", 18, "middle"))
+    o.append(T((x0 + xr) / 2, yb + 36, str(LEAK), "tr", 18, "middle"))
     xe = 960 - x0
-    o.append(T((xr + 16 + xe) / 2, yb + 36, "212", "tk", 18, "middle"))
+    o.append(T((xr + 16 + xe) / 2, yb + 36, str(318 - LEAK), "tk", 18, "middle"))
     o.append(path(f"M{n(xr + 16)} {yb} V{yb + 8} H{n(xe)} V{yb}", "h"))
-    o.append(T((x0 + xr) / 2, yb + 76, "106 of 318 let the wrong", "hand", 26, "middle"))
+    o.append(T((x0 + xr) / 2, yb + 76, f"{LEAK} of 318 let the wrong", "hand", 26, "middle"))
     o.append(T((x0 + xr) / 2, yb + 102, "people read personal data", "hand", 26, "middle"))
     o.append(T(xe, yb + 36, "", "t"))
-    o.append(T(xe, 286, "PatchLabs lab study · Nov 2026", "t", 12, "end"))
+    o.append(T(xe, 286, "PatchLabs lab study · re-checked 24 Nov 2026", "t", 12, "end"))
     o.append(T((xr + 16 + xe) / 2, yb + 56, "no such leak found in the lab", "t", 12, "middle"))
     return svg("study-318", 960, 300, o,
-               "Unit chart of 318 apps rebuilt from their migrations: 106 tiles in red let the wrong people read personal data, "
-               "212 did not. PatchLabs lab study, November 2026.")
+               f"Unit chart of 318 apps rebuilt from their migrations: {LEAK} tiles in red let the wrong people read personal data, "
+               f"{318 - LEAK} did not. PatchLabs lab study, November 2026, re-checked 24 Nov 2026.")
 
 
 def laptop(cx, cy, s=1.0):

@@ -7,10 +7,10 @@ OUT = os.path.join(ROOT, "site", "pages", "for")
 
 STUDY_LS = """<div class="stats mt-3" style="--cols:3">
         <div class="stat"><b class="num">318</b><span>public Lovable and Supabase apps rebuilt<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
-        <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+        <div class="stat red"><b class="num">97</b><span>let the wrong people read personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
         <div class="stat"><b class="num">1<small>in 4</small></b><span>exposed real personal data<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
       </div>
-      <ol class="footnotes"><li id="fn1">PatchLabs lab study, Nov 2026. 436 public Lovable and Supabase repos run (from a random sample of 500); 318 built a working database in the lab. 106 of 318 (33%): 70 to anyone with the public key, 36 to anyone who signs up. About 1 in 4 (25–28%) after removing businesses’ own public contact details. The study doesn’t separate Lovable from other Supabase projects. <a href="/research/methodology">Methodology</a>.</li></ol>"""
+      <ol class="footnotes"><li id="fn1">PatchLabs lab study, Nov 2026. 436 public Lovable and Supabase repos run (from a random sample of 500); 318 built a working database in the lab. 97 of 318 (31%) on our 24 Nov 2026 re-check: 65 to anyone with the public key, 32 to anyone who signs up (5 Nov: 106, 70 and 36). About 1 in 4 (25–27%) after removing businesses’ own public contact details. The 318 base is from 5 Nov 2026; on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted). The study doesn’t separate Lovable from other Supabase projects. <a href="/research/methodology">Methodology</a>.</li></ol>"""
 
 NO_STUDY = """<div class="callout note mt-3"><p><strong>No {name}-specific numbers yet.</strong> Our study sampled public Lovable and Supabase repos, so we don’t publish figures for {name} apps. The access rules work the same way on any Supabase database, which is what we test.</p></div>"""
 

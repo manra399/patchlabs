@@ -5,7 +5,7 @@ navtitle: Is my Lovable app secure?
 topic: supabase
 order: 6
 short: A Lovable app is secure only if its database rules, keys and sign-up settings are right. Six checks you can run in 10 minutes, with SQL and free tools.
-lede: You cannot tell from how a Lovable app looks. It is secure if three things are true: row level security is on for every table in its Supabase database, no secret key sits in the code or git history, and a stranger who signs up cannot read other people’s data. In the PatchLabs lab study (Nov 2026) of 318 public Lovable and Supabase apps, 106 (33%) let the wrong people read personal data, so ten minutes of checking is worth it.
+lede: You cannot tell from how a Lovable app looks. It is secure if three things are true: row level security is on for every table in its Supabase database, no secret key sits in the code or git history, and a stranger who signs up cannot read other people’s data. In the PatchLabs lab study (Nov 2026) of 318 public Lovable and Supabase apps, 97 (31%) let the wrong people read personal data on our 24 Nov 2026 re-check, so ten minutes of checking is worth it.
 tldr: A working app tells you nothing about its database rules. The checks below test the rules, not the screens. || Start with Lovable’s security scan and Supabase’s Security Advisor. Both are quick, and both have limits their own docs state. || Then settle the three things only a test can show: RLS on every table, no table readable by a stranger who signs up, and no secret key in the code.
 findings: PL-001, PL-002, PL-008, PL-010, PL-018, PL-019
 checked: 2026-11-11
@@ -80,7 +80,7 @@ git log --all --oneline -S"service_role"
 <h3>Does Lovable’s security scan guarantee my app is secure?</h3>
 <p>No, and Lovable’s docs say so. The Quick scan runs a fixed set of checks in seconds. The Deep scan reads all application code. Neither is a substitute for testing who can read your tables as an outsider.</p>
 <h3>How do I know if my Lovable app’s database is public?</h3>
-<p>Run the <code>anon</code> test in step 4 on every table that holds personal data. If it returns rows, anyone with your public key can read them. About 22% of the apps in the PatchLabs study (70 of 318) were readable that way.</p>
+<p>Run the <code>anon</code> test in step 4 on every table that holds personal data. If it returns rows, anyone with your public key can read them. About 20% of the apps in the PatchLabs study (65 of 318, re-checked 24 Nov 2026) were readable that way.</p>
 <h3>Can I check a Lovable app without sharing my code?</h3>
 <p>Yes. The SQL checks run inside your own Supabase project, and the free key check runs in your browser without uploading anything. The free RLS check reads a public GitHub repo.</p>
 

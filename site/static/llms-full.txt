@@ -37,7 +37,7 @@ What is not available yet (say so honestly): private repos and automatic pull re
 ## Real numbers (PatchLabs lab study, November 2026)
 
 - 436 public Lovable/Supabase repos run (from a random sample of 500); in 318 the migrations built a working database in the lab.
-- 106 of 318 (33%) let the wrong people read personal data: 70 (22%) to anyone on the internet with the public key, 36 more (11%) to anyone who signs up. After removing businesses' own public contact details, the rate is about 1 in 4 (25-28%).
+- 97 of 318 (31%) let the wrong people read personal data on our 24 Nov 2026 re-check: 65 (20%) to anyone on the internet with the public key, 32 more (10%) to anyone who signs up. After removing businesses' own public contact details, the rate is about 1 in 4 (25-27%). The 318 base is from 5 Nov 2026 (first run: 106, 70 and 36); on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted).
 - Fix agents, re-verified: 19 of 20 real fixes worked first time and applied cleanly (5 Nov 2026, n=20).
 - Autonomous pipeline on 20 new apps (9 Nov 2026, n=20, re-checked 24 Nov 2026): 17 of 20 fixes passed the strict lab proof with no human help; 14 needed only the smallest model; median 3.5 minutes per app; 2 went to a person, and 1 passed on the day but fails the current, stricter check.
 - The study is published as aggregate counts only. No app from the study is named.

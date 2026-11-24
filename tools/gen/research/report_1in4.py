@@ -20,6 +20,25 @@ RECHECK_DATE = "2026-11-24"
 RECHECK_SOURCE = "RECHECK-9NOV.md"
 FAILS_CURRENT_CHECK = {"904e4fb63b9b77a0"}
 RECHECK_LABEL = "passed on 9 Nov; fails current check"
+# 3 of the 17 passes were proven on the rows the migrations left, because the lab's test row could not be inserted
+# (results-24nov.jsonl: seed_status "existing rows only").
+EXISTING_ROWS_ONLY = 3
+
+# Exposure study counts. Base: 318 rebuilt repos (5 Nov 2026, not re-sampled). First run (5 Nov): 106 flagged, 70 to
+# anyone with the public key, 36 only to signed-in strangers. Re-check of those 106 on 24 Nov 2026 with the stricter
+# probe (a seeded test row must actually be readable): 97 still leak (65 anyone, 32 signed-in only), none fixed by its
+# owner, 2 repos deleted, the other 7 no longer show a readable test row (in 5 the test row could not be inserted).
+# Source: deep-sweep-2026-11/study-refresh/study-relaunch-draft.md (per-repo detail is internal and names apps).
+BASE = 318
+NOV5 = dict(either=106, anyone=70, signed_in=36)
+NOV24 = dict(either=97, anyone=65, signed_in=32, deleted=2, no_test_row=7, not_insertable=5, owner_fixed=0, on_github=104)
+assert NOV5["anyone"] + NOV5["signed_in"] == NOV5["either"] and NOV24["anyone"] + NOV24["signed_in"] == NOV24["either"]
+assert NOV24["either"] + NOV24["deleted"] + NOV24["no_test_row"] == NOV5["either"] and NOV5["either"] - NOV24["deleted"] == NOV24["on_github"]
+pct = lambda v: round(100 * v / BASE)
+assert [pct(NOV24[k]) for k in ("either", "anyone", "signed_in")] == [31, 20, 10] and pct(BASE - NOV24["either"]) == 69
+# Adjusted rate: false-alarm rate 4 of 24 (5 Nov fix study). 97 x 20/24 = about 81 (25%); with the 5 unseeded, about 85 (27%).
+ADJ = (round(100 * NOV24["either"] * 20 / 24 / BASE), round(100 * (NOV24["either"] + NOV24["not_insertable"]) * 20 / 24 / BASE))
+assert ADJ == (25, 27)
 
 rows = [json.loads(l) for l in open(BATCH) if l.strip()]
 assert len(rows) == 20
@@ -148,11 +167,13 @@ FUNNEL = hbars([
     ("Public repos sampled", 500, "m-faint"),
     ("Run through the lab", 436, "m-faint"),
     ("Migrations built a working database", 318, "m-ink"),
-    ("Personal data readable by the wrong people", 106, "m-red"),
-    ("…by anyone with the public key", 70, "m-red"),
-    ("…only by people who sign up", 36, "m-redsoft"),
-], "funnel", "From 500 sampled repos to 106 exposing personal data",
-    "500 sampled, 436 run, 318 built a working database, 106 let the wrong people read personal data: 70 to anyone with the public key and 36 more to anyone who signs up.")
+    ("Flagged in the first run, 5 Nov", NOV5["either"], "m-faint"),
+    ("Personal data readable, 24 Nov re-check", NOV24["either"], "m-red"),
+    ("…by anyone with the public key", NOV24["anyone"], "m-red"),
+    ("…only by people who sign up", NOV24["signed_in"], "m-redsoft"),
+], "funnel", "From 500 sampled repos to 97 exposing personal data",
+    "500 sampled, 436 run, 318 built a working database, 106 flagged in the first run on 5 Nov 2026; on the 24 Nov 2026 re-check "
+    "97 still let the wrong people read personal data: 65 to anyone with the public key and 32 more to anyone who signs up.")
 
 TABLES = hbars([
     ("Other people’s records (staff, sellers, suppliers, players)", 9),
@@ -185,10 +206,10 @@ def stacked(parts, label, title, desc, total):
     return "\n".join(out)
 
 
-WHO_BAR = stacked([("Anyone with the public key", 70, "m-red"), ("Anyone who signs up", 36, "m-redsoft"),
-                   ("No personal data readable by the wrong people", 212, "m-faint")],
-                  "who", "Who could read personal data, 318 rebuilt apps",
-                  "70 apps (22%) to anyone with the public key, 36 (11%) only to signed-in users, 212 (67%) neither.", 318)
+WHO_BAR = stacked([("Anyone with the public key", NOV24["anyone"], "m-red"), ("Anyone who signs up", NOV24["signed_in"], "m-redsoft"),
+                   ("No personal data readable by the wrong people", BASE - NOV24["either"], "m-faint")],
+                  "who", "Who could read personal data, 318 rebuilt apps, re-checked 24 Nov 2026",
+                  "65 apps (20%) to anyone with the public key, 32 (10%) only to signed-in users, 221 (69%) neither.", BASE)
 VERDICT_BAR = stacked([("Real bug", 28, "m-red"), ("Public by design, but leaking personal columns", 7, "m-redsoft"),
                        ("False alarm", 2, "m-faint")],
                       "verdict", "Agent verdicts on 37 leaking tables",
@@ -254,6 +275,19 @@ for row in [
     (E, "2026-11-05", "all", "no_personal_data_readable_by_wrong_people", 212, 318, "repos", "derived: 318 - 106"),
     (E, "2026-11-05", "all", "adjusted_rate_low", 25, "", "percent", "after removing businesses' own public contact details"),
     (E, "2026-11-05", "all", "adjusted_rate_high", 28, "", "percent", "false-alarm rate taken from the fix study, n=24"),
+    (E, "2026-11-24", "all", "flagged_repos_rechecked", NOV5["either"], NOV5["either"], "repos",
+     "the 106 flagged on 5 Nov, re-probed with the stricter lab (a seeded test row must be readable); the 318 base is from 5 Nov and was not re-sampled"),
+    (E, "2026-11-24", "all", "personal_data_readable_by_wrong_people", NOV24["either"], BASE, "repos", "31%"),
+    (E, "2026-11-24", "all", "readable_by_anyone_with_public_key", NOV24["anyone"], BASE, "repos", "20%"),
+    (E, "2026-11-24", "all", "readable_only_by_signed_in_users", NOV24["signed_in"], BASE, "repos", "10%, in addition to the 65"),
+    (E, "2026-11-24", "all", "no_personal_data_readable_by_wrong_people", BASE - NOV24["either"], BASE, "repos", "derived: 318 - 97"),
+    (E, "2026-11-24", "all", "flagged_repos_fixed_by_owner", NOV24["owner_fixed"], NOV24["on_github"], "repos",
+     "flagged repos still on GitHub that had closed the leak in their migrations"),
+    (E, "2026-11-24", "all", "flagged_repos_deleted", NOV24["deleted"], NOV5["either"], "repos", "no longer on GitHub; counted as not leaking"),
+    (E, "2026-11-24", "all", "flagged_repos_without_readable_test_row", NOV24["no_test_row"], NOV5["either"], "repos",
+     "in 5 the lab's test row could not be inserted (rules still open on paper); not counted"),
+    (E, "2026-11-24", "all", "adjusted_rate_low", ADJ[0], "", "percent", "97 x 20/24 = about 81 apps"),
+    (E, "2026-11-24", "all", "adjusted_rate_high", ADJ[1], "", "percent", "about 85 apps, counting the 5 where the test row could not be inserted"),
 ]:
     w.writerow(row)
 F5 = "fix-agent study (24 apps)"
@@ -301,6 +335,8 @@ for m, v, d, u, n in summary:
     w.writerow((P9, "2026-11-09", "all", m, v, d, u, n))
 w.writerow((P9, RECHECK_DATE, "all", "passed_on_day_fails_current_verifier", N["recheck"], 20, "apps",
             f"saved 9 Nov fixes re-run under the current verifier (a fix passes only if the leak was reproduced first); source {RECHECK_SOURCE}"))
+w.writerow((P9, RECHECK_DATE, "all", "passed_proven_on_existing_rows", EXISTING_ROWS_ONLY, N["proven"], "apps",
+            "the lab's test row could not be inserted, so the proof read the rows the app's migrations left"))
 for n, v in COST_B:
     w.writerow((P9, "2026-11-09", "cost bucket " + n, "apps", v, 20, "apps", ""))
 for n, v in TIME_B:

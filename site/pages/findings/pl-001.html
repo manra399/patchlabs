@@ -83,7 +83,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
       <p>Every Supabase app ships a public key (the <code>anon</code> key) inside its web pages. That is by design: the key is meant to be public, and row level security (RLS) policies decide what it can read. PL-001 means a table holding personal data, such as emails, phone numbers, addresses or dates of birth, has a read policy that lets the <code>anon</code> role through without checking who is asking.</p>
 <p>Nobody needs to break in. Anyone who opens your site can copy the key from the page and ask the database for every row. The usual cause is a policy written as <code>using (true)</code> with no <code>to</code> clause, which applies to every role, including logged-out visitors.</p>
-      <div class="callout note"><p>In our lab study, 70 of 318 rebuilt apps (22%) let anyone with the public key read personal data, through this pattern or <a href="/findings/pl-008">PL-008</a> (PatchLabs lab study, n=318, Nov 2026).</p></div>
+      <div class="callout note"><p>In our lab study, 65 of 318 rebuilt apps (20%) let anyone with the public key read personal data, through this pattern or <a href="/findings/pl-008">PL-008</a> (PatchLabs lab study, n=318, Nov 2026, re-checked 24 Nov 2026).</p></div>
 
       
 

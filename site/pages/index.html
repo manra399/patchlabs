@@ -53,11 +53,11 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
     </div>
     <div class="h4-nums" data-reveal>
       <div><b>318</b><span>public Lovable and Supabase apps rebuilt in our lab</span></div>
-      <div class="r"><b>106</b><span>let the wrong people read personal data</span></div>
+      <div class="r"><b>97</b><span>let the wrong people read personal data</span></div>
       <div class="g"><b>17<small>/20</small></b><span>fixes passed the strict proof with no human help</span></div>
       <div><b>3.5<small>min</small></b><span>median from repo to proven fix</span></div>
     </div>
-    <p class="h4-src">PatchLabs lab study, Nov 2026, public code only, no live systems accessed. Fix pipeline: 20 new apps, 9 Nov 2026, re-checked 24 Nov 2026; 2 went to a person and 1 fails our stricter current check. <a href="/research/1-in-4">Read the study</a> · <a href="/research/methodology">Method</a></p>
+    <p class="h4-src">PatchLabs lab study, Nov 2026, public code only, no live systems accessed. 97 of 318 (31%) on our 24 Nov 2026 re-check; 106 on 5 Nov. The 318 base is from 5 Nov 2026; on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted). Fix pipeline: 20 new apps, 9 Nov 2026, re-checked 24 Nov 2026; 2 went to a person and 1 fails our stricter current check. <a href="/research/1-in-4">Read the study</a> · <a href="/research/methodology">Method</a></p>
     <div class="h4-trust" data-reveal>
       <b>6.6<small>%</small></b>
       <p>of developers trust AI output with important work decisions. Almost half, 48%, trust it only when they can easily check it. So we don’t ask for trust: every fix we call proven shows the before-and-after counts, and nothing changes until a person applies it.</p>
@@ -213,8 +213,8 @@ head: <link rel="stylesheet" href="/assets/pages/platform.css"><script type="app
     <div class="h4-study-grid">
       <div>
         <p class="lab red">The study</p>
-        <h2 id="study-h">106 of 318 apps let the wrong people read <em>personal data</em>.</h2>
-        <p class="muted">70 to anyone holding the public key, 36 to anyone who signs up. Aggregate numbers only: we never name an app.</p>
+        <h2 id="study-h">97 of 318 apps let the wrong people read <em>personal data</em>.</h2>
+        <p class="muted">65 to anyone holding the public key, 32 to anyone who signs up, on our 24 Nov 2026 re-check of the 106 apps flagged on 5 Nov. Aggregate numbers only: we never name an app.</p>
         <div class="row mt-3"><a class="btn secondary" href="/research/1-in-4">Read the study</a><a class="btn ghost" href="/research/methodology">Method</a></div>
       </div>
       <figure class="card h4-study-art" data-reveal>{{svg:study-318}}</figure>

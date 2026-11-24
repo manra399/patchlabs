@@ -83,7 +83,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
       <p>The policy checks that someone is signed in, but not that the row is theirs. It usually looks careful (<code>to authenticated</code>, or <code>auth.uid() is not null</code>), which is why it survives review. But if your app lets anyone create an account, being signed in proves nothing: a stranger signs up with a throwaway email and reads every user's row.</p>
 <p>This is the leak most outside scans miss, because they only test as a logged-out visitor. Our lab tests as a signed-in stranger on every check.</p>
-      <div class="callout note"><p>In our lab study, 36 of 318 rebuilt apps (11%) leaked personal data only to signed-in users, on top of the 70 that leaked to anyone (PatchLabs lab study, n=318, Nov 2026).</p></div>
+      <div class="callout note"><p>In our lab study, 32 of 318 rebuilt apps (10%) leaked personal data only to signed-in users, on top of the 65 that leaked to anyone (PatchLabs lab study, n=318, Nov 2026, re-checked 24 Nov 2026).</p></div>
 
       
 

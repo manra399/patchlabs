@@ -5,23 +5,24 @@ navtitle: Vibe-coding security risks
 topic: launch
 order: 5
 short: The main security risks in vibe-coded apps, each tied to a PatchLabs finding and to our lab study of 318 public Lovable and Supabase apps.
-lede: The most serious risk PatchLabs has measured in vibe-coded apps is a database the wrong people can read. In the PatchLabs lab study (Nov 2026) of 318 public Lovable and Supabase apps, 106 (33%) did: 70 were readable by anyone with the public key and 36 by anyone who signs up. After removing businesses’ own public contact details, about 1 in 4 (25–28%) exposed real personal data.
-tldr: The measured risk is data exposure: 106 of 318 apps (33%), about 1 in 4 after removing false alarms. || The cause is a handful of access-rule patterns, each with a finding page: RLS never switched on, read rules that say yes to everyone, and read rules that only check “signed in”. || Other common risks are secret keys in code, open server functions, self-made admins and weak HTTPS. We list them with finding IDs but have no study numbers for them. || Every risk here can be checked with a free tool or a short test.
+lede: The most serious risk PatchLabs has measured in vibe-coded apps is a database the wrong people can read. In the PatchLabs lab study (Nov 2026, re-checked 24 Nov 2026) of 318 public Lovable and Supabase apps, 97 (31%) did: 65 were readable by anyone with the public key and 32 by anyone who signs up. After removing businesses’ own public contact details, about 1 in 4 (25–27%) exposed real personal data.
+tldr: The measured risk is data exposure: 97 of 318 apps (31%) on our 24 Nov 2026 re-check, about 1 in 4 after removing false alarms. || The cause is a handful of access-rule patterns, each with a finding page: RLS never switched on, read rules that say yes to everyone, and read rules that only check “signed in”. || Other common risks are secret keys in code, open server functions, self-made admins and weak HTTPS. We list them with finding IDs but have no study numbers for them. || Every risk here can be checked with a free tool or a short test.
 findings: PL-008, PL-001, PL-002, PL-012, PL-010, PL-017
 checked: 2026-11-11
 ---
 <h2 id="data">How common are security flaws in vibe-coded apps?</h2>
-<p>PatchLabs sampled 500 public GitHub repos with a Lovable and Supabase project layout, and rebuilt each app’s database from its own migrations in a disposable lab. We then read the copy as an anonymous visitor and as a signed-in stranger who owns none of the rows. Here is what came out.</p>
+<p>PatchLabs sampled 500 public GitHub repos with a Lovable and Supabase project layout, and rebuilt each app’s database from its own migrations in a disposable lab. We then read the copy as an anonymous visitor and as a signed-in stranger who owns none of the rows. Here is what came out, with the leak counts from our 24 Nov 2026 re-check of the apps flagged in the first run. The 318 base is from 5 Nov 2026; on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted).</p>
 <div class="table-wrap"><table class="table compact">
 <thead><tr><th scope="col">Stage</th><th scope="col">Apps</th><th scope="col">Share of 318</th></tr></thead>
 <tbody>
 <tr><th scope="row">Public repos sampled</th><td>500</td><td>n/a</td></tr>
 <tr><th scope="row">Run through the lab</th><td>436</td><td>n/a</td></tr>
 <tr><th scope="row">Migrations built a working database</th><td>318</td><td>100%</td></tr>
-<tr><th scope="row">Personal data readable by the wrong people</th><td>106</td><td>33%</td></tr>
-<tr><th scope="row">…by anyone with the public key</th><td>70</td><td>22%</td></tr>
-<tr><th scope="row">…only by people who sign up</th><td>36</td><td>11%</td></tr>
-<tr><th scope="row">Real exposure after removing businesses’ own public contact details</th><td>about 1 in 4</td><td>25–28%</td></tr>
+<tr><th scope="row">Flagged in the first run (5 Nov 2026)</th><td>106</td><td>33%</td></tr>
+<tr><th scope="row">Personal data readable by the wrong people (24 Nov 2026 re-check)</th><td>97</td><td>31%</td></tr>
+<tr><th scope="row">…by anyone with the public key</th><td>65</td><td>20%</td></tr>
+<tr><th scope="row">…only by people who sign up</th><td>32</td><td>10%</td></tr>
+<tr><th scope="row">Real exposure after removing businesses’ own public contact details</th><td>about 1 in 4</td><td>25–27%</td></tr>
 </tbody>
 </table></div>
 <p>Source: PatchLabs lab study, Nov 2026. The <a href="/research/1-in-4">full report</a> has the data and <a href="/research/methodology">methodology</a>. The 118 repos that did not build are excluded, not counted as safe.</p>
@@ -29,7 +30,7 @@ checked: 2026-11-11
 
 <h2 id="why">Why do AI app builders produce these flaws?</h2>
 <p>An AI builder aims to make the app work first. When a page fails with a permissions error, the quickest way to clear it is to loosen a rule, and a loosened rule can open the whole table. The study also found that leaks are not limited to the users table. Apps exposed the people their users deal with, such as suppliers, staff and sellers, and logs of private conversations.</p>
-<p>A second pattern is a third of the leaks needing a sign-up. If an app lets anyone create an account, “signed in” is not a boundary, and tests run only as a logged-out visitor miss those 36 apps.</p>
+<p>A second pattern is a third of the leaks needing a sign-up. If an app lets anyone create an account, “signed in” is not a boundary, and tests run only as a logged-out visitor miss those 32 apps.</p>
 
 <h2 id="risks">What are the top security risks of vibe-coded apps?</h2>
 <p>Ordered by how directly they expose data. Only the first three were measured in the study.</p>
@@ -63,11 +64,11 @@ checked: 2026-11-11
 
 <h2 id="faq">Questions people ask</h2>
 <h3>What is the biggest security risk in a vibe-coded app?</h3>
-<p>In PatchLabs’ lab study, it was data exposure. 106 of 318 public Lovable and Supabase apps (33%) let the wrong people read personal data, and about 1 in 4 exposed real personal data once false alarms were removed.</p>
+<p>In PatchLabs’ lab study, it was data exposure. 97 of 318 public Lovable and Supabase apps (31%) let the wrong people read personal data on our 24 Nov 2026 re-check, and about 1 in 4 exposed real personal data once false alarms were removed.</p>
 <h3>Are vibe-coded apps less secure than hand-written ones?</h3>
 <p>We cannot say. The study sampled public Lovable and Supabase repos and did not compare them with hand-written apps. It shows how often this stack leaks, not how it ranks against others.</p>
 <h3>Why does “signed in” not mean “safe”?</h3>
-<p>If anyone can create an account, a stranger can sign up with a throwaway email. In the study, 36 of 318 apps leaked only to signed-in users. See <a href="/findings/pl-002">PL-002</a>.</p>
+<p>If anyone can create an account, a stranger can sign up with a throwaway email. In the study, 32 of 318 apps (10%) leaked only to signed-in users (24 Nov 2026 re-check). See <a href="/findings/pl-002">PL-002</a>.</p>
 <h3>Does a green security scan mean my app is safe?</h3>
 <p>It means the checks that scan runs found nothing. Read <a href="/learn/ai-builder-scan-vs-independent-check">builder scan vs independent check</a> for what a scan can and cannot tell you.</p>
 <h3>Does PatchLabs name the apps it found leaking?</h3>

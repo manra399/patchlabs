@@ -52,10 +52,10 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <table class="table">
           <thead><tr><th scope="col">Study</th><th scope="col">Date</th><th scope="col" class="num">Sample</th><th scope="col">Question</th><th scope="col">Headline result</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Exposure study</th><td>Nov 2026</td><td class="num">318 apps</td><td>Who can read personal data in a rebuilt AI-built app?</td><td>106 of 318 (33%); about 25–28% after false alarms</td></tr>
+            <tr><th scope="row">Exposure study</th><td>Nov 2026</td><td class="num">318 apps</td><td>Who can read personal data in a rebuilt AI-built app?</td><td>97 of 318 (31%) on the 24 Nov 2026 re-check (106 on 5 Nov); about 25–27% after false alarms</td></tr>
             <tr><th scope="row">Fix-agent study</th><td>5 Nov 2026</td><td class="num">24 apps</td><td>Can agents write fixes that work, re-checked by hand?</td><td>19 of 20 real fixes worked first time; 4 false alarms caught</td></tr>
             <tr><th scope="row">Model trial</th><td>9 Nov 2026</td><td class="num">3 apps</td><td>Does a smaller, cheaper model hold up?</td><td>Average $0.25 per app on Haiku vs $2.26 on Opus, behind a strict proof</td></tr>
-            <tr><th scope="row">Autonomous pipeline</th><td>9 Nov 2026</td><td class="num">20 apps</td><td>End to end with no human help: how many fixes pass, at what cost?</td><td>17 of 20 pass under the current verifier (18 on the day); median $0.46 and 3.5 minutes</td></tr>
+            <tr><th scope="row">Autonomous pipeline</th><td>9 Nov 2026</td><td class="num">20 apps</td><td>End to end with no human help: how many fixes pass, at what cost?</td><td>17 of 20 pass under the current verifier (18 on the day); median $0.46 and 3.5 minutes. 3 of the 17 were proven on the app’s existing rows because our test row could not be inserted.</td></tr>
           </tbody>
         </table>
       </div>
@@ -124,10 +124,10 @@ select count(*), count(email) from public.profiles where id = '&lt;owner id&gt;'
 
     <section id="adjust" aria-labelledby="adjust-h">
       <p class="lab">05 · Adjustment</p>
-      <h2 id="adjust-h">From 33% to about 1 in 4.</h2>
-      <p>Column names can’t tell a person’s phone number from a shop’s. So the raw rate (106 of 318, 33%) includes some businesses’ own public contact details, which are meant to be visible.</p>
-      <p>We estimate how many from the fix-agent study, where agents read each flagged app’s code and judged intent: 4 of 24 flagged apps (about 1 in 6) were a business’s own public contact details. Removing that share from the 106 leaves about 88 apps, 28% of 318. Because the false-alarm rate comes from only 24 apps, we report a range of <strong>25–28%</strong>, and round it to “about 1 in 4”.</p>
-      <div class="callout note"><p>Where the site says “1 in 4”, the exact counts are 106 of 318 (33%) raw: 70 to anyone and 36 to signed-in strangers. We always show those next to the rounded figure.</p></div>
+      <h2 id="adjust-h">From 31% to about 1 in 4.</h2>
+      <p>Column names can’t tell a person’s phone number from a shop’s. So the raw rate (97 of 318, 31%, on the 24 Nov 2026 re-check) includes some businesses’ own public contact details, which are meant to be visible.</p>
+      <p>We estimate how many from the fix-agent study, where agents read each flagged app’s code and judged intent: 4 of 24 flagged apps (about 1 in 6) were a business’s own public contact details. Removing that share from the 97 leaves about 81 apps, 25% of 318; counting the 5 apps where our test row could not be inserted, about 85 (27%). Because the false-alarm rate comes from only 24 apps, we report a range of <strong>25–27%</strong>, and round it to “about 1 in 4”. On the 5 Nov count (106) the same method gave 25–28%.</p>
+      <div class="callout note"><p>Where the site says “1 in 4”, the exact counts are 97 of 318 (31%) raw on the 24 Nov 2026 re-check: 65 (20%) to anyone and 32 (10%) to signed-in strangers. The first run on 5 Nov counted 106 (33%): 70 (22%) and 36 (11%). The 318 base is from 5 Nov 2026; on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted). We always show the counts next to the rounded figure.</p></div>
     </section>
 
     <section id="fixes" aria-labelledby="fixes-h">
@@ -207,6 +207,7 @@ select count(*), count(email) from public.profiles where id = '&lt;owner id&gt;'
       <h2 id="changes-h">Changes to this page.</h2>
       <ol class="steps">
         <li class="done"><h3>First publication</h3><p>Methodology for the exposure study, the fix-agent study, the model trial and the autonomous pipeline.</p><span class="meta">10 Nov 2026</span></li>
+        <li class="done"><h3>Exposure counts re-checked</h3><p>We re-checked the 106 flagged repos with the stricter probe: 97 of 318 (31%) still leak, 65 to anyone and 32 to signed-in strangers (was 106, 70 and 36); adjusted range 25–27% (was 25–28%). Added that 3 of the 17 passing pipeline fixes were proven on the app’s existing rows.</p><span class="meta">24 Nov 2026</span></li>
       </ol>
       <p class="small muted mt-3">Found an error? Email <a href="mailto:manraj@patchlabs.dev?subject=Research">manraj@patchlabs.dev</a> with the subject “Research”. Corrections are dated here.</p>
     </section>

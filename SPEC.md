@@ -18,9 +18,12 @@ the public home page of a domain the team verified.
 
 ## Real numbers (cite as "PatchLabs lab study, Nov 2026")
 - 436 public Lovable/Supabase repos sampled and run; in **318** the migrations built a working database in the lab.
-- **106 of 318 (33%)** let the wrong people read personal data (email, phone, address, date of birth): 70 (22%) to anyone
-  on the internet using the public key, 36 more (11%) to anyone who signs up. After removing a business's own public
-  contact details, the real rate is **about 1 in 4 (25-28%)**.
+- **97 of 318 (31%)** let the wrong people read personal data (email, phone, address, date of birth) on the 24 Nov 2026
+  re-check: 65 (20%) to anyone on the internet using the public key, 32 more (10%) to anyone who signs up. After removing a
+  business's own public contact details, the real rate is **about 1 in 4 (25-27%)**. The 318 base is from 5 Nov 2026
+  (first run: 106 (33%), 70 (22%), 36 (11%)); on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97
+  still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5
+  of them our test row could not be inserted). Always quote 97, 65 and 32 as current, never the 5 Nov counts.
 - Fix agents, re-verified by us: **19 of 20** real fixes worked first time and applied cleanly (5 Nov study).
 - Autonomous pipeline, 20 new apps (9 Nov run, n=20, re-checked 24 Nov 2026): **17 of 20** fixes pass the strict lab proof
   with no human help under the current verifier (18 on the day); 14 needed only the smallest model. Median model cost

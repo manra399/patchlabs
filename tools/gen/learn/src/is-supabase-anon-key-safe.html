@@ -6,7 +6,7 @@ topic: supabase
 order: 7
 short: Yes, if row level security is on for every table and the policies are right. Which Supabase keys are public, which never are, and how to check yours.
 lede: Yes, but only if row level security (RLS) is on for every table and its policies are right. The anon key, and the publishable key that replaces it, is built to sit in browser code because it reaches only what your RLS policies allow. The <code>service_role</code> key, now the secret key, is never safe to expose.
-tldr: The anon key is public by design. The rules on your tables, not the key, decide what it can read. || Supabase’s docs call the publishable key safe to expose online and describe the anon key as its legacy version. || The service_role (secret) key bypasses RLS. It must never be in a browser, a repo or a bundle. || In the PatchLabs study, 70 of 318 apps (22%) let anyone with the public key read personal data. The key was fine. The rules were missing.
+tldr: The anon key is public by design. The rules on your tables, not the key, decide what it can read. || Supabase’s docs call the publishable key safe to expose online and describe the anon key as its legacy version. || The service_role (secret) key bypasses RLS. It must never be in a browser, a repo or a bundle. || In the PatchLabs study, 65 of 318 apps (20%) let anyone with the public key read personal data (re-checked 24 Nov 2026). The key was fine. The rules were missing.
 findings: PL-001, PL-002, PL-008, PL-009, PL-010, PL-011
 checked: 2026-11-11
 ---
@@ -33,7 +33,7 @@ checked: 2026-11-11
 curl "https://YOUR-PROJECT.supabase.co/rest/v1/profiles?select=*&amp;limit=5" \
   -H "apikey: YOUR_PUBLIC_KEY"
 <span class="c"># [] or a permission error is what you want. Rows of personal data are a leak.</span></code></pre></div>
-<p>With RLS on and no matching policy, you get nothing back. With RLS off, or a policy that says yes to everyone, you get the rows. A second group is easy to miss: anyone can create a throwaway account, which gives them the <code>authenticated</code> role. In the <a href="/research/1-in-4">PatchLabs study</a>, 70 of 318 apps let anyone with the public key read personal data, and 36 more let anyone who signs up read it.</p>
+<p>With RLS on and no matching policy, you get nothing back. With RLS off, or a policy that says yes to everyone, you get the rows. A second group is easy to miss: anyone can create a throwaway account, which gives them the <code>authenticated</code> role. In the <a href="/research/1-in-4">PatchLabs study</a>, 65 of 318 apps let anyone with the public key read personal data, and 32 more let anyone who signs up read it (24 Nov 2026 re-check).</p>
 
 <h2 id="check">How do I check my key is safe to expose?</h2>
 <ol>

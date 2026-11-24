@@ -83,7 +83,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
       <h2 id="what"><span class="lab" aria-hidden="true">Explain</span>What it is</h2>
       <p>Without RLS, a table has no row-level rules. If the API roles (<code>anon</code>, <code>authenticated</code>) have been granted access to it, anyone holding your public key can read, insert, change and delete every row through the Supabase API. The free RLS check rates it critical when the table has personal columns, high otherwise.</p>
 <p>Supabase changed its defaults in 2026: new tables in <code>public</code> are no longer exposed to the API automatically (the default for new projects from 30 May, enforced on all projects from 30 Oct 2026, with existing grants kept). Older tables, and any migration that grants access explicitly, are still exposed.</p>
-      <div class="callout note"><p>Of the 70 rebuilt apps (22% of 318) where anyone with the public key could read personal data, this pattern and <a href="/findings/pl-001">PL-001</a> were the two routes (PatchLabs lab study, n=318, Nov 2026).</p></div>
+      <div class="callout note"><p>Of the 65 rebuilt apps (20% of 318, re-checked 24 Nov 2026) where anyone with the public key could read personal data, this pattern and <a href="/findings/pl-001">PL-001</a> were the two routes (PatchLabs lab study, n=318, Nov 2026).</p></div>
 
       
 

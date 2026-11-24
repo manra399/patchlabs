@@ -1,9 +1,9 @@
 <!--
 title: The 1-in-4 Report: personal-data exposure in AI-built apps, Nov 2026 | PatchLabs
-description: We rebuilt 318 public Lovable and Supabase apps from their migrations. 106 let the wrong people read personal data; about 1 in 4 after false alarms. Full data and method.
+description: We rebuilt 318 public Lovable and Supabase apps from their migrations. 97 still let the wrong people read personal data on our 24 Nov re-check; about 1 in 4 after false alarms. Full data and method.
 layout: marketing
 nav: research
-head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Report","name":"The 1-in-4 Report: personal-data exposure in AI-built apps","datePublished":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"url":"https://patchlabs.dev/research/1-in-4","isBasedOn":"https://patchlabs.dev/research/1-in-4-aggregate.csv"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"PatchLabs 1-in-4 study: personal-data exposure in AI-built apps (aggregate results)","description":"Aggregate results from rebuilding 318 public Lovable and Supabase apps from their own migrations in a lab, Nov 2026: 106 of 318 let the wrong people read personal data (70 by anyone with the public key, 36 by anyone who signs up); about 1 in 4 exposed real personal data. No app is named.","url":"https://patchlabs.dev/research/1-in-4","creator":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"datePublished":"2026-11-10","temporalCoverage":"2026-11","variableMeasured":["apps rebuilt","apps readable by anonymous visitors","apps readable by any signed-up user"],"isAccessibleForFree":true,"license":"https://creativecommons.org/licenses/by/4.0/","measurementTechnique":"Database rebuilt from supabase/migrations in a disposable Postgres; select queries as anon, a signed-in stranger and the owner"}</script>
+head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Report","name":"The 1-in-4 Report: personal-data exposure in AI-built apps","datePublished":"2026-11-10","author":{"@type":"Person","name":"Manraj Singh Dhillon"},"publisher":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"url":"https://patchlabs.dev/research/1-in-4","isBasedOn":"https://patchlabs.dev/research/1-in-4-aggregate.csv"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"PatchLabs 1-in-4 study: personal-data exposure in AI-built apps (aggregate results)","description":"Aggregate results from rebuilding 318 public Lovable and Supabase apps from their own migrations in a lab, Nov 2026: 97 of 318 let the wrong people read personal data on the 24 Nov 2026 re-check (65 by anyone with the public key, 32 by anyone who signs up; 106, 70 and 36 in the first run on 5 Nov); about 1 in 4 exposed real personal data. No app is named.","url":"https://patchlabs.dev/research/1-in-4","creator":{"@type":"Organization","name":"PatchLabs","url":"https://patchlabs.dev"},"datePublished":"2026-11-10","temporalCoverage":"2026-11","variableMeasured":["apps rebuilt","apps readable by anonymous visitors","apps readable by any signed-up user"],"isAccessibleForFree":true,"license":"https://creativecommons.org/licenses/by/4.0/","measurementTechnique":"Database rebuilt from supabase/migrations in a disposable Postgres; select queries as anon, a signed-in stranger and the owner"}</script>
 -->
 <main id="main">
 
@@ -32,7 +32,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
     <h2>Contents</h2>
     <ol>
       <li><a href="#summary">Summary</a></li>
-      <li><a href="#funnel">From 500 repos to 106</a></li>
+      <li><a href="#funnel">From 500 repos to 97</a></li>
       <li><a href="#who">Who could read it</a></li>
       <li><a href="#what">What leaked</a></li>
       <li><a href="#why">Why it happens</a></li>
@@ -55,19 +55,19 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <h2 id="summary-h">Five things we found.</h2>
       <div class="stats" style="--cols:4">
         <div class="stat"><b class="num">318</b><span>public apps rebuilt to a working database<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
-        <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data (33%)<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup></span></div>
-        <div class="stat red"><b class="num">25–28<small>%</small></b><span>real personal-data exposure, after false alarms<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
+        <div class="stat red"><b class="num">97</b><span>let the wrong people read personal data (31%)<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup></span></div>
+        <div class="stat red"><b class="num">25–27<small>%</small></b><span>real personal-data exposure, after false alarms<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup></span></div>
         <div class="stat green"><b class="num">17<small>of 20</small></b><span>fixes passed the strict lab proof, no human help<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></span></div>
       </div>
       <ol class="footnotes">
         <li id="fn1">PatchLabs lab study, Nov 2026. 500 public repos sampled, 436 run, 318 built a working database in the lab.</li>
-        <li id="fn2">106 of 318: 70 (22%) readable by anyone with the app’s public key, 36 (11%) by anyone who signs up.</li>
-        <li id="fn3">Removing businesses’ own public contact details, using the false-alarm rate from the fix study (4 of 24 flagged apps, n=24, 5 Nov 2026).</li>
-        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20, re-checked 24 Nov 2026. 2 went to a person; 1 more passed on the day but fails the current, stricter check.</li>
+        <li id="fn2">97 of 318 on our 24 Nov 2026 re-check: 65 (20%) readable by anyone with the app’s public key, 32 (10%) only by anyone who signs up. First run, 5 Nov 2026: 106 (33%), 70 (22%) and 36 (11%). The 318 base is from 5 Nov 2026; on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted).</li>
+        <li id="fn3">Removing businesses’ own public contact details, using the false-alarm rate from the fix study (4 of 24 flagged apps, n=24, 5 Nov 2026), applied to the 97 from the 24 Nov re-check. It was 25–28% on the 5 Nov count.</li>
+        <li id="fn4">Autonomous pipeline on 20 new apps from the study, 9 Nov 2026, n=20, re-checked 24 Nov 2026. 2 went to a person; 1 more passed on the day but fails the current, stricter check. 3 of the 17 were proven on the app’s existing rows because our test row could not be inserted.</li>
       </ol>
       <ol class="keyfind mt-4">
         <li><span class="n">01</span><p><b>About 1 in 4 public AI-built apps expose personal data to people who shouldn’t see it.</b> Emails, phone numbers, addresses and dates of birth, readable with nothing more than the key every visitor already has, or a throwaway account.</p></li>
-        <li><span class="n">02</span><p><b>A third of the leaks need a sign-up, and outside scans can’t see them.</b> 36 of the 106 apps leaked only to signed-in users. The public studies we reviewed test only as a logged-out visitor, so they miss this group entirely.</p></li>
+        <li><span class="n">02</span><p><b>A third of the leaks need a sign-up, and outside scans can’t see them.</b> 32 of the 97 apps leaked only to signed-in users (24 Nov 2026 re-check). The public studies we reviewed test only as a logged-out visitor, so they miss this group entirely.</p></li>
         <li><span class="n">03</span><p><b>The cause is a handful of access-rule patterns.</b> Row level security never switched on, or read rules that say yes to everyone (<code>using (true)</code>) or to anyone signed in. Each has a stable ID in our <a href="/findings">finding index</a>.</p></li>
         <li><span class="n">04</span><p><b>Most fixes can be written and proven by machine, cheaply.</b> 17 of 20 passed a strict three-identity lab proof with no human help; 14 needed only the smallest model (9 Nov 2026 run, n=20, re-checked 24 Nov 2026). Median model cost $0.46 and 3.5 minutes per app.</p></li>
         <li><span class="n">05</span><p><b>Proven isn’t the same as safe to ship blind.</b> Closing a leak can break a page or needs a business decision. In an earlier study only 4 of 20 fixes were safe to apply with no human review. That’s why an engineer approves every change.</p></li>
@@ -76,14 +76,14 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 
     <section id="funnel" aria-labelledby="funnel-h">
       <p class="lab">02 · The funnel</p>
-      <h2 id="funnel-h">From 500 sampled repos to 106 exposing personal data.</h2>
-      <p>We drew a random sample of 500 public GitHub repos with a Lovable/Supabase project layout and ran 436 of them through the lab. In 318 the migrations built a working database; those 318 are the denominator for every exposure number in this report. The 118 that didn’t build are excluded, not counted as safe.</p>
+      <h2 id="funnel-h">From 500 sampled repos to 97 exposing personal data.</h2>
+      <p>We drew a random sample of 500 public GitHub repos with a Lovable/Supabase project layout and ran 436 of them through the lab. In 318 the migrations built a working database; those 318 are the denominator for every exposure number in this report. The 118 that didn’t build are excluded, not counted as safe. The first run on 5 Nov 2026 flagged 106 of the 318. On 24 Nov we re-checked those 106 with our stricter probe, which counts a leak only if a test row is actually readable: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted). The figures below are from the re-check, on the 5 Nov base of 318.</p>
       <figure class="chart">
         <p class="lab">Figure 1 · n=500 sampled</p>
         <h3>Each stage of the exposure study</h3>
         <p class="sub">Bars to scale. Red means personal data a stranger can read.</p>
-        <svg role="img" aria-labelledby="funnel-t funnel-d" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">
-<title id="funnel-t">From 500 sampled repos to 106 exposing personal data</title><desc id="funnel-d">500 sampled, 436 run, 318 built a working database, 106 let the wrong people read personal data: 70 to anyone with the public key and 36 more to anyone who signs up.</desc>
+        <svg role="img" aria-labelledby="funnel-t funnel-d" width="100%" height="326" xmlns="http://www.w3.org/2000/svg">
+<title id="funnel-t">From 500 sampled repos to 97 exposing personal data</title><desc id="funnel-d">500 sampled, 436 run, 318 built a working database, 106 flagged in the first run on 5 Nov 2026; on the 24 Nov 2026 re-check 97 still let the wrong people read personal data: 65 to anyone with the public key and 32 more to anyone who signs up.</desc>
 <defs><pattern id="hatch-funnel" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
 <text x="0" y="16">Public repos sampled</text>
 <text class="t-val" x="100%" y="16" text-anchor="end">500</text>
@@ -97,20 +97,24 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 <text class="t-val" x="100%" y="108" text-anchor="end">318</text>
 <rect class="m-track" x="0" y="116" width="100%" height="12" rx="3"/>
 <rect class="mark m-ink" x="0" y="116" width="63.60%" height="12" rx="3"><title>Migrations built a working database: 318</title></rect>
-<text x="0" y="154">Personal data readable by the wrong people</text>
-<text class="t-val red" x="100%" y="154" text-anchor="end">106</text>
+<text x="0" y="154">Flagged in the first run, 5 Nov</text>
+<text class="t-val" x="100%" y="154" text-anchor="end">106</text>
 <rect class="m-track" x="0" y="162" width="100%" height="12" rx="3"/>
-<rect class="mark m-red" x="0" y="162" width="21.20%" height="12" rx="3"><title>Personal data readable by the wrong people: 106</title></rect>
-<text x="0" y="200">…by anyone with the public key</text>
-<text class="t-val red" x="100%" y="200" text-anchor="end">70</text>
+<rect class="mark m-faint" x="0" y="162" width="21.20%" height="12" rx="3"><title>Flagged in the first run, 5 Nov: 106</title></rect>
+<text x="0" y="200">Personal data readable, 24 Nov re-check</text>
+<text class="t-val red" x="100%" y="200" text-anchor="end">97</text>
 <rect class="m-track" x="0" y="208" width="100%" height="12" rx="3"/>
-<rect class="mark m-red" x="0" y="208" width="14.00%" height="12" rx="3"><title>…by anyone with the public key: 70</title></rect>
-<text x="0" y="246">…only by people who sign up</text>
-<text class="t-val red" x="100%" y="246" text-anchor="end">36</text>
+<rect class="mark m-red" x="0" y="208" width="19.40%" height="12" rx="3"><title>Personal data readable, 24 Nov re-check: 97</title></rect>
+<text x="0" y="246">…by anyone with the public key</text>
+<text class="t-val red" x="100%" y="246" text-anchor="end">65</text>
 <rect class="m-track" x="0" y="254" width="100%" height="12" rx="3"/>
-<rect class="mark m-redsoft" style="fill:url(#hatch-funnel)" x="0" y="254" width="7.20%" height="12" rx="3"><title>…only by people who sign up: 36</title></rect>
+<rect class="mark m-red" x="0" y="254" width="13.00%" height="12" rx="3"><title>…by anyone with the public key: 65</title></rect>
+<text x="0" y="292">…only by people who sign up</text>
+<text class="t-val red" x="100%" y="292" text-anchor="end">32</text>
+<rect class="m-track" x="0" y="300" width="100%" height="12" rx="3"/>
+<rect class="mark m-redsoft" style="fill:url(#hatch-funnel)" x="0" y="300" width="6.40%" height="12" rx="3"><title>…only by people who sign up: 32</title></rect>
 </svg>
-        <ul class="legend"><li><i class="faint"></i>Sampled and run</li><li><i class="ink"></i>Rebuilt (the denominator)</li><li><i class="red"></i>Readable by anyone</li><li><i class="hatch"></i>Readable after signing up</li></ul>
+        <ul class="legend"><li><i class="faint"></i>Sampled, run, or flagged in the first run</li><li><i class="ink"></i>Rebuilt (the denominator)</li><li><i class="red"></i>Readable by anyone</li><li><i class="hatch"></i>Readable after signing up</li></ul>
         <details><summary>Show the numbers as a table</summary>
           <div class="table-wrap"><table class="table compact">
             <thead><tr><th scope="col">Stage</th><th scope="col" class="num">Repos</th><th scope="col" class="num">Share of 318</th></tr></thead>
@@ -118,14 +122,15 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
               <tr><th scope="row">Sampled</th><td class="num">500</td><td class="num">–</td></tr>
               <tr><th scope="row">Run through the lab</th><td class="num">436</td><td class="num">–</td></tr>
               <tr><th scope="row">Built a working database</th><td class="num">318</td><td class="num">100%</td></tr>
-              <tr><th scope="row">Personal data readable by the wrong people</th><td class="num">106</td><td class="num">33%</td></tr>
-              <tr><th scope="row">…by anyone with the public key</th><td class="num">70</td><td class="num">22%</td></tr>
-              <tr><th scope="row">…only by people who sign up</th><td class="num">36</td><td class="num">11%</td></tr>
+              <tr><th scope="row">Flagged in the first run, 5 Nov 2026</th><td class="num">106</td><td class="num">33%</td></tr>
+              <tr><th scope="row">Personal data readable by the wrong people, 24 Nov 2026 re-check</th><td class="num">97</td><td class="num">31%</td></tr>
+              <tr><th scope="row">…by anyone with the public key</th><td class="num">65</td><td class="num">20%</td></tr>
+              <tr><th scope="row">…only by people who sign up</th><td class="num">32</td><td class="num">10%</td></tr>
             </tbody>
           </table></div>
         </details>
       </figure>
-      <p class="mt-3">Not every hit is a person’s private data. When fix agents examined 24 flagged apps closely, 4 (about 1 in 6) were a business’s own public contact details, such as a shop’s phone number on its own listing. Applied to the 106, that leaves about 88 apps, or 28%. We quote <strong>25–28%</strong> rather than one figure because the false-alarm rate comes from a small sample. Either way it rounds to about 1 in 4.</p>
+      <p class="mt-3">Not every hit is a person’s private data. When fix agents examined 24 flagged apps closely, 4 (about 1 in 6) were a business’s own public contact details, such as a shop’s phone number on its own listing. Applied to the 97, that leaves about 81 apps, or 25%; counting the 5 apps where our test row could not be inserted, about 85, or 27%. We quote <strong>25–27%</strong> rather than one figure because the false-alarm rate comes from a small sample (on the 5 Nov count it was 25–28%). Either way it rounds to about 1 in 4.</p>
     </section>
 
     <section id="who" aria-labelledby="who-h">
@@ -133,31 +138,31 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <h2 id="who-h">Two thirds leaked to anyone. One third leaked to anyone who signs up.</h2>
       <p>Every Supabase app ships a public key inside its pages; access rules decide what that key can read. We tested each rebuilt database as two outsiders: an <strong>anonymous visitor</strong> holding only that key, and a <strong>signed-in stranger</strong>, a second test user who owns none of the rows.</p>
       <figure class="chart">
-        <p class="lab">Figure 2 · n=318 rebuilt apps</p>
+        <p class="lab">Figure 2 · n=318 rebuilt apps, re-checked 24 Nov 2026</p>
         <h3>Who could read personal data</h3>
         <p class="sub">Each app counted once, by the widest audience that could read its personal data.</p>
         <svg role="img" aria-labelledby="who-t who-d" width="100%" height="44" xmlns="http://www.w3.org/2000/svg">
-<title id="who-t">Who could read personal data, 318 rebuilt apps</title><desc id="who-d">70 apps (22%) to anyone with the public key, 36 (11%) only to signed-in users, 212 (67%) neither.</desc>
+<title id="who-t">Who could read personal data, 318 rebuilt apps, re-checked 24 Nov 2026</title><desc id="who-d">65 apps (20%) to anyone with the public key, 32 (10%) only to signed-in users, 221 (69%) neither.</desc>
 <defs><pattern id="hatch-who" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="6" height="6"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
-<svg x="0.000%" y="0" width="22.013%" height="44" overflow="visible"><rect class="mark m-red" x="0" y="4" width="100%" height="36" rx="4"><title>Anyone with the public key: 70 of 318</title></rect></svg>
-<svg x="22.013%" y="0" width="11.321%" height="44" overflow="visible"><rect class="mark m-redsoft" style="fill:url(#hatch-who)" x="0" y="4" width="100%" height="36" rx="4"><title>Anyone who signs up: 36 of 318</title></rect></svg>
-<svg x="33.333%" y="0" width="66.667%" height="44" overflow="visible"><rect class="mark m-faint" x="0" y="4" width="100%" height="36" rx="4"><title>No personal data readable by the wrong people: 212 of 318</title></rect></svg>
-<line x1="22.013%" x2="22.013%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
-<line x1="33.333%" x2="33.333%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<svg x="0.000%" y="0" width="20.440%" height="44" overflow="visible"><rect class="mark m-red" x="0" y="4" width="100%" height="36" rx="4"><title>Anyone with the public key: 65 of 318</title></rect></svg>
+<svg x="20.440%" y="0" width="10.063%" height="44" overflow="visible"><rect class="mark m-redsoft" style="fill:url(#hatch-who)" x="0" y="4" width="100%" height="36" rx="4"><title>Anyone who signs up: 32 of 318</title></rect></svg>
+<svg x="30.503%" y="0" width="69.497%" height="44" overflow="visible"><rect class="mark m-faint" x="0" y="4" width="100%" height="36" rx="4"><title>No personal data readable by the wrong people: 221 of 318</title></rect></svg>
+<line x1="20.440%" x2="20.440%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
+<line x1="30.503%" x2="30.503%" y1="0" y2="44" stroke="var(--card)" stroke-width="3"/>
 </svg>
-        <ul class="legend"><li><i class="red"></i>Anyone with the public key · 70 (22%)</li><li><i class="hatch"></i>Only after signing up · 36 (11%)</li><li><i class="faint"></i>Neither · 212 (67%)</li></ul>
+        <ul class="legend"><li><i class="red"></i>Anyone with the public key · 65 (20%)</li><li><i class="hatch"></i>Only after signing up · 32 (10%)</li><li><i class="faint"></i>Neither · 221 (69%)</li></ul>
         <details><summary>Show the numbers as a table</summary>
           <div class="table-wrap"><table class="table compact">
             <thead><tr><th scope="col">Who could read personal data</th><th scope="col" class="num">Apps</th><th scope="col" class="num">Share</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Anyone on the internet, with the public key</th><td class="num">70</td><td class="num">22%</td></tr>
-              <tr><th scope="row">Anyone who signs up (and not anonymous visitors)</th><td class="num">36</td><td class="num">11%</td></tr>
-              <tr><th scope="row">Neither</th><td class="num">212</td><td class="num">67%</td></tr>
+              <tr><th scope="row">Anyone on the internet, with the public key</th><td class="num">65</td><td class="num">20%</td></tr>
+              <tr><th scope="row">Anyone who signs up (and not anonymous visitors)</th><td class="num">32</td><td class="num">10%</td></tr>
+              <tr><th scope="row">Neither</th><td class="num">221</td><td class="num">69%</td></tr>
             </tbody>
           </table></div>
         </details>
       </figure>
-      <div class="callout note mt-3"><p><strong>Why the signed-in group matters.</strong> If an app lets anyone create an account, “signed in” is not a security boundary: a stranger signs up with a throwaway email and reads everything. These 36 apps look closed from the outside. They are only visible to a test that actually signs in as a second user. See <a href="/findings/pl-002">PL-002</a>.</p></div>
+      <div class="callout note mt-3"><p><strong>Why the signed-in group matters.</strong> If an app lets anyone create an account, “signed in” is not a security boundary: a stranger signs up with a throwaway email and reads everything. These 32 apps look closed from the outside. They are only visible to a test that actually signs in as a second user. See <a href="/findings/pl-002">PL-002</a>.</p></div>
     </section>
 
     <section id="what" aria-labelledby="what-h">
@@ -519,7 +524,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <table class="table">
           <thead><tr><th scope="col">Study</th><th scope="col">Method</th><th scope="col">Tests as</th><th scope="col">Result</th></tr></thead>
           <tbody>
-            <tr><th scope="row">This report<span class="cell-note">PatchLabs, Nov 2026</span></th><td>318 public repos rebuilt from migrations, fake rows</td><td>Anonymous visitor and signed-in stranger</td><td>106 of 318 (33%); about 25–28% real personal data</td></tr>
+            <tr><th scope="row">This report<span class="cell-note">PatchLabs, Nov 2026</span></th><td>318 public repos rebuilt from migrations, fake rows</td><td>Anonymous visitor and signed-in stranger</td><td>97 of 318 (31%) on the 24 Nov 2026 re-check (106 on 5 Nov); about 25–27% real personal data</td></tr>
             <tr><th scope="row">Our earlier text scan<span class="cell-note">PatchLabs, 4 Nov 2026</span></th><td>Static reading of migration files</td><td>n/a (no database)</td><td>51 of 493 repos (10.3%)</td></tr>
             <tr><th scope="row">securityscanner.dev<span class="cell-note">Apr 2026</span></th><td>Live apps found via certificate logs; 476 Lovable apps among others</td><td>Anonymous visitor only</td><td>7.1% of Lovable apps with RLS off on user-data tables</td></tr>
           </tbody>
@@ -536,7 +541,8 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <li class="dash"><span><strong>Public repos only.</strong> The sample is public GitHub repos with a Lovable/Supabase layout. Private and commercial apps may be better or worse.</span></li>
         <li class="dash"><span><strong>The lab is only as complete as the migrations.</strong> 118 of 436 repos didn’t build and are excluded. Changes made in a dashboard but never saved as a migration are invisible to us, so a repo can differ from the live app in either direction.</span></li>
         <li class="dash"><span><strong>Personal data is detected by column name</strong> (email, phone, address, date of birth and similar). Oddly named columns can be missed; public business contacts can be counted, which is why we adjust.</span></li>
-        <li class="dash"><span><strong>The 25–28% adjustment comes from a small sample</strong> (4 false alarms in 24 apps). Treat it as an estimate.</span></li>
+        <li class="dash"><span><strong>The 25–27% adjustment comes from a small sample</strong> (4 false alarms in 24 apps). Treat it as an estimate.</span></li>
+        <li class="dash"><span><strong>The base was not re-sampled.</strong> The 318 are from 5 Nov 2026; on 24 Nov we re-checked only the 106 flagged repos, so repos that were not flagged then were not checked again. In 5 repos our test row could not be inserted, so their open rules are not counted: the re-check undercounts rather than overcounts.</span></li>
         <li class="dash"><span><strong>Fix results are small samples:</strong> n=20 on 5 Nov and n=20 on 9 Nov, one run each; the 9 Nov fixes were re-checked on 24 Nov 2026 with a stricter verifier. Costs depend on model prices at the time.</span></li>
         <li class="dash"><span><strong>The proof covers reads</strong> by three identities. Write rules, functions and storage were checked statically, not proven in the lab.</span></li>
         <li class="dash"><span><strong>Readable is not the same as read.</strong> We never touched live apps, so we can’t say whether anyone actually took this data.</span></li>
@@ -560,7 +566,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
       <h2 id="data-h">Take the data. Check our working.</h2>
       <div class="dl">
         <span class="file">1-in-4-aggregate.csv</span>
-        <span class="meta">234 rows, about 26 KB. Every number in this report, plus the 20 anonymised runs. Long format: study, date, group, metric, value, denominator, unit, notes.</span>
+        <span class="meta">245 rows, about 27 KB. Every number in this report, plus the 20 anonymised runs. Long format: study, date, group, metric, value, denominator, unit, notes.</span>
         <a class="btn secondary" href="/research/1-in-4-aggregate.csv" download>Download CSV</a>
       </div>
       <h3>Cite this report</h3>

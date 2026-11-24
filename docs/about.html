@@ -112,7 +112,7 @@
           <a class="mega-feature" href="/research/1-in-4">
             <span class="lab red">Study</span>
             <b>We rebuilt 318 public apps. About 1 in 4 exposed personal data.</b>
-            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:33%"></i><i class="r" style="--w:22%"></i></span>
+            <span class="mega-bars" aria-hidden="true"><i style="--w:100%"></i><i class="r" style="--w:31%"></i><i class="r" style="--w:20%"></i></span>
             <span class="link-arrow">Read the study</span>
           </a>
         </div>
@@ -160,7 +160,7 @@
     </div>
     <div class="prose">
       <p>AI builders let anyone ship a real app with real users in a weekend. The app works, so nobody asks the awkward question: who else can read the users table? The database ships with a public key inside every page, and one loose access rule is enough for a stranger to read everyone’s email address.</p>
-      <p>We wanted a number, not a hunch. So we took public Lovable and Supabase repos and rebuilt each app’s database from its own migrations in a lab. Of the 318 that built a working database, 106 let the wrong people read personal data. After setting aside businesses’ own public contact details, it was about 1 in 4.</p>
+      <p>We wanted a number, not a hunch. So we took public Lovable and Supabase repos and rebuilt each app’s database from its own migrations in a lab. Of the 318 that built a working database, 97 still let the wrong people read personal data when we re-checked them on 24 Nov 2026. After setting aside businesses’ own public contact details, it was about 1 in 4.</p>
       <p>Finding the leaks wasn’t the hard part. Fixing them safely was: a rule tight enough to stop strangers, loose enough that real users can still read their own rows. So PatchLabs doesn’t stop at a warning. It writes the fix and proves it, as three different people, before anyone applies it.</p>
       <p><a class="link-arrow" href="/research/1-in-4">Read the study</a></p>
     </div>
@@ -168,12 +168,12 @@
   <div class="wrap">
     <div class="stats mt-4" style="--cols:4">
       <div class="stat"><b class="num">318</b><span>public apps rebuilt in our lab<sup class="fn"><a href="#afn1" aria-label="Footnote 1">1</a></sup></span></div>
-      <div class="stat red"><b class="num">106</b><span>let the wrong people read personal data<sup class="fn"><a href="#afn1" aria-label="Footnote 1">1</a></sup></span></div>
+      <div class="stat red"><b class="num">97</b><span>let the wrong people read personal data<sup class="fn"><a href="#afn1" aria-label="Footnote 1">1</a></sup></span></div>
       <div class="stat green"><b class="num">17<small>of 20</small></b><span>fixes proven with no human help<sup class="fn"><a href="#afn2" aria-label="Footnote 2">2</a></sup></span></div>
       <div class="stat"><b class="num">3<small>of 20</small></b><span>didn’t pass, and we publish them<sup class="fn"><a href="#afn2" aria-label="Footnote 2">2</a></sup></span></div>
     </div>
     <ol class="footnotes">
-      <li id="afn1">PatchLabs lab study, Nov 2026. 436 public repos run (from a random sample of 500); 318 built a working database. 106 of 318 (33%): 70 readable by anyone with the public key, 36 by anyone who signs up. About 1 in 4 (25–28%) after removing businesses’ own public contact details. No app is named.</li>
+      <li id="afn1">PatchLabs lab study, Nov 2026. 436 public repos run (from a random sample of 500); 318 built a working database. 97 of 318 (31%) on our 24 Nov 2026 re-check: 65 readable by anyone with the public key, 32 only by anyone who signs up (5 Nov: 106, 70 and 36). About 1 in 4 (25–27%) after removing businesses’ own public contact details. The 318 base is from 5 Nov 2026; on 24 Nov we re-checked the 106 flagged repos with our stricter probe: 97 still leak, none was fixed by its owner, 2 repos were deleted and the other 7 no longer show a readable test row (in 5 of them our test row could not be inserted). No app is named.</li>
       <li id="afn2">Autonomous pipeline on 20 new apps, 9 Nov 2026, n=20, re-checked 24 Nov 2026: 2 went to a person and 1 that passed on the day fails our stricter current check. <a href="/research/methodology">Methodology</a>.</li>
     </ol>
   </div>

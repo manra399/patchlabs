@@ -6,7 +6,7 @@ topic: supabase
 order: 2
 short: A study found 24,664 Lovable sites sending Supabase records to logged-out visitors. What it measured, and one tested query to check your own app.
 lede: Run the query below in your Supabase SQL editor. It lists every table and view that a visitor who is not logged in can read, and flags the ones with email, phone or address columns. Those are the tables the Crissy Field study counted. If the list is empty, or shows only things you mean to publish, like a product catalogue, your app isn’t one of the sites the study describes.
-tldr: Crissy Field and Handelsblatt looked at 159,041 Lovable projects in Common Crawl. 34,545 used Supabase, and 24,664 sent database records to visitors who weren’t logged in. In 7,403 of those (30%), the records included email addresses. || The authors say 30% is not a confirmed leak rate, because some tables are meant to be public. Our own lab study of 318 apps, built a different way, came out close: 33% raw, about 25–28% after false alarms. || Supabase’s change on 30 October 2026 only affects new tables. Tables that already existed keep their access, so apps already live are not fixed by it. || One SQL query, tested on Postgres 17 and 18, shows what a logged-out visitor can read. Fix each row with RLS, a policy, or a revoke, then check again.
+tldr: Crissy Field and Handelsblatt looked at 159,041 Lovable projects in Common Crawl. 34,545 used Supabase, and 24,664 sent database records to visitors who weren’t logged in. In 7,403 of those (30%), the records included email addresses. || The authors say 30% is not a confirmed leak rate, because some tables are meant to be public. Our own lab study of 318 apps, built a different way, came out close: 31% raw on our 24 Nov 2026 re-check, about 25–27% after false alarms. || Supabase’s change on 30 October 2026 only affects new tables. Tables that already existed keep their access, so apps already live are not fixed by it. || One SQL query, tested on Postgres 17 and 18, shows what a logged-out visitor can read. Fix each row with RLS, a policy, or a revoke, then check again.
 findings: PL-001, PL-008, PL-003, PL-005
 checked: 2026-11-14
 ---
@@ -32,7 +32,7 @@ checked: 2026-11-14
     <tr><th scope="row">Source</th><td><strong>Crissy Field:</strong> Live sites in Common Crawl<br><strong>PatchLabs lab:</strong> Public repos, rebuilt from migrations</td></tr>
     <tr><th scope="row">Who was tested</th><td><strong>Crissy Field:</strong> A visitor who isn’t logged in<br><strong>PatchLabs lab:</strong> A visitor, and a stranger who signs up</td></tr>
     <tr><th scope="row">Signal</th><td><strong>Crissy Field:</strong> Email addresses in returned records<br><strong>PatchLabs lab:</strong> Personal data readable by the wrong person</td></tr>
-    <tr><th scope="row">Rate</th><td><strong>Crissy Field:</strong> 30% of sites sending records<br><strong>PatchLabs lab:</strong> 33% raw, about 25–28% after false alarms</td></tr>
+    <tr><th scope="row">Rate</th><td><strong>Crissy Field:</strong> 30% of sites sending records<br><strong>PatchLabs lab:</strong> 31% raw (24 Nov 2026 re-check), about 25–27% after false alarms</td></tr>
   </tbody>
 </table></div>
 <p>Two different methods, two different samples, and both land at roughly one app in four or worse. So this isn’t one researcher’s quirk. It’s what happens when an app reads its database straight from the browser and a table’s rules aren’t set.</p>
@@ -103,7 +103,7 @@ order by 4 nulls last, 1;
     <tr><th scope="row">A view</th><td>The view bypasses the RLS on its tables.<br><strong>Do:</strong> <code>alter view … set (security_invoker = true);</code> or revoke anon’s access to the view</td></tr>
   </tbody>
 </table></div>
-<p>Two limits, so you know what this query doesn’t see. It only flags policies that allow everything. A policy with a condition, like <code>status = 'published'</code>, still deserves a read. And it only covers logged-out visitors. To check what a stranger who signs up can see, change <code>'anon'</code> to <code>'authenticated'</code> in both places and look again. In our lab study, 36 of the 106 leaking apps leaked only to signed-in strangers.</p>
+<p>Two limits, so you know what this query doesn’t see. It only flags policies that allow everything. A policy with a condition, like <code>status = 'published'</code>, still deserves a read. And it only covers logged-out visitors. To check what a stranger who signs up can see, change <code>'anon'</code> to <code>'authenticated'</code> in both places and look again. In our lab study, 32 of the 97 leaking apps leaked only to signed-in strangers (24 Nov 2026 re-check).</p>
 
 <h2 id="fix">How do I fix a table it lists?</h2>
 <p>For a table that holds user data, in the SQL editor:</p>
