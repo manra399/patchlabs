@@ -1,6 +1,6 @@
 <!--
 title: PatchLabs vs URL scanners for AI-built apps | PatchLabs
-description: URL scanners probe your live app from outside. PatchLabs tests a copy of your database built from your migrations and proves the fix. Seven scanners compared fairly.
+description: URL scanners probe your live app from outside. PatchLabs tests a copy of your database built from your migrations and proves the fix. Eight scanners compared fairly.
 layout: marketing
 head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
 -->
@@ -11,8 +11,8 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/compare">Compare</a></li><li aria-current="page">URL scanners</li></ol></nav>
     <p class="lab">PatchLabs vs URL scanners</p>
     <h1>URL scanners look at your live app from outside. PatchLabs tests a copy from the inside.</h1>
-    <p class="lede">Tools such as securityscanner.dev, VAS, VibeEval, SupaExplorer, UNPWNED, ShipShape Scan and VibeVigil probe your deployed site, often with the public key that ships inside your app. They’re fast and they see your real deployment. PatchLabs never touches your database or tests your live app: it rebuilds the database from your migrations, tests every table as three people and proves the fix.</p>
-    <div class="meta-line"><span>Last checked 10 Nov 2026 (ShipShape 18 Nov; VibeVigil, VAS and SupaExplorer prices 24 Nov)</span><span>Seven tools, sources at the end</span><span>Independent of all of them</span></div>
+    <p class="lede">Tools such as securityscanner.dev, VAS, VibeEval, SupaExplorer, UNPWNED, ShipShape Scan, VibeVigil and BreachSweep probe your deployed site, often with the public key that ships inside your app. They’re fast and they see your real deployment. PatchLabs never touches your database or tests your live app: it rebuilds the database from your migrations, tests every table as three people and proves the fix.</p>
+    <div class="meta-line"><span>Last checked 10 Nov 2026 (ShipShape 18 Nov; VibeVigil, BreachSweep, VAS and SupaExplorer prices 24 Nov)</span><span>Eight tools, sources at the end</span><span>Independent of all of them</span></div>
   </div>
 </section>
 
@@ -64,12 +64,12 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
   <div class="wrap">
     <div class="sec-head">
       <p class="lab">Named tools</p>
-      <h2 id="named-h">Seven scanners, as they describe themselves.</h2>
+      <h2 id="named-h">Eight scanners, as they describe themselves.</h2>
       <p>Prices and times are what each site stated on the day we checked. Entry prices only; most have higher tiers.</p>
     </div>
     <div class="table-wrap">
       <table class="table compare">
-        <caption class="sr-only">PatchLabs compared with seven URL scanners</caption>
+        <caption class="sr-only">PatchLabs compared with eight URL scanners</caption>
         <thead><tr><th scope="col">Tool</th><th scope="col">How it tests</th><th scope="col">Help with the fix</th><th scope="col">Entry price</th><th scope="col">First result, as stated</th></tr></thead>
         <tbody>
           <tr class="us-row"><th scope="row">PatchLabs</th><td class="us">Rebuilds the database from your repo; tests as anon, signed-in stranger and owner</td><td class="us"><span class="yes">Writes the fix and proves it</span></td><td class="us">Free for 1 app; £19/month</td><td class="us">Median 3.5 min to a proven fix<span class="cell-note">n=20, 9 Nov 2026</span></td></tr>
@@ -80,10 +80,11 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
           <tr><th scope="row">UNPWNED</th><td>Live site: 149 checks free, up to 702 for verified owners</td><td>AI fix prompts and a before/after re-scan (paid)</td><td>Free; $9/month</td><td>About 2 min</td></tr>
           <tr><th scope="row">ShipShape Scan</th><td>Live URL, passive only: keys in the page and its scripts, 7 fixed files, headers, cookies, HTTPS. Reports a Supabase key but never queries a table</td><td>Fix for the most serious finding free; the rest in a paid report</td><td>Free grade; €19 a report; €9/month</td><td>Not stated</td></tr>
           <tr><th scope="row">VibeVigil</th><td>Live URL: keys in the page and its scripts, headers, HTTPS, <code>/.env</code>, <code>/.git/config</code> and source maps. If it finds a Supabase URL and public key, it tries a read-only select and keeps table names only</td><td>A fix note to paste into Cursor, Lovable or Claude; daily re-scan and a Monday email (paid)</td><td>Free, 1 site; $19/month for 3 sites</td><td>Not stated</td></tr>
+          <tr><th scope="row">BreachSweep</th><td>Live URL, free and no sign-up: finds the Supabase project and keys in the page’s scripts, then uses the public key on <code>/rest/v1/</code> to look for tables anyone can read; also leaked secrets and source maps. A free MIT command-line tool also reads <code>supabase/migrations</code> for tables without RLS and <code>USING (true)</code> policies</td><td>SQL policy templates and fix prompts for Cursor, Lovable and Claude Code; signed-in tenant testing is a paid sprint with a cURL proof and a 30-day re-test</td><td>Free scan; $149 one-off; $99/month</td><td>Free scan instant; paid report 4 to 24 h</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="small muted mt-2">Last checked 10 Nov 2026 against each tool’s public site (ShipShape Scan added 18 Nov 2026 and VibeVigil 24 Nov 2026, each the day it launched on Hacker News; VAS and SupaExplorer prices rechecked 24 Nov 2026). Spotted something out of date? <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Tell us</a>.</p>
+    <p class="small muted mt-2">Last checked 10 Nov 2026 against each tool’s public site (ShipShape Scan added 18 Nov 2026 and VibeVigil and BreachSweep 24 Nov 2026, each the day it launched on Hacker News; VAS and SupaExplorer prices rechecked 24 Nov 2026). Spotted something out of date? <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Tell us</a>.</p>
   </div>
 </section>
 
@@ -145,8 +146,9 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
       <li><span><a href="https://www.unpwned.io/" rel="noopener">UNPWNED</a> · check counts, owner-verified deep scan, pricing, scan time</span><span class="when">checked 10 Nov 2026</span></li>
       <li><span><a href="https://shipshapescan.com/" rel="noopener">ShipShape Scan</a> · passive checks, “0 database queries on the free check”, pricing</span><span class="when">checked 18 Nov 2026</span></li>
       <li><span><a href="https://vibevigil.com/" rel="noopener">VibeVigil</a> · <a href="https://vibevigil.com/pricing" rel="noopener">pricing</a> · <a href="https://vibevigil.com/terms" rel="noopener">terms</a> · checks, read-only select on Supabase tables, fix notes, plans</span><span class="when">checked 24 Nov 2026</span></li>
+      <li><span><a href="https://breachsweep.com/supabase-rls-scanner" rel="noopener">BreachSweep</a> · <a href="https://breachsweep.com/" rel="noopener">plans</a> · <a href="https://breachsweep.com/terms" rel="noopener">terms</a> · <a href="https://github.com/VirilePeak/supabase-rls-audit-cli" rel="noopener">MIT CLI</a> · checks, public-key table probe, migration rules, prices before a launch discount</span><span class="when">checked 24 Nov 2026</span></li>
     </ul>
-    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with securityscanner.dev, VAS, VibeEval, SupaExplorer, UNPWNED, ShipShape Scan or VibeVigil.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 (ShipShape Scan on 18 Nov; VibeVigil, VAS and SupaExplorer prices on 24 Nov) and may have changed since; we update these pages when we hear about a change.</p></div>
+    <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with securityscanner.dev, VAS, VibeEval, SupaExplorer, UNPWNED, ShipShape Scan, VibeVigil or BreachSweep.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 (ShipShape Scan on 18 Nov; VibeVigil, BreachSweep, VAS and SupaExplorer prices on 24 Nov) and may have changed since; we update these pages when we hear about a change.</p></div>
   </div>
 </section>
 
