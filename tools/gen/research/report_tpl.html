@@ -69,7 +69,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
         <li><span class="n">01</span><p><b>About 1 in 4 public AI-built apps expose personal data to people who shouldn’t see it.</b> Emails, phone numbers, addresses and dates of birth, readable with nothing more than the key every visitor already has, or a throwaway account.</p></li>
         <li><span class="n">02</span><p><b>A third of the leaks need a sign-up, and outside scans can’t see them.</b> 36 of the 106 apps leaked only to signed-in users. The public studies we reviewed test only as a logged-out visitor, so they miss this group entirely.</p></li>
         <li><span class="n">03</span><p><b>The cause is a handful of access-rule patterns.</b> Row level security never switched on, or read rules that say yes to everyone (<code>using (true)</code>) or to anyone signed in. Each has a stable ID in our <a href="/findings">finding index</a>.</p></li>
-        <li><span class="n">04</span><p><b>Most fixes can be written and proven by machine, cheaply.</b> 18 of 20 passed a strict three-identity lab proof with no human; 15 needed only the smallest model. Median model cost $0.46 and 3.5 minutes per app.</p></li>
+        <li><span class="n">04</span><p><b>Most fixes can be written and proven by machine, cheaply.</b> 17 of 20 passed a strict three-identity lab proof with no human help; 14 needed only the smallest model (9 Nov 2026 run, n=20, re-checked 24 Nov 2026). Median model cost $0.46 and 3.5 minutes per app.</p></li>
         <li><span class="n">05</span><p><b>Proven isn’t the same as safe to ship blind.</b> Closing a leak can break a page or needs a business decision. In an earlier study only 4 of 20 fixes were safe to apply with no human review. That’s why an engineer approves every change.</p></li>
       </ol>
     </section>
@@ -197,7 +197,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><script type="a
 
     <section id="fixes" aria-labelledby="fixes-h">
       <p class="lab green">07 · The fixes</p>
-      <h2 id="fixes-h">18 of 20 fixes passed a strict lab proof with no human involved.</h2>
+      <h2 id="fixes-h">17 of 20 fixes passed a strict lab proof with no human help.</h2>
       <p>On 9 Nov 2026 we gave the pipeline 20 leaking apps from the study that had never been through a fix agent (14 readable by anyone, 6 by any signed-up user). It rebuilt each database, wrote a fix with the smallest Claude model, and ran an independent proof. A fix passes only if the anonymous visitor and the signed-in stranger can read neither the private rows nor the personal columns, <em>and</em> the owner still reads their own row and its personal columns. If the proof fails, the attempt is discarded and the next model tries.</p>
       <figure class="chart">
         <p class="lab">Figure 5 · n=20 apps, 9 Nov 2026</p>

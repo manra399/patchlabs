@@ -486,12 +486,12 @@ API doesn't have yet) becomes "This feature isn't available yet. Try again short
 ## 6. Copy rules
 
 - **Truth only.** Every number comes from `SPEC.md` (or a research file named in your task) and study numbers carry
-  their sample size and date: "18 of 20 fixes (n=20, lab study, 9 Nov 2026)". No logos, testimonials, customer counts,
+  their sample size and date: "17 of 20 fixes (n=20, lab study, 9 Nov 2026, re-checked 24 Nov 2026)". No logos, testimonials, customer counts,
   ratings, certifications, partnerships or unreleased features. Never show a counter at zero.
 - **Real numbers** you may use: 500 sampled → 436 run → 318 rebuilt; 106 of 318 (33%) readable by the wrong people: 70 (22%) by
   anyone with the public key, 36 (11%) by anyone who signs up; about 1 in 4 (25–28%) after removing businesses' own
-  public contact details. Fixes: 19 of 20 worked first time (5 Nov); 18 of 20 passed the strict lab proof with no
-  human (9 Nov, n=20), 15 needed only the smallest model, 2 went to a person; median $0.46 model cost and 3.5 minutes
+  public contact details. Fixes: 19 of 20 worked first time (5 Nov); 17 of 20 pass the strict lab proof with no
+  human help under the current verifier (9 Nov run, n=20, re-checked 24 Nov 2026; 18 on the day), 14 needed only the smallest model, 2 went to a person; median $0.46 model cost and 3.5 minutes
   per app. Plans: Free £0, Maker £19/month, Agency £99/month (+£8 per extra app), Enterprise custom.
 - **Say what happens today.** Fixes are delivered as a downloadable migration and a one-click "commit this file on
   GitHub" link. Automatic pull requests and private repos need the GitHub App: "coming". Paid plans: "Request

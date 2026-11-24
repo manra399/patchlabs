@@ -96,7 +96,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
       <p class="lab green">The difference</p>
       <h2 id="proof-h">A fix should be tested as the people it’s meant to stop.</h2>
       <p class="lede">An access rule that looks right can still let a signed-in stranger read other people’s rows, or lock the owner out of their own. We rebuild your database, apply the fix and run the same read as each person. Only when all three pass do we call it proven.</p>
-      <p class="muted">In our lab study, the pipeline fixed 20 new apps on its own: 18 of 20 fixes passed this proof with no human, and the other 2 went to a person (n=20, 9 Nov 2026).</p>
+      <p class="muted">In our lab study, the pipeline fixed 20 new apps on its own: 17 of 20 fixes pass this proof with no human help under our current check; 2 went to a person and 1 fails the stricter check (n=20, 9 Nov 2026, re-checked 24 Nov 2026).</p>
     </div>
     <div class="code">
       <div class="code-bar"><span class="name">supabase/migrations/…_patchlabs_leak_fix.sql</span><button class="copy" type="button" data-copy>Copy</button></div>
@@ -147,7 +147,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     <ul class="sources">
       <li><span><a href="https://docs.lovable.dev/features/security" rel="noopener">Lovable docs: Security</a> · scan types, auto-fix limits, “Try to fix all” quota, publish blocking, plan gating, connectors, the limits disclaimer</span><span class="when">checked 10 Nov 2026</span></li>
       <li><span><a href="https://lovable.dev/blog/how-lovable-protects-your-apps-automatically" rel="noopener">Lovable blog: how Lovable protects your apps automatically</a> · quick scan timing (10 to 15 s), deep scan (2 to 4 min), security memory</span><span class="when">checked 10 Nov 2026</span></li>
-      <li><span><a href="/research/1-in-4">PatchLabs lab study</a> · 106 of 318 apps; 18 of 20 fixes (n=20, 9 Nov 2026)</span><span class="when">ours</span></li>
+      <li><span><a href="/research/1-in-4">PatchLabs lab study</a> · 106 of 318 apps; 17 of 20 fixes (n=20, 9 Nov 2026, re-checked 24 Nov 2026)</span><span class="when">ours</span></li>
     </ul>
     <div class="indep"><p class="lab">Independent</p><p class="mb-0"><b>PatchLabs is independent and not affiliated with Lovable.</b> Product names are used only to identify them. Facts were checked on 10 Nov 2026 and may have changed since; we update these pages when we hear about a change.</p></div>
   </div>

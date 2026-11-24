@@ -117,7 +117,7 @@
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#v1"/>
     <id>https://patchlabs.dev/changelog#v1</id>
     <updated>2026-11-09T12:00:00Z</updated>
-    <summary>Public leak checks from a GitHub repo with ownership proof, reports by email and a spend cap per check. Autonomous run on 20 new apps: 18 of 20 fixes passed the strict lab proof with no human (n=20); 15 needed only the smallest model; median 3.5 minutes per app.</summary>
+    <summary>Public leak checks from a GitHub repo with ownership proof, reports by email and a spend cap per check. Autonomous run on 20 new apps: 18 of 20 fixes passed the strict lab proof with no human help (n=20); 15 needed only the smallest model. Corrected 24 Nov 2026: 17 of 20 under our stricter current check, 14 on the smallest model; median 3.5 minutes per app.</summary>
   </entry>
   <entry>
     <title>Fix agents re-verified: 19 of 20 worked first time</title>
