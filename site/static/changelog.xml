@@ -8,11 +8,11 @@
   <updated>2026-11-25T21:30:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
   <entry>
-    <title>Your code is deleted the moment a check ends; outside uptime check; daily spend cap</title>
+    <title>Your code is deleted the moment a check ends; daily spend cap</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-25"/>
     <id>https://patchlabs.dev/changelog#nov-25</id>
     <updated>2026-11-25T21:30:00Z</updated>
-    <summary>The worker now deletes its copy of your code as soon as a check finishes, pass or fail (report, findings and fix stay up to 30 days for review; the disk is encrypted). An outside check tests the API, database, worker and key pages every 15 minutes. A daily cap on fix-agent spend holds new checks in the queue until midnight UTC and emails the founder.</summary>
+    <summary>The worker now deletes its copy of your code as soon as a check finishes, pass or fail (report, findings and fix stay up to 30 days for review; the disk is encrypted). A daily cap on fix-agent spend holds new checks in the queue until midnight UTC and emails the founder.</summary>
   </entry>
   <entry>
     <title>Contact form fails with "new row violates row-level security policy": the safe fix</title>
