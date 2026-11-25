@@ -21,6 +21,7 @@ from core import (ADMIN_TOKEN, EMAIL_RE, FOUNDER_EMAIL, ORIGINS, SITE_URL, VERIF
 
 MAX_OPEN_PER_EMAIL = 3
 MAX_PER_IP_PER_DAY = 10
+DAILY_BUDGET_USD = float(os.environ.get("DAILY_BUDGET_USD", "25"))  # fix-agent spend per UTC day before new checks pause
 POSTURE_EVERY = int(os.environ.get("POSTURE_EVERY", "600"))  # seconds between live posture sweeps; 0 turns them off
 WATCHDOG_EVERY = int(os.environ.get("WATCHDOG_EVERY", "300"))  # seconds between worker-stall checks (watchdog.py); 0 turns it off
 SCHEMA = os.environ.get("SCHEMA_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql"))
@@ -165,12 +166,35 @@ def heartbeat(c=Depends(db)):
     return {"ok": True}
 
 
+def over_budget(c):
+    """Daily cap on fix-agent spend (UTC day). Over the cap, no new check starts until midnight UTC; queued checks wait.
+    The founder gets one email per day the cap is hit. DAILY_BUDGET_USD=0 turns the cap off."""
+    if DAILY_BUDGET_USD <= 0:
+        return False
+    spent = float(c.execute("SELECT coalesce(sum(cost_usd), 0) AS s FROM checks WHERE finished_at >= date_trunc('day', now() AT TIME ZONE 'UTC') "
+                            "AT TIME ZONE 'UTC'").fetchone()["s"])
+    if spent < DAILY_BUDGET_USD:
+        return False
+    first = c.execute("INSERT INTO kv (key, value, updated_at) VALUES ('budget_alert', 'sent', now()) ON CONFLICT (key) DO UPDATE "
+                      "SET updated_at = now() WHERE kv.updated_at < date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' "
+                      "RETURNING 1").fetchone()
+    if first:
+        waiting = c.execute("SELECT count(*) AS n FROM checks WHERE status = 'queued'").fetchone()["n"]
+        mail(FOUNDER_EMAIL, "PatchLabs daily spend cap reached: checks paused until midnight UTC",
+             f"Fix-agent spend today is ${spent:.2f}, at or over the ${DAILY_BUDGET_USD:.2f} daily cap.\n"
+             f"{waiting} check(s) are queued and will start after midnight UTC.\n\n"
+             f"To raise the cap, set DAILY_BUDGET_USD on the patchlabs-api container app.\nAdmin: {SITE_URL}/admin\n")
+    return True
+
+
 @app.post("/worker/claim", dependencies=[Depends(bearer(WORKER_TOKEN))])
 def claim(c=Depends(db)):
     heartbeat(c)
     # a check left running for 2 hours means the worker died mid-run: put it back in the queue
     c.execute("UPDATE checks SET status = 'queued', claimed_at = NULL WHERE status = 'running' AND claimed_at < now() - interval '2 hours'")
     monitor.schedule_due(c)
+    if over_budget(c):
+        return {"check": None, "paused": "daily_budget"}
     row = c.execute("UPDATE checks SET status = 'running', claimed_at = now() WHERE id = ("
                     " SELECT id FROM checks WHERE status = 'queued' ORDER BY verified_at FOR UPDATE SKIP LOCKED LIMIT 1"
                     ") RETURNING id, repo").fetchone()

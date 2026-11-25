@@ -7,8 +7,9 @@ the report back. It runs on the machine that has the lab (Docker) and the fix ag
 
 Config comes from ~/.patchlabs/worker.env (KEY=value lines): API_URL, WORKER_TOKEN, PIPELINE (path to run.py).
 Only one check runs at a time. The pipeline is always run in dry-run mode: nothing is pushed to anyone's repo.
-Retention: pipeline run folders (runs/<YYYYMMDD-HHMMSS>/ next to PIPELINE) older than 30 days are deleted at start and
-then once a day, together with any Claude Code session folder an older fix-agent run left in ~/.claude/projects.
+Retention: the cloned customer code (runs/<YYYYMMDD-HHMMSS>/repo) is deleted as soon as its check ends, pass or fail.
+The rest of each run folder (report, findings, fix) is deleted after 30 days, at start and then once a day, together with
+any Claude Code session folder an older fix-agent run left in ~/.claude/projects.
 """
 import datetime, json, os, re, shutil, subprocess, sys, time, urllib.request
 
@@ -148,16 +149,50 @@ def cleanup_runs():
     return removed
 
 
+def run_folders(runs):
+    """Names of the run folders directly inside `runs` (timestamp names only)."""
+    try:
+        return {n for n in os.listdir(runs) if RUN_NAME.match(n)}
+    except OSError:
+        return set()
+
+
+def delete_repo_copies(runs, names):
+    """Deletes the cloned customer code (<run>/repo) of the given run folders as soon as a check ends, pass or fail.
+    The report, findings and fix (<run>/out) stay for RETENTION_DAYS so a person can review them. Only a real directory
+    named exactly 'repo' directly inside a timestamp-named run folder directly inside `runs` is ever removed."""
+    root, removed = os.path.realpath(runs), []
+    for name in sorted(names):
+        if not RUN_NAME.match(name):
+            continue
+        run = os.path.join(runs, name)
+        repo = os.path.join(run, "repo")
+        if os.path.islink(run) or os.path.islink(repo) or not os.path.isdir(repo):
+            continue
+        if os.path.dirname(os.path.realpath(run)) != root or os.path.dirname(os.path.realpath(repo)) != os.path.realpath(run):
+            continue
+        try:
+            shutil.rmtree(repo)
+            removed.append(repo)
+        except OSError as e:
+            log(f"couldn't delete customer code {repo}: {e!r}")
+    return removed
+
+
 def once():
     check = call("/worker/claim")["check"]
     if not check:
         return False
+    runs = runs_dir(PIPELINE)
+    before = run_folders(runs)
     try:
         res = run_check(check)
     except Exception as e:  # report the failure instead of leaving the check stuck in 'running'
         res = {"status": "failed", "error": repr(e)[:2000]}
+    finally:
+        gone = delete_repo_copies(runs, run_folders(runs) - before)  # customer code never outlives its check
     call(f"/worker/checks/{check['id']}/result", res)
-    log(f"{check['repo']}: {res['status']} cost={res.get('cost_usd')}")
+    log(f"{check['repo']}: {res['status']} cost={res.get('cost_usd')} code deleted={len(gone)}")
     return True
 
 

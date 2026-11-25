@@ -164,6 +164,53 @@ def test_worker_retention_selects_only_old_run_folders(worker, tmp_path):
     assert mod.cleanup_runs() == 0 and "removed 0 run folders" in logs[-1]
 
 
+def test_worker_deletes_customer_code_when_check_ends(worker, tmp_path):
+    mod, pipeline = worker
+    runs = pipeline.parent / "runs"
+    runs.mkdir()
+    (runs / "20261101-000000" / "repo").mkdir(parents=True)          # an older run: not this check's, left alone here
+    calls = []
+    mod.log = lambda m: None
+
+    def fake_call(path, body=None):
+        calls.append((path, body))
+        return {"check": {"id": "c1", "repo": "acme/shop"}} if path == "/worker/claim" else {}
+
+    def fake_run(check, fail=False):
+        run = runs / "20261125-120000"
+        (run / "repo" / "supabase").mkdir(parents=True)
+        (run / "repo" / "supabase" / "m.sql").write_text("create table t();")
+        (run / "out").mkdir()
+        (run / "out" / "report.md").write_text("# r")
+        outside = tmp_path / "precious"
+        outside.mkdir(exist_ok=True)
+        (run / "link").symlink_to(outside)
+        if fail:
+            raise RuntimeError("pipeline crashed")
+        return {"status": "no_leaks"}
+
+    mod.call, mod.run_check = fake_call, fake_run
+    assert mod.once() is True
+    assert not (runs / "20261125-120000" / "repo").exists()             # customer code gone
+    assert (runs / "20261125-120000" / "out" / "report.md").exists()    # report kept for review
+    assert (runs / "20261101-000000" / "repo").exists() and (tmp_path / "precious").exists()
+    assert calls[-1][1] == {"status": "no_leaks"}
+
+    import shutil
+    shutil.rmtree(runs / "20261125-120000")
+    mod.run_check = lambda check: fake_run(check, fail=True)
+    assert mod.once() is True
+    assert not (runs / "20261125-120000" / "repo").exists()             # deleted on failure too
+    assert calls[-1][1]["status"] == "failed"
+
+    # a symlinked 'repo' is never followed
+    evil = runs / "20261125-130000"
+    evil.mkdir()
+    (evil / "repo").symlink_to(tmp_path / "precious")
+    assert mod.delete_repo_copies(str(runs), {"20261125-130000"}) == []
+    assert (tmp_path / "precious").exists()
+
+
 def test_docs_snippet_verifies_a_real_delivery(client, local_webhooks):
     import html, re
     page = open(os.path.join(ROOT, "site", "pages", "docs", "webhooks.html")).read()
