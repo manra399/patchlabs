@@ -155,6 +155,23 @@
 </div><figcaption>An example workspace with fictional clients. The real dashboard lists every app with its client label, status and next check.</figcaption></figure>
   </div>
 </section>
+<section class="sec" id="free-client-check" aria-labelledby="fcc-h">
+  <div class="wrap">
+<div class="sec-head split "><div><p class="lab">Got our email?</p><h2 id="fcc-h">One client app, checked free, in 48 hours.</h2><p>Pick the client app you’d most like a second opinion on. We rebuild its database in our lab from the code, then a stranger, a second signed-in user and the owner each try to read and change the data, table by table. We never touch the live app or real customer data.</p></div><a class="link-arrow" href="mailto:manraj@patchlabs.dev?subject=Free%20client%20app%20check">Email the repo</a></div><ol class="flow" style="--n:3" data-reveal><li><h3>Send the repo</h3><p>Reply to our email, or write to manraj@patchlabs.dev. A public repo is just the link. For a private repo we reply with a GitHub username to give read-only access to.</p><div class="art">github.com/studio/client-app</div></li><li><h3>Get your client’s OK</h3><p>We only check an app its owner agrees to. Forward the note below to your client, or confirm in your reply that you have their permission.</p><div class="art">“Yes, go ahead.”</div></li><li><h3>Read the result</h3><p>Within 48 hours: a plain-English pass or fail for each table, and a fix tested on the rebuilt copy for anything that fails. Your developer decides what to merge.</p><div class="art">profiles  <span class="leak">fail</span>
+orders    <span class="ok">pass</span></div></li></ol>
+<div class="code mt-3"><div class="code-bar"><span class="name">Note to forward to your client</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="wrap-lines">Hi [client name],
+
+We’d like a free outside check of who can read and change the data in [app name]. It’s done by PatchLabs (patchlabs.dev, London).
+
+They read the app’s code and rebuild its database in their own lab with fake rows. They never connect to the live app and never see real customer data. Their working copy of the code is deleted within 30 days (patchlabs.dev/legal/privacy).
+
+The result comes to us, and nothing in the app changes unless we decide to apply a fix.
+
+Are you happy for us to go ahead?
+
+[your name]</pre></div>
+  </div>
+</section>
 <section class="sec band" aria-labelledby="plan-h">
   <div class="wrap">
 <div class="sec-head split "><div><p class="lab">The agency plan</p><h2 id="plan-h">One workspace for your whole portfolio.</h2><p>Everything here works today. What’s missing is listed below.</p></div><a class="link-arrow" href="/pricing">£99/month for 10 apps</a></div><div class="feats" data-reveal><div><span class="k"><span>Portfolio</span><span class="live">live</span></span><h3>Client labels on every app</h3><p>Alerts and reports say “Client A” instead of a repo slug.</p></div><div><span class="k"><span>Schedule</span><span class="live">live</span></span><h3>Weekly or monthly re-checks</h3><p>Set per app. Only new findings raise an alert.</p></div><div><span class="k"><span>Team</span><span class="live">live</span></span><h3>10 seats, owners and members</h3><p>Invite your developers by email. Owners manage members and the webhook.</p></div><div><span class="k"><span>Alerts</span><span class="live">live</span></span><h3>Into your Slack</h3><p>One webhook for the workspace: every finished check posts the client name and report link.</p></div><div><span class="k"><span>CI</span><span class="live">live</span></span><h3>API keys for your pipelines</h3><p>Re-check from any client’s GitHub Actions after a migration merges.</p></div><div><span class="k"><span>Clients</span><span class="live">live</span></span><h3>Questions in plain English</h3><p>When the fix depends on what the client intends, the report asks them, with a recommended answer.</p></div></div>
