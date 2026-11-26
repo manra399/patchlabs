@@ -5,8 +5,15 @@
   <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog"/>
   <link rel="self" type="application/atom+xml" href="https://patchlabs.dev/changelog.xml"/>
   <id>https://patchlabs.dev/changelog</id>
-  <updated>2026-11-25T21:30:00Z</updated>
+  <updated>2026-11-26T23:40:00Z</updated>
   <author><name>Manraj Singh Dhillon</name><email>manraj@patchlabs.dev</email></author>
+  <entry>
+    <title>Reports now say when a readable table looks public on purpose</title>
+    <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-26"/>
+    <id>https://patchlabs.dev/changelog#nov-26</id>
+    <updated>2026-11-26T23:40:00Z</updated>
+    <summary>The lab records the rule that let a stranger read each table. If it checks a public flag (a published or approved row), the report says the rows may be public on purpose, asks one question, and the fix keeps the rows and hides only the personal columns. Rule names such as "Anyone can view orders" never count as intent for private records. On 75 lab-proven tables in 20 public repos, 14 got the new wording, all checked by hand; no finding was dropped.</summary>
+  </entry>
   <entry>
     <title>Your code is deleted the moment a check ends; daily spend cap</title>
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-25"/>
