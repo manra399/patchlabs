@@ -71,7 +71,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
         </tbody>
       </table>
     </div>
-    <p class="small muted mt-2">Last checked 10 Nov 2026 against Supabase’s public docs. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
+    <p class="small muted mt-2">Last checked 10 Nov 2026 against Supabase’s public docs; storage rows updated 27 Nov 2026 when the storage lab went live. <a href="mailto:manraj@patchlabs.dev?subject=Comparison%20correction">Report a correction</a>.</p>
   </div>
 </section>
 
@@ -92,7 +92,8 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
           <tr><th scope="row"><code>0024</code> permissive RLS policy</th><td><code>PL-005</code> always-true policy · <code>PL-002</code> any signed-in user reads all rows</td><td>Separates real leaks from tables meant to be public, then asks you</td></tr>
           <tr><th scope="row"><code>0008</code> RLS enabled, no policy</th><td><code>PL-003</code> RLS enabled but no policies</td><td>Checks the owner can still read their own rows after the fix</td></tr>
           <tr><th scope="row"><code>0011</code> function search path mutable · <code>0028</code>/<code>0029</code> security definer function executable</th><td><code>PL-006</code> SECURITY DEFINER function without <code>search_path</code>, or granted to anon</td><td>Flags it in the report; the fix migration sets the search path or revokes the grant</td></tr>
-          <tr><th scope="row"><code>0025</code> public bucket allows listing</th><td><code>PL-007</code> storage bucket made public in a migration</td><td>Related, not identical: we read it from your migrations</td></tr>
+          <tr><th scope="row"><code>0025</code> public bucket allows listing</th><td><code>PL-007</code> storage bucket made public in a migration</td><td>Downloads and lists another user&rsquo;s file through the real Storage API in the lab, then asks whether the bucket is meant to be public</td></tr>
+          <tr><th scope="row">No direct match in the lints we reviewed</th><td><code>PL-007</code> stranger can overwrite or delete another user&rsquo;s file</td><td>The lab uploads a file as one user and overwrites and deletes it as another, through the Storage API. A rule can&rsquo;t show this; only doing it can</td></tr>
           <tr><th scope="row">No direct match in the lints we reviewed</th><td><code>PL-004</code> UPDATE policy without <code>WITH CHECK</code></td><td>Catches updates that let a user move a row to someone else</td></tr>
         </tbody>
       </table>
@@ -155,6 +156,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
       <details class="acc"><summary>If the Advisor shows no errors, am I safe?</summary><div class="acc-body"><p>It means your database doesn’t break the rules it checks. It doesn’t run queries as different users, so a policy that looks correct but still returns other people’s rows can pass. That is the gap our lab tests. Neither tool can promise an app is secure.</p></div></details>
       <details class="acc"><summary>Does PatchLabs connect to my Supabase project?</summary><div class="acc-body"><p>No. We never need your database password or service-role key. We rebuild a disposable copy from the migrations in your public GitHub repo, with Supabase’s roles, auth functions and default grants, seeded with fake rows.</p></div></details>
       <details class="acc"><summary>Why would a lint flag a table that’s fine?</summary><div class="acc-body"><p>Some tables are meant to be readable by anyone, such as a public product list. Supabase’s docs acknowledge findings can be intentional. Our report asks you in plain English, with a recommended answer, and remembers when you mark a table as intended.</p></div></details>
+      <details class="acc"><summary>What about other catalog checkers, including open-source ones?</summary><div class="acc-body"><p>Tools that read Postgres&rsquo;s catalog (RLS switched off on a table the public role can read, <code>USING (true)</code> policies) find the same class of mistake as the Advisor, and our free RLS check runs those rules too. In our 27 Nov lab run on a real Lovable repo, the 2 tables the lab proved leaking both had <code>USING (true)</code> read policies, so catalog rules would catch them as well. The lab also found 6 storage buckets a stranger could read, and in one of them it overwrote and deleted another user&rsquo;s file. Catalog rules don&rsquo;t test storage behaviour, so they had nothing to say about any of the 6.</p></div></details>
       <details class="acc"><summary>Which should I run first?</summary><div class="acc-body"><p>The Advisor, because it’s instant and already in your project. Then run PatchLabs for proof that the fix works as each kind of user.</p></div></details>
     </div>
   </div>
