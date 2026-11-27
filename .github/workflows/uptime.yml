@@ -1,0 +1,35 @@
+# Outside uptime check. The API's own watchdog can't report the API being down, so this runs on GitHub every 15 minutes.
+# A failed run emails the repo owner (GitHub's default notification for failed scheduled workflows).
+name: uptime
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+permissions: {}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: API health (database reachable, worker seen in the last 2 hours when checks wait)
+        run: |
+          set -eu
+          body=$(curl -fsS --retry 3 --retry-delay 20 --max-time 20 https://api.patchlabs.dev/health)
+          echo "$body"
+          echo "$body" | python3 -c '
+          import json, sys, datetime as d
+          h = json.load(sys.stdin)
+          assert h.get("ok") is True and h.get("db") == "ok", "API or database not ok"
+          seen = h.get("worker_last_seen")
+          q = h.get("queued", 0)
+          if q and seen:
+              age = d.datetime.now(d.timezone.utc) - d.datetime.fromisoformat(seen)
+              assert age < d.timedelta(hours=2), f"{q} checks queued, worker last seen {age} ago"
+          '
+      - name: Site and checkout pages
+        run: |
+          set -eu
+          for p in / /pricing /check /legal/terms /legal/dpa; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --retry 2 --max-time 20 "https://patchlabs.dev$p")
+            echo "$p $code"; test "$code" = 200
+          done
