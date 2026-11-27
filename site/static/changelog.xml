@@ -19,7 +19,7 @@
     <link rel="alternate" type="text/html" href="https://patchlabs.dev/changelog#nov-25"/>
     <id>https://patchlabs.dev/changelog#nov-25</id>
     <updated>2026-11-25T21:30:00Z</updated>
-    <summary>The worker now deletes its copy of your code as soon as a check finishes, pass or fail (report, findings and fix stay up to 30 days for review; the disk is encrypted). A daily cap on fix-agent spend holds new checks in the queue until midnight UTC and emails the founder.</summary>
+    <summary>The worker now deletes its copy of your code as soon as a check finishes, pass or fail (report, findings and fix stay up to 30 days for review; the disk is encrypted). A daily cap on fix-agent spend holds new checks in the queue until midnight UTC and emails the founder. An outside uptime check now runs every 15 minutes against the API, the worker heartbeat and the main site pages.</summary>
   </entry>
   <entry>
     <title>Contact form fails with "new row violates row-level security policy": the safe fix</title>
