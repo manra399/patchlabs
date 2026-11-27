@@ -290,8 +290,8 @@ def may_see_app(c, role, wid, uid, aid):
 # ---- plans -------------------------------------------------------------------------------------------------------
 
 ALL_SCHEDULES = ["off", "weekly", "monthly"]
-# fix_price_gbp: charged per approved fix; the approval records any charge in the audit log. Early access (decided 11 Nov
-# 2026): PatchLabs is pre-launch and takes no payments, so approved fixes are free on every plan for the first 1,000 users.
+# fix_price_gbp: charged per approved fix; the approval records any charge in the audit log. Approved fixes are free on
+# every plan (11 Nov 2026; kept with founding prices on 27 Nov 2026: paid plans are set by hand, first month free).
 # The mechanism stays so a per-fix price can come back with paid plans (it was £29 on Free).
 PLANS = {"free": {"apps": 1, "runs_per_month": 4, "seats": 1, "schedules": ["off", "monthly"], "fix_price_gbp": 0},
          "maker": {"apps": 3, "runs_per_month": 30, "seats": 2, "schedules": ALL_SCHEDULES, "fix_price_gbp": 0},

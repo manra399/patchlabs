@@ -1,6 +1,6 @@
 <!--
-title: Early access: free for the first 1,000 users | PatchLabs
-description: PatchLabs is in early access. The first 1,000 users get every check, fix and proof free, and a founding-member price when paid plans start. Enterprises, tell us what you need.
+title: Ask for Maker or Agency: first month free | PatchLabs
+description: Ask for a PatchLabs plan. We set up your workspace by hand within a day and the first month is free. Founding prices: Agency £79/month for 10 apps for the first 500 agencies, Maker £15/month.
 layout: marketing
 nav: pricing
 head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
@@ -10,13 +10,14 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
 <section class="page-hero">
   <div class="wrap hero-split">
     <div>
-      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/pricing">Pricing</a></li><li aria-current="page">Early access</li></ol></nav>
-      <p class="lab">Early access</p>
-      <h1 class="h-md-1">PatchLabs is in early access. The first 1,000 users get it free.</h1>
-      <p class="lede">We haven’t switched on paid plans yet. Tell us what you’d use PatchLabs for and we’ll set up your workspace by hand. Early members get a founding-member price when paid plans start.</p>
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/pricing">Pricing</a></li><li aria-current="page">Ask for a plan</li></ol></nav>
+      <p class="lab">Ask for a plan</p>
+      <h1 class="h-md-1">Ask for Maker or Agency. Your first month is free.</h1>
+      <p class="lede">We set up every paid workspace by hand while card payments aren’t switched on. Tell us about your apps and you’ll hear from the founder within a day.</p>
       <ul class="ea-points">
-        <li><b>Free for the first 1,000.</b> Every finding, every fix written, proven in the lab and approved. No card.</li>
-        <li><b>A better deal later.</b> We email you before paid plans start, with a founding-member price. Nothing moves to paid unless you choose it.</li>
+        <li><b>First month free, no card.</b> We check your first app and raise your workspace’s limits by hand.</li>
+        <li><b>A founding price you keep.</b> Agency is £79 a month for 10 client apps instead of £149, +£8 per extra app, for the first 500 agencies. Maker is £15 a month instead of £29.</li>
+        <li><b>Then a payment link.</b> After 30 days we email you a link for your founding price. Don’t pay, and you move back to Free with your reports kept. Nothing is charged automatically.</li>
         <li><b>Enterprise.</b> Many apps, or teams building with AI? We agree limits, invoicing and terms with you.</li>
       </ul>
 <a class="sr-teaser" href="/sample-report" aria-label="See a real sample report from our demo app">
@@ -36,11 +37,11 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     <div class="card raised" id="ea-card">
       <form id="ea-form" novalidate>
         <div class="field">
-          <label for="ea-plan">What are you interested in?</label>
+          <label for="ea-plan">Which plan?</label>
           <select class="input" id="ea-plan" name="plan">
+            <option value="agency">Agency: £79/month, 10 client apps</option>
+            <option value="maker">Maker: £15/month, 3 apps</option>
             <option value="free">Free: one app I built</option>
-            <option value="maker">Maker: up to 3 apps</option>
-            <option value="agency">Agency: client apps for my studio</option>
             <option value="enterprise">Enterprise: talk to us</option>
           </select>
         </div>
@@ -53,8 +54,12 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
           <input class="input" id="ea-name" name="name" autocomplete="name" maxlength="120">
         </div>
         <div class="field" id="ea-company-f">
-          <label for="ea-company">Company <span class="hint">(optional)</span></label>
+          <label for="ea-company">Studio or company <span class="hint">(optional)</span></label>
           <input class="input" id="ea-company" name="company" autocomplete="organization" maxlength="160">
+        </div>
+        <div class="field" id="ea-site-f">
+          <label for="ea-site">Website <span class="hint">(optional)</span></label>
+          <input class="input" id="ea-site" name="site_url" autocomplete="url" maxlength="200" placeholder="yourstudio.com">
         </div>
         <div class="field">
           <label for="ea-apps">How many apps would you check?</label>
@@ -63,18 +68,29 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
             <option value="11-50">11 to 50</option><option value="50+">More than 50</option>
           </select>
         </div>
+        <fieldset class="field ea-builders">
+          <legend>What do you build with? <span class="hint">(optional)</span></legend>
+          <label><input type="checkbox" value="lovable"> Lovable</label><label><input type="checkbox" value="supabase"> Supabase</label>
+          <label><input type="checkbox" value="bolt"> Bolt</label><label><input type="checkbox" value="replit"> Replit</label>
+          <label><input type="checkbox" value="cursor"> Cursor</label><label><input type="checkbox" value="other"> Other</label>
+        </fieldset>
         <div class="field">
-          <label for="ea-note">What would you want PatchLabs to do for you? <span class="hint">(optional)</span></label>
+          <label for="ea-repo">First app to check <span class="hint">(optional, GitHub repo)</span></label>
+          <input class="input" id="ea-repo" name="first_repo" maxlength="200" placeholder="github.com/your-studio/client-app" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="ea-note">Anything else we should know? <span class="hint">(optional)</span></label>
           <textarea class="input" id="ea-note" name="note" maxlength="2000" placeholder="e.g. we hand over 5 Lovable apps a month and want each checked before launch"></textarea>
         </div>
         <div class="sr-only" aria-hidden="true"><label for="ea-website">Leave this empty</label><input id="ea-website" name="website" tabindex="-1" autocomplete="off"></div>
-        <button class="btn primary large" type="submit" id="ea-go">Join early access</button>
+        <label class="ea-pay" id="ea-pay-f"><input type="checkbox" id="ea-pay"> <span>If it’s useful, I’m happy to pay the founding price after the free month.</span></label>
+        <button class="btn primary large" type="submit" id="ea-go">Send my request</button>
         <p class="err" id="ea-err" role="alert"></p>
-        <p class="fine mt-2">No card and no payment. We reply within a day, and only email you about PatchLabs.</p>
+        <p class="fine mt-2">No card and no payment now. We reply within a day, and only email you about PatchLabs.</p>
       </form>
       <div id="ea-done" hidden>
-        <h2 class="h-md">You’re on the list.</h2>
-        <p>Thanks. We’ll reply within a day, and we’ll email you before anything about pricing changes.</p>
+        <h2 class="h-md">Request sent.</h2>
+        <p>Thanks. We’ll reply within a day to set up your workspace. Your first month is free, and nothing is charged automatically.</p>
         <p>Your first app is free right now. <a href="/#check">Check it</a> while you wait.</p>
       </div>
     </div>
@@ -86,6 +102,11 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
 .ea-points li { padding-left: 26px; position: relative; color: var(--muted); }
 .ea-points li::before { content: ""; position: absolute; left: 4px; top: .55em; width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
 .ea-points b { color: var(--ink); }
+.ea-builders { display: block; border: 0; padding: 0; margin-inline: 0; }
+.ea-builders legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+.ea-builders label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 8px 0; font-weight: 400; }
+.ea-pay { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 16px; color: var(--muted); line-height: 1.45; }
+.ea-pay input { margin-top: 3px; flex: none; width: 18px; height: 18px; }
 #ea-card .input { width: 100%; }
 .sr-teaser { display: block; margin: 22px 0 6px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); text-decoration: none; max-width: 560px; transition: border-color .15s; }
 .sr-teaser:hover, .sr-teaser:focus-visible { border-color: var(--green-line); }
@@ -112,16 +133,20 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
   var $ = function (s) { return document.querySelector(s); };
   var plan = new URLSearchParams(location.search).get('plan');
   if (['free', 'maker', 'agency', 'enterprise'].indexOf(plan) >= 0) $('#ea-plan').value = plan;
+  var all = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
   var appsFor = { free: '1', maker: '2-3', agency: '4-10', enterprise: '11-50' };
   function sync() {
     var p = $('#ea-plan').value;
-    $('#ea-company-f').hidden = p === 'free' || p === 'maker';
+    $('#ea-company-f').hidden = $('#ea-site-f').hidden = p === 'free' || p === 'maker';
+    $('#ea-pay-f').hidden = p === 'free' || p === 'enterprise';
     $('#ea-apps').value = appsFor[p];
   }
   $('#ea-plan').addEventListener('change', sync); sync();
 
   fetch(base + '/early-access/places', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (j) {
-    if (j.left > 0 && j.left <= j.total - 50) {  // shown once 50 places are taken var el = $('#ea-places'); el.textContent = j.left.toLocaleString('en-GB') + ' of ' + j.total.toLocaleString('en-GB') + ' free places left.'; el.hidden = false; }
+    if (j.left > 0 && j.left <= j.total - 50) {  // shown once 50 agencies have asked
+      var el = $('#ea-places'); el.textContent = j.left.toLocaleString('en-GB') + ' of ' + j.total.toLocaleString('en-GB') + ' founding agency places left.'; el.hidden = false;
+    }
   }).catch(function () {});
 
   $('#ea-form').addEventListener('submit', function (e) {
@@ -131,7 +156,10 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = 'Enter your email so we can reply.'; $('#ea-email').focus(); return; }
     var v = function (id) { var x = $(id).value.trim(); return x || null; };
     var body = { email: email, plan: $('#ea-plan').value, apps: $('#ea-apps').value, name: v('#ea-name'),
-                 company: $('#ea-company-f').hidden ? null : v('#ea-company'), note: v('#ea-note'), website: v('#ea-website'),
+                 company: $('#ea-company-f').hidden ? null : v('#ea-company'), site_url: $('#ea-site-f').hidden ? null : v('#ea-site'),
+                 builders: all('.ea-builders input:checked').map(function (x) { return x.value; }).join(' ') || null,
+                 first_repo: v('#ea-repo'), will_pay: $('#ea-pay-f').hidden ? null : $('#ea-pay').checked,
+                 note: v('#ea-note'), website: v('#ea-website'),
                  source: (document.referrer || '').replace(/^https?:\/\/[^/]+/, '').slice(0, 200) || null };
     go.disabled = true; go.textContent = 'Sending…';
     fetch(base + '/early-access', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -140,7 +168,7 @@ head: <link rel="stylesheet" href="/assets/pages/C-commercial.css">
         if (!res.ok) throw new Error(typeof res.j.detail === 'string' ? res.j.detail : 'Something went wrong. Please try again.');
         $('#ea-form').hidden = true; $('#ea-done').hidden = false; $('#ea-done h2').focus && $('#ea-done h2').setAttribute('tabindex', '-1'); $('#ea-done h2').focus();
       })
-      .catch(function (x) { err.textContent = x.message || 'We couldn’t reach our server. Please try again.'; go.disabled = false; go.textContent = 'Join early access'; });
+      .catch(function (x) { err.textContent = x.message || 'We couldn’t reach our server. Please try again.'; go.disabled = false; go.textContent = 'Send my request'; });
   });
 })();
 </script>

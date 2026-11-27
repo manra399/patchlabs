@@ -217,7 +217,7 @@
       <details class="acc"><summary>Is it safe to paste code with keys in it?</summary><div class="acc-body"><p>The check is a script on this page. It makes no network request and stores nothing, and keys are masked in the result. Open your browser’s developer tools, go to the Network tab, and run a check to see for yourself. If it finds a key, rotate it anyway: it has been in your code.</p></div></details>
       <details class="acc"><summary>Isn’t verify_jwt enough?</summary><div class="acc-body"><p>No. On projects with legacy keys, the platform check accepts any valid project JWT, and your public anon key is one. It stops nobody who has opened your app. Check the caller in the code with <code>supabase.auth.getUser(token)</code> and use the id it returns. The <a href="/learn/secure-supabase-edge-functions">Edge Function guide</a> walks through it.</p></div></details>
       <details class="acc"><summary>Nothing flagged. Am I safe?</summary><div class="acc-body"><p>None of the risky patterns appear in what you pasted. This is a reading of the code, not a test of your deployed function, so logic it can’t see (an admin check that reads the wrong field, say) can still be wrong. Call the function yourself with no token and with a second account’s token to confirm.</p></div></details>
-      <details class="acc"><summary>Does the full check cover functions?</summary><div class="acc-body"><p>Yes. The full PatchLabs check reads every function in your repo with these rules and more, scans the whole git history for keys, and rebuilds your database to test your RLS policies as three people. Free in early access.</p></div></details>
+      <details class="acc"><summary>Does the full check cover functions?</summary><div class="acc-body"><p>Yes. The full PatchLabs check reads every function in your repo with these rules and more, scans the whole git history for keys, and rebuilds your database to test your RLS policies as three people. Your first app is free.</p></div></details>
     </div>
   </div>
 </section>
@@ -227,7 +227,7 @@
     <div class="cta-panel">
       <p class="lab green">The full check</p>
       <h2 id="final-h">Check every function, your keys and your database rules, free.</h2>
-      <p class="lede">The full check scans your code and full git history for keys, rebuilds your Supabase database in our lab, tests it as three identities, writes the fix and proves it works. Free in early access, fixes included.</p>
+      <p class="lede">The full check scans your code and full git history for keys, rebuilds your Supabase database in our lab, tests it as three identities, writes the fix and proves it works. First app free, fixes included.</p>
       <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
         <div class="in">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>

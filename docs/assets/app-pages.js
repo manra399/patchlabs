@@ -1113,14 +1113,14 @@
     /* ---- plan & usage ---- */
     function plan() {
       var w = S.wsd, u = w.usage, l = w.limits;
-      var opts = [['maker', 'Maker: £19 a month, 3 apps, weekly re-checks, 2 seats'], ['agency', 'Agency: £99 a month, 10 apps (+£8 per extra), 10 seats'], ['enterprise', 'Enterprise: custom limits']]
+      var opts = [['maker', 'Maker: £15 a month founding price, 3 apps, weekly re-checks, 2 seats'], ['agency', 'Agency: £79 a month founding price, 10 apps (+£8 per extra), 10 seats'], ['enterprise', 'Enterprise: custom limits']]
         .filter(function (o) { return o[0] !== w.plan; });
       var form = !can('manage') ? '<p class="small muted mb-0">An owner or admin can request a bigger plan.</p>'
         : opts.length ? '<h3 class="h4 mb-1">Request an upgrade</h3><form id="uf"><div class="field"><label for="u-plan">Plan</label><select id="u-plan">' + opts.map(function (o) { return '<option value="' + o[0] + '">' + esc(o[1]) + '</option>'; }).join('') + '</select></div>' +
           '<div class="field"><label for="u-note">Anything we should know? <span class="muted" style="font-weight:400">(optional)</span></label><textarea id="u-note" maxlength="2000" placeholder="e.g. how many apps you need, or a billing contact"></textarea></div>' +
           '<button class="btn primary" type="submit" id="u-go">Request upgrade</button><p class="err" role="alert" id="u-err"></p></form>'
         : '<p class="small muted mb-0">You’re on our largest plan. Email <a href="mailto:manraj@patchlabs.dev">manraj@patchlabs.dev</a> to change your limits.</p>';
-      return '<section class="panel" id="plan" aria-labelledby="h-plan"><h2 id="h-plan">Plan &amp; usage</h2><p class="sec-sub">PatchLabs is in early access and not taking payments yet. Ask for a plan below and we set it up free, usually within a day. Early members get a founding-member price when paid plans start.</p>' +
+      return '<section class="panel" id="plan" aria-labelledby="h-plan"><h2 id="h-plan">Plan &amp; usage</h2><p class="sec-sub">Ask for a plan below and we set it up by hand, usually within a day. The first month is free; after that we email you a payment link for your founding price, and nothing is charged automatically.</p>' +
         '<dl class="kv mb-3"><dt>Plan</dt><dd><span class="pill plain">' + esc(PL.planName(w.plan)) + '</span></dd><dt>Apps</dt><dd>' + u.apps + ' of ' + l.apps + '</dd><dt>Manual runs this month</dt><dd>' + u.runs_this_month + ' of ' + l.runs_per_month + '</dd>' +
         '<dt>Team seats</dt><dd>' + u.members + ' of ' + l.seats + (u.clients ? ' <span class="muted">· ' + PL.plural(u.clients, 'client') + ', who don’t use seats</span>' : '') + '</dd><dt>Re-check schedules</dt><dd>' + l.schedules.filter(function (s) { return s !== 'off'; }).map(function (s) { return PL.SCHEDULES[s]; }).join(', ') + '</dd></dl>' + form + '</section>';
     }

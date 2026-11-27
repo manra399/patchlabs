@@ -12,7 +12,7 @@ PatchLabs is independent. It is not affiliated with Lovable, Supabase, Bolt, Rep
 
 ## Pricing (11 November 2026)
 
-Free for one app: every finding, every fix written and proven, monthly re-checks; approving a fix is included (the approval records the client's engineer on a signed receipt). PatchLabs is in early access: free for the first 1,000 users, and Maker and Agency prices are planned launch prices. Maker £19/month (3 apps) and Agency £99/month (10 apps, +£8 per extra app) include approved fixes. Enterprise is custom. Card payments are not live yet; paid plans are by request.
+Free for one app: every finding, every fix written and proven, monthly re-checks; approving a fix is included (the approval records the client's engineer on a signed receipt). Founding prices: Maker £15/month (3 apps; standard £29) and Agency £79/month (10 apps, +£8 per extra app; standard £149, +£12) for the first 500 agencies, approved fixes included. Enterprise is custom. Paid plans are requested with a short form and set up by hand; the first month is free, then a payment link. Nothing is charged automatically.
 
 ## Open-source CLI
 
@@ -87,8 +87,8 @@ Hub: https://patchlabs.dev/learn
 ## Plans (limits enforced by the API)
 
 - Free: £0. 1 app, monthly re-check, 4 manual runs per month, 1 seat.
-- Maker: £19/month. 3 apps, weekly or monthly re-checks, 30 manual runs per month, 2 seats.
-- Agency: £99/month for 10 apps, +£8 per extra app. Weekly or monthly, 200 manual runs per month, 10 seats.
+- Maker: £15/month founding price (standard £29). 3 apps, weekly or monthly re-checks, 30 manual runs per month, 2 seats.
+- Agency: £79/month founding price for 10 apps, +£8 per extra app, for the first 500 agencies (standard £149, +£12). Weekly or monthly, 200 manual runs per month, 10 seats.
 - Enterprise: custom.
 API keys, webhooks, badges and client labels are on every plan. Upgrades: request in the app; we reply within a day.
 

@@ -374,3 +374,8 @@ CREATE TABLE IF NOT EXISTS interest (
     created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS interest_created ON interest (created_at DESC);
+-- Founding prices (27 Nov 2026): plans show real prices; the form is a request we activate by hand, first month free.
+ALTER TABLE interest ADD COLUMN IF NOT EXISTS site_url text;        -- studio or company website
+ALTER TABLE interest ADD COLUMN IF NOT EXISTS builders text;        -- e.g. "lovable supabase"
+ALTER TABLE interest ADD COLUMN IF NOT EXISTS first_repo text;      -- first app to check, owner/repo or URL
+ALTER TABLE interest ADD COLUMN IF NOT EXISTS will_pay boolean;     -- happy to pay the founding price after the free month

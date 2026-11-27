@@ -104,7 +104,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
       <details class="acc"><summary>Isn’t react-markdown safe already?</summary><div class="acc-body"><p>From script, yes, unless <code>rehype-raw</code> is added or <code>urlTransform</code> is loosened. From the image leak, no: it renders any <code>https</code> image the reply contains, and so do DOMPurify and <code>rehype-sanitize</code>. That’s why the image check is separate.</p></div></details>
       <details class="acc"><summary>Does a Content-Security-Policy fix this?</summary><div class="acc-body"><p>It’s a strong backstop: <code>script-src 'self'</code> blocks inline script and <code>img-src</code> limits where images load from. Fix the component too, because a policy is easy to loosen later for an analytics tag. The <a href="/tools/headers-check">free headers check</a> shows whether your live site sends one.</p></div></details>
       <details class="acc"><summary>Nothing flagged. Am I safe?</summary><div class="acc-body"><p>None of the risky patterns are in what you pasted. Replies often appear in more than one place: an admin log, a shared chat page, an email summary. Check each, and run the test prompt against your live app.</p></div></details>
-      <details class="acc"><summary>Does the full check cover this?</summary><div class="acc-body"><p>Yes. The full PatchLabs check reads every file in your repo for raw HTML rendering and the other patterns, scans the whole git history for keys, and rebuilds your database to test your RLS policies as three people. Free in early access.</p></div></details>
+      <details class="acc"><summary>Does the full check cover this?</summary><div class="acc-body"><p>Yes. The full PatchLabs check reads every file in your repo for raw HTML rendering and the other patterns, scans the whole git history for keys, and rebuilds your database to test your RLS policies as three people. Your first app is free.</p></div></details>
     </div>
   </div>
 </section>
@@ -114,7 +114,7 @@ head: <link rel="stylesheet" href="/assets/pages/F-tools.css"><script type="appl
     <div class="cta-panel">
       <p class="lab green">The full check</p>
       <h2 id="final-h">Check every component, your keys and your database rules, free.</h2>
-      <p class="lede">The full check scans your code and full git history for keys, rebuilds your Supabase database in our lab, tests it as three identities, writes the fix and proves it works. Free in early access, fixes included.</p>
+      <p class="lede">The full check scans your code and full git history for keys, rebuilds your Supabase database in our lab, tests it as three identities, writes the fix and proves it works. First app free, fixes included.</p>
       <form class="repo-form" data-check-form action="mailto:manraj@patchlabs.dev?subject=Free%20leak%20check" method="post" enctype="text/plain">
         <div class="in">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v8.2a2 2 0 1 0 1.5 1.9V7.4c.5.4 1.2.6 2 .6h1.6a2 2 0 1 0 0-1.5H8.5c-1.1 0-2-.9-2-2V2.5M5 2.5a1.25 1.25 0 1 1 1.5 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
