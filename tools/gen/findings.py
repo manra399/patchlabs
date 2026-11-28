@@ -2597,7 +2597,7 @@ def page(f):
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Reads your public repo only</span><span>{alt_tool}</span></div>"""
+        <div class="form-meta"><span>First app free, fixes included</span><span>Reads your public repo only</span><span>{alt_tool}</span></div>"""
     return f"""<!--
 title: {f["id"]} {f["title"]} | PatchLabs findings
 description: {f["desc"]}
@@ -2883,7 +2883,7 @@ head: <link rel="stylesheet" href="/assets/pages/B-research.css"><link rel="styl
           <button class="btn primary" type="submit">Check my app free</button>
         </form>
         <p class="err" role="alert" data-err></p>
-        <div class="form-meta"><span>Free in early access, fixes included</span><span>Never touches your database</span></div>
+        <div class="form-meta"><span>First app free, fixes included</span><span>Never touches your database</span></div>
       </div>
     </div>
   </section>

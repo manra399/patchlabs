@@ -249,7 +249,7 @@ def page(g, guides, ft):
         <p class="lab">Free check</p>
         <h2>Check your app for this, free.</h2>
         <p>Paste your public repo. PatchLabs rebuilds your database from its migrations, tests it as a visitor, a stranger and the owner, reads the code for keys and risky patterns, and hands you the fix.</p>
-        {form("l-" + g["slug"][:18], '<span>Free in early access, fixes included</span><span>Never touches your database</span>')}
+        {form("l-" + g["slug"][:18], '<span>First app free, fixes included</span><span>Never touches your database</span>')}
       </div>"""
     return f"""<!--
 title: {g["title"]} | PatchLabs
@@ -347,7 +347,7 @@ head: <link rel="stylesheet" href="/assets/pages/G-learn.css"><script type="appl
         <p class="lab">Free check</p>
         <h2>Rather have it checked for you?</h2>
         <p class="lede">Paste your public repo. You get every finding, the fix and the proof on one page.</p>
-        {form("lh", '<span>Free in early access, fixes included</span><span><a href="/findings">Browse every finding</a></span>')}
+        {form("lh", '<span>First app free, fixes included</span><span><a href="/findings">Browse every finding</a></span>')}
       </div>
     </div>
   </section>
