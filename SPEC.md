@@ -45,8 +45,8 @@ Local dev: API at `http://localhost:8001` (the site's `app.js` switches automati
 | Plan | Price shown | Apps | Re-check schedule | Manual runs | Team seats | Approving a proven fix |
 |---|---|---|---|---|---|---|
 | free | £0 | 1 | monthly | 4 per month | 1 | £29 per fix (`fix_price_gbp`), invoiced |
-| maker | £19 / month | 3 | weekly or monthly | 30 per month | 2 | included |
-| agency | £99 / month (10 apps), +£8 per extra app | 10 (admin can raise) | weekly or monthly | 200 per month | 10 | included |
+| maker | £15 / month founding (std £29) | 3 | weekly or monthly | 30 per month | 2 | included |
+| agency | £79 / month founding for the first 500 agencies (10 apps), +£8 per extra app (std £149, +£12) | 10 (admin can raise) | weekly or monthly | 200 per month | 10 | included |
 | enterprise | Custom | admin-set | admin-set | admin-set | admin-set | included |
 Per-fix price (decided 11 Nov 2026): writing and proving fixes is free on every plan. On Free, `POST /checks/{id}/decision`
 with `action: approve` returns 402 with the price until the body carries `accept_charge_gbp` equal to it; the audit log
